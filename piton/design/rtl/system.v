@@ -216,22 +216,33 @@ module system(
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
     `endif
+	
+	`ifdef ALVEOU280
+	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
+	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
+	`else // PITONSYS_DDR4
+	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
+	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
+    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+	`endif
 
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
     output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
     output                                      ddr_reset_n,
     inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+
     `ifndef NEXYSVIDEO_BOARD
         output [`DDR3_CS_WIDTH-1:0]             ddr_cs_n,
     `endif // endif NEXYSVIDEO_BOARD
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
+	`elsif ALVEOU280
+	output                                      ddr_parity,
     `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
     `endif // XUPP3R_BOARD
@@ -247,23 +258,23 @@ module system(
     output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
     output wire [`AXI4_SIZE_WIDTH   -1:0]    m_axi_awsize,
     output wire [`AXI4_BURST_WIDTH  -1:0]    m_axi_awburst,
-    output wire                                  m_axi_awlock,
+    output wire                              m_axi_awlock,
     output wire [`AXI4_CACHE_WIDTH  -1:0]    m_axi_awcache,
     output wire [`AXI4_PROT_WIDTH   -1:0]    m_axi_awprot,
     output wire [`AXI4_QOS_WIDTH    -1:0]    m_axi_awqos,
     output wire [`AXI4_REGION_WIDTH -1:0]    m_axi_awregion,
     output wire [`AXI4_USER_WIDTH   -1:0]    m_axi_awuser,
-    output wire                                  m_axi_awvalid,
-    input  wire                                  m_axi_awready,
+    output wire                              m_axi_awvalid,
+    input  wire                              m_axi_awready,
 
     // AXI Write Data Channel Signals
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
     output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
-    output wire                                   m_axi_wlast,
+    output wire                               m_axi_wlast,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
-    output wire                                   m_axi_wvalid,
-    input  wire                                   m_axi_wready,
+    output wire                               m_axi_wvalid,
+    input  wire                               m_axi_wready,
 
     // AXI Read Address Channel Signals
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid,
@@ -271,32 +282,32 @@ module system(
     output wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen,
     output wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize,
     output wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst,
-    output wire                                   m_axi_arlock,
+    output wire                               m_axi_arlock,
     output wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache,
     output wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot,
     output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
     output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
-    output wire                                   m_axi_arvalid,
-    input  wire                                   m_axi_arready,
+    output wire                               m_axi_arvalid,
+    input  wire                               m_axi_arready,
 
     // AXI Read Data Channel Signals
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
     input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
-    input  wire                                   m_axi_rlast,
+    input  wire                               m_axi_rlast,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
-    input  wire                                   m_axi_rvalid,
-    output wire                                   m_axi_rready,
+    input  wire                               m_axi_rvalid,
+    output wire                               m_axi_rready,
 
     // AXI Write Response Channel Signals
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
-    input  wire                                   m_axi_bvalid,
-    output wire                                   m_axi_bready,
+    input  wire                               m_axi_bvalid,
+    output wire                               m_axi_bready,
 
-    input  wire                                   ddr_ready,
+    input  wire                               ddr_ready,
 `endif // endif F1_BOARD
 `endif // endif PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
@@ -306,8 +317,8 @@ module system(
     output                                      uart_tx,
     input                                       uart_rx,
 `ifdef VCU118_BOARD
-		input                                       uart_cts,
-		output                                      uart_rts,
+	input                                       uart_cts,
+	output                                      uart_rts,
 `endif // VCU118_BOARD
 `endif // endif PITONSYS_UART
 
@@ -380,6 +391,10 @@ module system(
     input                                       btnd,
     input                                       btnc,
 `endif
+
+`ifdef ALVEOU280_BOARD
+    output hbm_cattrip,  // Tie to 0 to avoid problems when HBM is not used
+`endif	
 
 `ifdef VCU118_BOARD
     // we only have 4 gpio dip switches on this board
@@ -552,6 +567,10 @@ assign rtc = rtc_div[6];
 // tie off
 assign uart_rts = 1'b0;
 `endif // VCU118_BOARD
+
+`ifdef ALVEOU280_BOARD
+assign hbm_cattrip = 1'b0,  // Tie to 0 to avoid problems when HBM is not used
+`endif	
 
 // Different reset active levels for different boards
 always @ *
@@ -1042,18 +1061,27 @@ chipset chipset(
 `endif // PITONSYS_DDR4
     .ddr_addr(ddr_addr),
     .ddr_ba(ddr_ba),
+`ifndef ALVEOU280_BOARD	
     .ddr_ck_n(ddr_ck_n),
     .ddr_ck_p(ddr_ck_p),
+	.ddr_dqs_n(ddr_dqs_n),
+    .ddr_dqs_p(ddr_dqs_p),
+`endif	
     .ddr_cke(ddr_cke),
     .ddr_reset_n(ddr_reset_n),
     .ddr_dq(ddr_dq),
-    .ddr_dqs_n(ddr_dqs_n),
-    .ddr_dqs_p(ddr_dqs_p),
+
 `ifndef NEXYSVIDEO_BOARD
     .ddr_cs_n(ddr_cs_n),
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
+`elsif ALVEOU280	
+	.ddr_ck_n(ddr_ck_c),
+    .ddr_ck_p(ddr_ck_t),
+	.ddr_dqs_n(ddr_dqs_c),
+    .ddr_dqs_p(ddr_dqs_t),
+	.ddr_parity(ddr_parity),
 `else
     .ddr_dm(ddr_dm),
 `endif

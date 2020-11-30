@@ -456,6 +456,8 @@ module chipset(
         input                                               btnu,
         input                                               btnd,
         input                                               btnc,           
+	`elsif ALVEOU280_BOARD
+        output 												HBM_CATTRIP, 
     `endif
 
     // Switches
@@ -464,6 +466,8 @@ module chipset(
         input  [3:0]                                        sw,
     `elsif XUPP3R_BOARD
         // no switches :(
+    `elsif ALVEOU280_BOARD
+        // no switches :(		
     `else         
         input  [7:0]                                        sw,
     `endif
@@ -751,6 +755,17 @@ end
             `elsif XUPP3R_BOARD
                 assign uart_boot_en    = 1'b1;
                 assign uart_timeout_en = 1'b0;
+            `ifdef ALVEOU280_BOARD
+				wire [3:0] sw; 
+				vio_sw vio_sw_i (
+				  .clk(chipset_clk),  
+				  .probe_out0(sw[0]), 
+				  .probe_out1(sw[1]), 
+				  .probe_out2(sw[2]), 
+				  .probe_out3(sw[3])  
+				);
+                assign uart_boot_en    = sw[0];
+                assign uart_timeout_en = sw[1];				
             `else 
                 assign uart_boot_en    = sw[7];
                 assign uart_timeout_en = sw[6];
@@ -762,6 +777,9 @@ end
 `ifdef PITON_NOC_POWER_CHIPSET_TEST
     `ifdef VCU118_BOARD
         // only two switches available...
+        assign noc_power_test_hop_count = {2'b0, sw[3:2]};
+	`elsif ALVEOU280_BOARD
+	    // only two switches available...
         assign noc_power_test_hop_count = {2'b0, sw[3:2]};
     `elsif XUPP3R_BOARD
         // no switches :(

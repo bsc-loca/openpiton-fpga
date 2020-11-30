@@ -73,6 +73,8 @@ module mc_top (
 `ifdef PITONSYS_DDR4
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
+`elsif ALVEOU280_BOARD	
+	output                          ddr_parity,
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -540,9 +542,14 @@ ddr4_0 i_ddr4_0 (
   .c0_ddr4_cs_n              ( ddr_cs_n                  ),
   .c0_ddr4_ck_t              ( ddr_ck_p                  ),
   .c0_ddr4_ck_c              ( ddr_ck_n                  ),
-  .c0_ddr4_reset_n           ( ddr_reset_n               ),
+  .c0_ddr4_reset_n           ( ddr_reset_n               ),  
 `ifndef XUPP3R_BOARD
-  .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm
+`ifndef ALVEOU280_BOARD
+  .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm  
+`elsif  
+  .c0_ddr4_parity            ( ddr_parity                ) 
+  .c0_ddr4_app_correct_en_i  ( 1'b1                      ),     // input wire c0_ddr4_app_correct_en_i
+`endif  
 `endif
   .c0_ddr4_dq                ( ddr_dq                    ), 
   .c0_ddr4_dqs_c             ( ddr_dqs_n                 ), 
