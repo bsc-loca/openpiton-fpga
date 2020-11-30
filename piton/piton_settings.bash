@@ -60,7 +60,7 @@ fi
 #export LM_LICENSE_FILE=
 
 # define vivado version if it deviates from the default
-#export VIVADO_BIN="vivado"
+export VIVADO_BIN="vivado"
 
 # Please define MODELSIM_HOME only if you have MODELSIM, otherwise comment it out.
 
