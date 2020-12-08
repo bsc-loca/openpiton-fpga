@@ -546,8 +546,8 @@ ddr4_0 i_ddr4_0 (
 `ifndef XUPP3R_BOARD
 `ifndef ALVEOU280_BOARD
   .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm  
-`elsif  
-  .c0_ddr4_parity            ( ddr_parity                ) 
+`else 
+  .c0_ddr4_parity            ( ddr_parity                ),
   .c0_ddr4_app_correct_en_i  ( 1'b1                      ),     // input wire c0_ddr4_app_correct_en_i
 `endif  
 `endif

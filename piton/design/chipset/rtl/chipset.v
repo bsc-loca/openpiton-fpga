@@ -755,7 +755,7 @@ end
             `elsif XUPP3R_BOARD
                 assign uart_boot_en    = 1'b1;
                 assign uart_timeout_en = 1'b0;
-            `ifdef ALVEOU280_BOARD
+            `elsif ALVEOU280_BOARD
 				wire [3:0] sw; 
 				vio_sw vio_sw_i (
 				  .clk(chipset_clk),  

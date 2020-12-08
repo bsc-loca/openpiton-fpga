@@ -569,7 +569,7 @@ assign uart_rts = 1'b0;
 `endif // VCU118_BOARD
 
 `ifdef ALVEOU280_BOARD
-assign hbm_cattrip = 1'b0,  // Tie to 0 to avoid problems when HBM is not used
+assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
 `endif	
 
 // Different reset active levels for different boards
