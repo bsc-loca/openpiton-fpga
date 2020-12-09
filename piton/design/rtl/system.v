@@ -217,7 +217,7 @@ module system(
     output                                      ddr_we_n,
     `endif
 	
-	`ifdef ALVEOU280
+	`ifdef ALVEOU280_BOARD
 	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
 	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
@@ -241,7 +241,7 @@ module system(
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-	`elsif ALVEOU280
+	`elsif ALVEOU280_BOARD		
 	output                                      ddr_parity,
     `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
@@ -1076,7 +1076,7 @@ chipset chipset(
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
-`elsif ALVEOU280	
+`elsif ALVEOU280_BOARD	
 	.ddr_ck_n(ddr_ck_c),
     .ddr_ck_p(ddr_ck_t),
 	.ddr_dqs_n(ddr_dqs_c),
@@ -1217,7 +1217,9 @@ chipset chipset(
     .btnc(btnc),
 `endif
 
-`ifndef XUPP3R_BOARD
+`ifdef XUPP3R_BOARD
+`elsif ALVEOU280_BOARD
+`else
     .sw(sw),
 `endif
     .leds(leds)
