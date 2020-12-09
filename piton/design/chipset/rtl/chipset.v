@@ -1320,6 +1320,8 @@ chipset_impl_noc_power_test  chipset_impl (
             
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
+		`elsif ALVEOU280_BOARD
+		    .ddr_parity(ddr_parity),
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
