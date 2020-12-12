@@ -403,7 +403,7 @@ set_property PACKAGE_PIN BN32      [get_ports "ddr_dq[0]"] ;# Bank  71 VCCO - VC
 #set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {sd_fast_clk}] -group [get_clocks -include_generated_clocks {sd_slow_clk}]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
-set_false_path -from [get_pins {chipset/vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}] -to [get_pins {chipset/chipset_impl/mc_top/noc_mig_bridge/cl_addr_reg_reg[1]/D}]
+set_false_path -from [get_pins {chipset/vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}] -to [get_pins {chipset/chipset_impl/mc_top/noc_mig_bridge/cl_addr_reg_reg[*]/D}]
 
 # Bitstream Configuration                                                 
 # ------------------------------------------------------------------------
@@ -418,5 +418,5 @@ set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
 set_property BITSTREAM.CONFIG.UNUSEDPIN Pullup [current_design]           
 set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR Yes [current_design]         
 # ------------------------------------------------------------------------
-set_property PACKAGE_PIN D32              [get_ports HBM_CATTRIP]   		
-set_property IOSTANDARD  LVCMOS18         [get_ports HBM_CATTRIP]   
+set_property PACKAGE_PIN D32              [get_ports hbm_cattrip]   		
+set_property IOSTANDARD  LVCMOS18         [get_ports hbm_cattrip]   

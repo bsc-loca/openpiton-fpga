@@ -246,6 +246,8 @@ module chipset(
 `ifdef PITONSYS_DDR4
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
+`elsif ALVEOU280_BOARD
+    output                                      ddr_parity,
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD

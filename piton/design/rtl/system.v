@@ -181,11 +181,13 @@ module system(
 `ifndef NEXYSVIDEO_BOARD
 `ifndef XUPP3R_BOARD
 `ifndef F1_BOARD
+`ifndef ALVEOU280_BOARD
   input                                         tck_i,
   input                                         tms_i,
   input                                         trst_ni,
   input                                         td_i,
   output                                        td_o,
+`endif//ALVEOU280_BOARD
 `endif//F1_BOARD
 `endif//XUPP3R_BOARD
 `endif //NEXYSVIDEO_BOARD
@@ -220,8 +222,8 @@ module system(
 	`ifdef ALVEOU280_BOARD
 	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
-	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
+	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
+    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
 	`else // PITONSYS_DDR4
 	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
@@ -392,10 +394,6 @@ module system(
     input                                       btnc,
 `endif
 
-`ifdef ALVEOU280_BOARD
-    output hbm_cattrip,  // Tie to 0 to avoid problems when HBM is not used
-`endif	
-
 `ifdef VCU118_BOARD
     // we only have 4 gpio dip switches on this board
     input  [3:0]                                sw,
@@ -407,8 +405,13 @@ module system(
 
 `ifdef XUPP3R_BOARD
     output [3:0]                                leds
+`elsif ALVEOU280_BOARD
 `else 
     output [7:0]                                leds
+`endif
+
+`ifdef ALVEOU280_BOARD
+    output hbm_cattrip  // Tie to 0 to avoid problems when HBM is not used
 `endif
 );
 
