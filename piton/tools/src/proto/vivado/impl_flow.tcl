@@ -27,7 +27,6 @@
 # This script kicks of an implementation
 # flow for the project
 #
-
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
@@ -40,6 +39,9 @@ puts "INFO: Using the following Verilog defines: ${ALL_VERILOG_MACROS}"
 
 # Open the project
 open_project ${VIVADO_PROJECT_FILE}
+
+
+puts "HOLAAAAAAAAAA, PRIMER OPEN PROJECT"
 
 # Update Verilog MACROs property
 set_property verilog_define ${ALL_VERILOG_MACROS} [get_fileset sources_1]
@@ -55,6 +57,9 @@ upgrade_ip [get_ips -all]
 # Extra open/close to make Vivado use defines for a project,
 # not only for synthesis
 close_project
+
+puts "CIERRO PROJECT"
+
 open_project ${VIVADO_PROJECT_FILE}
 
 # Launch implementation

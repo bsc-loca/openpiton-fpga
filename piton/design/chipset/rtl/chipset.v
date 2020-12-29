@@ -469,7 +469,8 @@ module chipset(
     `elsif XUPP3R_BOARD
         // no switches :(
     `elsif ALVEOU280_BOARD
-        // no switches :(		
+        input  [1:0]                                        sw,
+        // virtual switches :)		
     `else         
         input  [7:0]                                        sw,
     `endif
@@ -758,14 +759,6 @@ end
                 assign uart_boot_en    = 1'b1;
                 assign uart_timeout_en = 1'b0;
             `elsif ALVEOU280_BOARD
-				wire [3:0] sw; 
-				vio_sw vio_sw_i (
-				  .clk(chipset_clk),  
-				  .probe_out0(sw[0]), 
-				  .probe_out1(sw[1]), 
-				  .probe_out2(sw[2]), 
-				  .probe_out3(sw[3])  
-				);
                 assign uart_boot_en    = sw[0];
                 assign uart_timeout_en = sw[1];				
             `else 

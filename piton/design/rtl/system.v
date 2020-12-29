@@ -142,7 +142,9 @@ module system(
     input sys_clk,
 `endif
 
+`ifndef ALVEOU280_BOARD
     input                                       sys_rst_n,
+ `endif
 
 `ifndef PITON_FPGA_SYNTH
     input                                       pll_rst_n,
@@ -574,12 +576,31 @@ assign uart_rts = 1'b0;
 
 `ifdef ALVEOU280_BOARD
 assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
+wire [3:0] sw;
+wire [7:0] leds;  
+    vio_sw vio_sw_i (
+      .clk(core_ref_clk),
+      .probe_in0(leds[0]),  
+      .probe_in1(leds[1]),
+      .probe_in2(leds[2]),   
+      .probe_in3(leds[3]),   
+      .probe_in4(leds[4]),   
+      .probe_in5(leds[5]),   
+      .probe_in6(leds[6]),   
+      .probe_in7(leds[7]),    
+      .probe_out0(sw[0]), 
+      .probe_out1(sw[1]), 
+      .probe_out2(sw[2]), 
+      .probe_out3(sw[3])  
+    );
 `endif	
 
 // Different reset active levels for different boards
 always @ *
 begin
-`ifdef PITON_FPGA_RST_ACT_HIGH
+`ifdef ALVEOU280_BOARD				
+    sys_rst_n_rect = sw[2];
+`elsif PITON_FPGA_RST_ACT_HIGH
     sys_rst_n_rect = ~sys_rst_n;
 `else // ifndef PITON_FPGA_RST_ACT_HIGH
     sys_rst_n_rect = sys_rst_n;
@@ -618,7 +639,11 @@ begin
     // part of system).  Current boards supported
     // for passthru only use active low, so it always
     // expects active low
+    `ifndef ALVEOU280_BOARD
     chipset_rst_n = sys_rst_n;
+    `else
+    chipset_rst_n = sw[2]; 
+    `endif
 end
 
 // If there is no passthru, we need to set the resets
@@ -1223,6 +1248,7 @@ chipset chipset(
 
 `ifdef XUPP3R_BOARD
 `elsif ALVEOU280_BOARD
+    .sw(sw[1:0]),
 `else
     .sw(sw),
 `endif

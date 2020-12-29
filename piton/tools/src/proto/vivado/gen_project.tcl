@@ -27,7 +27,7 @@
 # This script performs general actions
 # for creating a Vivado project
 #
-
+#start_gui
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
