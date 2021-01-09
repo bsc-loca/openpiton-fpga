@@ -403,6 +403,7 @@ set_property PACKAGE_PIN BN32      [get_ports "ddr_dq[0]"] ;# Bank  71 VCCO - VC
 #set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {sd_fast_clk}] -group [get_clocks -include_generated_clocks {sd_slow_clk}]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
+set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}] 
 # Bitstream Configuration                                                 
 # ------------------------------------------------------------------------
 set_property CONFIG_VOLTAGE 1.8 [current_design]                          

@@ -469,7 +469,7 @@ module chipset(
     `elsif XUPP3R_BOARD
         // no switches :(
     `elsif ALVEOU280_BOARD
-        input  [1:0]                                        sw,
+        input  [2:0]                                        sw,
         // virtual switches :)		
     `else         
         input  [7:0]                                        sw,
@@ -558,6 +558,8 @@ reg                                             chipset_rst_n_ff;
 // UART boot stuff
 wire                                            uart_boot_en;
 wire                                            uart_timeout_en;
+wire                                            uart_bootrom_linux_en;
+
 
 // NoC power test hop count from switches if enabled
 wire  [3:0]                                     noc_power_test_hop_count;
@@ -641,7 +643,7 @@ wire  [2:0]                                     chip_intf_credit_back;
 // Chipset DRAM initialization/calibration complete
 wire                                            init_calib_complete;
 
-wire                                        test_start;
+//wire                                        test_start;
 
 // Ethernet
 wire            net_phy_clk_inter;
@@ -760,7 +762,8 @@ end
                 assign uart_timeout_en = 1'b0;
             `elsif ALVEOU280_BOARD
                 assign uart_boot_en    = sw[0];
-                assign uart_timeout_en = sw[1];				
+                assign uart_timeout_en = sw[1];	
+                assign uart_bootrom_linux_en = sw[2];			
             `else 
                 assign uart_boot_en    = sw[7];
                 assign uart_timeout_en = sw[6];
@@ -1392,6 +1395,11 @@ chipset_impl_noc_power_test  chipset_impl (
                 ,
                 .uart_boot_en(uart_boot_en),
                 .uart_timeout_en(uart_timeout_en)
+                `ifdef ALVEOU280_BOARD
+                ,            
+                .bootrom_linux_en(uart_bootrom_linux_en)
+                `endif
+
             `endif // endif PITONSYS_UART_BOOT
         `endif // endif PITONSYS_UART
 

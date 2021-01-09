@@ -582,8 +582,8 @@ wire [7:0] leds;
       .clk(core_ref_clk),  
       .probe_out0(sw[0]), 
       .probe_out1(sw[1]), 
-      .probe_out2(sw[2]) 
-    //  .probe_out3(sw[3])  
+      .probe_out2(sw[2]),
+      .probe_out3(sw[3])  
     );
 `endif	
 
@@ -591,7 +591,7 @@ wire [7:0] leds;
 always @ *
 begin
 `ifdef ALVEOU280_BOARD				
-    sys_rst_n_rect = sw[2];
+    sys_rst_n_rect = sw[3];
 `elsif PITON_FPGA_RST_ACT_HIGH
     sys_rst_n_rect = ~sys_rst_n;
 `else // ifndef PITON_FPGA_RST_ACT_HIGH
@@ -634,7 +634,7 @@ begin
     `ifndef ALVEOU280_BOARD
     chipset_rst_n = sys_rst_n;
     `else
-    chipset_rst_n = sw[2]; 
+    chipset_rst_n = sw[3]; 
     `endif
 end
 
@@ -1240,7 +1240,7 @@ chipset chipset(
 
 `ifdef XUPP3R_BOARD
 `elsif ALVEOU280_BOARD
-    .sw(sw[1:0]),
+    .sw(sw[2:0]),
 `else
     .sw(sw),
 `endif
