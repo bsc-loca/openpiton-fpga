@@ -46,7 +46,7 @@ set_property IOSTANDARD LVDS  [ get_ports "mc_clk_n" ]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clk_in1_clk_mmcm]
 
 # Reset, note that this is active high on this board!! MAKE LOW for ALVEO!
-set_property -dict {PACKAGE_PIN BH26  IOSTANDARD LVCMOS12} [get_ports "sys_rst_n"] ;# CPU_RESET_FPGA
+#set_property -dict {PACKAGE_PIN BH26  IOSTANDARD LVCMOS12} [get_ports "sys_rst_n"] ;# CPU_RESET_FPGA
 
 # False paths
 set_false_path -to [get_cells -hierarchical *afifo_ui_rst_r*]
@@ -99,8 +99,8 @@ set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
 
 #### UART
 #IO_L11N_T1_SRCC_35 Sch=uart_rxd_out
-set_property -dict {PACKAGE_PIN B33 IOSTANDARD LVCMOS18} [get_ports "uart_rx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L9P_T1L_N4_AD12P_64
-set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports "uart_tx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L8N_T1L_N3_AD5N_64
+set_property -dict {PACKAGE_PIN B33 IOSTANDARD LVCMOS18} [get_ports "uart_tx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L9P_T1L_N4_AD12P_64
+set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports "uart_rx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L8N_T1L_N3_AD5N_64
 # unused
 #set_property -dict {PACKAGE_PIN AY25 IOSTANDARD LVCMOS18} [get_ports "uart_cts"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L9N_T1L_N5_AD12N_64
 #set_property -dict {PACKAGE_PIN BB22 IOSTANDARD LVCMOS18} [get_ports "uart_rts"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L8P_T1L_N2_AD5P_64
@@ -402,8 +402,6 @@ set_property PACKAGE_PIN BN32      [get_ports "ddr_dq[0]"] ;# Bank  71 VCCO - VC
 #set_clock_groups -physically_exclusive -group [get_clocks -include_generated_clocks sd_clk_out] -group [get_clocks -include_generated_clocks sd_clk_out_1]
 #set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {sd_fast_clk}] -group [get_clocks -include_generated_clocks {sd_slow_clk}]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
-
-set_false_path -from [get_pins {chipset/vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}] -to [get_pins {chipset/chipset_impl/mc_top/noc_mig_bridge/cl_addr_reg_reg[*]/D}]
 
 # Bitstream Configuration                                                 
 # ------------------------------------------------------------------------

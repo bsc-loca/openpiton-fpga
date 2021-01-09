@@ -579,19 +579,11 @@ assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
 wire [3:0] sw;
 wire [7:0] leds;  
     vio_sw vio_sw_i (
-      .clk(core_ref_clk),
-      .probe_in0(leds[0]),  
-      .probe_in1(leds[1]),
-      .probe_in2(leds[2]),   
-      .probe_in3(leds[3]),   
-      .probe_in4(leds[4]),   
-      .probe_in5(leds[5]),   
-      .probe_in6(leds[6]),   
-      .probe_in7(leds[7]),    
+      .clk(core_ref_clk),  
       .probe_out0(sw[0]), 
       .probe_out1(sw[1]), 
-      .probe_out2(sw[2]), 
-      .probe_out3(sw[3])  
+      .probe_out2(sw[2]) 
+    //  .probe_out3(sw[3])  
     );
 `endif	
 
