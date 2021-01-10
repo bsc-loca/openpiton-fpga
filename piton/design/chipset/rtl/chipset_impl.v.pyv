@@ -235,6 +235,10 @@ module chipset_impl(
     ,
     input                                       uart_boot_en,
     input                                       uart_timeout_en
+    `ifdef ALVEOU280_BOARD
+    ,
+    input bootrom_linux_en
+    `endif
 `endif // endif PITONSYS_UART_BOOT
 `endif // endif PITONSYS_UART
 
@@ -1134,7 +1138,11 @@ fake_uart fake_uart (
     // this is for selecting the right bootrom (1: baremetal, 0: linux)
     wire ariane_boot_sel;
 `ifdef PITON_FPGA_SYNTH
-  assign ariane_boot_sel   = uart_boot_en;
+  `ifndef ALVEOU280_BOARD
+   assign ariane_boot_sel = uart_boot_en;
+  `else
+   assign ariane_boot_sel = bootrom_linux_en;
+  `endif
 `else
   `ifdef ARIANE_SIM_LINUX_BOOT
     assign ariane_boot_sel = 1'b0;
