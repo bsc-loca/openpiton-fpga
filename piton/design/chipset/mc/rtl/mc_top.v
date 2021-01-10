@@ -393,7 +393,7 @@ assign core_app_rd_data         = app_rd_data;
 `else //ifndef PITONSYS_AXI4_MEM
 assign noc_mig_bridge_rst       = ui_clk_sync_rst;
 assign noc_mig_bridge_init_done = init_calib_complete;
-assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
+assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed & init_calib_complete_zero;
 `endif
 
 noc_bidir_afifo  mig_afifo  (
@@ -704,7 +704,7 @@ assign m_axi_bready = zeroer_axi_bready;
 
 assign noc_axi4_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
 assign noc_axi4_bridge_init_done = init_calib_complete_zero;
-assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
+//assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
 `else // PITONSYS_MEM_ZEROER
 
 assign m_axi_awid = core_axi_awid;
@@ -961,13 +961,17 @@ ddr4_axi4 ddr_axi4 (
   .c0_ddr4_ck_c              ( ddr_ck_n                  ),
   .c0_ddr4_reset_n           ( ddr_reset_n               ),
 `ifndef XUPP3R_BOARD
+`ifndef ALVEOU280_BOARD
   .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm
+`endif
 `endif
   .c0_ddr4_dq                ( ddr_dq                    ), 
   .c0_ddr4_dqs_c             ( ddr_dqs_n                 ), 
   .c0_ddr4_dqs_t             ( ddr_dqs_p                 ), 
   .c0_init_calib_complete    ( init_calib_complete       ),
 `ifdef XUPP3R_BOARD
+  .c0_ddr4_parity            ( ddr_parity                ),                        // output wire c0_ddr4_parity
+`elsif ALVEOU280_BOARD
   .c0_ddr4_parity            ( ddr_parity                ),                        // output wire c0_ddr4_parity
 `endif
   .c0_ddr4_interrupt         (                           ),                    // output wire c0_ddr4_interrupt
