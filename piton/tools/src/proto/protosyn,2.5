@@ -52,7 +52,6 @@ PROJECT_IMPL_LOG = "implementation.log"
 FLOW_STEP_OPTIONS = ["project", "impl"]
 
 def usage():
-    print >> sys.stderr, "                  alveou280"
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
     print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--oled <string>]", file=sys.stderr)
@@ -65,6 +64,7 @@ def usage():
     print("                  genesys2", file=sys.stderr)
     print("                  nexysVideo", file=sys.stderr)
     print("                  f1", file=sys.stderr)
+    print("                  alveou280", file=sys.stderr)
     print("\n       -d, --design <design>", file=sys.stderr)
     print("              Name of design module to synthesize.  The default is 'system', which", file=sys.stderr)
     print("              synthesizes a full system with chip and chipset. See", file=sys.stderr)
