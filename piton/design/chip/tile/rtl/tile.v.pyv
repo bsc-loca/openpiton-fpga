@@ -41,8 +41,8 @@ if PITON_ARIANE:
     sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
   timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-  gen_riscv_dts(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp)
-  get_bootrom_info(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp)
+  gen_riscv_dts(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp)
+  get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp)
 %>
 
 module tile #(
@@ -150,7 +150,7 @@ s = '''
     output                              dyn2_yummyOut_S
     //output [4:0]                        ec_dyn2\
 '''
-if (NETWORK_CONFIG == "xbar_config"):
+if (PITON_NETWORK_CONFIG == "xbar_config"):
   s = '''
     //condensed signals
     input [`NOC_DATA_WIDTH-1:0]         dyn0_dataIn,
@@ -177,7 +177,7 @@ if (NETWORK_CONFIG == "xbar_config"):
     output                              dyn2_do_valid,
     output                              dyn2_yummyOut\
 '''
-print s
+print(s)
 %>
 
 `ifdef PITON_ARIANE
@@ -364,12 +364,12 @@ print s
     wire [`SCALE_WIDTH-1:0]             config_dmbr_bin_scale;
     <%
       for i in range(DMBR_BIN_NUM):
-        print "wire [`CREDIT_WIDTH-1:0] config_dmbr_cred_bin_%d;" % i
+        print("wire [`CREDIT_WIDTH-1:0] config_dmbr_cred_bin_%d;" % i)
     %>
 
     <%
       for i in range(DMBR_BIN_NUM):
-        print "wire [`CREDIT_WIDTH-1:0] from_dmbr_cred_bin_%d;" % i
+        print("wire [`CREDIT_WIDTH-1:0] from_dmbr_cred_bin_%d;" % i)
     %>
     wire                                config_csm_en;
     wire [31:0]                         config_system_tile_count;
@@ -568,7 +568,7 @@ s = '''
        //.store_meter_ack_non_partner(),
        //.ec_out(ec_dyn2));
 '''
-if (NETWORK_CONFIG == "xbar_config"):
+if (PITON_NETWORK_CONFIG == "xbar_config"):
   s = '''
     assign dyn0_do = buffer_router_data_noc1;
     assign dyn0_do_valid = buffer_router_valid_noc1;
@@ -591,14 +591,14 @@ if (NETWORK_CONFIG == "xbar_config"):
     assign router_buffer_data_val_noc3 = dyn2_validIn;
     assign router_buffer_consumed_noc3 = dyn2_do_yummy;
 '''
-print s
+print(s)
 %>
     ////////////////////////////////////////////
     // Credit - Val/Rdy Interface Transducers //
     ///////////////////////////////////////////
 <%
 NIB_SIZE_LOG2 = 4
-if (NETWORK_CONFIG == "xbar_config"):
+if (PITON_NETWORK_CONFIG == "xbar_config"):
   NIB_SIZE_LOG2 = 2
 NIB_SIZE = pow(2, NIB_SIZE_LOG2)
 %>
@@ -680,6 +680,7 @@ NIB_SIZE = pow(2, NIB_SIZE_LOG2)
 ///////////////////////
 generate
 if (TILE_TYPE == `SPARC_TILE) begin : g_sparc_core
+`ifdef PITON_OST1
     ////////////////
     // SPARC Core //
     ////////////////
@@ -818,11 +819,12 @@ if (TILE_TYPE == `SPARC_TILE) begin : g_sparc_core
         .transducer_l15_req_ack             (transducer_l15_req_ack)
     );
 
-
+`endif // ifdef PITON_OST1
 end
 endgenerate
 generate
 if (TILE_TYPE == `PICORV32_TILE) begin : g_picorv32_core
+`ifdef PITON_PICO
     ///////////////////
     // PicoRV32 Core //
     ///////////////////
@@ -899,6 +901,7 @@ if (TILE_TYPE == `PICORV32_TILE) begin : g_picorv32_core
         .pico_int                           (pico_int)
     );
 
+`endif // ifdef PITON_PICO
 end
 endgenerate
 generate
@@ -1064,7 +1067,7 @@ print(str)
 
     assign unavailable_o = 1'b0;
 
-`endif
+`endif // ifdef PITON_ARIANE
   end
   endgenerate
 
@@ -1179,7 +1182,7 @@ print(str)
         // are you shure that a scale factor can be 10? //alavrov
         <%
           for i in range(DMBR_BIN_NUM):
-            print ".creditIn_%d\t\t(config_dmbr_cred_bin_%d)," % (i,i)
+            print(".creditIn_%d\t\t(config_dmbr_cred_bin_%d)," % (i,i))
         %>
 
         //scale factor for replenishment (shoud be 1000)
@@ -1200,7 +1203,7 @@ print(str)
         //outputs
         <%
         for i in range(DMBR_BIN_NUM):
-          print ".curr_cred_bin_%d\t\t\t(from_dmbr_cred_bin_%d)," % (i,i)
+          print(".curr_cred_bin_%d\t\t\t(from_dmbr_cred_bin_%d)," % (i,i))
         %>
 
         .stallOut             (dmbr_l15_stall           )
@@ -1262,13 +1265,13 @@ print(str)
         // config_registers -> DMBR
         <%
           for i in range(DMBR_BIN_NUM):
-            print ".config_dmbr_cred_bin_%d\t\t\t(config_dmbr_cred_bin_%d)," % (i,i)
+            print(".config_dmbr_cred_bin_%d\t\t\t(config_dmbr_cred_bin_%d)," % (i,i))
         %>
 
         // DMBR -> config registers
         <%
           for i in range(DMBR_BIN_NUM):
-            print ".from_dmbr_cred_bin_%d\t\t\t(from_dmbr_cred_bin_%d)," % (i,i)
+            print(".from_dmbr_cred_bin_%d\t\t\t(from_dmbr_cred_bin_%d)," % (i,i))
         %>
 
         .config_csm_en                (config_csm_en                ),
