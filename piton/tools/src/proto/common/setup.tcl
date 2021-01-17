@@ -112,6 +112,11 @@ for {set k 0} {$k < $::env(PITON_NUM_TILES)} {incr k} {
 
 puts "INFO: Using Defines: ${ALL_DEFAULT_VERILOG_MACROS}"
 
+set tmp_PYTHONPATH $env(PYTHONPATH)
+set tmp_PYTHONHOME $env(PYTHONHOME)
+ unset ::env(PYTHONPATH)
+ unset ::env(PYTHONHOME)
+
 # Pre-process PyHP files
 source $DV_ROOT/tools/src/proto/common/pyhp_preprocess.tcl
 set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
@@ -136,8 +141,8 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 2
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
-  unset ::env(PYTHONPATH)
-  unset ::env(PYTHONHOME)
+  #unset ::env(PYTHONPATH)
+  #unset ::env(PYTHONHOME)
   cd $::env(ARIANE_ROOT)/src/rv_plic/rtl
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
 
