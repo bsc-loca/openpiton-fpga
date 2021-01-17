@@ -471,10 +471,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/wt_icache.sv"                     \
     "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/wt_l15_adapter.sv"                \
     "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/wt_cache_subsystem.sv"            \
-    "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/cva6_icache.sv"                   \
-    "${DV_ROOT}/design/chip/tile/ariane/src/pmp/src/pmp.sv"                                   \ 
-    "${DV_ROOT}/design/chip/tile/ariane/src/pmp/src/pmp_entry.sv"                             \ 
-    "${DV_ROOT}/design/chip/tile/ariane/src/dromajo_ram.sv"                                   \ 
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/clint.sv"                                   \
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/axi_lite_interface.sv"                      \
     "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/debug_rom/debug_rom.sv"                 \
