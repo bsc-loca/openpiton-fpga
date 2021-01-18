@@ -556,9 +556,9 @@ reg                                             chipset_rst_n_ff;
 `endif
 
 // UART boot stuff
-wire                                            uart_boot_en;
-wire                                            uart_timeout_en;
-wire                                            uart_bootrom_linux_en;
+(* keep = "true" *) (* mark_debug = "true" *) wire uart_boot_en;
+(* keep = "true" *) (* mark_debug = "true" *) wire uart_timeout_en;
+(* keep = "true" *) (* mark_debug = "true" *) wire uart_bootrom_linux_en;
 
 
 // NoC power test hop count from switches if enabled

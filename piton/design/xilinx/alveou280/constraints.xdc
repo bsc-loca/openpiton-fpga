@@ -33,17 +33,13 @@
 #set_property BITSTREAM.CONFIG.UNUSEDPIN Pulldown [current_design]
 #set_property CONFIG_VOLTAGE 1.8 [current_design]
 
-# Clock signals 
-set_property -dict {PACKAGE_PIN F31 IOSTANDARD LVDS}        [get_ports "chipset_clk_osc_n"] ;# SYS_CLK3_N 100MHz
-set_property -dict {PACKAGE_PIN G31 IOSTANDARD LVDS}        [get_ports "chipset_clk_osc_p"] ;# SYS_CLK3_P
+# Clock signals
+set_property -dict {PACKAGE_PIN F31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
+set_property -dict {PACKAGE_PIN G31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 
 # ref clock for MIG
-set_property PACKAGE_PIN BJ43 [ get_ports "mc_clk_p" ]
-set_property IOSTANDARD LVDS  [ get_ports "mc_clk_p" ]
-set_property PACKAGE_PIN BJ44 [ get_ports "mc_clk_n" ]
-set_property IOSTANDARD LVDS  [ get_ports "mc_clk_n" ]
 
-set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clk_in1_clk_mmcm]
+set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clkin1_ibufds/O]
 
 # Reset, note that this is active high on this board!! MAKE LOW for ALVEO!
 #set_property -dict {PACKAGE_PIN BH26  IOSTANDARD LVCMOS12} [get_ports "sys_rst_n"] ;# CPU_RESET_FPGA
@@ -99,8 +95,8 @@ set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
 
 #### UART
 #IO_L11N_T1_SRCC_35 Sch=uart_rxd_out
-set_property -dict {PACKAGE_PIN B33 IOSTANDARD LVCMOS18} [get_ports "uart_tx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L9P_T1L_N4_AD12P_64
-set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports "uart_rx"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L8N_T1L_N3_AD5N_64
+set_property -dict {PACKAGE_PIN B33 IOSTANDARD LVCMOS18} [get_ports uart_tx]
+set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports uart_rx]
 # unused
 #set_property -dict {PACKAGE_PIN AY25 IOSTANDARD LVCMOS18} [get_ports "uart_cts"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L9N_T1L_N5_AD12N_64
 #set_property -dict {PACKAGE_PIN BB22 IOSTANDARD LVCMOS18} [get_ports "uart_rts"] ;# Bank  64 VCCO - VCC1V8_FPGA - IO_L8P_T1L_N2_AD5P_64
@@ -172,148 +168,11 @@ set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports "uart_rx"] ;
 ## DDR4
 
 # we only use 64 bit out of the 80bit available
-set_property PACKAGE_PIN BF45      [get_ports "ddr_parity"]         ;# Bank  65 VCCO - VCC1V2 Net "DDR4_C0_PAR"     - IO_L20P_T3L_N2_AD1P_D08_65
-set_property PACKAGE_PIN BG33      [get_ports "ddr_reset_n"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L1N_T0L_N1_DBC_72
-set_property PACKAGE_PIN BJ46      [get_ports "ddr_ck_c"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L16N_T2U_N7_QBC_AD3N_71
-set_property PACKAGE_PIN BH46      [get_ports "ddr_ck_t"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_71
-set_property PACKAGE_PIN BF41      [get_ports "ddr_bg[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L15P_T2L_N4_AD11P_71
-set_property PACKAGE_PIN BE41      [get_ports "ddr_bg[1]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L15P_T2L_N4_AD11P_71
-set_property PACKAGE_PIN BH41      [get_ports "ddr_act_n"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L14N_T2L_N3_GC_71
-set_property PACKAGE_PIN BK46      [get_ports "ddr_cs_n"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L14P_T2L_N2_GC_71
-set_property PACKAGE_PIN BG44      [get_ports "ddr_odt"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L7N_T1L_N1_QBC_AD13N_71
-set_property PACKAGE_PIN BH42      [get_ports "ddr_cke"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_T1U_N12_71
 
-set_property PACKAGE_PIN BH45      [get_ports "ddr_ba[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L17P_T2U_N8_AD10P_71
-set_property PACKAGE_PIN BM47      [get_ports "ddr_ba[1]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L15N_T2L_N5_AD11N_71
 
-set_property PACKAGE_PIN BF46      [get_ports "ddr_addr[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_T3U_N12_71
-set_property PACKAGE_PIN BG43      [get_ports "ddr_addr[1]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L24N_T3U_N11_71
-set_property PACKAGE_PIN BK45      [get_ports "ddr_addr[2]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L24P_T3U_N10_71
-set_property PACKAGE_PIN BF42      [get_ports "ddr_addr[3]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L23N_T3U_N9_71
-set_property PACKAGE_PIN BL45      [get_ports "ddr_addr[4]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L23P_T3U_N8_71
-set_property PACKAGE_PIN BF43      [get_ports "ddr_addr[5]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L22N_T3U_N7_DBC_AD0N_71
-set_property PACKAGE_PIN BG42      [get_ports "ddr_addr[6]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L22P_T3U_N6_DBC_AD0P_71
-set_property PACKAGE_PIN BL43      [get_ports "ddr_addr[7]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L21N_T3L_N5_AD8N_71
-set_property PACKAGE_PIN BK43      [get_ports "ddr_addr[8]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L21P_T3L_N4_AD8P_71
-set_property PACKAGE_PIN BM42      [get_ports "ddr_addr[9]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L20N_T3L_N3_AD1N_71
-set_property PACKAGE_PIN BG45      [get_ports "ddr_addr[10]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L20P_T3L_N2_AD1P_71
-set_property PACKAGE_PIN BD41      [get_ports "ddr_addr[11]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L19N_T3L_N1_DBC_AD9N_71
-set_property PACKAGE_PIN BL42      [get_ports "ddr_addr[12]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L19P_T3L_N0_DBC_AD9P_71
-set_property PACKAGE_PIN BE44      [get_ports "ddr_addr[13]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_T2U_N12_71
-set_property PACKAGE_PIN BE43      [get_ports "ddr_addr[14]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L18N_T2U_N11_AD2N_71
-set_property PACKAGE_PIN BL46      [get_ports "ddr_addr[15]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L18P_T2U_N10_AD2P_71
-set_property PACKAGE_PIN BH44      [get_ports "ddr_addr[16]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L17N_T2U_N9_AD10N_71
 
-set_property PACKAGE_PIN BJ53      [get_ports "ddr_dqs_c[17]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16N_T2U_N7_QBC_AD3N_72
-set_property PACKAGE_PIN BJ54      [get_ports "ddr_dqs_c[16]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L10N_T1U_N7_QBC_AD4N_72
-set_property PACKAGE_PIN BP42      [get_ports "ddr_dqs_c[15]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_72
-set_property PACKAGE_PIN BP46      [get_ports "ddr_dqs_c[14]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L22N_T3U_N7_DBC_AD0N_73
-set_property PACKAGE_PIN BK49      [get_ports "ddr_dqs_c[13]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L16N_T2U_N7_QBC_AD3N_73
-set_property PACKAGE_PIN BJ47      [get_ports "ddr_dqs_c[12]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L10N_T1U_N7_QBC_AD4N_73
-set_property PACKAGE_PIN BG49      [get_ports "ddr_dqs_c[11]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_73
-set_property PACKAGE_PIN BF48      [get_ports "ddr_dqs_c[10]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_71
-set_property PACKAGE_PIN BP49      [get_ports "ddr_dqs_c[9]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L10N_T1U_N7_QBC_AD4N_71
-set_property PACKAGE_PIN BM50      [get_ports "ddr_dqs_c[8]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L22N_T3U_N7_DBC_AD0N_72
-set_property PACKAGE_PIN BJ32      [get_ports "ddr_dqs_c[7]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16N_T2U_N7_QBC_AD3N_72
-set_property PACKAGE_PIN BK35      [get_ports "ddr_dqs_c[6]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L10N_T1U_N7_QBC_AD4N_72
-set_property PACKAGE_PIN BN35      [get_ports "ddr_dqs_c[5]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_72
-set_property PACKAGE_PIN BM35      [get_ports "ddr_dqs_c[4]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L22N_T3U_N7_DBC_AD0N_73
-set_property PACKAGE_PIN BG30      [get_ports "ddr_dqs_c[3]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L16N_T2U_N7_QBC_AD3N_73
-set_property PACKAGE_PIN BK30      [get_ports "ddr_dqs_c[2]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L10N_T1U_N7_QBC_AD4N_73
-set_property PACKAGE_PIN BM29      [get_ports "ddr_dqs_c[1]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_73
-set_property PACKAGE_PIN BN30      [get_ports "ddr_dqs_c[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L4N_T0U_N7_DBC_AD7N_71
 
-set_property PACKAGE_PIN BJ52      [get_ports "ddr_dqs_t[17]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_72
-set_property PACKAGE_PIN BH54      [get_ports "ddr_dqs_t[16]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_72
-set_property PACKAGE_PIN BN42      [get_ports "ddr_dqs_t[15]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_72
-set_property PACKAGE_PIN BN46      [get_ports "ddr_dqs_t[14]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L10P_T1U_N6_QBC_AD4P_72
-set_property PACKAGE_PIN BK48      [get_ports "ddr_dqs_t[13]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_72
-set_property PACKAGE_PIN BH47      [get_ports "ddr_dqs_t[12]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L22P_T3U_N6_DBC_AD0P_73
-set_property PACKAGE_PIN BG48      [get_ports "ddr_dqs_t[11]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_73
-set_property PACKAGE_PIN BF47      [get_ports "ddr_dqs_t[10]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L10P_T1U_N6_QBC_AD4P_73
-set_property PACKAGE_PIN BP48      [get_ports "ddr_dqs_t[9]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_73
-set_property PACKAGE_PIN BM49      [get_ports "ddr_dqs_t[8]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_71
-set_property PACKAGE_PIN BH32      [get_ports "ddr_dqs_t[7]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_72
-set_property PACKAGE_PIN BK34      [get_ports "ddr_dqs_t[6]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L10P_T1U_N6_QBC_AD4P_72
-set_property PACKAGE_PIN BM34      [get_ports "ddr_dqs_t[5]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_72
-set_property PACKAGE_PIN BL35      [get_ports "ddr_dqs_t[4]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L22P_T3U_N6_DBC_AD0P_73
-set_property PACKAGE_PIN BG29      [get_ports "ddr_dqs_t[3]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L16P_T2U_N6_QBC_AD3P_73
-set_property PACKAGE_PIN BJ29      [get_ports "ddr_dqs_t[2]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L10P_T1U_N6_QBC_AD4P_73
-set_property PACKAGE_PIN BM28      [get_ports "ddr_dqs_t[1]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_73
-set_property PACKAGE_PIN BN29      [get_ports "ddr_dqs_t[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L4P_T0U_N6_DBC_AD7P_71
 
-set_property PACKAGE_PIN BK53      [get_ports "ddr_dq[71]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L24N_T3U_N11_72
-set_property PACKAGE_PIN BK54      [get_ports "ddr_dq[70]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L24P_T3U_N10_72
-set_property PACKAGE_PIN BG52      [get_ports "ddr_dq[69]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L23N_T3U_N9_72
-set_property PACKAGE_PIN BH52      [get_ports "ddr_dq[68]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L23P_T3U_N8_72
-set_property PACKAGE_PIN BE54      [get_ports "ddr_dq[67]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L21N_T3L_N5_AD8N_72
-set_property PACKAGE_PIN BE53      [get_ports "ddr_dq[66]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L21P_T3L_N4_AD8P_72
-set_property PACKAGE_PIN BG53      [get_ports "ddr_dq[65]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L20N_T3L_N3_AD1N_72
-set_property PACKAGE_PIN BG54      [get_ports "ddr_dq[64]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L20P_T3L_N2_AD1P_72
-set_property PACKAGE_PIN BP47      [get_ports "ddr_dq[63]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L18N_T2U_N11_AD2N_72
-set_property PACKAGE_PIN BN47      [get_ports "ddr_dq[62]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L18P_T2U_N10_AD2P_72
-set_property PACKAGE_PIN BP44      [get_ports "ddr_dq[61]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L17N_T2U_N9_AD10N_72
-set_property PACKAGE_PIN BP43      [get_ports "ddr_dq[60]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L17P_T2U_N8_AD10P_72
-set_property PACKAGE_PIN BM45      [get_ports "ddr_dq[59]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L15N_T2L_N5_AD11N_72
-set_property PACKAGE_PIN BM44      [get_ports "ddr_dq[58]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L15P_T2L_N4_AD11P_72
-set_property PACKAGE_PIN BN45      [get_ports "ddr_dq[57]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L14N_T2L_N3_GC_72
-set_property PACKAGE_PIN BN44      [get_ports "ddr_dq[56]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L14P_T2L_N2_GC_72
-set_property PACKAGE_PIN BJ48      [get_ports "ddr_dq[55]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L12N_T1U_N11_GC_72
-set_property PACKAGE_PIN BJ49      [get_ports "ddr_dq[54]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L12P_T1U_N10_GC_72
-set_property PACKAGE_PIN BK51      [get_ports "ddr_dq[53]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L11N_T1U_N9_GC_72
-set_property PACKAGE_PIN BK50      [get_ports "ddr_dq[52]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L11P_T1U_N8_GC_72
-set_property PACKAGE_PIN BH49      [get_ports "ddr_dq[51]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L9N_T1L_N5_AD12N_72
-set_property PACKAGE_PIN BH51      [get_ports "ddr_dq[50]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L9P_T1L_N4_AD12P_72
-set_property PACKAGE_PIN BJ51      [get_ports "ddr_dq[49]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L8N_T1L_N3_AD5N_72
-set_property PACKAGE_PIN BH50      [get_ports "ddr_dq[48]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L8P_T1L_N2_AD5P_72
-set_property PACKAGE_PIN BF50      [get_ports "ddr_dq[47]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L6N_T0U_N11_AD6N_72
-set_property PACKAGE_PIN BG50      [get_ports "ddr_dq[46]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L6P_T0U_N10_AD6P_72
-set_property PACKAGE_PIN BF51      [get_ports "ddr_dq[45]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L5N_T0U_N9_AD14N_72
-set_property PACKAGE_PIN BF52      [get_ports "ddr_dq[44]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L5P_T0U_N8_AD14P_72
-set_property PACKAGE_PIN BD51      [get_ports "ddr_dq[43]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L3N_T0L_N5_AD15N_72
-set_property PACKAGE_PIN BE51      [get_ports "ddr_dq[42]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L3P_T0L_N4_AD15P_72
-set_property PACKAGE_PIN BE49      [get_ports "ddr_dq[41]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L2N_T0L_N3_72
-set_property PACKAGE_PIN BE50      [get_ports "ddr_dq[40]"] ;# Bank  72 VCCO - VCC1V2_FPGA - IO_L2P_T0L_N2_72
-set_property PACKAGE_PIN BM48      [get_ports "ddr_dq[39]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L24N_T3U_N11_73
-set_property PACKAGE_PIN BN49      [get_ports "ddr_dq[38]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L24P_T3U_N10_73
-set_property PACKAGE_PIN BN51      [get_ports "ddr_dq[37]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L23N_T3U_N9_73
-set_property PACKAGE_PIN BN50      [get_ports "ddr_dq[36]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L23P_T3U_N8_73
-set_property PACKAGE_PIN BL51      [get_ports "ddr_dq[35]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L21N_T3L_N5_AD8N_73
-set_property PACKAGE_PIN BL52      [get_ports "ddr_dq[34]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L21P_T3L_N4_AD8P_73
-set_property PACKAGE_PIN BL53      [get_ports "ddr_dq[33]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L20N_T3L_N3_AD1N_73
-set_property PACKAGE_PIN BM52      [get_ports "ddr_dq[32]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L20P_T3L_N2_AD1P_73
-set_property PACKAGE_PIN BG35      [get_ports "ddr_dq[31]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L18N_T2U_N11_AD2N_73
-set_property PACKAGE_PIN BG34      [get_ports "ddr_dq[30]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L18P_T2U_N10_AD2P_73
-set_property PACKAGE_PIN BJ34      [get_ports "ddr_dq[29]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L17N_T2U_N9_AD10N_73
-set_property PACKAGE_PIN BJ33      [get_ports "ddr_dq[28]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L17P_T2U_N8_AD10P_73
-set_property PACKAGE_PIN BF36      [get_ports "ddr_dq[27]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L15N_T2L_N5_AD11N_73
-set_property PACKAGE_PIN BF35      [get_ports "ddr_dq[26]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L15P_T2L_N4_AD11P_73
-set_property PACKAGE_PIN BH35      [get_ports "ddr_dq[25]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L14N_T2L_N3_GC_73
-set_property PACKAGE_PIN BH34      [get_ports "ddr_dq[24]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L14P_T2L_N2_GC_73
-set_property PACKAGE_PIN BP34      [get_ports "ddr_dq[23]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L12N_T1U_N11_GC_73
-set_property PACKAGE_PIN BN34      [get_ports "ddr_dq[22]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L12P_T1U_N10_GC_73
-set_property PACKAGE_PIN BM33      [get_ports "ddr_dq[21]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L11N_T1U_N9_GC_73
-set_property PACKAGE_PIN BL32      [get_ports "ddr_dq[20]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L11P_T1U_N8_GC_73
-set_property PACKAGE_PIN BL33      [get_ports "ddr_dq[19]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L9N_T1L_N5_AD12N_73
-set_property PACKAGE_PIN BK33      [get_ports "ddr_dq[18]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L9P_T1L_N4_AD12P_73
-set_property PACKAGE_PIN BL31      [get_ports "ddr_dq[17]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L8N_T1L_N3_AD5N_73
-set_property PACKAGE_PIN BK31      [get_ports "ddr_dq[16]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L8P_T1L_N2_AD5P_73
-set_property PACKAGE_PIN BG32      [get_ports "ddr_dq[15]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L6N_T0U_N11_AD6N_73
-set_property PACKAGE_PIN BF31      [get_ports "ddr_dq[14]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L6P_T0U_N10_AD6P_73
-set_property PACKAGE_PIN BH30      [get_ports "ddr_dq[13]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L5N_T0U_N9_AD14N_73
-set_property PACKAGE_PIN BH29      [get_ports "ddr_dq[12]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L5P_T0U_N8_AD14P_73
-set_property PACKAGE_PIN BF33      [get_ports "ddr_dq[11]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L3N_T0L_N5_AD15N_73
-set_property PACKAGE_PIN BF32      [get_ports "ddr_dq[10]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L3P_T0L_N4_AD15P_73
-set_property PACKAGE_PIN BH31      [get_ports "ddr_dq[9]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L2N_T0L_N3_73
-set_property PACKAGE_PIN BJ31      [get_ports "ddr_dq[8]"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L2P_T0L_N2_73
-set_property PACKAGE_PIN BN31      [get_ports "ddr_dq[7]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L6N_T0U_N11_AD6N_71
-set_property PACKAGE_PIN BP31      [get_ports "ddr_dq[6]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L6P_T0U_N10_AD6P_71
-set_property PACKAGE_PIN BP28      [get_ports "ddr_dq[5]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L5N_T0U_N9_AD14N_71
-set_property PACKAGE_PIN BP29      [get_ports "ddr_dq[4]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L5P_T0U_N8_AD14P_71
-set_property PACKAGE_PIN BM30      [get_ports "ddr_dq[3]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L3N_T0L_N5_AD15N_71
-set_property PACKAGE_PIN BL30      [get_ports "ddr_dq[2]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L3P_T0L_N4_AD15P_71
-set_property PACKAGE_PIN BP32      [get_ports "ddr_dq[1]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L2N_T0L_N3_71
-set_property PACKAGE_PIN BN32      [get_ports "ddr_dq[0]"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L2P_T0L_N2_71
 
 # unused
 #set_property PACKAGE_PIN R17      [get_ports "ddr_addr[LERT_B"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L1N_T0L_N1_DBC_73
@@ -403,19 +262,46 @@ set_property PACKAGE_PIN BN32      [get_ports "ddr_dq[0]"] ;# Bank  71 VCCO - VC
 #set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {sd_fast_clk}] -group [get_clocks -include_generated_clocks {sd_slow_clk}]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
-set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}] 
-# Bitstream Configuration                                                 
+set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}]
+# Bitstream Configuration
 # ------------------------------------------------------------------------
-set_property CONFIG_VOLTAGE 1.8 [current_design]                          
-set_property BITSTREAM.CONFIG.CONFIGFALLBACK Enable [current_design]      
-set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]             
-set_property CONFIG_MODE SPIx4 [current_design]                           
-set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]             
-set_property BITSTREAM.CONFIG.CONFIGRATE 85.0 [current_design]            
-set_property BITSTREAM.CONFIG.EXTMASTERCCLK_EN disable [current_design]   
-set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]          
-set_property BITSTREAM.CONFIG.UNUSEDPIN Pullup [current_design]           
-set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR Yes [current_design]         
+set_property CONFIG_VOLTAGE 1.8 [current_design]
+set_property BITSTREAM.CONFIG.CONFIGFALLBACK Enable [current_design]
+set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
+set_property CONFIG_MODE SPIx4 [current_design]
+set_property BITSTREAM.CONFIG.SPI_BUSWIDTH 4 [current_design]
+set_property BITSTREAM.CONFIG.CONFIGRATE 85.0 [current_design]
+set_property BITSTREAM.CONFIG.EXTMASTERCCLK_EN disable [current_design]
+set_property BITSTREAM.CONFIG.SPI_FALL_EDGE YES [current_design]
+set_property BITSTREAM.CONFIG.UNUSEDPIN Pullup [current_design]
+set_property BITSTREAM.CONFIG.SPI_32BIT_ADDR Yes [current_design]
 # ------------------------------------------------------------------------
-set_property PACKAGE_PIN D32              [get_ports hbm_cattrip]   		
-set_property IOSTANDARD  LVCMOS18         [get_ports hbm_cattrip]   
+set_property PACKAGE_PIN D32 [get_ports hbm_cattrip]
+set_property IOSTANDARD LVCMOS18 [get_ports hbm_cattrip]
+
+create_debug_core u_ila_0 ila
+set_property ALL_PROBE_SAME_MU true [get_debug_cores u_ila_0]
+set_property ALL_PROBE_SAME_MU_CNT 1 [get_debug_cores u_ila_0]
+set_property C_ADV_TRIGGER false [get_debug_cores u_ila_0]
+set_property C_DATA_DEPTH 1024 [get_debug_cores u_ila_0]
+set_property C_EN_STRG_QUAL false [get_debug_cores u_ila_0]
+set_property C_INPUT_PIPE_STAGES 0 [get_debug_cores u_ila_0]
+set_property C_TRIGIN_EN false [get_debug_cores u_ila_0]
+set_property C_TRIGOUT_EN false [get_debug_cores u_ila_0]
+set_property port_width 1 [get_debug_ports u_ila_0/clk]
+connect_debug_port u_ila_0/clk [get_nets [list chipset/clk_mmcm/inst/chipset_clk]]
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe0]
+set_property port_width 1 [get_debug_ports u_ila_0/probe0]
+connect_debug_port u_ila_0/probe0 [get_nets [list chipset/uart_boot_en]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe1]
+set_property port_width 1 [get_debug_ports u_ila_0/probe1]
+connect_debug_port u_ila_0/probe1 [get_nets [list chipset/uart_bootrom_linux_en]]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe2]
+set_property port_width 1 [get_debug_ports u_ila_0/probe2]
+connect_debug_port u_ila_0/probe2 [get_nets [list chipset/uart_timeout_en]]
+set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
+set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
+set_property C_USER_SCAN_CHAIN 1 [get_debug_cores dbg_hub]
+connect_debug_port dbg_hub/clk [get_nets clk]
