@@ -940,7 +940,103 @@ axi4_zeroer axi4_zeroer(
 `endif // PITONSYS_MEM_ZEROER
 
 `ifdef PITONSYS_DDR4
-
+`ifdef PITONSYS_PCIE
+meep_shell meep_shell_i
+       (.C0_DDR4_S_AXI_CTRL_0_araddr(C0_DDR4_S_AXI_CTRL_0_araddr),
+        .C0_DDR4_S_AXI_CTRL_0_arready(C0_DDR4_S_AXI_CTRL_0_arready),
+        .C0_DDR4_S_AXI_CTRL_0_arvalid(C0_DDR4_S_AXI_CTRL_0_arvalid),
+        .C0_DDR4_S_AXI_CTRL_0_awaddr(C0_DDR4_S_AXI_CTRL_0_awaddr),
+        .C0_DDR4_S_AXI_CTRL_0_awready(C0_DDR4_S_AXI_CTRL_0_awready),
+        .C0_DDR4_S_AXI_CTRL_0_awvalid(C0_DDR4_S_AXI_CTRL_0_awvalid),
+        .C0_DDR4_S_AXI_CTRL_0_bready(C0_DDR4_S_AXI_CTRL_0_bready),
+        .C0_DDR4_S_AXI_CTRL_0_bresp(C0_DDR4_S_AXI_CTRL_0_bresp),
+        .C0_DDR4_S_AXI_CTRL_0_bvalid(C0_DDR4_S_AXI_CTRL_0_bvalid),
+        .C0_DDR4_S_AXI_CTRL_0_rdata(C0_DDR4_S_AXI_CTRL_0_rdata),
+        .C0_DDR4_S_AXI_CTRL_0_rready(C0_DDR4_S_AXI_CTRL_0_rready),
+        .C0_DDR4_S_AXI_CTRL_0_rresp(C0_DDR4_S_AXI_CTRL_0_rresp),
+        .C0_DDR4_S_AXI_CTRL_0_rvalid(C0_DDR4_S_AXI_CTRL_0_rvalid),
+        .C0_DDR4_S_AXI_CTRL_0_wdata(C0_DDR4_S_AXI_CTRL_0_wdata),
+        .C0_DDR4_S_AXI_CTRL_0_wready(C0_DDR4_S_AXI_CTRL_0_wready),
+        .C0_DDR4_S_AXI_CTRL_0_wvalid(C0_DDR4_S_AXI_CTRL_0_wvalid),
+        
+        .axi4_mm_araddr(axi4_mm_araddr),
+        .axi4_mm_arburst(axi4_mm_arburst),
+        .axi4_mm_arcache(axi4_mm_arcache),
+        .axi4_mm_arid(axi4_mm_arid),
+        .axi4_mm_arlen(axi4_mm_arlen),
+        .axi4_mm_arlock(axi4_mm_arlock),
+        .axi4_mm_arprot(axi4_mm_arprot),
+        .axi4_mm_arqos(axi4_mm_arqos),
+        .axi4_mm_arready(axi4_mm_arready),
+        .axi4_mm_arsize(axi4_mm_arsize),
+        .axi4_mm_aruser(axi4_mm_aruser),
+        .axi4_mm_arvalid(axi4_mm_arvalid),
+        
+        .axi4_mm_awaddr(axi4_mm_awaddr),
+        .axi4_mm_awburst(axi4_mm_awburst),
+        .axi4_mm_awcache(axi4_mm_awcache),
+        .axi4_mm_awid(axi4_mm_awid),
+        .axi4_mm_awlen(axi4_mm_awlen),
+        .axi4_mm_awlock(axi4_mm_awlock),
+        .axi4_mm_awprot(axi4_mm_awprot),
+        .axi4_mm_awqos(axi4_mm_awqos),
+        .axi4_mm_awready(axi4_mm_awready),
+        .axi4_mm_awsize(axi4_mm_awsize),
+        .axi4_mm_awuser(axi4_mm_awuser),
+        .axi4_mm_awvalid(axi4_mm_awvalid),
+        
+        .axi4_mm_bid(axi4_mm_bid),
+        .axi4_mm_bready(axi4_mm_bready),
+        .axi4_mm_bresp(axi4_mm_bresp),
+        .axi4_mm_bvalid(axi4_mm_bvalid),
+        
+        .axi4_mm_rdata(axi4_mm_rdata),
+        .axi4_mm_rid(axi4_mm_rid),
+        .axi4_mm_rlast(axi4_mm_rlast),
+        .axi4_mm_rready(axi4_mm_rready),
+        .axi4_mm_rresp(axi4_mm_rresp),
+        .axi4_mm_rvalid(axi4_mm_rvalid),
+        
+        .axi4_mm_wdata(axi4_mm_wdata),
+        .axi4_mm_wlast(axi4_mm_wlast),
+        .axi4_mm_wready(axi4_mm_wready),
+        .axi4_mm_wstrb(axi4_mm_wstrb),
+        .axi4_mm_wuser(axi4_mm_wuser),
+        .axi4_mm_wvalid(axi4_mm_wvalid),
+        
+        .c0_init_calib_complete_0(c0_init_calib_complete_0),
+        
+        .ddr4_sdram_c0_act_n(ddr4_sdram_c0_act_n),
+        .ddr4_sdram_c0_adr(ddr4_sdram_c0_adr),
+        .ddr4_sdram_c0_ba(ddr4_sdram_c0_ba),
+        .ddr4_sdram_c0_bg(ddr4_sdram_c0_bg),
+        .ddr4_sdram_c0_ck_c(ddr4_sdram_c0_ck_c),
+        .ddr4_sdram_c0_ck_t(ddr4_sdram_c0_ck_t),
+        .ddr4_sdram_c0_cke(ddr4_sdram_c0_cke),
+        .ddr4_sdram_c0_cs_n(ddr4_sdram_c0_cs_n),
+        .ddr4_sdram_c0_dq(ddr4_sdram_c0_dq),
+        .ddr4_sdram_c0_dqs_c(ddr4_sdram_c0_dqs_c),
+        .ddr4_sdram_c0_dqs_t(ddr4_sdram_c0_dqs_t),
+        .ddr4_sdram_c0_odt(ddr4_sdram_c0_odt),
+        .ddr4_sdram_c0_par(ddr4_sdram_c0_par),
+        .ddr4_sdram_c0_reset_n(ddr4_sdram_c0_reset_n),
+        
+        .ddr_clk_clk_n(ddr_clk_clk_n),
+        .ddr_clk_clk_p(ddr_clk_clk_p),
+        .ddr_rst(ddr_rst),
+        
+        .pci_express_x16_rxn(pci_express_x16_rxn),
+        .pci_express_x16_rxp(pci_express_x16_rxp),
+        .pci_express_x16_txn(pci_express_x16_txn),
+        .pci_express_x16_txp(pci_express_x16_txp),
+        
+        .pcie_perstn(pcie_perstn),
+        .pcie_refclk_clk_n(pcie_refclk_clk_n),
+        .pcie_refclk_clk_p(pcie_refclk_clk_p),
+        .ui_clk(ui_clk)
+        );
+`else
+ 
 ddr4_axi4 ddr_axi4 (
   .sys_rst                   ( ~sys_rst_n                ),
   .c0_sys_clk_p              ( sys_clk_p                 ),
@@ -1032,6 +1128,7 @@ ddr4_axi4 ddr_axi4 (
   .c0_ddr4_s_axi_rid(m_axi_rid),                    // output wire [15 : 0] c0_ddr4_s_axi_rid
   .c0_ddr4_s_axi_rdata(m_axi_rdata)                 // output wire [511 : 0] c0_ddr4_s_axi_rdata
 );
+ `endif
 
 `else // PITONSYS_DDR4
 
