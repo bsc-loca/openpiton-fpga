@@ -224,6 +224,15 @@ module chipset(
     // Not all signals will be used for all FPGA boards (see constraints)
 `ifndef F1_BOARD
 `ifdef PITONSYS_DDR4
+ `if PITONSYS_PCIE
+    input  [15:0] pci_express_x16_rxn,
+    input  [15:0] pci_express_x16_rxp,
+    output [15:0] pci_express_x16_txn,
+    output [15:0] pci_express_x16_txp,        
+    output pcie_perstn,
+    input  pcie_refclk_n,
+    input  pcie_refclk_p,
+ `endif
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
 `else // PITONSYS_DDR4           
