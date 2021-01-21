@@ -150,19 +150,21 @@ reg [3:0] outstanding;
 wire [`AXI4_ADDR_WIDTH-1:0] zeroer_addr;
 wire zeroer_wlast;
 
-assign zeroer_req_val = init_calib_complete_in 
+assign zeroer_req_val = init_calib_complete_in;
+
+assign zeroer_req_rdy = init_calib_complete_in 
                       & (req_sent < REQUESTS_NEEDED) 
                       & (outstanding != MAX_OUTSTANDING-1) 
                       & m_axi_awready
-                      & m_axi_wready
+                     // & m_axi_wready
                       & rst_n;
 
 assign zeroer_resp_rdy = init_calib_complete_in 
                        & (resp_got < REQUESTS_NEEDED) 
                        & rst_n;
 
-assign req_go = zeroer_req_val;
-assign resp_go = zeroer_resp_rdy & m_axi_bvalid;
+assign req_go = zeroer_req_val & zeroer_req_rdy;
+assign resp_go = zeroer_resp_rdy & m_axi_wready;//m_axi_bvalid;
 
 
 always @(posedge clk) begin
@@ -185,7 +187,6 @@ assign init_calib_complete_out = (req_sent == REQUESTS_NEEDED) &
                                  (resp_got == REQUESTS_NEEDED);
 
 assign zeroer_addr = req_sent * `AXI4_STRB_WIDTH;
-assign zeroer_wlast = zeroer_req_val;
 
 always @(*) begin
     if (~init_calib_complete_out) begin
@@ -205,7 +206,7 @@ always @(*) begin
         m_axi_wid = `AXI4_ID_WIDTH'b0;
         m_axi_wdata = {`AXI4_DATA_WIDTH{1'b0}};
         m_axi_wstrb = {`AXI4_STRB_WIDTH{1'b1}};
-        m_axi_wlast = zeroer_wlast;
+        m_axi_wlast = 1'b1;
         m_axi_wuser = `AXI4_USER_WIDTH'b0;
         m_axi_wvalid = zeroer_req_val;
 
