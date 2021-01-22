@@ -140,8 +140,10 @@ localparam reg [`AXI4_ADDR_WIDTH-1:0] MAX_MEM_ADDR      = (BOARD_MEM_SIZE_MB * 2
 localparam REQUESTS_NEEDED  = MAX_MEM_ADDR / `AXI4_STRB_WIDTH; // basically max addr divided by size of one request
 localparam MAX_OUTSTANDING = 16;
 
-wire zeroer_req_val;
-wire zeroer_resp_rdy;
+wire zeroer_awval;
+wire zeroer_awrdy;
+wire zeroer_wval;
+wire zeroer_wrdy;
 wire req_go;
 wire resp_go;
 reg [`AXI4_ADDR_WIDTH-1:0] req_sent;
@@ -150,21 +152,18 @@ reg [3:0] outstanding;
 wire [`AXI4_ADDR_WIDTH-1:0] zeroer_addr;
 wire zeroer_wlast;
 
-assign zeroer_req_val = init_calib_complete_in;
+assign zeroer_awval = init_calib_complete_in 
+					  & ~init_calib_complete_out
+					  & (outstanding != MAX_OUTSTANDING-1)
+					  & rst_n;
 
-assign zeroer_req_rdy = init_calib_complete_in 
-                      & (req_sent < REQUESTS_NEEDED) 
-                      & (outstanding != MAX_OUTSTANDING-1) 
-                      & m_axi_awready
-                     // & m_axi_wready
-                      & rst_n;
+assign zeroer_awrdy    = m_axi_awready;
+assign zeroer_wrdy     = m_axi_wready;
 
-assign zeroer_resp_rdy = init_calib_complete_in 
-                       & (resp_got < REQUESTS_NEEDED) 
-                       & rst_n;
+assign zeroer_wval = 1'b1;
 
-assign req_go = zeroer_req_val & zeroer_req_rdy;
-assign resp_go = zeroer_resp_rdy & m_axi_wready;//m_axi_bvalid;
+assign req_go = zeroer_awval & zeroer_awrdy;
+assign resp_go = zeroer_wval & zeroer_wrdy;
 
 
 always @(posedge clk) begin
@@ -201,14 +200,14 @@ always @(*) begin
         m_axi_awqos = `AXI4_QOS_WIDTH'b0;
         m_axi_awregion = `AXI4_REGION_WIDTH'b0;
         m_axi_awuser = `AXI4_USER_WIDTH'b0;
-        m_axi_awvalid = zeroer_req_val;
+        m_axi_awvalid = zeroer_awval;
 
         m_axi_wid = `AXI4_ID_WIDTH'b0;
         m_axi_wdata = {`AXI4_DATA_WIDTH{1'b0}};
         m_axi_wstrb = {`AXI4_STRB_WIDTH{1'b1}};
         m_axi_wlast = 1'b1;
         m_axi_wuser = `AXI4_USER_WIDTH'b0;
-        m_axi_wvalid = zeroer_req_val;
+        m_axi_wvalid = zeroer_wval;
 
         m_axi_arid = `AXI4_ID_WIDTH'b0;
         m_axi_araddr = `AXI4_ADDR_WIDTH'b0;
@@ -224,7 +223,7 @@ always @(*) begin
         m_axi_arvalid = 1'b0;
 
         m_axi_rready = 1'b0;
-        m_axi_bready = zeroer_resp_rdy;
+        m_axi_bready = 1'b1;
 
         s_axi_awready = 1'b0;
         s_axi_wready = 1'b0;
