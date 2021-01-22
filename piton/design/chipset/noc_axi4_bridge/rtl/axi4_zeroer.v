@@ -173,7 +173,7 @@ always @(posedge clk) begin
         resp_got <= 0;
         outstanding <= 0;
     end 
-    else begin
+    else if (~init_calib_complete_out) begin
         req_sent <= req_sent + req_go;
         resp_got <= resp_got + resp_go;
         outstanding <= req_go & resp_go ? outstanding 
