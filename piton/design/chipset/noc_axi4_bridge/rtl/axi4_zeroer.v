@@ -154,6 +154,7 @@ wire zeroer_wlast;
 
 assign zeroer_awval = init_calib_complete_in 
 					  & ~init_calib_complete_out
+					  & (req_sent < REQUESTS_NEEDED) 
 					  & (outstanding != MAX_OUTSTANDING-1)
 					  & rst_n;
 
