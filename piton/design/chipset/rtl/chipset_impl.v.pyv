@@ -130,7 +130,7 @@ module chipset_impl(
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
 `ifdef PITONSYS_DDR4
- `if PITONSYS_PCIE
+ `ifdef PITONSYS_PCIE
     ,
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
@@ -810,15 +810,15 @@ credit_to_valrdy noc3_xbar_to_%s(
             .sys_clk_n(mc_clk_n),
             .ddr_act_n(ddr_act_n),
             .ddr_bg(ddr_bg),
-			`if PITONSYS_PCIE
-			 .pci_express_x16_rxn(pci_express_x16_rxn),
-			 .pci_express_x16_rxp(pci_express_x16_rxp),
-			 .pci_express_x16_txn(pci_express_x16_txn),
-			 .pci_express_x16_txp(pci_express_x16_txp),        
-			 .pcie_perstn(pcie_perstn),
-			 .pcie_refclk_n(pcie_refclk_n),
-			 .pcie_refclk_p(pcie_refclk_p),
-			`endif
+         `ifdef PITONSYS_PCIE
+	  .pci_express_x16_rxn(pci_express_x16_rxn),
+	  .pci_express_x16_rxp(pci_express_x16_rxp),
+	  .pci_express_x16_txn(pci_express_x16_txn),
+	  .pci_express_x16_txp(pci_express_x16_txp),        
+	  .pcie_perstn(pcie_perstn),
+	  .pcie_refclk_n(pcie_refclk_n),
+	  .pcie_refclk_p(pcie_refclk_p),
+	 `endif
         `else // PITONSYS_DDR4
             .sys_clk(mc_clk),
             .ddr_cas_n(ddr_cas_n),

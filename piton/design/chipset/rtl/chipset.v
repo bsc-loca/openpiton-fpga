@@ -224,15 +224,6 @@ module chipset(
     // Not all signals will be used for all FPGA boards (see constraints)
 `ifndef F1_BOARD
 `ifdef PITONSYS_DDR4
- `if PITONSYS_PCIE
-    input  [15:0] pci_express_x16_rxn,
-    input  [15:0] pci_express_x16_rxp,
-    output [15:0] pci_express_x16_txn,
-    output [15:0] pci_express_x16_txp,        
-    output pcie_perstn,
-    input  pcie_refclk_n,
-    input  pcie_refclk_p,
- `endif
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
 `else // PITONSYS_DDR4           
@@ -253,6 +244,15 @@ module chipset(
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef PITONSYS_DDR4
+       `ifdef PITONSYS_PCIE
+        input  [15:0] pci_express_x16_rxn,
+        input  [15:0] pci_express_x16_rxp,
+        output [15:0] pci_express_x16_txn,
+        output [15:0] pci_express_x16_txp,        
+        input  pcie_perstn,
+        input  pcie_refclk_n,
+        input  pcie_refclk_p,
+       `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
@@ -1303,6 +1303,15 @@ chipset_impl_noc_power_test  chipset_impl (
             .init_calib_complete(init_calib_complete),
             `ifndef F1_BOARD
                 `ifdef PITONSYS_DDR4
+                	`ifdef PITONSYS_PCIE
+                     .pci_express_x16_rxn(pci_express_x16_rxn),
+                     .pci_express_x16_rxp(pci_express_x16_rxp),
+                     .pci_express_x16_txn(pci_express_x16_txn),
+                     .pci_express_x16_txp(pci_express_x16_txp),        
+                     .pcie_perstn(pcie_perstn),
+                     .pcie_refclk_n(pcie_refclk_n),
+                     .pcie_refclk_p(pcie_refclk_p),
+                    `endif
                     .ddr_act_n(ddr_act_n),                    
                     .ddr_bg(ddr_bg), 
                 `else // PITONSYS_DDR4

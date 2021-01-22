@@ -119,12 +119,12 @@ module system(
 
 // 250MHz(VCU118) or 100 MHz(XUPP3R) diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
- `if PITONSYS_PCIE
+ `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
     output [15:0] pci_express_x16_txn,
     output [15:0] pci_express_x16_txp,        
-    output pcie_perstn,
+    input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
   `endif
@@ -530,7 +530,7 @@ wire [2:0]          passthru_chipset_credit_back_p;
 wire [2:0]          passthru_chipset_credit_back_n;
 
 `ifdef PITONSYS_UART_BOOT
-wire                test_start;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire                test_start;
 `endif
 `ifdef PITONSYS_UART_RESET
 wire                uart_rst_out_n;
@@ -976,7 +976,7 @@ chipset chipset(
 
 // 250MHz diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
-	`if PITONSYS_PCIE
+	`ifdef PITONSYS_PCIE
 	 .pci_express_x16_rxn(pci_express_x16_rxn),
 	 .pci_express_x16_rxp(pci_express_x16_rxp),
 	 .pci_express_x16_txn(pci_express_x16_txn),

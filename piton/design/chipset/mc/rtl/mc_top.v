@@ -71,12 +71,12 @@ module mc_top (
     output [`DDR3_CS_WIDTH-1:0]     ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef PITONSYS_DDR4
-  `if PITONSYS_PCIE
+  `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
     output [15:0] pci_express_x16_txn,
     output [15:0] pci_express_x16_txp,        
-    output pcie_perstn,
+    input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
  `endif
@@ -959,7 +959,7 @@ meep_shell meep_shell_i
         .C0_DDR4_S_AXI_CTRL_0_awvalid(1'b0),
         .C0_DDR4_S_AXI_CTRL_0_bready(1'b0),
         .C0_DDR4_S_AXI_CTRL_0_bresp(),
-        .C0_DDR4_S_AXI_CTRL_0_bvalid),
+        .C0_DDR4_S_AXI_CTRL_0_bvalid(),
         .C0_DDR4_S_AXI_CTRL_0_rdata(),
         .C0_DDR4_S_AXI_CTRL_0_rready(1'b0),
         .C0_DDR4_S_AXI_CTRL_0_rresp(),
@@ -991,7 +991,7 @@ meep_shell meep_shell_i
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
-        .axi4_mm_awuser(m_axi_awuser),
+     //   .axi4_mm_awuser(m_axi_awuser),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
@@ -1010,7 +1010,7 @@ meep_shell meep_shell_i
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-        .axi4_mm_wuser(m_axi_wuser),
+   //     .axi4_mm_wuser(m_axi_wuser),
         .axi4_mm_wvalid(m_axi_wvalid),
         
         .c0_init_calib_complete_0(init_calib_complete),
@@ -1019,20 +1019,22 @@ meep_shell meep_shell_i
         .ddr4_sdram_c0_adr(ddr_addr),
         .ddr4_sdram_c0_ba(ddr_ba),
         .ddr4_sdram_c0_bg(ddr_bg),
-        .ddr4_sdram_c0_ck_c(ddr_ck_c),
-        .ddr4_sdram_c0_ck_t(ddr_ck_t),
+        .ddr4_sdram_c0_ck_c(ddr_ck_n),
+        .ddr4_sdram_c0_ck_t(ddr_ck_p),
         .ddr4_sdram_c0_cke(ddr_cke),
         .ddr4_sdram_c0_cs_n(ddr_cs_n),
         .ddr4_sdram_c0_dq(ddr_dq),
-        .ddr4_sdram_c0_dqs_c(ddr_dqs_c),
-        .ddr4_sdram_c0_dqs_t(ddr_dqs_t),
+        .ddr4_sdram_c0_dqs_c(ddr_dqs_n),
+        .ddr4_sdram_c0_dqs_t(ddr_dqs_p),
         .ddr4_sdram_c0_odt(ddr_odt),
-        .ddr4_sdram_c0_par(ddr_par),
+        .ddr4_sdram_c0_par(ddr_parity),
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
+        
+        //.c0_ddr4_aresetn(sys_rst_n),
         
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
-        .ddr_rst(~sys_rst_n),
+        .sys_rst(~sys_rst_n),
         
         .pci_express_x16_rxn(pci_express_x16_rxn),
         .pci_express_x16_rxp(pci_express_x16_rxp),
