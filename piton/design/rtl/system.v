@@ -587,14 +587,26 @@ assign uart_rts = 1'b0;
 assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
 wire [3:0] sw;
 wire [7:0] leds;  
+(* keep ="true" *) wire hold_start 1'b0;
     vio_sw vio_sw_i (
       .clk(core_ref_clk),  
       .probe_out0(sw[0]), 
       .probe_out1(sw[1]), 
       .probe_out2(sw[2]),
-      .probe_out3(sw[3])  
+      .probe_out3(sw[3]),
+	  .probe_out3(sw[4])
     );
+	
+	// sw[4] = 1, test_start works as usual.
+	// sw[4] = 0, tile stays on reset until going high.
+	// 0) UART_BOOT_EN set to low (sw[0]), bootrom_Ariane (sw[2]=0), timeout low sw[1]
+	// 1) reset the fpga (sw[3]).
+	// 2) Load the Linux BBL via PCIe to address 0x8000_0000
+	// 3) Active hold_start (sw[4]='1'), letting the RISC-V boot.
+	assign hold_start = sw[4] & test_start;
 `endif	
+
+
 
 // Different reset active levels for different boards
 always @ *
@@ -615,7 +627,11 @@ always @ *
 begin
     chip_rst_n = sys_rst_n_rect & passthru_chip_rst_n;
 `ifdef PITONSYS_UART_BOOT
-    chip_rst_n = chip_rst_n & test_start;
+	`ifdef ALVEOU280_BOARD				
+     chip_rst_n = chip_rst_n & hold_start;
+	`else
+     chip_rst_n = chip_rst_n & test_start;
+	`endif
 `endif
 `ifdef PITONSYS_UART_RESET
     chip_rst_n = chip_rst_n & uart_rst_out_n;
