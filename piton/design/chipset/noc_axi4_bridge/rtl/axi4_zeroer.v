@@ -29,8 +29,8 @@ module axi4_zeroer (
     input   clk,
     input   rst_n,
 
-    input   init_calib_complete_in,
-    output  init_calib_complete_out,
+    input      init_calib_complete_in,
+    output reg init_calib_complete_out,
 
     // AXI interface in
     input wire  [`AXI4_ID_WIDTH     -1:0]     s_axi_awid,
@@ -151,9 +151,11 @@ reg [`AXI4_ADDR_WIDTH-1:0] resp_got;
 reg [3:0] outstanding;
 wire [`AXI4_ADDR_WIDTH-1:0] zeroer_addr;
 wire zeroer_wlast;
+wire init_calib_complete_out_i;
+wire init_calib_complete_out_r;
 
 assign zeroer_awval = init_calib_complete_in 
-					  & ~init_calib_complete_out
+					  & ~init_calib_complete_out_i
 					  & (req_sent < REQUESTS_NEEDED) 
 					  & (outstanding != MAX_OUTSTANDING-1)
 					  & rst_n;
@@ -173,7 +175,7 @@ always @(posedge clk) begin
         resp_got <= 0;
         outstanding <= 0;
     end 
-    else if (~init_calib_complete_out) begin
+    else if (~init_calib_complete_out_i) begin
         req_sent <= req_sent + req_go;
         resp_got <= resp_got + resp_go;
         outstanding <= req_go & resp_go ? outstanding 
@@ -181,15 +183,16 @@ always @(posedge clk) begin
                      : resp_go          ? outstanding - 1 
                      :                    outstanding;
     end
+    init_calib_complete_out <= init_calib_complete_out_i;
 end
 
-assign init_calib_complete_out = (req_sent == REQUESTS_NEEDED) & 
-                                 (resp_got == REQUESTS_NEEDED);
+assign init_calib_complete_out_i = (req_sent == REQUESTS_NEEDED) & 
+                                   (resp_got == REQUESTS_NEEDED);
 
 assign zeroer_addr = req_sent * `AXI4_STRB_WIDTH;
 
 always @(*) begin
-    if (~init_calib_complete_out) begin
+    if (~init_calib_complete_out_i) begin
         m_axi_awid = `AXI4_ID_WIDTH'b0;
         m_axi_awaddr = zeroer_addr;
         m_axi_awlen = `AXI4_LEN_WIDTH'b0;
