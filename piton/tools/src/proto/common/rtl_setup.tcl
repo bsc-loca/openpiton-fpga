@@ -636,7 +636,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/fake_boot_ctrl.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/eth_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/mc_top.v" \
-    "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \ 
     "${DV_ROOT}/design/chipset/mc/rtl/f1_mc_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/noc_mig_bridge.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/memory_zeroer.v" \
@@ -718,6 +717,10 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_init.v" \
     "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_spi.v" \
     "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
+]
+
+set BLOCK_DESIGN_INCLUDE_FILES [list \
+    "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
 ]
 
 set CHIPSET_INCLUDE_FILES [list \

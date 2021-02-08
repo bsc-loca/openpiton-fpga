@@ -50,6 +50,8 @@ set ALL_INCLUDE_FILES [concat ${GLOBAL_INCLUDE_FILES} ${DESIGN_INCLUDE_FILES}]
 
 set ALL_IP_FILE_PREFIXES [concat ${DESIGN_IP_FILE_PREFIXES}]
 
+set ALL_BD_FILES [concat ${BLOCK_DESIGN_INCLUDE_FILES}]
+
 set ALL_XCI_IP_FILES [list ]
 foreach ip_file ${ALL_IP_FILE_PREFIXES} {
     lappend ALL_XCI_IP_FILES "${ip_file}.xci"
