@@ -144,8 +144,10 @@ wire zeroer_awval;
 wire zeroer_awrdy;
 wire zeroer_wval;
 wire zeroer_wrdy;
-wire req_go;
-wire resp_go;
+//wire req_go;
+//wire resp_go;
+reg req_go;
+reg resp_go;
 reg [`AXI4_ADDR_WIDTH-1:0] req_sent;
 reg [`AXI4_ADDR_WIDTH-1:0] resp_got;
 reg [3:0] outstanding;
@@ -165,8 +167,19 @@ assign zeroer_wrdy     = m_axi_wready;
 
 assign zeroer_wval = 1'b1;
 
-assign req_go = zeroer_awval & zeroer_awrdy;
-assign resp_go = zeroer_wval & zeroer_wrdy;
+always @(posedge clk) begin
+    if(~rst_n) begin
+        req_go <= 0;
+        resp_go <= 0;
+    end
+    else begin
+        req_go  <= zeroer_awval & zeroer_awrdy;
+        resp_go <= zeroer_wval & zeroer_wrdy;
+    end
+end
+        
+//assign req_go = zeroer_awval & zeroer_awrdy;
+//assign resp_go = zeroer_wval & zeroer_wrdy;
 
 
 always @(posedge clk) begin
