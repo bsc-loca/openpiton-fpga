@@ -1,7 +1,7 @@
 {
   "design": {
     "design_info": {
-      "boundary_crc": "0x1E8BFEA0219D0E44",
+      "boundary_crc": "0x35245617AEC98C9A",
       "device": "xcu280-fsvh2892-2L-e",
       "name": "meep_shell",
       "rev_ctrl_bd_flag": "RevCtrlBdOff",
@@ -26,7 +26,9 @@
         "m00_pchk": ""
       },
       "system_ila_0": "",
-      "xlconstant_0": ""
+      "xlconstant_0": "",
+      "axi_gpio_0": "",
+      "system_ila_1": ""
     },
     "interface_ports": {
       "pci_express_x16": {
@@ -56,55 +58,55 @@
           },
           "TIMEPERIOD_PS": {
             "value": "833",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "MEMORY_TYPE": {
             "value": "RDIMMs",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "MEMORY_PART": {
             "value": "MTA18ASF2G72PZ-2G3",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "DATA_WIDTH": {
             "value": "72",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "CS_ENABLED": {
             "value": "true",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "DATA_MASK_ENABLED": {
             "value": "NONE",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "SLOT": {
             "value": "Single",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "CUSTOM_PARTS": {
             "value": "no_file_loaded",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "MEM_ADDR_MAP": {
             "value": "ROW_COLUMN_BANK_INTLV",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "BURST_LENGTH": {
             "value": "8",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "AXI_ARBITRATION_SCHEME": {
             "value": "RD_PRI_REG",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "CAS_LATENCY": {
             "value": "17",
-            "value_src": "default_prop"
+            "value_src": "default"
           },
           "CAS_WRITE_LATENCY": {
             "value": "12",
-            "value_src": "default_prop"
+            "value_src": "default"
           }
         }
       },
@@ -406,6 +408,11 @@
             "value_src": "const_prop"
           }
         }
+      },
+      "pcie_gpio": {
+        "direction": "O",
+        "left": "4",
+        "right": "0"
       }
     },
     "components": {
@@ -432,7 +439,7 @@
             "value": "pcie_perstn"
           },
           "axilite_master_en": {
-            "value": "false"
+            "value": "true"
           },
           "barlite_mb_pf0": {
             "value": "1"
@@ -452,6 +459,12 @@
           "pf0_bar0_prefetchable_qdma": {
             "value": "true"
           },
+          "pf0_bar2_64bit_qdma": {
+            "value": "true"
+          },
+          "pf0_bar2_enabled_qdma": {
+            "value": "true"
+          },
           "pf0_bar2_prefetchable_qdma": {
             "value": "true"
           },
@@ -464,6 +477,10 @@
             "M_AXI": {
               "range": "16E",
               "width": "64"
+            },
+            "M_AXI_LITE": {
+              "range": "4G",
+              "width": "32"
             }
           },
           "interface_ports": {
@@ -473,6 +490,14 @@
               "base_address": {
                 "minimum": "0x00000000",
                 "maximum": "0xFFFFFFFFFFFFFFFF"
+              }
+            },
+            "M_AXI_LITE": {
+              "mode": "Master",
+              "address_space_ref": "M_AXI_LITE",
+              "base_address": {
+                "minimum": "0x00000000",
+                "maximum": "0xFFFFFFFF"
               }
             }
           }
@@ -511,7 +536,7 @@
       },
       "axi_interconnect_0": {
         "vlnv": "xilinx.com:ip:axi_interconnect:2.1",
-        "xci_name": "meep_shell_axi_interconnect_0_1",
+        "xci_name": "meep_shell_axi_interconnect_0_0",
         "parameters": {
           "ENABLE_ADVANCED_OPTIONS": {
             "value": "1"
@@ -612,7 +637,7 @@
         "components": {
           "xbar": {
             "vlnv": "xilinx.com:ip:axi_crossbar:2.1",
-            "xci_name": "meep_shell_xbar_1",
+            "xci_name": "meep_shell_xbar_0",
             "parameters": {
               "DATA_WIDTH": {
                 "value": "512"
@@ -960,11 +985,11 @@
               }
             }
           },
-          "axi_interconnect_0_to_s01_couplers": {
+          "axi_interconnect_0_to_s00_couplers": {
             "interface_ports": [
-              "S01_AXI",
-              "s01_couplers/S_AXI",
-              "s01_pchk/PC_AXI"
+              "S00_AXI",
+              "s00_couplers/S_AXI",
+              "s00_pchk/PC_AXI"
             ],
             "hdl_attributes": {
               "MARK_DEBUG": {
@@ -978,23 +1003,23 @@
               "xbar/S01_AXI"
             ]
           },
-          "s00_couplers_to_xbar": {
+          "axi_interconnect_0_to_s01_couplers": {
             "interface_ports": [
-              "s00_couplers/M_AXI",
-              "xbar/S00_AXI"
-            ]
-          },
-          "axi_interconnect_0_to_s00_couplers": {
-            "interface_ports": [
-              "S00_AXI",
-              "s00_couplers/S_AXI",
-              "s00_pchk/PC_AXI"
+              "S01_AXI",
+              "s01_couplers/S_AXI",
+              "s01_pchk/PC_AXI"
             ],
             "hdl_attributes": {
               "MARK_DEBUG": {
                 "value": "true"
               }
             }
+          },
+          "s00_couplers_to_xbar": {
+            "interface_ports": [
+              "s00_couplers/M_AXI",
+              "xbar/S00_AXI"
+            ]
           },
           "xbar_to_m00_couplers": {
             "interface_ports": [
@@ -1187,6 +1212,33 @@
       "xlconstant_0": {
         "vlnv": "xilinx.com:ip:xlconstant:1.1",
         "xci_name": "meep_shell_xlconstant_0_0"
+      },
+      "axi_gpio_0": {
+        "vlnv": "xilinx.com:ip:axi_gpio:2.0",
+        "xci_name": "meep_shell_axi_gpio_0_0",
+        "parameters": {
+          "C_ALL_OUTPUTS": {
+            "value": "1"
+          },
+          "C_GPIO_WIDTH": {
+            "value": "5"
+          }
+        }
+      },
+      "system_ila_1": {
+        "vlnv": "xilinx.com:ip:system_ila:1.1",
+        "xci_name": "meep_shell_system_ila_1_0",
+        "parameters": {
+          "C_MON_TYPE": {
+            "value": "NATIVE"
+          },
+          "C_NUM_OF_PROBES": {
+            "value": "1"
+          },
+          "C_PROBE0_TYPE": {
+            "value": "0"
+          }
+        }
       }
     },
     "interface_nets": {
@@ -1254,6 +1306,12 @@
         "interface_ports": [
           "ddr4_sdram_c0",
           "ddr4_0/C0_DDR4"
+        ]
+      },
+      "qdma_0_M_AXI_LITE": {
+        "interface_ports": [
+          "qdma_0/M_AXI_LITE",
+          "axi_gpio_0/S_AXI"
         ]
       }
     },
@@ -1342,13 +1400,16 @@
       "qdma_0_axi_aresetn": {
         "ports": [
           "qdma_0/axi_aresetn",
-          "axi_interconnect_0/S01_ARESETN"
+          "axi_interconnect_0/S01_ARESETN",
+          "axi_gpio_0/s_axi_aresetn"
         ]
       },
       "qdma_0_axi_aclk": {
         "ports": [
           "qdma_0/axi_aclk",
-          "axi_interconnect_0/S01_ACLK"
+          "axi_interconnect_0/S01_ACLK",
+          "axi_gpio_0/s_axi_aclk",
+          "system_ila_1/clk"
         ]
       },
       "rst_ddr4_0_300M_peripheral_reset": {
@@ -1363,6 +1424,21 @@
           "qdma_0/tm_dsc_sts_rdy",
           "qdma_0/qsts_out_rdy"
         ]
+      },
+      "axi_gpio_0_gpio_io_o": {
+        "ports": [
+          "axi_gpio_0/gpio_io_o",
+          "pcie_gpio",
+          "system_ila_1/probe0"
+        ],
+        "hdl_attributes": {
+          "DEBUG": {
+            "value": "true"
+          },
+          "MARK_DEBUG": {
+            "value": "true"
+          }
+        }
       }
     },
     "addressing": {
@@ -1403,6 +1479,17 @@
                 "address_block": "/ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK",
                 "offset": "0x0000000000000000",
                 "range": "16G"
+              }
+            }
+          },
+          "M_AXI_LITE": {
+            "range": "4G",
+            "width": "32",
+            "segments": {
+              "SEG_axi_gpio_0_Reg": {
+                "address_block": "/axi_gpio_0/S_AXI/Reg",
+                "offset": "0x00000000",
+                "range": "64K"
               }
             }
           }

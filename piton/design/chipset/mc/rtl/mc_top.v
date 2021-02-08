@@ -75,7 +75,8 @@ module mc_top (
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
     output [15:0] pci_express_x16_txn,
-    output [15:0] pci_express_x16_txp,        
+    output [15:0] pci_express_x16_txp,  
+    output [4:0] pcie_gpio,      
     input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
@@ -1040,7 +1041,7 @@ meep_shell meep_shell_i
         .pci_express_x16_rxp(pci_express_x16_rxp),
         .pci_express_x16_txn(pci_express_x16_txn),
         .pci_express_x16_txp(pci_express_x16_txp),
-        
+        .pcie_gpio(pcie_gpio),
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
         .pcie_refclk_clk_p( pcie_refclk_p),
