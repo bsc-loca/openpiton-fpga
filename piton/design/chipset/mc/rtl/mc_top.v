@@ -403,7 +403,7 @@ assign core_app_rd_data         = app_rd_data;
 `else //ifndef PITONSYS_AXI4_MEM
 assign noc_mig_bridge_rst       = ui_clk_sync_rst;
 assign noc_mig_bridge_init_done = init_calib_complete;
-assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed & init_calib_complete_zero;
+assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif
 
 noc_bidir_afifo  mig_afifo  (

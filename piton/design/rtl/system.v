@@ -636,8 +636,10 @@ begin
    	 hold_start = sw[4] & test_start;
      chip_rst_n = chip_rst_n & hold_start;
     `else
-    // chip_rst_n = chip_rst_n & test_start;
+     chip_rst_n = chip_rst_n & test_start;
     `endif
+`elsif ALVEOU280_BOARD // PYTONSYS_UART_BOOT
+     chip_rst_n = chip_rst_n & sw[4];
 `endif
 `ifdef PITONSYS_UART_RESET
     chip_rst_n = chip_rst_n & uart_rst_out_n;
