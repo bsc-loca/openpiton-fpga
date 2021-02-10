@@ -586,22 +586,28 @@ assign uart_rts = 1'b0;
 `ifdef ALVEOU280_BOARD
 assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
 wire [4:0] sw;
+wire [4:0] pcie_gpio;
 wire [7:0] leds;  
 reg hold_start;
-    vio_sw vio_sw_i (
-      .clk(core_ref_clk),  
-      .probe_out0(sw[0]), 
-      .probe_out1(sw[1]), 
-      .probe_out2(sw[2]),
-      .probe_out3(sw[3]),
-	  .probe_out4(sw[4])
-    );
+//    vio_sw vio_sw_i (
+//      .clk(core_ref_clk),  
+//      .probe_out0(sw[0]), 
+//      .probe_out1(sw[1]), 
+//      .probe_out2(sw[2]),
+//      .probe_out3(sw[3]),
+//	  .probe_out4(sw[4])
+//    );
+    assign sw[3] = pcie_gpio[0]; //sys_rst_n
+    assign sw[4] = pcie_gpio[1]; // chip_rst_n
+    assign sw[0] = pcie_gpio[2]; // uart_boot_en
+    assign sw[2] = pcie_gpio[3]; // bootrom_linux
+    assign sw[1] = pcie_gpio[4]; // timeout_en
 	
 	// sw[4] = 1, test_start works as usual.
 	// sw[4] = 0, tile stays on reset until going high.
 	// 0) UART_BOOT_EN set to low (sw[0]), bootrom_Ariane (sw[2]=0), timeout low sw[1]
 	// 1) reset the fpga (sw[3]).
-	// 2) Load the Linux BBL via PCIe to address 0x8000_0000
+	// 2) Load the Linux BBL via PCIe to address 0x8000_0000 (if UART_BOOT_EN = '1', this address is 0x0)
 	// 3) Active hold_start (sw[4]='1'), letting the RISC-V boot.
 `endif	
 
@@ -630,8 +636,10 @@ begin
    	 hold_start = sw[4] & test_start;
      chip_rst_n = chip_rst_n & hold_start;
     `else
-    // chip_rst_n = chip_rst_n & test_start;
+     chip_rst_n = chip_rst_n & test_start;
     `endif
+`elsif ALVEOU280_BOARD // PYTONSYS_UART_BOOT
+     chip_rst_n = chip_rst_n & sw[4];
 `endif
 `ifdef PITONSYS_UART_RESET
     chip_rst_n = chip_rst_n & uart_rst_out_n;
@@ -996,7 +1004,8 @@ chipset chipset(
 	 .pci_express_x16_rxn(pci_express_x16_rxn),
 	 .pci_express_x16_rxp(pci_express_x16_rxp),
 	 .pci_express_x16_txn(pci_express_x16_txn),
-	 .pci_express_x16_txp(pci_express_x16_txp),        
+	 .pci_express_x16_txp(pci_express_x16_txp),  
+	 .pcie_gpio(pcie_gpio),      
 	 .pcie_perstn(pcie_perstn),
 	 .pcie_refclk_n(pcie_refclk_n),
 	 .pcie_refclk_p(pcie_refclk_p),
