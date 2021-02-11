@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 # MEEP_openpiton
-
-Implementing openpiton in ALVEO280 board
 =======
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
@@ -510,6 +507,50 @@ The command will tell print the afi and agfi of your image. You can track the sy
 
 8. After the synthesis is done - you can go load it in your F1 instance!
 
+#### Synthesizing OpenPiton for ALVEO u280
+This section has been added under MEEP project. For an eventual PR to OpenPiton team, we will need to review it.
+
+The flow is very simillar to synthesizing image for any other FPGA OpenPiton supports. It has been tested under Vivado 2020.1:
+
+
+1. Clone OpenPiton repo (MEEP version): git clone https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/meep_openpiton.git
+
+3. cd into repo, run these bash commands:
+```
+    source piton/piton_settings.bash
+    source piton/ariane_setup.sh
+    (Follow instructions in the top of the README in case this is the first time you install OpenPiton in your machine.)
+```
+
+4. Run the synthesis:
+``` 
+    protosyn -b alveou280 -d system --core=ariane --uart-dmw ddr --zeroer_off
+
+```
+This will create a Vivado design under $ROOT_DIR/build/...
+
+5. After the synthesis is complete (takes about 2-3 hours on fast PC), you can program the FPGA via JTAG
+
+6. Probably you would need to reboot to be able to use the new QDMA PCIe interface.
+
+7. Now you can download from the intranet the bbl containing the Linux kernel, a script to load it to the DDR and the bitstream itself in case you want to skip steps above. 
+``` 
+    Intranet URL
+```
+In a separated bash window, open a sniffer for the UART:
+```
+ $screen /dev/ttyUSB<n> 115200
+```
+Issue the next commands inside the downloaded folder:
+``` 
+    load_bistream.sh <fpga_bistream_name>.bit
+	config_pcie.sh
+	boot_linux.sh
+```
+You should be able to see Linux booting on the other terminal.
+
+8. You are ready to play tetris.
+
 #### Planned Improvements
 
 The following items are currently under development and will be released soon.
@@ -520,4 +561,3 @@ The following items are currently under development and will be released soon.
 - Performance enhancements (cache re-parameterization, write-buffer throughput).
 
 Stay tuned!
->>>>>>> 5c86b10d20c1479f00d9d8bf7d46583788f0d196
