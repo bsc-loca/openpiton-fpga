@@ -58,55 +58,55 @@
           },
           "TIMEPERIOD_PS": {
             "value": "833",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "MEMORY_TYPE": {
             "value": "RDIMMs",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "MEMORY_PART": {
             "value": "MTA18ASF2G72PZ-2G3",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "DATA_WIDTH": {
             "value": "72",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "CS_ENABLED": {
             "value": "true",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "DATA_MASK_ENABLED": {
             "value": "NONE",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "SLOT": {
             "value": "Single",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "CUSTOM_PARTS": {
             "value": "no_file_loaded",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "MEM_ADDR_MAP": {
             "value": "ROW_COLUMN_BANK_INTLV",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "BURST_LENGTH": {
             "value": "8",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "AXI_ARBITRATION_SCHEME": {
             "value": "RD_PRI_REG",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "CAS_LATENCY": {
             "value": "17",
-            "value_src": "default"
+            "value_src": "user_prop"
           },
           "CAS_WRITE_LATENCY": {
             "value": "12",
-            "value_src": "default"
+            "value_src": "user_prop"
           }
         }
       },
@@ -997,6 +997,12 @@
               }
             }
           },
+          "xbar_to_m00_couplers": {
+            "interface_ports": [
+              "xbar/M00_AXI",
+              "m00_couplers/S_AXI"
+            ]
+          },
           "s01_couplers_to_xbar": {
             "interface_ports": [
               "s01_couplers/M_AXI",
@@ -1019,12 +1025,6 @@
             "interface_ports": [
               "s00_couplers/M_AXI",
               "xbar/S00_AXI"
-            ]
-          },
-          "xbar_to_m00_couplers": {
-            "interface_ports": [
-              "xbar/M00_AXI",
-              "m00_couplers/S_AXI"
             ]
           }
         },
@@ -1242,43 +1242,22 @@
       }
     },
     "interface_nets": {
-      "axi4_mm_1": {
+      "qdma_0_M_AXI_LITE": {
         "interface_ports": [
-          "axi4_mm",
-          "axi_interconnect_0/S00_AXI",
-          "system_ila_0/SLOT_0_AXI"
-        ],
-        "hdl_attributes": {
-          "DEBUG": {
-            "value": "true"
-          },
-          "MARK_DEBUG": {
-            "value": "true"
-          }
-        }
-      },
-      "qdma_0_pcie_mgt": {
-        "interface_ports": [
-          "pci_express_x16",
-          "qdma_0/pcie_mgt"
+          "qdma_0/M_AXI_LITE",
+          "axi_gpio_0/S_AXI"
         ]
       },
-      "C0_DDR4_S_AXI_CTRL_0_1": {
+      "ddr4_0_C0_DDR4": {
         "interface_ports": [
-          "C0_DDR4_S_AXI_CTRL_0",
-          "ddr4_0/C0_DDR4_S_AXI_CTRL"
+          "ddr4_sdram_c0",
+          "ddr4_0/C0_DDR4"
         ]
       },
-      "pcie_refclk_1": {
+      "sysclk0_1": {
         "interface_ports": [
-          "pcie_refclk",
-          "util_ds_buf/CLK_IN_D"
-        ]
-      },
-      "qdma_0_M_AXI": {
-        "interface_ports": [
-          "qdma_0/M_AXI",
-          "axi_interconnect_0/S01_AXI"
+          "ddr_clk",
+          "ddr4_0/C0_SYS_CLK"
         ]
       },
       "axi_interconnect_0_M00_AXI": {
@@ -1296,23 +1275,44 @@
           }
         }
       },
-      "sysclk0_1": {
+      "qdma_0_M_AXI": {
         "interface_ports": [
-          "ddr_clk",
-          "ddr4_0/C0_SYS_CLK"
+          "qdma_0/M_AXI",
+          "axi_interconnect_0/S01_AXI"
         ]
       },
-      "ddr4_0_C0_DDR4": {
+      "pcie_refclk_1": {
         "interface_ports": [
-          "ddr4_sdram_c0",
-          "ddr4_0/C0_DDR4"
+          "pcie_refclk",
+          "util_ds_buf/CLK_IN_D"
         ]
       },
-      "qdma_0_M_AXI_LITE": {
+      "C0_DDR4_S_AXI_CTRL_0_1": {
         "interface_ports": [
-          "qdma_0/M_AXI_LITE",
-          "axi_gpio_0/S_AXI"
+          "C0_DDR4_S_AXI_CTRL_0",
+          "ddr4_0/C0_DDR4_S_AXI_CTRL"
         ]
+      },
+      "qdma_0_pcie_mgt": {
+        "interface_ports": [
+          "pci_express_x16",
+          "qdma_0/pcie_mgt"
+        ]
+      },
+      "axi4_mm_1": {
+        "interface_ports": [
+          "axi4_mm",
+          "axi_interconnect_0/S00_AXI",
+          "system_ila_0/SLOT_0_AXI"
+        ],
+        "hdl_attributes": {
+          "DEBUG": {
+            "value": "true"
+          },
+          "MARK_DEBUG": {
+            "value": "true"
+          }
+        }
       }
     },
     "nets": {
