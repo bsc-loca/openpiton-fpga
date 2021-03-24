@@ -42,8 +42,9 @@ module mc_top (
     input                           mc_flit_out_rdy,
 
     input                           uart_boot_en,
-    
+`ifndef ALVEOU280_BOARD  
 `ifdef PITONSYS_DDR4
+   
     // directly feed in 250MHz ref clock
     input                           sys_clk_p,
     input                           sys_clk_n,
@@ -70,6 +71,7 @@ module mc_top (
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]     ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
+`endif //ALVEOBOARD
 `ifdef PITONSYS_DDR4
   `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
@@ -80,11 +82,15 @@ module mc_top (
     input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
+    //
+    input  hbm_ref_clk,
+    output hbm_cattrip,
  `endif
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD	
-	output                          ddr_parity,
+	input                           sys_clk_p,
+    input                           sys_clk_n,		
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -713,6 +719,7 @@ assign zeroer_axi_bvalid = m_axi_bvalid;
 assign m_axi_bready = zeroer_axi_bready;
 
 assign noc_axi4_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
+
 assign noc_axi4_bridge_init_done = init_calib_complete_zero;
 //assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
 `else // PITONSYS_MEM_ZEROER
@@ -951,23 +958,17 @@ axi4_zeroer axi4_zeroer(
 
 `ifdef PITONSYS_DDR4
 `ifdef PITONSYS_PCIE
+
+//wire init_calib_complete_c;
+//(* ASYNC_REG = "TRUE" *) reg [2:1] init_calib_complete_r;
+
 meep_shell meep_shell_i
-       (.C0_DDR4_S_AXI_CTRL_0_araddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_arready(),
-        .C0_DDR4_S_AXI_CTRL_0_arvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awaddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awready(),
-        .C0_DDR4_S_AXI_CTRL_0_awvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bresp(),
-        .C0_DDR4_S_AXI_CTRL_0_bvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_rdata(),
-        .C0_DDR4_S_AXI_CTRL_0_rready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_rresp(),
-        .C0_DDR4_S_AXI_CTRL_0_rvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_wdata(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_wready(),
-        .C0_DDR4_S_AXI_CTRL_0_wvalid(1'b0),
+       (        
+        .HBM_REF_CLK(hbm_ref_clk),
+        .HBM_CATTRIP(hbm_cattrip),
+        
+        .sys_clk1_clk_p(sys_clk_p),
+        .sys_clk1_clk_n(sys_clk_n),
         
         .axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
@@ -1016,26 +1017,7 @@ meep_shell meep_shell_i
         
         .c0_init_calib_complete_0(init_calib_complete),
         
-        .ddr4_sdram_c0_act_n(ddr_act_n),
-        .ddr4_sdram_c0_adr(ddr_addr),
-        .ddr4_sdram_c0_ba(ddr_ba),
-        .ddr4_sdram_c0_bg(ddr_bg),
-        .ddr4_sdram_c0_ck_c(ddr_ck_n),
-        .ddr4_sdram_c0_ck_t(ddr_ck_p),
-        .ddr4_sdram_c0_cke(ddr_cke),
-        .ddr4_sdram_c0_cs_n(ddr_cs_n),
-        .ddr4_sdram_c0_dq(ddr_dq),
-        .ddr4_sdram_c0_dqs_c(ddr_dqs_n),
-        .ddr4_sdram_c0_dqs_t(ddr_dqs_p),
-        .ddr4_sdram_c0_odt(ddr_odt),
-        .ddr4_sdram_c0_par(ddr_parity),
-        .ddr4_sdram_c0_reset_n(ddr_reset_n),
-        
-        //.c0_ddr4_aresetn(sys_rst_n),
-        
-        .ddr_clk_clk_n(sys_clk_n),
-        .ddr_clk_clk_p(sys_clk_p),
-        .sys_rst(~sys_rst_n),
+       // .sys_rst(~sys_rst_n),
         
         .pci_express_x16_rxn(pci_express_x16_rxn),
         .pci_express_x16_rxp(pci_express_x16_rxp),
@@ -1048,6 +1030,13 @@ meep_shell meep_shell_i
 		.ui_clk_sync_rst( ui_clk_sync_rst           ),
         .ui_clk(ui_clk)
         );
+       
+//       always @ (posedge ui_clk) begin
+//        init_calib_complete_r <= {init_calib_complete_r[1], init_calib_complete_c};
+//       end
+       
+//       assign init_calib_complete = init_calib_complete_r[2];
+        
 `else
  
 ddr4_axi4 ddr_axi4 (
