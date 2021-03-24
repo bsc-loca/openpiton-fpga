@@ -253,6 +253,9 @@ module chipset(
         input  pcie_perstn,
         input  pcie_refclk_n,
         input  pcie_refclk_p,
+        //
+        input  hbm_ref_clk,
+        output hbm_cattrip,
        `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
@@ -1313,24 +1316,15 @@ chipset_impl_noc_power_test  chipset_impl (
                      .pcie_perstn(pcie_perstn),
                      .pcie_refclk_n(pcie_refclk_n),
                      .pcie_refclk_p(pcie_refclk_p),
+                     
+                     .hbm_ref_clk(hbm_ref_clk),
+                     .hbm_cattrip(hbm_cattrip),
                     `endif
-                    .ddr_act_n(ddr_act_n),                    
-                    .ddr_bg(ddr_bg), 
+
                 `else // PITONSYS_DDR4
-                    .ddr_cas_n(ddr_cas_n),
-                    .ddr_ras_n(ddr_ras_n),
-                    .ddr_we_n(ddr_we_n),
+
                 `endif // PITONSYS_DDR4
 
-                .ddr_addr(ddr_addr),
-                .ddr_ba(ddr_ba),
-                .ddr_ck_n(ddr_ck_n),
-                .ddr_ck_p(ddr_ck_p),
-                .ddr_cke(ddr_cke),
-                .ddr_reset_n(ddr_reset_n),
-                .ddr_dq(ddr_dq),
-                .ddr_dqs_n(ddr_dqs_n),
-                .ddr_dqs_p(ddr_dqs_p),
 
                 `ifndef NEXYSVIDEO_BOARD
                     .ddr_cs_n(ddr_cs_n),
@@ -1339,7 +1333,6 @@ chipset_impl_noc_power_test  chipset_impl (
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
 		`elsif ALVEOU280_BOARD
-		    .ddr_parity(ddr_parity),
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD

@@ -222,47 +222,29 @@ module system(
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
     `ifdef PITONSYS_DDR4
-    output                                      ddr_act_n,
-    output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
+
     `else // PITONSYS_DDR4
-    output                                      ddr_cas_n,
-    output                                      ddr_ras_n,
-    output                                      ddr_we_n,
+
     `endif
 	
 	`ifdef ALVEOU280_BOARD
-	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
-	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
+
 	`else // PITONSYS_DDR4
-	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
-	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+
 	`endif
 
-    output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
-    output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
-    output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
-    output                                      ddr_reset_n,
-    inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
+
 
     `ifndef NEXYSVIDEO_BOARD
-        output [`DDR3_CS_WIDTH-1:0]             ddr_cs_n,
     `endif // endif NEXYSVIDEO_BOARD
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 	`elsif ALVEOU280_BOARD		
-	output                                      ddr_parity,
     `else
-    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
     `endif // XUPP3R_BOARD
     `else // PITONSYS_DDR4
-    output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
     `endif // PITONSYS_DDR4
-    output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals
@@ -320,7 +302,6 @@ module system(
     input  wire                               m_axi_bvalid,
     output wire                               m_axi_bready,
 
-    input  wire                               ddr_ready,
 `endif // endif F1_BOARD
 `endif // endif PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
@@ -423,6 +404,8 @@ module system(
 `endif
 
 `ifdef ALVEOU280_BOARD
+    input  hbm_ref_clk_p,
+    input  hbm_ref_clk_n,
     output hbm_cattrip  // Tie to 0 to avoid problems when HBM is not used
 `endif
 );
@@ -584,7 +567,7 @@ assign uart_rts = 1'b0;
 `endif // VCU118_BOARD
 
 `ifdef ALVEOU280_BOARD
-assign hbm_cattrip = 1'b0;  // Tie to 0 to avoid problems when HBM is not used
+//assign hbm_cattrip = hbm_cattrip;  // Tie to 0 to avoid problems when HBM is not used
 wire [4:0] sw;
 wire [4:0] pcie_gpio;
 wire [7:0] leds;  
@@ -609,6 +592,20 @@ reg hold_start;
 	// 1) reset the fpga (sw[3]).
 	// 2) Load the Linux BBL via PCIe to address 0x8000_0000 (if UART_BOOT_EN = '1', this address is 0x0)
 	// 3) Active hold_start (sw[4]='1'), letting the RISC-V boot.
+	
+   IBUFDS #(
+      .DIFF_TERM("FALSE"),       // Differential Termination
+      .IBUF_LOW_PWR("TRUE"),     // Low power="TRUE", Highest performance="FALSE" 
+      .IOSTANDARD("DEFAULT")     // Specify the input I/O standard
+   ) IBUFDS_inst (
+      .O(hbm_ref_clk),  // Buffer output
+      .I(hbm_ref_clk_p),  // Diff_p buffer input (connect directly to top-level port)
+      .IB(hbm_ref_clk_n) // Diff_n buffer input (connect directly to top-level port)
+   );
+
+//assign hbm_ref_clk = core_ref_clk;
+	
+	
 `endif	
 
 
@@ -1009,6 +1006,9 @@ chipset chipset(
 	 .pcie_perstn(pcie_perstn),
 	 .pcie_refclk_n(pcie_refclk_n),
 	 .pcie_refclk_p(pcie_refclk_p),
+	 //
+	 .hbm_ref_clk(hbm_ref_clk),
+	 .hbm_cattrip(hbm_cattrip),
 	`endif
     .mc_clk_p(mc_clk_p),
     .mc_clk_n(mc_clk_n),
@@ -1116,24 +1116,15 @@ chipset chipset(
 `ifdef PITON_FPGA_MC_DDR3
 `ifndef F1_BOARD
 `ifdef PITONSYS_DDR4
-    .ddr_act_n(ddr_act_n),
-    .ddr_bg(ddr_bg),
+
 `else // PITONSYS_DDR4
-    .ddr_cas_n(ddr_cas_n),
-    .ddr_ras_n(ddr_ras_n),
-    .ddr_we_n(ddr_we_n),
+
 `endif // PITONSYS_DDR4
-    .ddr_addr(ddr_addr),
-    .ddr_ba(ddr_ba),
+
 `ifndef ALVEOU280_BOARD	
-    .ddr_ck_n(ddr_ck_n),
-    .ddr_ck_p(ddr_ck_p),
-	.ddr_dqs_n(ddr_dqs_n),
-    .ddr_dqs_p(ddr_dqs_p),
+
 `endif	
-    .ddr_cke(ddr_cke),
-    .ddr_reset_n(ddr_reset_n),
-    .ddr_dq(ddr_dq),
+
 
 `ifndef NEXYSVIDEO_BOARD
     .ddr_cs_n(ddr_cs_n),
@@ -1141,11 +1132,7 @@ chipset chipset(
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
 `elsif ALVEOU280_BOARD	
-	.ddr_ck_n(ddr_ck_c),
-    .ddr_ck_p(ddr_ck_t),
-	.ddr_dqs_n(ddr_dqs_c),
-    .ddr_dqs_p(ddr_dqs_t),
-	.ddr_parity(ddr_parity),
+
 `else
     .ddr_dm(ddr_dm),
 `endif

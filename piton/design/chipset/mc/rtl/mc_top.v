@@ -967,8 +967,8 @@ meep_shell meep_shell_i
         .HBM_REF_CLK(hbm_ref_clk),
         .HBM_CATTRIP(hbm_cattrip),
         
-        .sys_clk1_clk_p(sys_clk_p),
-        .sys_clk1_clk_n(sys_clk_n),
+        //.sys_clk1_clk_p(sys_clk_p),
+        //.sys_clk1_clk_n(sys_clk_n),
         
         .axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),

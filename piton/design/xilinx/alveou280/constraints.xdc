@@ -37,6 +37,9 @@
 set_property -dict {PACKAGE_PIN F31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
 set_property -dict {PACKAGE_PIN G31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 
+set_property -dict {PACKAGE_PIN BJ44 IOSTANDARD LVDS} [get_ports hbm_ref_clk_n]
+set_property -dict {PACKAGE_PIN BJ43 IOSTANDARD LVDS} [get_ports hbm_ref_clk_p]
+
 # ref clock for MIG
 
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clkin1_ibufds/O]
@@ -46,7 +49,7 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clki
 
 # False paths
 set_false_path -to [get_cells -hierarchical *afifo_ui_rst_r*]
-set_false_path -to [get_cells -hierarchical *ui_clk_sync_rst_r*]
+#set_false_path -to [get_cells -hierarchical *ui_clk_sync_rst_r*]
 set_false_path -to [get_cells -hierarchical *ui_clk_syn_rst_delayed*]
 set_false_path -to [get_cells -hierarchical *init_calib_complete_f*]
 set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
@@ -263,6 +266,8 @@ set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports uart_rx]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
 set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/axi_gpio_0/U0/gpio_core_1/Not_Dual.gpio_Data_Out_reg[*]/C}] 
+
+
 #set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}]
 # Bitstream Configuration
 # ------------------------------------------------------------------------
