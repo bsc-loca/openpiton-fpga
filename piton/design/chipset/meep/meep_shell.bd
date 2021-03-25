@@ -801,16 +801,16 @@
               }
             },
             "interface_nets": {
-              "s00_couplers_to_auto_ds": {
-                "interface_ports": [
-                  "S_AXI",
-                  "auto_ds/S_AXI"
-                ]
-              },
               "auto_ds_to_s00_couplers": {
                 "interface_ports": [
                   "M_AXI",
                   "auto_ds/M_AXI"
+                ]
+              },
+              "s00_couplers_to_auto_ds": {
+                "interface_ports": [
+                  "S_AXI",
+                  "auto_ds/S_AXI"
                 ]
               }
             },
@@ -918,16 +918,16 @@
               }
             },
             "interface_nets": {
-              "auto_ds_to_s01_couplers": {
-                "interface_ports": [
-                  "M_AXI",
-                  "auto_ds/M_AXI"
-                ]
-              },
               "auto_cc_to_auto_ds": {
                 "interface_ports": [
                   "auto_cc/M_AXI",
                   "auto_ds/S_AXI"
+                ]
+              },
+              "auto_ds_to_s01_couplers": {
+                "interface_ports": [
+                  "M_AXI",
+                  "auto_ds/M_AXI"
                 ]
               },
               "s01_couplers_to_auto_cc": {
@@ -1133,34 +1133,16 @@
           }
         },
         "interface_nets": {
-          "S00_AXI_1": {
+          "s00_mmu_M_AXI": {
             "interface_ports": [
-              "S00_AXI",
-              "s00_mmu/S_AXI"
+              "s00_mmu/M_AXI",
+              "s00_couplers/S_AXI"
             ]
           },
           "xbar_to_m00_couplers": {
             "interface_ports": [
               "xbar/M00_AXI",
               "m00_couplers/S_AXI"
-            ]
-          },
-          "m00_couplers_to_axi_mem_intercon": {
-            "interface_ports": [
-              "M00_AXI",
-              "m00_couplers/M_AXI"
-            ]
-          },
-          "s01_couplers_to_xbar": {
-            "interface_ports": [
-              "s01_couplers/M_AXI",
-              "xbar/S01_AXI"
-            ]
-          },
-          "s00_mmu_M_AXI": {
-            "interface_ports": [
-              "s00_mmu/M_AXI",
-              "s00_couplers/S_AXI"
             ]
           },
           "s00_couplers_to_xbar": {
@@ -1179,6 +1161,24 @@
             "interface_ports": [
               "s01_mmu/M_AXI",
               "s01_couplers/S_AXI"
+            ]
+          },
+          "m00_couplers_to_axi_mem_intercon": {
+            "interface_ports": [
+              "M00_AXI",
+              "m00_couplers/M_AXI"
+            ]
+          },
+          "S00_AXI_1": {
+            "interface_ports": [
+              "S00_AXI",
+              "s00_mmu/S_AXI"
+            ]
+          },
+          "s01_couplers_to_xbar": {
+            "interface_ports": [
+              "s01_couplers/M_AXI",
+              "xbar/S01_AXI"
             ]
           }
         },
@@ -1272,7 +1272,7 @@
         "xci_name": "meep_shell_clk_wiz_0_0",
         "parameters": {
           "CLKOUT1_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT1_JITTER": {
             "value": "110.209"
@@ -1284,7 +1284,7 @@
             "value": "250.000"
           },
           "CLKOUT2_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT2_JITTER": {
             "value": "151.636"
@@ -1299,7 +1299,7 @@
             "value": "true"
           },
           "CLKOUT3_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT3_JITTER": {
             "value": "130.958"
@@ -1311,16 +1311,16 @@
             "value": "true"
           },
           "CLKOUT4_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT5_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT6_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLKOUT7_DRIVES": {
-            "value": "BUFGCE"
+            "value": "Buffer"
           },
           "CLK_IN1_BOARD_INTERFACE": {
             "value": "Custom"
@@ -1353,7 +1353,7 @@
             "value": "false"
           },
           "USE_SAFE_CLOCK_STARTUP": {
-            "value": "true"
+            "value": "false"
           }
         }
       },
@@ -1378,7 +1378,7 @@
       },
       "util_vector_logic_2": {
         "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
-        "xci_name": "meep_shell_util_vector_logic_0_2",
+        "xci_name": "meep_shell_util_vector_logic_2_1",
         "parameters": {
           "C_SIZE": {
             "value": "1"
@@ -1387,7 +1387,7 @@
       },
       "util_vector_logic_3": {
         "vlnv": "xilinx.com:ip:util_vector_logic:2.0",
-        "xci_name": "meep_shell_util_vector_logic_0_3",
+        "xci_name": "meep_shell_util_vector_logic_3_1",
         "parameters": {
           "C_SIZE": {
             "value": "1"
@@ -1396,7 +1396,7 @@
       },
       "system_ila_0": {
         "vlnv": "xilinx.com:ip:system_ila:1.1",
-        "xci_name": "meep_shell_system_ila_0_3",
+        "xci_name": "meep_shell_system_ila_0_1",
         "parameters": {
           "C_MON_TYPE": {
             "value": "INTERFACE"
@@ -1502,31 +1502,16 @@
       }
     },
     "interface_nets": {
-      "axi4_mm_1": {
+      "qdma_0_M_AXI_LITE": {
         "interface_ports": [
-          "axi4_mm",
-          "axi_mem_intercon/S01_AXI",
-          "system_ila_0/SLOT_0_AXI"
-        ],
-        "hdl_attributes": {
-          "DEBUG": {
-            "value": "true"
-          },
-          "MARK_DEBUG": {
-            "value": "true"
-          }
-        }
-      },
-      "qdma_0_pcie_mgt": {
-        "interface_ports": [
-          "pci_express_x16",
-          "qdma_0/pcie_mgt"
+          "qdma_0/M_AXI_LITE",
+          "axi_gpio_0/S_AXI"
         ]
       },
-      "qdma_0_M_AXI": {
+      "pcie_refclk_1": {
         "interface_ports": [
-          "qdma_0/M_AXI",
-          "axi_mem_intercon/S00_AXI"
+          "pcie_refclk",
+          "util_ds_buf/CLK_IN_D"
         ]
       },
       "axi_mem_intercon_M00_AXI": {
@@ -1544,17 +1529,32 @@
           }
         }
       },
-      "pcie_refclk_1": {
+      "qdma_0_M_AXI": {
         "interface_ports": [
-          "pcie_refclk",
-          "util_ds_buf/CLK_IN_D"
+          "qdma_0/M_AXI",
+          "axi_mem_intercon/S00_AXI"
         ]
       },
-      "qdma_0_M_AXI_LITE": {
+      "qdma_0_pcie_mgt": {
         "interface_ports": [
-          "qdma_0/M_AXI_LITE",
-          "axi_gpio_0/S_AXI"
+          "pci_express_x16",
+          "qdma_0/pcie_mgt"
         ]
+      },
+      "axi4_mm_1": {
+        "interface_ports": [
+          "axi4_mm",
+          "axi_mem_intercon/S01_AXI",
+          "system_ila_0/SLOT_0_AXI"
+        ],
+        "hdl_attributes": {
+          "DEBUG": {
+            "value": "true"
+          },
+          "MARK_DEBUG": {
+            "value": "true"
+          }
+        }
       }
     },
     "nets": {
