@@ -430,7 +430,11 @@ system system(
     monitor   monitor(
         .clk    (`CHIP_INT_CLK),
         .cmp_gclk  (`CHIP_INT_CLK),
+`ifdef PITON_LAGARTO
+        .rst_l     (`CORE_REF0.rstn_i)
+`else
         .rst_l     (`CORE_REF0.reset_l)
+`endif
         );
 
 `ifndef MINIMAL_MONITORING
@@ -486,8 +490,13 @@ system system(
     %>
 
 `ifndef VERILATOR
+`ifdef PITON_LAGARTO
+    // T1's TSO monitor, stripped of all L2 references
+    tso_mon tso_mon(`CHIP_INT_CLK, `CORE_REF0.rstn_i);
+`else 
     // T1's TSO monitor, stripped of all L2 references
     tso_mon tso_mon(`CHIP_INT_CLK, `CORE_REF0.reset_l);
+`endif
 `endif
 
     // L15 MONITORS
@@ -532,15 +541,18 @@ system system(
 
 `ifndef PITON_PICO
 `ifndef PITON_ARIANE
+`ifndef PITON_LAGARTO
     sas_intf  sas_intf(/*AUTOINST*/
         // Inputs
         .clk       (`CHIP_INT_CLK),      // Templated
         .rst_l     (`CORE_REF0.reset_l));       // Templated
 `endif
 `endif
+`endif
 
 `ifndef PITON_PICO
 `ifndef PITON_ARIANE
+`ifndef PITON_LAGARTO
     // create sas tasks
     sas_tasks sas_tasks(/*AUTOINST*/
         // Inputs
@@ -548,12 +560,15 @@ system system(
         .rst_l        (`CORE_REF0.reset_l));       // Templated
 `endif
 `endif
+`endif
 
 `ifndef PITON_ARIANE
+`ifndef PITON_LAGARTO
     // sparc pipe flow monitor
     sparc_pipe_flow sparc_pipe_flow(/*AUTOINST*/
         // Inputs
         .clk  (`CHIP_INT_CLK));         // Templated
+`endif
 `endif
 
 `ifndef PITON_PICO_HET

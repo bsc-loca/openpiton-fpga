@@ -172,6 +172,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'pal_use_tgseed' => 0,
         'parallel' => 0,
         'ariane' => 0,
+        'lagarto' => 0,
         'pico' => 0,
         'pico_het' => 0,
         'post_process_cmd' => [],
@@ -322,6 +323,7 @@ GetOptions (\%opt,
             'model_dir=s',
             'parallel!',
             'ariane!',
+            'lagarto!',
             'pico!',
             'pico_het!',
             'regress!',
@@ -1092,6 +1094,8 @@ sub gen_flist
   push (@{$opt{flist}}, "$ENV{DV_ROOT}/design/chip/tinyoram/rtl/Flist.oram") if ($opt{oram}) ;
   # Add Ariane flist if -ariane is specified
   push (@{$opt{flist}}, "$ENV{DV_ROOT}/design/chip/tile/ariane/Flist.ariane") if ($opt{ariane}) ;
+  # Add Lagarto flist if -lagarto is specified
+  push (@{$opt{flist}}, "$ENV{DV_ROOT}/design/chip/tile/meep_vas_tile_core/Flist.lagarto") if ($opt{lagarto}) ;
 
 
   foreach my $flist (@{$opt{flist}}) {
@@ -1356,7 +1360,7 @@ sub generic_sim_build
       push (@{$opt{vcs_build_args}}, "-l compile.log") ;
 
       # some SystemVerilog-specific options
-      if ($opt{ariane}) {
+      if ($opt{ariane} | $opt{lagarto}) {
           push (@{$opt{vcs_build_args}}, "-sverilog +systemverilogext+.sv") ;
           push (@{$opt{vcs_build_args}}, "-ntb_opts uvm-1.1 +vpi ") ;
       }
@@ -1485,7 +1489,7 @@ sub generic_sim_build
       $build_cmd .= $lib_path;
 
       # the ariane files do not contain the timescale
-      if ($opt{ariane}) {
+      if ($opt{ariane} | $opt{lagarto}) {
         $build_cmd .= " -timescale=1ps/1ps ";
       }
     }
@@ -2201,15 +2205,20 @@ sub assemble_diag
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/benchmarks";
     }
 
+    if ($opt{lagarto} and $opt{precompiled}) {
+      push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/isa";
+      push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/benchmarks";
+    }
+
     # find diagnostic
     my $diag_full_path = &find_diag_path ($opt{asm_diag_name}, $opt{asm_diag_path}, $opt{asm_diag_root}) ;
 
     my $diag_name ;
     if ($opt{asm_diag_name} =~ /\.pal/)        { $diag_name = "diag.pal"  ; }
     elsif ($opt{asm_diag_name} =~ /\.s\.gz/)   { $diag_name = "diag.s.gz" ; }
-    elsif ($opt{precompiled} and $opt{ariane}) { $diag_name = "diag.exe"  ; }
-    elsif (($opt{pico} | $opt{ariane}) and ($opt{asm_diag_name} =~ /\.S/)) { $diag_name = "diag.S" ; }
-    elsif (($opt{pico} | $opt{ariane}) and ($opt{asm_diag_name} =~ /\.c/)) { $diag_name = "diag.c" ; }
+    elsif ($opt{precompiled} and ($opt{ariane} | $opt{lagarto})) { $diag_name = "diag.exe"  ; }
+    elsif (($opt{pico} | $opt{ariane} | $opt{lagarto}) and ($opt{asm_diag_name} =~ /\.S/)) { $diag_name = "diag.S" ; }
+    elsif (($opt{pico} | $opt{ariane} | $opt{lagarto}) and ($opt{asm_diag_name} =~ /\.c/)) { $diag_name = "diag.c" ; }
     else { $diag_name = "diag.s" ; }
 
     # copy diagnostic to run area
@@ -2260,7 +2269,7 @@ sub assemble_diag
       my $waitstatus = call_program($cmd, "rv32_as.log");
       die ("DIE. rv32_as compilation error") if ($waitstatus) ;
 
-    } elsif ($opt{ariane}) {
+    } elsif ($opt{ariane} | $opt{lagarto}) {
       # RISCV flow for RV64IMAC (ARIANE from PULP)
       # only recompile if necessary
       if (!$opt{precompiled}) {
@@ -2649,7 +2658,7 @@ sub parse_args
   }
 
   # in case a precompiled riscv binary for ariane is directly specified
-  if ($opt{precompiled} and $opt{ariane}) {
+  if ($opt{precompiled} and ($opt{ariane} | $opt{lagarto})) {
     if (!($opt{asm_diag_name} =~ /\.riscv/)) {
         $opt{asm_diag_name} = fileparse($opt{asm_diag_name}, qr/\.[^.]*/);
     }
@@ -2712,13 +2721,16 @@ sub parse_args
   $ENV{PITON_PICO}     = $opt{pico};
   $ENV{PITON_PICO_HET} = $opt{pico_het};
   $ENV{PITON_ARIANE}   = $opt{ariane};
+  $ENV{PITON_LAGARTO}  = $opt{lagarto};
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico});
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_ARIANE")   if ($opt{ariane});
   push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{ariane});
+  push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
+  #push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{lagarto});
 
 
-  if ($opt{pico} or $opt{pico_het} or $opt{ariane}) {
+  if ($opt{pico} or $opt{pico_het} or $opt{ariane} or $opt{lagarto}) {
     push (@{$opt{config_rtl}}, "NO_MRA_VAL") ;
     push (@{$opt{config_rtl}}, "NO_SLAM_RANDOM") ;
   }
@@ -2752,6 +2764,8 @@ sub parse_args
         push (@{$opt{config_rtl}}, "RTL_PICO" . $i);
     } elsif ($opt{ariane}) {
         push (@{$opt{config_rtl}}, "RTL_ARIANE" . $i);
+    } elsif ($opt{lagarto}) {
+        push (@{$opt{config_rtl}}, "RTL_LAGARTO" . $i);
     } else {
         push (@{$opt{config_rtl}}, "RTL_SPARC" . $i);
     }
@@ -3040,6 +3054,10 @@ VERILOG COMPILATION RELATED
 
     -ariane
            this specifies that the ARIANE RV64GC core shall be used instead of OpenSPARC.
+           in this case, programs are compiled and assembled using the RISCV GCC toolchain.
+
+    -lagarto
+           this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.
            in this case, programs are compiled and assembled using the RISCV GCC toolchain.
 
 VERILOG RUNTIME RELATED

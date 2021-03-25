@@ -756,6 +756,14 @@ def main():
         for i in range(int(options.num_tiles)):
             os.environ['RTL_ARIANE' + str(i)] = "1"
             print_info('setenv RTL_ARIANE' + str(i))
+    
+    elif options.core == 'lagarto':
+        os.environ['PITON_LAGARTO'] = "1"
+        os.environ['WT_DCACHE']    = "1"
+
+        for i in range(int(options.num_tiles)):
+            os.environ['RTL_LAGARTO' + str(i)] = "1"
+            print_info('setenv RTL_LAGARTO' + str(i))
 
     elif options.core == 'sparc':
         # this is the default

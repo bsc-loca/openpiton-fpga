@@ -59,10 +59,11 @@ if NUM_TILES == -1:
         NUM_TILES = MAX_TILE
 
 PITON_ARIANE   = int(os.environ.get('PITON_ARIANE', '0'))
+PITON_LAGARTO  = int(os.environ.get('PITON_LAGARTO', '0'))
 PITON_PICO     = int(os.environ.get('PITON_PICO', '0'))
 PITON_PICO_HET = int(os.environ.get('PITON_PICO_HET', '0'))
 
-if PITON_ARIANE or PITON_PICO:
+if PITON_ARIANE or PITON_PICO or PITON_LAGARTO:
     NUM_THREADS = NUM_TILES
 else:
     NUM_THREADS = 2 * NUM_TILES

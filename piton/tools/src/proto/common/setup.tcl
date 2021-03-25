@@ -91,7 +91,14 @@ if {[info exists ::env(PITON_ARIANE)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE WT_DCACHE"
 }
 
+if {[info exists ::env(PITON_LAGARTO)]} {
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO WT_DCACHE"
+
+}
 for {set k 0} {$k < $::env(PTON_NUM_TILES)} {incr k} {
+  if {[info exists "::env(RTL_LAGARTO$k)"]} {
+    append ALL_DEFAULT_VERILOG_MACROS " RTL_LAGARTO$k"
+  }
   if {[info exists "::env(RTL_ARIANE$k)"]} {
     append ALL_DEFAULT_VERILOG_MACROS " RTL_ARIANE$k"
   }
