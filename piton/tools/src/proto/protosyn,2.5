@@ -74,6 +74,7 @@ def usage():
     print >> sys.stderr, "                  pico      (32bit RISCV core)"
     print >> sys.stderr, "                  pico_het  (heterogeneous pico+sparc arrangement)"
     print >> sys.stderr, "                  ariane    (64bit RISCV core)"
+    print >> sys.stderr, "                  lagarto   (64bit RISCV core)"
     print >> sys.stderr, "\n       --network_config <network_config>"
     print >> sys.stderr, "              Name of the network type to be used:"
     print >> sys.stderr, "                  2dmesh_config (default)"
@@ -490,6 +491,9 @@ def makeDefList(options):
     if options.core == 'ariane':
         defines.append("NO_RTL_CSM")
 
+    if options.core == 'lagarto':
+        defines.append("NO_RTL_CSM")
+
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
 
@@ -839,6 +843,9 @@ def main():
 
         if options.core == 'ariane':
             config += ' -ariane'
+
+        if options.core == 'lagarto':
+            config += ' -lagarto'
 
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")

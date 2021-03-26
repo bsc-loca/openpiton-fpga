@@ -34,7 +34,9 @@ import time
 
 if PITON_ARIANE:
   devices = pyhplib.ReadDevicesXMLFile()
-
+  
+if PITON_LAGARTO:
+  devices = pyhplib.ReadDevicesXMLFile()
   # just use a default frequency for device tree generation if not defined
   sysFreq = 50000000
   if 'CONFIG_SYS_FREQ' in os.environ:
@@ -1134,12 +1136,86 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
                                     (transducer_l15_size_pcx_standard == `PCX_SZ_16B && 
                                      transducer_l15_rqtype == `PCX_REQTYPE_IFILL && 
                                     ~transducer_l15_invalidate_cacheline) ? `MSG_DATA_SIZE_32B : `MSG_DATA_SIZE_16B; 
-                                    
-    top_drac i_top_drac (
+         
+    wire [40-1:0] lagarto_bootaddr;
+
+<%
+
+def clipAddress(addr, digits):
+    return addr[max(0,len(addr)-digits):]
+
+cacheBase    = 0
+cacheLength  = 0
+dmBase       = 0
+dmLength     = 0
+romBase      = 0
+romLength    = 0
+romIsPresent = 0
+
+execBase   = "{"
+execLength = "{"
+numRules   = 0
+if PITON_LAGARTO:
+    for i in range(len(devices)):
+        if devices[i]["name"] == "mem":
+            cacheBase    = "%X" % devices[i]["base"]
+            cacheLength  = "%X" % devices[i]["length"]
+            numRules    += 1
+            if execBase != "{":
+              execBase   += ", 64'h" + cacheBase
+              execLength += ", 64'h" + cacheLength
+            else:
+              execBase   += "64'h" + cacheBase
+              execLength += "64'h" + cacheLength
+        if devices[i]["name"] == "lagarto_debug":
+            dmBase       = "%X" % devices[i]["base"]
+            dmLength     = "%X" % devices[i]["length"]
+            numRules    += 1
+            if execBase != "{":
+              execBase   += ", 64'h" + dmBase
+              execLength += ", 64'h" + dmLength
+            else:
+              execBase   += "64'h" + dmBase
+              execLength += "64'h" + dmLength
+        if devices[i]["name"] == "lagarto_bootrom":
+            romBase      = "%X" % devices[i]["base"]
+            romLength    = "%X" % devices[i]["length"]
+            numRules    += 1
+            romIsPresent = 1
+            if execBase != "{":
+              execBase   += ", 64'h" + romBase
+              execLength += ", 64'h" + romLength
+            else:
+              execBase   += "64'h" + romBase
+              execLength += "64'h" + romLength
+
+execBase   += "}"
+execLength += "}"
+
+bootAddr = cacheBase
+if romIsPresent:
+  bootAddr = romBase
+
+print("    assign lagarto_bootaddr  =  40'h%s;" % bootAddr)
+%>
+    top_drac #(
+<%
+str = '''
+        .DmBaseAddress          ( 64'h%s ),
+        .SwapEndianess          ( 1'b1 ),
+        .NrExecuteRegionRules   ( %d   ),
+        .ExecuteRegionAddrBase  ( %s   ),
+        .ExecuteRegionLength    ( %s   ),
+        .NrCachedRegionRules    (  1   ),
+        .CachedRegionAddrBase   ( {64'h%s} ),
+        .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, cacheBase, cacheLength)
+print(str)
+%>
+    ) i_top_drac (
         .clk_i               (clk_gated                 ),
         .rstn_i              (rst_n_f                   ),
         .SOFT_RST            (1'h1                      ),
-        .RESET_ADDRESS       (40'h00_8000_0000          ),
+        .RESET_ADDRESS       (lagarto_bootaddr          ),
         //DEBUG RING SIGNALS INPUT
         .debug_halt_i        (1'b0                      ),
         .IO_FETCH_PC_VALUE   (0         ),
