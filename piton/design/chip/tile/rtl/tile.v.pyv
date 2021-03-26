@@ -35,8 +35,6 @@ import time
 if PITON_ARIANE:
   devices = pyhplib.ReadDevicesXMLFile()
   
-if PITON_LAGARTO:
-  devices = pyhplib.ReadDevicesXMLFile()
   # just use a default frequency for device tree generation if not defined
   sysFreq = 50000000
   if 'CONFIG_SYS_FREQ' in os.environ:
@@ -1140,6 +1138,7 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
     wire [40-1:0] lagarto_bootaddr;
 
 <%
+devices = pyhplib.ReadDevicesXMLFile()
 
 def clipAddress(addr, digits):
     return addr[max(0,len(addr)-digits):]
