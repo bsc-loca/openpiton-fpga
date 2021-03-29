@@ -1231,7 +1231,7 @@ print(str)
         .CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000   ),
         .CSR_TVAL            (64'h0000_0000_0000_0000   ),
         .CSR_ERET            (1'b0                      ),
-        .CSR_EVEC            (0        ),
+        .CSR_EVEC            (64'h0000_0000_0000_0000   ),
         .CSR_INTERRUPT       (1'b0                      ),
         .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000   ),
         .io_csr_csr_replay   (1'b0                      ),
