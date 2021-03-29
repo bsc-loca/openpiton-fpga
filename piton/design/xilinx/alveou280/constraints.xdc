@@ -49,7 +49,7 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clki
 
 # False paths
 set_false_path -to [get_cells -hierarchical *afifo_ui_rst_r*]
-#set_false_path -to [get_cells -hierarchical *ui_clk_sync_rst_r*]
+set_false_path -to [get_cells -hierarchical *ui_clk_sync_rst_r*]
 set_false_path -to [get_cells -hierarchical *ui_clk_syn_rst_delayed*]
 set_false_path -to [get_cells -hierarchical *init_calib_complete_f*]
 set_false_path -to [get_cells -hierarchical *chipset_rst_n*]

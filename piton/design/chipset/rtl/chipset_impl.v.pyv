@@ -139,26 +139,17 @@ module chipset_impl(
     output [4:0] pcie_gpio,
     input  pcie_perstn,
     input  pcie_refclk_n,
-    input  pcie_refclk_p
+    input  pcie_refclk_p,
+            //
+    input  hbm_ref_clk,
+    output hbm_cattrip
  `endif
     ,
-    output                                      ddr_act_n,
-    output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
+    
 `else // PITONSYS_DDR4
-    ,
-    output                                      ddr_cas_n,
-    output                                      ddr_ras_n,
-    output                                      ddr_we_n,
+ 
 `endif // PITONSYS_DDR4
-    output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
-    output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
-    output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
-    output                                      ddr_reset_n,
-    inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
-    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+  
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
@@ -166,12 +157,11 @@ module chipset_impl(
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
-	output                                      ddr_parity,
+
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
-`else // PITONSYS_DDR4
-    output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
+
 `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt
 `else // ifndef F1_BOARD
@@ -789,11 +779,11 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_ready(ddr_ready)
         );
     `else
-        mc_top mc_top(
+            mc_top mc_top(
+
             .mc_ui_clk_sync_rst(mc_ui_clk_sync_rst),
 
             .core_ref_clk(chipset_clk),
-            .sys_rst_n(chipset_rst_n),
 
             .mc_flit_in_val(buf_mem_noc2_valid),
             .mc_flit_in_data(buf_mem_noc2_data),
@@ -804,30 +794,18 @@ credit_to_valrdy noc3_xbar_to_%s(
             .mc_flit_out_rdy(buf_mem_noc3_ready),
 
             .uart_boot_en(uart_boot_en),
-            .init_calib_complete_out(init_calib_complete),
-
+        `ifndef ALVEOU280_BOARD  
         `ifdef PITONSYS_DDR4
             .sys_clk_p(mc_clk_p),
             .sys_clk_n(mc_clk_n),
             .ddr_act_n(ddr_act_n),
             .ddr_bg(ddr_bg),
-         `ifdef PITONSYS_PCIE
-	  .pci_express_x16_rxn(pci_express_x16_rxn),
-	  .pci_express_x16_rxp(pci_express_x16_rxp),
-	  .pci_express_x16_txn(pci_express_x16_txn),
-	  .pci_express_x16_txp(pci_express_x16_txp),        
-	  .pcie_gpio(pcie_gpio),
-	  .pcie_perstn(pcie_perstn),
-	  .pcie_refclk_n(pcie_refclk_n),
-	  .pcie_refclk_p(pcie_refclk_p),
-	 `endif
         `else // PITONSYS_DDR4
             .sys_clk(mc_clk),
             .ddr_cas_n(ddr_cas_n),
             .ddr_ras_n(ddr_ras_n),
             .ddr_we_n(ddr_we_n),
         `endif // PITONSYS_DDR4
-
             .ddr_addr(ddr_addr),
             .ddr_ba(ddr_ba),
             .ddr_ck_n(ddr_ck_n),
@@ -837,17 +815,40 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_dq(ddr_dq),
             .ddr_dqs_n(ddr_dqs_n),
             .ddr_dqs_p(ddr_dqs_p),
-        `ifndef NEXYSVIDEO_BOARD
+         `ifndef NEXYSVIDEO_BOARD
             .ddr_cs_n(ddr_cs_n),
         `endif // endif NEXYSVIDEO_BOARD
-        `ifdef XUPP3R_BOARD
-            .ddr_parity(ddr_parity),
+        `endif //ALVEOBOARD
+        
+      `ifdef PITONSYS_DDR4  
+         `ifdef PITONSYS_PCIE
+	  .pci_express_x16_rxn(pci_express_x16_rxn),
+	  .pci_express_x16_rxp(pci_express_x16_rxp),
+	  .pci_express_x16_txn(pci_express_x16_txn),
+	  .pci_express_x16_txp(pci_express_x16_txp),        
+	  .pcie_gpio(pcie_gpio),
+	  .pcie_perstn(pcie_perstn),
+	  .pcie_refclk_n(pcie_refclk_n),
+	  .pcie_refclk_p(pcie_refclk_p),
+	  .hbm_ref_clk(hbm_ref_clk),
+	  .hbm_cattrip(hbm_cattrip),
+	 `endif
+    `ifdef XUPP3R_BOARD
+        .ddr_parity(ddr_parity),
 	`elsif ALVEOU280_BOARD
-	    .ddr_parity(ddr_parity),
-        `else
-            .ddr_dm(ddr_dm),
-        `endif // XUPP3R_BOARD
-            .ddr_odt(ddr_odt)
+	    .sys_clk_p(sys_clk_p),
+	    .sys_clk_n(sys_clk_n),
+    `else
+         .ddr_dm(ddr_dm),
+    `endif // XUPP3R_BOARD
+    `else
+         .ddr_dm(ddr_dm),
+    `endif // PITONSYS_DDR4
+
+            .ddr_odt(ddr_odt),
+            .sys_rst_n(chipset_rst_n),
+            .init_calib_complete_out(init_calib_complete)
+
         );
     `endif // F1_BOARD
 
