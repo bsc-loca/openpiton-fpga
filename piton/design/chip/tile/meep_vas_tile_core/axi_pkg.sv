@@ -66,7 +66,7 @@ package axi_pkg;
   localparam StrbWidth = DataWidth / 8;
 
   typedef logic [IdWidth-1:0]   id_t;
-  typedef logic [AddrWidth-1:0] addr_t;
+  typedef logic [AddrWidth-1:0] addr_axi_t;
   typedef logic [DataWidth-1:0] data_t;
   typedef logic [StrbWidth-1:0] strb_t;
   typedef logic [UserWidth-1:0] user_t;
@@ -74,7 +74,7 @@ package axi_pkg;
   // AW Channel
   typedef struct packed {
       id_t     id;
-      addr_t   addr;
+      addr_axi_t   addr;
       len_t    len;
       size_t   size;
       burst_t  burst;
@@ -102,7 +102,7 @@ package axi_pkg;
   // AR Channel
   typedef struct packed {
       id_t     id;
-      addr_t   addr;
+      addr_axi_t   addr;
       len_t    len;
       size_t   size;
       burst_t  burst;
