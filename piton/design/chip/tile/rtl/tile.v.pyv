@@ -191,6 +191,18 @@ print s
     // PLIC
     input   [1:0]                       irq_i          // level sensitive IR lines, mip & sip (async)
 `endif
+
+`ifdef PITON_LAGARTO
+    ,
+    // Debug
+    input                               debug_req_i,   // async debug request
+    output                              unavailable_o, // communicate whether the hart is unavailable (e.g.: power down)
+    // CLINT
+    input                               timer_irq_i,   // Timer interrupts
+    input                               ipi_i,         // software interrupt (a.k.a inter-process-interrupt)
+    // PLIC
+    input   [1:0]                       irq_i          // level sensitive IR lines, mip & sip (async)
+`endif
 );
     // clock gating
     wire clk_gated;
@@ -1248,6 +1260,7 @@ print(str)
         .io_dc_addrbit_i     (2'b0                      )
     );
 
+    assign unavailable_o = 1'b0;
 
 end
 endgenerate

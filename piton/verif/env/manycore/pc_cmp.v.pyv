@@ -352,6 +352,9 @@ initial begin
 `ifndef PITON_ARIANE
     active_thread = 0;
 `endif
+`ifndef PITON_LAGARTO
+    active_thread = 0;
+`endif
 `endif
     hit_bad   = 0;
     first_rst = 1;
@@ -361,6 +364,9 @@ always @(posedge rst_l)begin
     if(first_rst)begin
 `ifndef PITON_PICO
 `ifndef PITON_ARIANE
+        active_thread = 0;
+`endif
+`ifndef PITON_LAGARTO
         active_thread = 0;
 `endif
 `endif
