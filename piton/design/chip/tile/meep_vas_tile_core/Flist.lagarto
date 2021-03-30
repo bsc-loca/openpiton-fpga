@@ -122,7 +122,7 @@
 ./../ariane/src/tech_cells_generic/src/pulp_clock_mux2.sv
 
 ./../ariane/tb/ariane_soc_pkg.sv
-./../ariane/src/axi/src/axi_pkg.sv
+./axi_pkg.sv
 ./../ariane/include/ariane_axi_pkg.sv
 ./../ariane/src/register_interface/src/reg_intf_pkg.sv
 ./../ariane/src/register_interface/src/reg_intf.sv
