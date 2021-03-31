@@ -45,6 +45,28 @@ if PITON_ARIANE:
   get_bootrom_info(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp)
 %>
 
+<%
+DMBR_BIN_NUM = 10
+import pyhplib
+from riscvlib import *
+import os
+from pyhplib import *
+import riscvlib
+import time
+
+if PITON_LAGARTO:
+  devices = pyhplib.ReadDevicesXMLFile()
+  
+  # just use a default frequency for device tree generation if not defined
+  sysFreq = 50000000
+  if 'CONFIG_SYS_FREQ' in os.environ:
+    sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
+
+  timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
+  gen_riscv_dts(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/../ariane/openpiton/bootrom/", timeStamp)
+  get_bootrom_info(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/../ariane/openpiton/bootrom/", timeStamp)
+%>
+
 module tile #(
      parameter TILE_TYPE = `SPARC_TILE
 ) (
@@ -1150,8 +1172,6 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
     wire [40-1:0] lagarto_bootaddr;
 
 <%
-devices = pyhplib.ReadDevicesXMLFile()
-
 def clipAddress(addr, digits):
     return addr[max(0,len(addr)-digits):]
 

@@ -71,6 +71,7 @@ fi
 
 # set root directory
 export PITON_ROOT=`pwd`
+export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/meep_vas_tile_core/
 export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 
 ## GCC and RISCV GCC setup
