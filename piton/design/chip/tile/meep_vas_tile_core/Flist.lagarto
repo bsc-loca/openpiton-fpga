@@ -7,7 +7,7 @@
 ./../ariane/include/riscv_pkg.sv
 ./../ariane/src/riscv-dbg/src/dm_pkg.sv
 ./ariane_pkg.sv
-./../ariane/include/wt_cache_pkg.sv
+./ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv
 
 ./meep-vpu/src/include/config_control.svh
 ./meep-vpu/src/include/bsc_custom_defines.svh

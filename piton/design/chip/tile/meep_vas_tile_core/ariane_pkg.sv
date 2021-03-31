@@ -23,6 +23,10 @@
   `include "l15.tmp.h"
 `endif
 
+`ifdef PITON_LAGARTO
+  `include "l15.tmp.h"
+`endif
+
 package ariane_pkg;
 
     // ---------------
@@ -155,6 +159,10 @@ package ariane_pkg;
 
 
 `ifdef PITON_ARIANE
+    // Floating-point extensions configuration
+    localparam bit RVF = 1'b1; // Is F extension enabled
+    localparam bit RVD = 1'b1; // Is D extension enabled
+`elsif PITON_LAGARTO
     // Floating-point extensions configuration
     localparam bit RVF = 1'b1; // Is F extension enabled
     localparam bit RVD = 1'b1; // Is D extension enabled
@@ -418,6 +426,44 @@ package ariane_pkg;
     localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
     localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
     localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
+
+`elsif PITON_LAGARTO
+
+`ifndef CONFIG_L1I_CACHELINE_WIDTH
+    `define CONFIG_L1I_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1I_ASSOCIATIVITY
+    `define CONFIG_L1I_ASSOCIATIVITY 4
+`endif
+
+`ifndef CONFIG_L1I_SIZE
+    `define CONFIG_L1I_SIZE 16*1024
+`endif
+
+`ifndef CONFIG_L1D_CACHELINE_WIDTH
+    `define CONFIG_L1D_CACHELINE_WIDTH 128
+`endif
+
+`ifndef CONFIG_L1D_ASSOCIATIVITY
+    `define CONFIG_L1D_ASSOCIATIVITY 8
+`endif
+
+`ifndef CONFIG_L1D_SIZE
+    `define CONFIG_L1D_SIZE 32*1024
+`endif
+
+    // I$
+    localparam int unsigned ICACHE_LINE_WIDTH  = `CONFIG_L1I_CACHELINE_WIDTH;
+    localparam int unsigned ICACHE_SET_ASSOC   = `CONFIG_L1I_ASSOCIATIVITY;
+    localparam int unsigned ICACHE_INDEX_WIDTH = $clog2(`CONFIG_L1I_SIZE / ICACHE_SET_ASSOC);
+    localparam int unsigned ICACHE_TAG_WIDTH   = riscv::PLEN - ICACHE_INDEX_WIDTH;
+    // D$
+    localparam int unsigned DCACHE_LINE_WIDTH  = `CONFIG_L1D_CACHELINE_WIDTH;
+    localparam int unsigned DCACHE_SET_ASSOC   = `CONFIG_L1D_ASSOCIATIVITY;
+    localparam int unsigned DCACHE_INDEX_WIDTH = $clog2(`CONFIG_L1D_SIZE / DCACHE_SET_ASSOC);
+    localparam int unsigned DCACHE_TAG_WIDTH   = riscv::PLEN - DCACHE_INDEX_WIDTH;
+
 `else
     // align to openpiton for the time being (this should be more configurable in the future)
      // I$

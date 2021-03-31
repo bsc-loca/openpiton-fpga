@@ -1452,6 +1452,24 @@ chipset_impl_noc_power_test  chipset_impl (
         .ipi_o                  ( ipi_o         ),
         .irq_o                  ( irq_o         )
     `endif
+    
+    `ifdef PITONLAGARTO
+        ,
+        .ndmreset_o             ( ndmreset_o    ),
+        .dmactive_o             ( dmactive_o    ),
+        .debug_req_o            ( debug_req_o   ),
+        .unavailable_i          ( unavailable_i ),
+        .tck_i                  ( tck_i         ),
+        .tms_i                  ( tms_i         ),
+        .trst_ni                ( trst_ni       ),
+        .td_i                   ( td_i          ),
+        .td_o                   ( td_o          ),
+        .tdo_oe_o               ( tdo_oe_o      ),
+        .rtc_i                  ( rtc_i         ),
+        .timer_irq_o            ( timer_irq_o   ),
+        .ipi_o                  ( ipi_o         ),
+        .irq_o                  ( irq_o         )
+    `endif
 );
 
 

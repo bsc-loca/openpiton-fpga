@@ -87,6 +87,43 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
    print("`define L15_CACHELINE_WIDTH %d" % (L15_LINE_SIZE*8))
 %>
 
+<%
+   import math
+   import pyhplib
+   from pyhplib import *
+
+   if 'PITON_LAGARTO' in globals():
+       print("// this is used in the lagarto SV packages to derive the parameterization")
+       print("`define CONFIG_L1D_CACHELINE_WIDTH %d"  % 128) # constant at the moment
+       print("`define CONFIG_L1I_CACHELINE_WIDTH %d"  % 256) # constant at the moment
+       print("`define CONFIG_L15_SIZE %d"             % CONFIG_L15_SIZE)
+       print("`define CONFIG_L1D_SIZE %d"             % CONFIG_L1D_SIZE)
+       print("`define CONFIG_L1I_SIZE %d"             % CONFIG_L1I_SIZE)
+       print("`define CONFIG_L15_ASSOCIATIVITY %d"    % CONFIG_L15_ASSOCIATIVITY)
+       print("`define CONFIG_L1D_ASSOCIATIVITY %d"    % CONFIG_L1D_ASSOCIATIVITY)
+       print("`define CONFIG_L1I_ASSOCIATIVITY %d"    % CONFIG_L1I_ASSOCIATIVITY)
+       print("\n\n")
+
+   # 512
+   numentries = CONFIG_L15_SIZE / L15_LINE_SIZE
+   # 512
+   print("`define L15_NUM_ENTRIES %d" % numentries)
+   # 9
+   print("`define L15_NUM_ENTRIES_LOG2 %d" % math.log(numentries, 2))
+   # 4
+   print("`define L15_WAY_COUNT %d" % CONFIG_L15_ASSOCIATIVITY)
+   # 2
+   print("`define L15_WAY_WIDTH %d" % math.log(CONFIG_L15_ASSOCIATIVITY, 2))
+
+   l15_set_count = numentries / CONFIG_L15_ASSOCIATIVITY
+   l1d_set_count = CONFIG_L1D_SIZE / L15_LINE_SIZE / CONFIG_L1D_ASSOCIATIVITY
+   if l15_set_count > l1d_set_count:
+      print("`define L15_WMT_EXTENDED_ALIAS")
+      print("`define L15_WMT_ALIAS_WIDTH %d" % math.log(l15_set_count/l1d_set_count, 2))
+
+   print("`define L15_CACHELINE_WIDTH %d" % (L15_LINE_SIZE*8))
+%>
+
 `define L15_MESI_STATE_WIDTH 2
 `define L15_MESI_STATE_I 2'd0
 `define L15_MESI_STATE_S 2'd1
@@ -356,7 +393,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `define L15_CONTROL_BLOCKSTORE_1B (`L15_CONTROL_NC_1B + 1)
 `define L15_CONTROL_WIDTH (`L15_CONTROL_BLOCKSTORE_1B + 1)
 
-// define the width of the flattened, native L15 interface, used for ARIANE_RV64 option
+// define the width of the flattened, native L15 interface, used for ARIANE_RV64 and LAGARTO option
 `define L15_REQ_WIDTH  (14 + 40 + 2*64 +      \
                         `PCX_REQTYPE_WIDTH  + \
                         `L15_THREADID_WIDTH + \

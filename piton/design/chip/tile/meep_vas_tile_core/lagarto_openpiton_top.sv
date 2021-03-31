@@ -506,7 +506,7 @@ datapath datapath_inst(
   assign icache_dreq_i.req     = lagarto_ireq.valid;
   assign icache_dreq_i.kill_s1 = lagarto_ireq.kill;
   assign icache_dreq_i.kill_s2 = 1'b0;
-  assign icache_dreq_i.vaddr   = lagarto_ireq.vpn;
+  assign icache_dreq_i.vaddr   = {24'b0, lagarto_ireq.vpn, lagarto_ireq.idx};
 
   assign icache_resp.data  = icache_dreq_o.data;
   assign icache_resp.vaddr = 0;//icache_dreq_o.vaddr;
@@ -579,13 +579,14 @@ datapath datapath_inst(
   mmu #(
         .INSTR_TLB_ENTRIES(16),
         .DATA_TLB_ENTRIES (16),
-        .ASID_WIDTH       (ASID_WIDTH)
+        .ASID_WIDTH       (ASID_WIDTH),
+        .ArianeCfg        (ArianeOpenPitonCfg)
     ) i_mmu (
     .clk_i                 (clk_i          ),
     .rst_ni                (rstn_i         ),
     .flush_i               (               ),
-    .enable_translation_i  (1'b1           ),
-    .en_ld_st_translation_i(1'b1           ),
+    .enable_translation_i  (1'b0           ),
+    .en_ld_st_translation_i(1'b0           ),
     // Address translation request
     .icache_areq_i         (icache_mmu_areq),
     .icache_areq_o         (mmu_icache_areq),
@@ -598,8 +599,8 @@ datapath datapath_inst(
     .lsu_valid_o           (               ),
     .lsu_paddr_o           (               ),
     //.lsu_exception_o       (               ),
-    .priv_lvl_i            (               ),
-    .ld_st_priv_lvl_i      (               ),
+    .priv_lvl_i            (riscv::PRIV_LVL_M),
+    .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M),
     .sum_i                 (              ),
     .mxr_i                 (1'b1           ),
     .satp_ppn_i            (44'h80000000   ),
