@@ -506,8 +506,7 @@ def makeDefList(options):
     # --hbm option
     if (options.hbm == True) :
         defines.append("PITONSYS_HBM2")
-    else:
-        defines.append("PITONSYS_DDR4")      
+     
     # --axi4_mem option
     if (options.axi4_mem == True):
         if (options.board not in {"vc707", "xupp3r"}):
