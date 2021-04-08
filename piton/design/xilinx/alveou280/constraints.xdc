@@ -266,7 +266,7 @@ set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports uart_rx]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
 set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/axi_gpio_0/U0/gpio_core_1/Not_Dual.gpio_Data_Out_reg[*]/C}]
-set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/proc_sys_reset_1/U0/PR_OUT_DFF[0].FDRE_PER_replica/C}] -to [get_pins chipset/chipset_impl/mc_top/ui_clk_sync_rst_r_reg/D] 
+#set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/proc_sys_reset_1/U0/PR_OUT_DFF[0].FDRE_PER_replica/C}] -to [get_pins chipset/chipset_impl/mc_top/ui_clk_sync_rst_r_reg/D] 
 
 
 #set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}]

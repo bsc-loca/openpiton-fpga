@@ -243,20 +243,19 @@ module chipset(
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
+`ifdef PITONSYS_PCIE
+    input  [15:0] pci_express_x16_rxn,
+    input  [15:0] pci_express_x16_rxp,
+    output [15:0] pci_express_x16_txn,
+    output [15:0] pci_express_x16_txp,   
+    output [4:0] pcie_gpio,     
+    input  pcie_perstn,
+    input  pcie_refclk_n,
+    input  pcie_refclk_p,
+    //
+`endif
 `ifdef PITONSYS_DDR4
-       `ifdef PITONSYS_PCIE
-        input  [15:0] pci_express_x16_rxn,
-        input  [15:0] pci_express_x16_rxp,
-        output [15:0] pci_express_x16_txn,
-        output [15:0] pci_express_x16_txp,   
-        output [4:0] pcie_gpio,     
-        input  pcie_perstn,
-        input  pcie_refclk_n,
-        input  pcie_refclk_p,
-        //
-        input  hbm_ref_clk,
-        output hbm_cattrip,
-       `endif
+
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
@@ -267,6 +266,7 @@ module chipset(
 `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
 `endif // PITONSYS_DDR4
+
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
 `else // F1_BOARD
     input                                        mc_clk,
@@ -329,6 +329,11 @@ module chipset(
 `endif // ifndef F1_BOARD
 `endif //`ifdef PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
+
+`ifdef PITONSYS_HBM2
+    input  hbm_ref_clk,
+    output hbm_cattrip,
+`endif
 
 
 `ifdef PITONSYS_IOCTRL
@@ -1307,36 +1312,54 @@ chipset_impl_noc_power_test  chipset_impl (
             .init_calib_complete(init_calib_complete),
             `ifndef F1_BOARD
                 `ifdef PITONSYS_DDR4
-                	`ifdef PITONSYS_PCIE
-                     .pci_express_x16_rxn(pci_express_x16_rxn),
-                     .pci_express_x16_rxp(pci_express_x16_rxp),
-                     .pci_express_x16_txn(pci_express_x16_txn),
-                     .pci_express_x16_txp(pci_express_x16_txp),
-                     .pcie_gpio(pcie_gpio),        
-                     .pcie_perstn(pcie_perstn),
-                     .pcie_refclk_n(pcie_refclk_n),
-                     .pcie_refclk_p(pcie_refclk_p),
-                     
-                     .hbm_ref_clk(hbm_ref_clk),
-                     .hbm_cattrip(hbm_cattrip),
-                    `endif
+                    .ddr_act_n(ddr_act_n),                    
+                    .ddr_bg(ddr_bg), 
 
                 `else // PITONSYS_DDR4
+                    .ddr_cas_n(ddr_cas_n),
+                    .ddr_ras_n(ddr_ras_n),
+                    .ddr_we_n(ddr_we_n),
 
                 `endif // PITONSYS_DDR4
-
-
+                .ddr_addr(ddr_addr),
+                .ddr_ba(ddr_ba),
+                .ddr_ck_n(ddr_ck_n),
+                .ddr_ck_p(ddr_ck_p),
+                .ddr_cke(ddr_cke),
+                .ddr_reset_n(ddr_reset_n),
+                .ddr_dq(ddr_dq),
+                .ddr_dqs_n(ddr_dqs_n),
+                .ddr_dqs_p(ddr_dqs_p),
                 `ifndef NEXYSVIDEO_BOARD
                     .ddr_cs_n(ddr_cs_n),
                 `endif // endif NEXYSVIDEO_BOARD
-            
+                `ifdef PITONSYS_DDR4
+         
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
-		`elsif ALVEOU280_BOARD
+		        `elsif ALVEOU280_BOARD
+                    .ddr_parity(ddr_parity),
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
-                .ddr_odt(ddr_odt)
+                `else // PITONSYS_DDR4
+                    .ddr_dm(ddr_dm),
+                `endif // PITONSYS_DDR4
+
+                .ddr_odt(ddr_odt),
+        
+            `ifdef PITONSYS_PCIE
+             .pci_express_x16_rxn(pci_express_x16_rxn),
+             .pci_express_x16_rxp(pci_express_x16_rxp),
+             .pci_express_x16_txn(pci_express_x16_txn),
+             .pci_express_x16_txp(pci_express_x16_txp),
+             .pcie_gpio(pcie_gpio),        
+             .pcie_perstn(pcie_perstn),
+             .pcie_refclk_n(pcie_refclk_n),
+             .pcie_refclk_p(pcie_refclk_p)
+             
+             `endif
+            
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),
                 // AXI Write Address Channel Signals
@@ -1398,6 +1421,13 @@ chipset_impl_noc_power_test  chipset_impl (
             `endif //ifndef F1_BOARD
         `endif // endif PITON_FPGA_MC_DDR3
     `endif // endif PITONSYS_NO_MC
+                
+    `ifdef PITONSYS_HBM2
+       ,
+       .hbm_ref_clk(hbm_ref_clk),
+       .hbm_cattrip(hbm_cattrip)
+     `endif
+
 
     `ifdef PITONSYS_IOCTRL
         `ifdef PITONSYS_UART

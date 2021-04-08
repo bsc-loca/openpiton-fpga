@@ -99,6 +99,8 @@ def usage():
     print("              Name of the test to be mapped into BRAM", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
+    print("\n       --hbm", file=sys.stderr)
+    print("              Implement design with HBM memory (meep entity)", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
@@ -460,6 +462,7 @@ def setParserOptions(parser):
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
+    parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
@@ -500,6 +503,11 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
 
+    # --hbm option
+    if (options.hbm == True) :
+        defines.append("PITONSYS_HBM2")
+    else:
+        defines.append("PITONSYS_DDR4")      
     # --axi4_mem option
     if (options.axi4_mem == True):
         if (options.board not in {"vc707", "xupp3r"}):

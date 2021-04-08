@@ -42,9 +42,8 @@ module mc_top (
     input                           mc_flit_out_rdy,
 
     input                           uart_boot_en,
-`ifndef ALVEOU280_BOARD  
+    
 `ifdef PITONSYS_DDR4
-   
     // directly feed in 250MHz ref clock
     input                           sys_clk_p,
     input                           sys_clk_n,
@@ -71,9 +70,21 @@ module mc_top (
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]     ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
-`endif //ALVEOBOARD
 `ifdef PITONSYS_DDR4
-  `ifdef PITONSYS_PCIE
+
+`ifdef XUPP3R_BOARD
+    output                          ddr_parity,
+`elsif ALVEOU280_BOARD	
+	output                          ddr_parity,
+`else
+    inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
+`endif // XUPP3R_BOARD
+`else // PITONSYS_DDR4
+    output [`DDR3_DM_WIDTH-1:0]     ddr_dm,
+`endif // PITONSYS_DDR4
+    output [`DDR3_ODT_WIDTH-1:0]    ddr_odt,
+
+`ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
     output [15:0] pci_express_x16_txn,
@@ -82,22 +93,12 @@ module mc_top (
     input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
-    //
+ `endif
+
+`ifdef PITONSYS_HBM2
     input  hbm_ref_clk,
     output hbm_cattrip,
- `endif
-`ifdef XUPP3R_BOARD
-    output                          ddr_parity,
-`elsif ALVEOU280_BOARD	
-	input                           sys_clk_p,
-    input                           sys_clk_n,		
-`else
-    inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
-`endif // XUPP3R_BOARD
-`else // PITONSYS_DDR4
-    output [`DDR3_DM_WIDTH-1:0]     ddr_dm,
-`endif // PITONSYS_DDR4
-    output [`DDR3_ODT_WIDTH-1:0]    ddr_odt,
+`endif
 
     output                          init_calib_complete_out,
     input                           sys_rst_n
@@ -956,7 +957,7 @@ axi4_zeroer axi4_zeroer(
 );
 `endif // PITONSYS_MEM_ZEROER
 
-`ifdef PITONSYS_DDR4
+`ifdef PITONSYS_HBM2
 `ifdef PITONSYS_PCIE
 
 //wire init_calib_complete_c;
@@ -1030,14 +1031,118 @@ meep_shell meep_shell_i
 		.ui_clk_sync_rst( ui_clk_sync_rst           ),
         .ui_clk(ui_clk)
         );
-       
+        
 //       always @ (posedge ui_clk) begin
 //        init_calib_complete_r <= {init_calib_complete_r[1], init_calib_complete_c};
 //       end
        
 //       assign init_calib_complete = init_calib_complete_r[2];
+`endif//PITONSYS_PCIE      
+`else //PITONSYS_HBM2
+
+`ifdef PITONSYS_DDR4 
+`ifdef PITONSYS_PCIE
+
+meep_shell_ddr meep_shell_ddr_i
+       (.C0_DDR4_S_AXI_CTRL_0_araddr(32'b0),
+        .C0_DDR4_S_AXI_CTRL_0_arready(),
+        .C0_DDR4_S_AXI_CTRL_0_arvalid(1'b0),
+        .C0_DDR4_S_AXI_CTRL_0_awaddr(32'b0),
+        .C0_DDR4_S_AXI_CTRL_0_awready(),
+        .C0_DDR4_S_AXI_CTRL_0_awvalid(1'b0),
+        .C0_DDR4_S_AXI_CTRL_0_bready(1'b0),
+        .C0_DDR4_S_AXI_CTRL_0_bresp(),
+        .C0_DDR4_S_AXI_CTRL_0_bvalid(),
+        .C0_DDR4_S_AXI_CTRL_0_rdata(),
+        .C0_DDR4_S_AXI_CTRL_0_rready(1'b0),
+        .C0_DDR4_S_AXI_CTRL_0_rresp(),
+        .C0_DDR4_S_AXI_CTRL_0_rvalid(),
+        .C0_DDR4_S_AXI_CTRL_0_wdata(32'b0),
+        .C0_DDR4_S_AXI_CTRL_0_wready(),
+        .C0_DDR4_S_AXI_CTRL_0_wvalid(1'b0),
         
-`else
+        .axi4_mm_araddr(m_axi_araddr),
+        .axi4_mm_arburst(m_axi_arburst),
+        .axi4_mm_arcache(m_axi_arcache),
+        .axi4_mm_arid(m_axi_arid),
+        .axi4_mm_arlen(m_axi_arlen),
+        .axi4_mm_arlock(m_axi_arlock),
+        .axi4_mm_arprot(m_axi_arprot),
+        .axi4_mm_arqos(m_axi_arqos),
+        .axi4_mm_arready(m_axi_arready),
+        .axi4_mm_arsize(m_axi_arsize),
+       // .axi4_mm_aruser(axi4_mm_aruser),
+        .axi4_mm_arvalid(m_axi_arvalid),
+        
+        .axi4_mm_awaddr(m_axi_awaddr),
+        .axi4_mm_awburst(m_axi_awburst),
+        .axi4_mm_awcache(m_axi_awcache),
+        .axi4_mm_awid(m_axi_awid),
+        .axi4_mm_awlen(m_axi_awlen),
+        .axi4_mm_awlock(m_axi_awlock),
+        .axi4_mm_awprot(m_axi_awprot),
+        .axi4_mm_awqos(m_axi_awqos),
+        .axi4_mm_awready(m_axi_awready),
+        .axi4_mm_awsize(m_axi_awsize),
+     //   .axi4_mm_awuser(m_axi_awuser),
+        .axi4_mm_awvalid(m_axi_awvalid),
+        
+        .axi4_mm_bid(m_axi_bid),
+        .axi4_mm_bready(m_axi_bready),
+        .axi4_mm_bresp(m_axi_bresp),
+        .axi4_mm_bvalid(m_axi_bvalid),
+        
+        .axi4_mm_rdata(m_axi_rdata),
+        .axi4_mm_rid(m_axi_rid),
+        .axi4_mm_rlast(m_axi_rlast),
+        .axi4_mm_rready(m_axi_rready),
+        .axi4_mm_rresp(m_axi_rresp),
+        .axi4_mm_rvalid(m_axi_rvalid),
+        
+        .axi4_mm_wdata(m_axi_wdata),
+        .axi4_mm_wlast(m_axi_wlast),
+        .axi4_mm_wready(m_axi_wready),
+        .axi4_mm_wstrb(m_axi_wstrb),
+   //     .axi4_mm_wuser(m_axi_wuser),
+        .axi4_mm_wvalid(m_axi_wvalid),
+        
+        .c0_init_calib_complete_0(init_calib_complete),
+        
+        .ddr4_sdram_c0_act_n(ddr_act_n),
+        .ddr4_sdram_c0_adr(ddr_addr),
+        .ddr4_sdram_c0_ba(ddr_ba),
+        .ddr4_sdram_c0_bg(ddr_bg),
+        .ddr4_sdram_c0_ck_c(ddr_ck_n),
+        .ddr4_sdram_c0_ck_t(ddr_ck_p),
+        .ddr4_sdram_c0_cke(ddr_cke),
+        .ddr4_sdram_c0_cs_n(ddr_cs_n),
+        .ddr4_sdram_c0_dq(ddr_dq),
+        .ddr4_sdram_c0_dqs_c(ddr_dqs_n),
+        .ddr4_sdram_c0_dqs_t(ddr_dqs_p),
+        .ddr4_sdram_c0_odt(ddr_odt),
+        .ddr4_sdram_c0_par(ddr_parity),
+        .ddr4_sdram_c0_reset_n(ddr_reset_n),
+        
+        //.c0_ddr4_aresetn(sys_rst_n),
+        
+        .ddr_clk_clk_n(sys_clk_n),
+        .ddr_clk_clk_p(sys_clk_p),
+        .sys_rst(~sys_rst_n),
+        
+        .pci_express_x16_rxn(pci_express_x16_rxn),
+        .pci_express_x16_rxp(pci_express_x16_rxp),
+        .pci_express_x16_txn(pci_express_x16_txn),
+        .pci_express_x16_txp(pci_express_x16_txp),
+        .pcie_gpio(pcie_gpio),
+        .pcie_perstn(pcie_perstn),
+        .pcie_refclk_clk_n( pcie_refclk_n),
+        .pcie_refclk_clk_p( pcie_refclk_p),
+		.ui_clk_sync_rst( ui_clk_sync_rst           ),
+        .ui_clk(ui_clk)
+        );
+
+  
+`else // PITONSYS_PCIE
  
 ddr4_axi4 ddr_axi4 (
   .sys_rst                   ( ~sys_rst_n                ),
@@ -1217,6 +1322,7 @@ mig_7series_axi4 u_mig_7series_axi4 (
 );
 
 `endif // PITONSYS_DDR4
+`endif//PITONSYS_HBM2      
 `endif // PITONSYS_AXI4_MEM
 
 `ifdef PITON_PROTO

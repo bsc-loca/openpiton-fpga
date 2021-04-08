@@ -721,6 +721,7 @@ set CHIPSET_RTL_IMPL_FILES [list \
 
 set BLOCK_DESIGN_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
+    "${DV_ROOT}/design/chipset/meep/meep_shell_ddr.bd" \
 ]
 
 set CHIPSET_INCLUDE_FILES [list \

@@ -106,7 +106,7 @@ module system(
     input                                       passthru_chipset_clk_p,
     input                                       passthru_chipset_clk_n,
 `endif // endif PITON_PASSTHRU_CLKS_GEN
-`endif // endif PITON_SYS_INC_PASSTHRU
+`endif // endif PITONSYS_INC_PASSTHRU
 
 `ifndef F1_BOARD
 `ifdef PITON_CHIPSET_CLKS_GEN
@@ -119,18 +119,10 @@ module system(
 
 // 250MHz(VCU118) or 100 MHz(XUPP3R) diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
- `ifdef PITONSYS_PCIE
-    input  [15:0] pci_express_x16_rxn,
-    input  [15:0] pci_express_x16_rxp,
-    output [15:0] pci_express_x16_txn,
-    output [15:0] pci_express_x16_txp,        
-    input  pcie_perstn,
-    input  pcie_refclk_n,
-    input  pcie_refclk_p,
-  `endif
     input                                       mc_clk_p,
     input                                       mc_clk_n,
 `endif // PITONSYS_DDR4
+
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     input                                       chipset_clk,
@@ -221,30 +213,66 @@ module system(
 `ifndef F1_BOARD
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
+    
+    `ifndef PITONSYS_HBM2
+
     `ifdef PITONSYS_DDR4
+    output                                      ddr_act_n,
+    output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
 
     `else // PITONSYS_DDR4
-
+    output                                      ddr_cas_n,
+    output                                      ddr_ras_n,
+    output                                      ddr_we_n,
     `endif
 	
 	`ifdef ALVEOU280_BOARD
-
+	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
+	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
+    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
 	`else // PITONSYS_DDR4
-
+	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
+	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
+    inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
 	`endif
 
-
+    output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
+    output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
+    output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
+    output                                      ddr_reset_n,
+    inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
 
     `ifndef NEXYSVIDEO_BOARD
+    output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
     `endif // endif NEXYSVIDEO_BOARD
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 	`elsif ALVEOU280_BOARD		
+	output                                      ddr_parity,
     `else
+    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
     `endif // XUPP3R_BOARD
     `else // PITONSYS_DDR4
+    output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
     `endif // PITONSYS_DDR4
+    output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
+    
+    
+    `endif //PITONSYS_HBM2
+
+    
+    `ifdef PITONSYS_PCIE
+    input  [15:0] pci_express_x16_rxn,
+    input  [15:0] pci_express_x16_rxp,
+    output [15:0] pci_express_x16_txn,
+    output [15:0] pci_express_x16_txp,        
+    input  pcie_perstn,
+    input  pcie_refclk_n,
+    input  pcie_refclk_p,
+    `endif //PITONSYS_PCIE
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals
@@ -403,7 +431,7 @@ module system(
     output [7:0]                                leds
 `endif
 
-`ifdef ALVEOU280_BOARD
+`ifdef PITONSYS_HBM2
     input  hbm_ref_clk_p,
     input  hbm_ref_clk_n,
     output hbm_cattrip  // Tie to 0 to avoid problems when HBM is not used
@@ -997,22 +1025,21 @@ chipset chipset(
 
 // 250MHz diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
-	`ifdef PITONSYS_PCIE
-	 .pci_express_x16_rxn(pci_express_x16_rxn),
-	 .pci_express_x16_rxp(pci_express_x16_rxp),
-	 .pci_express_x16_txn(pci_express_x16_txn),
-	 .pci_express_x16_txp(pci_express_x16_txp),  
-	 .pcie_gpio(pcie_gpio),      
-	 .pcie_perstn(pcie_perstn),
-	 .pcie_refclk_n(pcie_refclk_n),
-	 .pcie_refclk_p(pcie_refclk_p),
-	 //
-	 .hbm_ref_clk(hbm_ref_clk),
-	 .hbm_cattrip(hbm_cattrip),
-	`endif
     .mc_clk_p(mc_clk_p),
     .mc_clk_n(mc_clk_n),
 `endif // PITONSYS_DDR4
+
+`ifdef PITONSYS_PCIE
+ .pci_express_x16_rxn(pci_express_x16_rxn),
+ .pci_express_x16_rxp(pci_express_x16_rxp),
+ .pci_express_x16_txn(pci_express_x16_txn),
+ .pci_express_x16_txp(pci_express_x16_txp),  
+ .pcie_gpio(pcie_gpio),      
+ .pcie_perstn(pcie_perstn),
+ .pcie_refclk_n(pcie_refclk_n),
+ .pcie_refclk_p(pcie_refclk_p),
+	 //
+`endif
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     .chipset_clk(chipset_clk),
@@ -1116,22 +1143,33 @@ chipset chipset(
 `ifdef PITON_FPGA_MC_DDR3
 `ifndef F1_BOARD
 `ifdef PITONSYS_DDR4
-
+    .ddr_act_n(ddr_act_n),
+    .ddr_bg(ddr_bg),
 `else // PITONSYS_DDR4
-
+    .ddr_cas_n(ddr_cas_n),
+    .ddr_ras_n(ddr_ras_n),
+    .ddr_we_n(ddr_we_n),
 `endif // PITONSYS_DDR4
-
-`ifndef ALVEOU280_BOARD	
-
-`endif	
-
+    .ddr_addr(ddr_addr),
+    .ddr_ba(ddr_ba),
+    .ddr_ck_n(ddr_ck_n),
+    .ddr_ck_p(ddr_ck_p),
+	.ddr_dqs_n(ddr_dqs_n),
+    .ddr_dqs_p(ddr_dqs_p),
+    .ddr_cke(ddr_cke),
+    .ddr_reset_n(ddr_reset_n),
+    .ddr_dq(ddr_dq),
 
 `ifndef NEXYSVIDEO_BOARD
     .ddr_cs_n(ddr_cs_n),
 `endif // endif NEXYSVIDEO_BOARD
+`ifdef PITONSYS_DDR4
+
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
 `elsif ALVEOU280_BOARD	
+	.ddr_parity(ddr_parity),
+`endif
 
 `else
     .ddr_dm(ddr_dm),
@@ -1198,6 +1236,12 @@ chipset chipset(
 `endif // ifndef F1_BOARD
 `endif // PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
+
+
+`ifdef PITONSYS_HBM2
+.hbm_ref_clk(hbm_ref_clk),
+.hbm_cattrip(hbm_cattrip),
+`endif
 
 `ifdef PITONSYS_IOCTRL
 `ifdef PITONSYS_UART
