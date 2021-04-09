@@ -1,6 +1,6 @@
 
 ################################################################
-# This is a generated script based on design: meep_shell
+# This is a generated script based on design: meep_shell_ddr
 #
 # Though there are limitations about the generated script,
 # the main purpose of this utility is to make learning
@@ -35,7 +35,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 ################################################################
 
 # To test this script, run the following commands from Vivado Tcl console:
-# source meep_shell_script.tcl
+# source meep_shell_ddr_script.tcl
 
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project

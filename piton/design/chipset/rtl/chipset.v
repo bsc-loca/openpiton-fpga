@@ -243,6 +243,8 @@ module chipset(
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
+
+`ifdef PITONSYS_DDR4
 `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
@@ -254,8 +256,6 @@ module chipset(
     input  pcie_refclk_p,
     //
 `endif
-`ifdef PITONSYS_DDR4
-
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
@@ -1312,6 +1312,17 @@ chipset_impl_noc_power_test  chipset_impl (
             .init_calib_complete(init_calib_complete),
             `ifndef F1_BOARD
                 `ifdef PITONSYS_DDR4
+                     `ifdef PITONSYS_PCIE
+                     .pci_express_x16_rxn(pci_express_x16_rxn),
+                     .pci_express_x16_rxp(pci_express_x16_rxp),
+                     .pci_express_x16_txn(pci_express_x16_txn),
+                     .pci_express_x16_txp(pci_express_x16_txp),
+                     .pcie_gpio(pcie_gpio),        
+                     .pcie_perstn(pcie_perstn),
+                     .pcie_refclk_n(pcie_refclk_n),
+                     .pcie_refclk_p(pcie_refclk_p),
+                     
+                     `endif
                     .ddr_act_n(ddr_act_n),                    
                     .ddr_bg(ddr_bg), 
 
@@ -1346,19 +1357,7 @@ chipset_impl_noc_power_test  chipset_impl (
                     .ddr_dm(ddr_dm),
                 `endif // PITONSYS_DDR4
 
-                .ddr_odt(ddr_odt),
-        
-            `ifdef PITONSYS_PCIE
-             .pci_express_x16_rxn(pci_express_x16_rxn),
-             .pci_express_x16_rxp(pci_express_x16_rxp),
-             .pci_express_x16_txn(pci_express_x16_txn),
-             .pci_express_x16_txp(pci_express_x16_txp),
-             .pcie_gpio(pcie_gpio),        
-             .pcie_perstn(pcie_perstn),
-             .pcie_refclk_n(pcie_refclk_n),
-             .pcie_refclk_p(pcie_refclk_p)
-             
-             `endif
+                .ddr_odt(ddr_odt)
             
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),

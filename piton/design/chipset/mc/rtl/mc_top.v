@@ -71,7 +71,16 @@ module mc_top (
     output [`DDR3_CS_WIDTH-1:0]     ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef PITONSYS_DDR4
-
+`ifdef PITONSYS_PCIE
+    input  [15:0] pci_express_x16_rxn,
+    input  [15:0] pci_express_x16_rxp,
+    output [15:0] pci_express_x16_txn,
+    output [15:0] pci_express_x16_txp,  
+    output [4:0] pcie_gpio,      
+    input  pcie_perstn,
+    input  pcie_refclk_n,
+    input  pcie_refclk_p,
+ `endif
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD	
@@ -83,17 +92,6 @@ module mc_top (
     output [`DDR3_DM_WIDTH-1:0]     ddr_dm,
 `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]    ddr_odt,
-
-`ifdef PITONSYS_PCIE
-    input  [15:0] pci_express_x16_rxn,
-    input  [15:0] pci_express_x16_rxp,
-    output [15:0] pci_express_x16_txn,
-    output [15:0] pci_express_x16_txp,  
-    output [4:0] pcie_gpio,      
-    input  pcie_perstn,
-    input  pcie_refclk_n,
-    input  pcie_refclk_p,
- `endif
 
 `ifdef PITONSYS_HBM2
     input  hbm_ref_clk,

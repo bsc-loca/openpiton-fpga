@@ -119,6 +119,15 @@ module system(
 
 // 250MHz(VCU118) or 100 MHz(XUPP3R) diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
+ `ifdef PITONSYS_PCIE
+    input  [15:0] pci_express_x16_rxn,
+    input  [15:0] pci_express_x16_rxp,
+    output [15:0] pci_express_x16_txn,
+    output [15:0] pci_express_x16_txp,        
+    input  pcie_perstn,
+    input  pcie_refclk_n,
+    input  pcie_refclk_p,
+  `endif
     input                                       mc_clk_p,
     input                                       mc_clk_n,
 `endif // PITONSYS_DDR4
@@ -262,17 +271,6 @@ module system(
     
     
     `endif //PITONSYS_HBM2
-
-    
-    `ifdef PITONSYS_PCIE
-    input  [15:0] pci_express_x16_rxn,
-    input  [15:0] pci_express_x16_rxp,
-    output [15:0] pci_express_x16_txn,
-    output [15:0] pci_express_x16_txp,        
-    input  pcie_perstn,
-    input  pcie_refclk_n,
-    input  pcie_refclk_p,
-    `endif //PITONSYS_PCIE
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals
@@ -1029,21 +1027,19 @@ chipset chipset(
 
 // 250MHz diff input ref clock for DDR4 memory controller
 `ifdef PITONSYS_DDR4
+	`ifdef PITONSYS_PCIE
+	 .pci_express_x16_rxn(pci_express_x16_rxn),
+	 .pci_express_x16_rxp(pci_express_x16_rxp),
+	 .pci_express_x16_txn(pci_express_x16_txn),
+	 .pci_express_x16_txp(pci_express_x16_txp),  
+	 .pcie_gpio(pcie_gpio),      
+	 .pcie_perstn(pcie_perstn),
+	 .pcie_refclk_n(pcie_refclk_n),
+	 .pcie_refclk_p(pcie_refclk_p),
+	`endif
     .mc_clk_p(mc_clk_p),
     .mc_clk_n(mc_clk_n),
 `endif // PITONSYS_DDR4
-
-`ifdef PITONSYS_PCIE
- .pci_express_x16_rxn(pci_express_x16_rxn),
- .pci_express_x16_rxp(pci_express_x16_rxp),
- .pci_express_x16_txn(pci_express_x16_txn),
- .pci_express_x16_txp(pci_express_x16_txp),  
- .pcie_gpio(pcie_gpio),      
- .pcie_perstn(pcie_perstn),
- .pcie_refclk_n(pcie_refclk_n),
- .pcie_refclk_p(pcie_refclk_p),
-	 //
-`endif
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     .chipset_clk(chipset_clk),
@@ -1156,10 +1152,12 @@ chipset chipset(
 `endif // PITONSYS_DDR4
     .ddr_addr(ddr_addr),
     .ddr_ba(ddr_ba),
+    `ifndef ALVEOU280_BOARD	
     .ddr_ck_n(ddr_ck_n),
     .ddr_ck_p(ddr_ck_p),
 	.ddr_dqs_n(ddr_dqs_n),
     .ddr_dqs_p(ddr_dqs_p),
+    `endif
     .ddr_cke(ddr_cke),
     .ddr_reset_n(ddr_reset_n),
     .ddr_dq(ddr_dq),
@@ -1172,6 +1170,10 @@ chipset chipset(
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
 `elsif ALVEOU280_BOARD	
+	.ddr_ck_n(ddr_ck_c),
+    .ddr_ck_p(ddr_ck_t),
+	.ddr_dqs_n(ddr_dqs_c),
+    .ddr_dqs_p(ddr_dqs_t),
 	.ddr_parity(ddr_parity),
 `endif
 
