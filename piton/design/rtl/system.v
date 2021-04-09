@@ -231,7 +231,7 @@ module system(
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
 	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
-	`else // PITONSYS_DDR4
+	`else // ALVEOU280_BOARD
 	output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
 	inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
@@ -434,6 +434,10 @@ module system(
 `ifdef PITONSYS_HBM2
     input  hbm_ref_clk_p,
     input  hbm_ref_clk_n,
+`endif
+
+
+`ifdef ALVEOU280_BOARD
     output hbm_cattrip  // Tie to 0 to avoid problems when HBM is not used
 `endif
 );

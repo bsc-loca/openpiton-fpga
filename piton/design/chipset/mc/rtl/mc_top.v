@@ -1040,6 +1040,8 @@ meep_shell meep_shell_i
 `endif//PITONSYS_PCIE      
 `else //PITONSYS_HBM2
 
+assign hbm_cattrip = 0;
+
 `ifdef PITONSYS_DDR4 
 `ifdef PITONSYS_PCIE
 
