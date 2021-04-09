@@ -821,7 +821,6 @@ credit_to_valrdy noc3_xbar_to_%s(
 	  .pcie_refclk_n(pcie_refclk_n),
 	  .pcie_refclk_p(pcie_refclk_p),
 	 `endif
-        `ifndef ALVEOU280_BOARD
         `ifdef PITONSYS_DDR4
             .sys_clk_p(mc_clk_p),
             .sys_clk_n(mc_clk_n),
@@ -847,14 +846,11 @@ credit_to_valrdy noc3_xbar_to_%s(
         `ifndef NEXYSVIDEO_BOARD
             .ddr_cs_n(ddr_cs_n),
         `endif // endif NEXYSVIDEO_BOARD
-        `endif // endif ALVEOU280_BOARD
         `ifdef PITONSYS_DDR4
         `ifdef XUPP3R_BOARD
             .ddr_parity(ddr_parity),
 	`elsif ALVEOU280_BOARD
 	    .ddr_parity(ddr_parity),
-	    .sys_clk_p(sys_clk_p),
-	    .sys_clk_n(sys_clk_n),
 
 
         `else
