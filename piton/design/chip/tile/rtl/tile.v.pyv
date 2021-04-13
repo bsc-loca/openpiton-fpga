@@ -1229,7 +1229,7 @@ if romIsPresent:
 
 print("    assign lagarto_bootaddr  =  40'h%s;" % bootAddr)
 %>
-    top_drac #(
+    lagarto_verilog_wrap #(
 <%
 str = '''
         .DmBaseAddress          ( 64'h%s ),
@@ -1242,50 +1242,20 @@ str = '''
         .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, cacheBase, cacheLength)
 print(str)
 %>
-    ) i_top_drac (
+    ) core (
         .clk_i               (clk_gated                 ),
-        .rstn_i              (rst_n_f                   ),
-        .SOFT_RST            (1'h1                      ),
+        .reset_l             (rst_n_f                   ),
+        .spc_grst_l          (spc_grst_l                ),
         .RESET_ADDRESS       (lagarto_bootaddr          ),
-        //DEBUG RING SIGNALS INPUT
-        .debug_halt_i        (1'b0                      ),
-        .IO_FETCH_PC_VALUE   (0         ),
-        .IO_FETCH_PC_UPDATE  (1'b0                      ),
-        .IO_REG_READ         (1'b0                      ),
-        .IO_REG_ADDR         (5'b0                      ),
-        .IO_REG_WRITE        (1'b0                      ),
-        .IO_REG_WRITE_DATA   (64'h0000_0000_0000_0000   ),
-        .DMEM_ORDERED        (1'b0                      ),
-        // CSR
-        .CSR_RW_RDATA        (64'h0000_0000_0000_0000   ),
-        .CSR_CSR_STALL       (1'b0                      ),
-        .CSR_XCPT            (1'b0                      ),
-        .CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000   ),
-        .CSR_TVAL            (64'h0000_0000_0000_0000   ),
-        .CSR_ERET            (1'b0                      ),
-        .CSR_EVEC            (64'h0000_0000_0000_0000   ),
-        .CSR_INTERRUPT       (1'b0                      ),
-        .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000   ),
-        .io_csr_csr_replay   (1'b0                      ),
-        .csr_priv_lvl_i      (2'b00                     ),
-        .csr_vpu_data_i      (0                         ),
-        
         
         .l15_req_o           (l15_req                   ),
-        .l15_rtrn_i          (l15_rtrn                  ),
-        
-        // debugging module signal
-        .io_core_pmu_l2_hit_i(1'b0                      ),
-        .io_dc_gvalid_i      (1'b0                      ),
-        .io_dc_addrbit_i     (2'b0                      )
+        .l15_rtrn_i          (l15_rtrn                  )
     );
 
     assign unavailable_o = 1'b0;
 
 end
 endgenerate
-
-
 
     //////////
     // L1.5 //

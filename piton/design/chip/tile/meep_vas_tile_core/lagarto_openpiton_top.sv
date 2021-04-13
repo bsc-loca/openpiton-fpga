@@ -24,27 +24,8 @@ import EPI_pkg::*;
 import drac_icache_pkg::*;
 import ariane_pkg::*;
 
-module top_drac #(
-  parameter int unsigned               RASDepth              = 2,
-  parameter int unsigned               BTBEntries            = 32,
-  parameter int unsigned               BHTEntries            = 128,
-  // debug module base address
-  parameter logic [63:0]               DmBaseAddress         = 64'h0,
-  // swap endianess in l15 adapter
-  parameter bit                        SwapEndianess         = 1,
-  // PMA configuration
-  // idempotent region
-  parameter int unsigned               NrNonIdempotentRules  =  0,
-  parameter logic [NrMaxRules*64-1:0]  NonIdempotentAddrBase = '0,
-  parameter logic [NrMaxRules*64-1:0]  NonIdempotentLength   = '0,
-  // executable regions
-  parameter int unsigned               NrExecuteRegionRules  =  0,
-  parameter logic [NrMaxRules*64-1:0]  ExecuteRegionAddrBase = '0,
-  parameter logic [NrMaxRules*64-1:0]  ExecuteRegionLength   = '0,
-  // cacheable regions
-  parameter int unsigned               NrCachedRegionRules   =  0,
-  parameter logic [NrMaxRules*64-1:0]  CachedRegionAddrBase  = '0,
-  parameter logic [NrMaxRules*64-1:0]  CachedRegionLength    = '0
+module lagarto_openpiton_top #(
+  parameter ariane_pkg::ariane_cfg_t ArianeCfg       = ariane_pkg::ArianeDefaultConfig  // contains cacheable regions
 )(
 //------------------------------------------------------------------------------------
 // ORIGINAL INPUTS OF LAGARTO 
@@ -514,31 +495,9 @@ datapath datapath_inst(
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = 1'b0;//icache_dreq_o.ex.valid;
 
-  localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
-    RASDepth:              RASDepth,
-    BTBEntries:            BTBEntries,
-    BHTEntries:            BHTEntries,
-    // idempotent region
-    NrNonIdempotentRules:  NrNonIdempotentRules,
-    NonIdempotentAddrBase: NonIdempotentAddrBase,
-    NonIdempotentLength:   NonIdempotentLength,
-    NrExecuteRegionRules:  NrExecuteRegionRules,
-    ExecuteRegionAddrBase: ExecuteRegionAddrBase,
-    ExecuteRegionLength:   ExecuteRegionLength,
-    // cached region
-    NrCachedRegionRules:   NrCachedRegionRules,
-    CachedRegionAddrBase:  CachedRegionAddrBase,
-    CachedRegionLength:    CachedRegionLength,
-    // cache config
-    Axi64BitCompliant:     1'b0,
-    SwapEndianess:         SwapEndianess,
-    // debug
-    DmBaseAddress:         DmBaseAddress
-  };
-
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
-    .ArianeCfg(ArianeOpenPitonCfg)
+    .ArianeCfg ( ArianeCfg )
   ) i_cache_subsystem (
     // to D$
     .clk_i             (clk_i          ),
@@ -580,7 +539,7 @@ datapath datapath_inst(
         .INSTR_TLB_ENTRIES(16),
         .DATA_TLB_ENTRIES (16),
         .ASID_WIDTH       (ASID_WIDTH),
-        .ArianeCfg        (ArianeOpenPitonCfg)
+        .ArianeCfg        (ArianeCfg)
     ) i_mmu (
     .clk_i                 (clk_i          ),
     .rst_ni                (rstn_i         ),

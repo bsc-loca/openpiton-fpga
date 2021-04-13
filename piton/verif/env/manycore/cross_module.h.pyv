@@ -100,7 +100,7 @@ for i in range(NUM_TILES):
     printstring = """
     `define TILE%d            `CHIP.tile%d
     `define ARIANE_CORE%d     `TILE%d.g_ariane_core.core.ariane
-    `define LAGARTO_CORE%d    `TILE%d.g_lagarto_m20_core.i_top_drac
+    `define LAGARTO_CORE%d    `TILE%d.g_lagarto_m20_core.core.lagarto_m20
     `define SPARC_CORE%d      `TILE%d.g_sparc_core.core
     `define PICO_CORE%d       `TILE%d.g_picorv32_core.core
     `ifdef RTL_SPARC%d
@@ -110,7 +110,7 @@ for i in range(NUM_TILES):
     `define CORE_REF%d        `TILE%d.g_ariane_core.core
     `endif // ifdef RTL_ARIANE%d
     `ifdef RTL_LAGARTO%d
-    `define CORE_REF%d        `TILE%d.g_lagarto_m20_core.i_top_drac
+    `define CORE_REF%d        `TILE%d.g_lagarto_m20_core.core
     `endif // ifdef RTL_LAGARTO%d
     `ifdef RTL_PICO%d
     `define CORE_REF%d        `PICO_CORE%d

@@ -171,4 +171,5 @@
 ./ariane_cache_subsystem/cache_subsystem/wt_l15_adapter.sv
 ./ariane_cache_subsystem/cache_subsystem/wt_cache_subsystem.sv
 
+./lagarto_verilog_wrap.sv
 ./lagarto_openpiton_top.sv
