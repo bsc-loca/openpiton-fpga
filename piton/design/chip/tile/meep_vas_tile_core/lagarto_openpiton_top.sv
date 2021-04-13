@@ -490,7 +490,7 @@ datapath datapath_inst(
   assign icache_dreq_i.vaddr   = {24'b0, lagarto_ireq.vpn, lagarto_ireq.idx};
 
   assign icache_resp.data  = icache_dreq_o.data;
-  assign icache_resp.vaddr = 0;//icache_dreq_o.vaddr;
+  assign icache_resp.vaddr = icache_dreq_o.vaddr;
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = 1'b0;//icache_dreq_o.ex.valid;
