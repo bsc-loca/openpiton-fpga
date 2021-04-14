@@ -74,6 +74,8 @@ STORAGE_BLOCK_BIT_WIDTH         =   {   "ddr":  {   "vc707":512,
                                                     "nexysVideo":512,
                                                     "piton_board":512,
                                                     "f1":512
+                                                },
+                                        "hbm":  {   "alveou280":256
                                                 }
                                     }
 
@@ -105,7 +107,10 @@ STORAGE_ADDRESSABLE_BIT_WIDTH   =   {   "ddr":  {   "vc707":64,
                                                     "nexysVideo":512,
                                                     "piton_board":512,
                                                     "f1":512
+                                                },
+                                        "hbm":  {   "alveou280":33
                                                 }
+
                                     }
 
 STORAGE_BIT_SIZE                =   {   "ddr":  {   "vc707":8*2**30,
@@ -135,6 +140,8 @@ STORAGE_BIT_SIZE                =   {   "ddr":  {   "vc707":8*2**30,
                                                     "genesys2":8*2**30,
                                                     "nexysVideo":8*512*2**20,
                                                     "f1":8*4*2**30
+                                                },
+                                        "hbm":  {   "alveou280":8*4*2**33
                                                 }
                                     }
 DW_BIT_SIZE     = 64
