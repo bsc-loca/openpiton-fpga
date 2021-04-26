@@ -140,8 +140,8 @@
 ./../ariane/src/riscv-dbg/src/dmi_jtag_tap.sv
 ./../ariane/src/riscv-dbg/debug_rom/debug_rom.sv
 ./../ariane/openpiton/riscv_peripherals.sv
-./../ariane/openpiton/bootrom/baremetal/bootrom.sv
-./../ariane/openpiton/bootrom/linux/bootrom_linux.sv
+./bootrom/baremetal/bootrom.sv
+./bootrom/linux/bootrom_linux.sv
 
 ./../ariane/src/axi_mem_if/src/axi2mem.sv
 ./../ariane/src/common_cells/src/cdc_2phase.sv

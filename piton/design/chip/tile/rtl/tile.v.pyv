@@ -63,8 +63,8 @@ if PITON_LAGARTO:
     sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
   timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-  gen_riscv_dts(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/../ariane/openpiton/bootrom/", timeStamp)
-  get_bootrom_info(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/../ariane/openpiton/bootrom/", timeStamp)
+  gen_riscv_dts(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp)
+  get_bootrom_info(devices, X_TILES*Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp)
 %>
 
 module tile #(

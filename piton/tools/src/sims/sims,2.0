@@ -1273,10 +1273,10 @@ sub pre_build
   }
 
   if($opt{lagarto}) {
-    print "compiling DTS and bootroms for Ariane...\n";
-    !system("cd $ENV{LAGARTO_ROOT}/../ariane/openpiton/bootrom/baremetal && make clean && make all && cd - > /dev/null") or
+    print "compiling DTS and bootroms for Lagarto..\n";
+    !system("cd $ENV{LAGARTO_ROOT}/bootrom/baremetal && make clean && make all && cd - > /dev/null") or
       die (" Error compiling DTS for ariane.");
-    !system("cd $ENV{LAGARTO_ROOT}/../ariane/openpiton/bootrom/linux && make clean && make all MAX_HARTS=$ENV{PTON_NUM_TILES} && cd - > /dev/null") or
+    !system("cd $ENV{LAGARTO_ROOT}/bootrom/linux && make clean && make all MAX_HARTS=$ENV{PTON_NUM_TILES} && cd - > /dev/null") or
       die (" Error compiling DTS for ariane.");
     print "done\n";
     # currently we have two sources (hardcoded in chipset_impl): UART and Ethernet
