@@ -161,7 +161,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%d>;
             status = "okay";
             compatible = "eth, ariane", "riscv";
-            riscv,isa = "rv64imafdc";
+            riscv,isa = "rv64ima";
             mmu-type = "riscv,sv39";
             tlb-split;
             // HLIC - hart local interrupt controller
