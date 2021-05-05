@@ -274,6 +274,27 @@ ifill_resp_i_t ifill_resp   ;
 ifill_req_o_t  ifill_req    ;
 logic          iflush       ;
 
+//dCache
+    // Request to dCache
+logic        dcache_req_valid;
+logic [4:0]  dcache_req_cmd;
+addr_t       dcache_req_addr;
+logic [3:0]  dcache_op_type;
+bus64_t      dcache_req_data;
+logic [7:0]  dcache_req_tag;
+logic        dcache_req_invalidate_lr;
+logic        dcache_req_kill;
+    // dCache Answer
+logic        dcache_resp_replay;
+bus64_t      dcache_resp_data;
+logic        dcache_req_ready;
+logic        dcache_resp_valid;
+logic        dcache_resp_nack;
+logic        dcache_xcpt_ma_st;
+logic        dcache_xcpt_ma_ld;
+logic        dcache_xcpt_pf_st;
+logic        dcache_xcpt_pf_ld;
+
 //--PMU
 to_PMU_t       pmu_flags    ;
 logic          buffer_miss  ;
@@ -485,10 +506,9 @@ datapath datapath_inst(
   ariane_pkg::icache_dreq_o_t icache_dreq_o;
 
   assign icache_dreq_i.req     = lagarto_ireq.valid;
-  assign icache_dreq_i.kill_s1 = lagarto_ireq.kill;
-  assign icache_dreq_i.kill_s2 = 1'b0;
+  assign icache_dreq_i.kill_s1 = iflush;
+  assign icache_dreq_i.kill_s2 = icache_dreq_i.kill_s1 |lagarto_ireq.kill;
   assign icache_dreq_i.vaddr   = {24'b0, lagarto_ireq.vpn, lagarto_ireq.idx};
-
   assign icache_resp.data  = icache_dreq_o.data;
   assign icache_resp.vaddr = icache_dreq_o.vaddr;
   assign icache_resp.valid = icache_dreq_o.valid;
@@ -570,6 +590,42 @@ datapath datapath_inst(
     .req_port_i            (   '0           ),
     .req_port_o            (               )
   );   
+
+  dcache_interface dcache_interface_inst(
+    .clk_i                 (clk_i          ),
+    .rstn_i                (rstn_i         ),
+
+    .req_cpu_dcache_i      (req_datapath_dcache_interface),
+
+    // DCACHE Answer
+    .dmem_resp_replay_i    (dcache_resp_replay),
+    .dmem_resp_data_i      (dcache_resp_data),
+    .dmem_req_ready_i      (dcache_req_ready),
+    .dmem_resp_valid_i     (dcache_resp_valid), 
+    .dmem_resp_nack_i      (dcache_resp_nack),
+    .dmem_xcpt_ma_st_i     (dcache_xcpt_ma_st),
+    .dmem_xcpt_ma_ld_i     (dcache_xcpt_ma_ld),
+    .dmem_xcpt_pf_st_i     (dcache_xcpt_pf_st),
+    .dmem_xcpt_pf_ld_i     (dcache_xcpt_pf_ld),
+
+    // Interface request
+    .dmem_req_valid_o      (dcache_req_valid),
+    .dmem_req_cmd_o        (dcache_req_cmd ),
+    .dmem_req_addr_o       (dcache_req_addr),
+    .dmem_op_type_o        (dcache_op_type ),
+    .dmem_req_data_o       (dcache_req_data),
+    .dmem_req_tag_o        (dcache_req_tag ),
+    .dmem_req_invalidate_lr_o(dcache_req_invalidate_lr),
+    .dmem_req_kill_o       (dcache_req_kill),
+
+    // PMU
+    .dmem_is_store_o (  ),
+    .dmem_is_load_o  (   ),
+    
+    // DCACHE Answer to cpu
+    .resp_dcache_cpu_o     (resp_dcache_interface_datapath) 
+);
+
 
 `else // Original lowrisc-lagarto
   
