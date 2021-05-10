@@ -115,6 +115,7 @@ bus64_t              CSR_RW_WDATA;
 logic   [2:0]        CSR_RW_CMD;
 logic                CSR_RETIRE;
 addr_t               CSR_PC;
+logic                dcache_en_csr;
 
 csr_cmd_t csr_op;
 assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
@@ -167,7 +168,7 @@ csr_regfile i_csr_regfile (
   .debug_mode_o          ( ),
   .single_step_o         ( ),
   .icache_en_o           ( ),
-  .dcache_en_o           ( ),
+  .dcache_en_o           (dcache_en_csr),
   .perf_addr_o           ( ),
   .perf_data_o           ( ),
   .perf_data_i           ( 0 ),
@@ -205,7 +206,7 @@ lagarto_openpiton_top #(
     .io_csr_csr_replay   (1'b0                   ),
     .csr_priv_lvl_i      (2'b00                  ),
     .csr_vpu_data_i      (0                      ),
-    
+    .csr_dcache_enable_i (dcache_en_csr          ), 
     // CSR Output
     .CSR_RW_ADDR          (CSR_RW_ADDR),
     .CSR_RW_CMD           (CSR_RW_CMD),

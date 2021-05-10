@@ -175,3 +175,4 @@
 
 ./lagarto_verilog_wrap.sv
 ./lagarto_openpiton_top.sv
+./lagarto_dcache_interface.sv

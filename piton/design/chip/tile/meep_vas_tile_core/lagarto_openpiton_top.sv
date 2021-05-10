@@ -65,6 +65,7 @@ module lagarto_openpiton_top #(
     input logic                 io_csr_csr_replay,
     input [1:0]                 csr_priv_lvl_i,
     input ovi_csr_data_t        csr_vpu_data_i,
+    input  logic                csr_dcache_enable_i,
 
 //-----------------------------------------------------------------------------------
 // CSR OUTPUT INTERFACE
@@ -276,25 +277,49 @@ logic          iflush       ;
 
 //dCache
     // Request to dCache
-logic        dcache_req_valid;
-logic [4:0]  dcache_req_cmd;
-addr_t       dcache_req_addr;
-logic [3:0]  dcache_op_type;
-bus64_t      dcache_req_data;
-logic [7:0]  dcache_req_tag;
-logic        dcache_req_invalidate_lr;
-logic        dcache_req_kill;
+//logic        dcache_req_valid;
+//logic [4:0]  dcache_req_cmd;
+//addr_t       dcache_req_addr;
+//logic [3:0]  dcache_op_type;
+//bus64_t      dcache_req_data;
+//logic [7:0]  dcache_req_tag;
+//logic        dcache_req_invalidate_lr;
+//logic        dcache_req_kill;
     // dCache Answer
-logic        dcache_resp_replay;
-bus64_t      dcache_resp_data;
-logic        dcache_req_ready;
-logic        dcache_resp_valid;
-logic        dcache_resp_nack;
-logic        dcache_xcpt_ma_st;
-logic        dcache_xcpt_ma_ld;
-logic        dcache_xcpt_pf_st;
-logic        dcache_xcpt_pf_ld;
+//logic        dcache_resp_replay;
+//bus64_t      dcache_resp_data;
+//logic        dcache_req_ready;
+//logic        dcache_resp_valid;
+//logic        dcache_resp_nack;
+//logic        dcache_xcpt_ma_st;
+//logic        dcache_xcpt_ma_ld;
+//logic        dcache_xcpt_pf_st;
+//logic        dcache_xcpt_pf_ld;
+    // AMO Interface
+amo_req_t    dcache_amo_req;
+amo_resp_t   dcache_amo_resp;
+    //Load Store INterface
+dcache_req_i_t[2:0] dcache_lsu_req;   
+dcache_req_o_t[2:0] dcache_lsu_resp;
 
+wire [DCACHE_INDEX_WIDTH-1:0]  lagarto_ld_req_addr_index ;
+wire [DCACHE_TAG_WIDTH-1:0]    lagarto_ld_req_addr_tag   ;
+wire [63:0]                    lagarto_ld_req_wdata      ;
+wire                           lagarto_ld_req_valid      ;
+wire                           lagarto_ld_req_we         ;
+wire [7:0]                     lagarto_ld_req_be         ;
+wire [1:0]                     lagarto_ld_req_size       ;
+wire                           lagarto_ld_req_kill       ;
+wire                           lagarto_ld_req_tag_valid  ;
+wire [DCACHE_INDEX_WIDTH-1:0]  lagarto_st_req_addr_index ;
+wire [DCACHE_TAG_WIDTH-1:0]    lagarto_st_req_addr_tag   ;
+wire [63:0]                    lagarto_st_req_wdata      ;
+wire                           lagarto_st_req_valid      ;
+wire                           lagarto_st_req_we         ;
+wire [7:0]                     lagarto_st_req_be         ;
+wire [1:0]                     lagarto_st_req_size       ;
+wire                           lagarto_st_req_kill       ;
+wire                           lagarto_st_req_tag_valid  ;   
 //--PMU
 to_PMU_t       pmu_flags    ;
 logic          buffer_miss  ;
@@ -514,6 +539,28 @@ datapath datapath_inst(
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = 1'b0;//icache_dreq_o.ex.valid;
+  
+  // D$ request
+                                                                                           
+  assign dcache_lsu_req[1].address_index =  lagarto_ld_req_addr_index;     
+  assign dcache_lsu_req[1].address_tag   =  lagarto_ld_req_addr_tag  ;     
+  assign dcache_lsu_req[1].data_wdata    =  lagarto_ld_req_wdata     ;     
+  assign dcache_lsu_req[1].data_req      =  lagarto_ld_req_valid     ;     
+  assign dcache_lsu_req[1].data_we       =  lagarto_ld_req_we        ;     
+  assign dcache_lsu_req[1].data_be       =  lagarto_ld_req_be        ;     
+  assign dcache_lsu_req[1].data_size     =  lagarto_ld_req_size      ;     
+  assign dcache_lsu_req[1].kill_req      =  lagarto_ld_req_kill      ;     
+  assign dcache_lsu_req[1].tag_valid     =  lagarto_ld_req_tag_valid ;
+
+  assign dcache_lsu_req[2].address_index =  lagarto_st_req_addr_index;     
+  assign dcache_lsu_req[2].address_tag   =  lagarto_st_req_addr_tag  ;     
+  assign dcache_lsu_req[2].data_wdata    =  lagarto_st_req_wdata     ;     
+  assign dcache_lsu_req[2].data_req      =  lagarto_st_req_valid     ;     
+  assign dcache_lsu_req[2].data_we       =  lagarto_st_req_we        ;     
+  assign dcache_lsu_req[2].data_be       =  lagarto_st_req_be        ;     
+  assign dcache_lsu_req[2].data_size     =  lagarto_st_req_size      ;     
+  assign dcache_lsu_req[2].kill_req      =  lagarto_st_req_kill      ;     
+  assign dcache_lsu_req[2].tag_valid     =  lagarto_st_req_tag_valid ;     
 
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
@@ -535,16 +582,16 @@ datapath datapath_inst(
     .icache_dreq_o     (icache_dreq_o  ),
     
     // D$
-    .dcache_enable_i   (               0),
+    .dcache_enable_i   (csr_dcache_enable_i),
     .dcache_flush_i    (               0),
     .dcache_flush_ack_o(               ),
     // to commit stage
-    .dcache_amo_req_i  (               0),
-    .dcache_amo_resp_o (               ),
+    .dcache_amo_req_i  ( ),
+    .dcache_amo_resp_o (),
     // from PTW, Load Unit  and Store Unit
     .dcache_miss_o     (               ),
-    .dcache_req_ports_i(               0),
-    .dcache_req_ports_o(               ),
+    .dcache_req_ports_i(dcache_lsu_req ),
+    .dcache_req_ports_o(dcache_lsu_resp),
     // write buffer status
     .wbuffer_empty_o   (               ),
     
@@ -588,42 +635,31 @@ datapath datapath_inst(
     .itlb_miss_o           (               ),
     .dtlb_miss_o           (               ),
     .req_port_i            (   '0           ),
-    .req_port_o            (               )
+    .req_port_o            (dcache_lsu_req[0])
   );   
 
-  dcache_interface dcache_interface_inst(
-    .clk_i                 (clk_i          ),
-    .rstn_i                (rstn_i         ),
-
-    .req_cpu_dcache_i      (req_datapath_dcache_interface),
-
-    // DCACHE Answer
-    .dmem_resp_replay_i    (dcache_resp_replay),
-    .dmem_resp_data_i      (dcache_resp_data),
-    .dmem_req_ready_i      (dcache_req_ready),
-    .dmem_resp_valid_i     (dcache_resp_valid), 
-    .dmem_resp_nack_i      (dcache_resp_nack),
-    .dmem_xcpt_ma_st_i     (dcache_xcpt_ma_st),
-    .dmem_xcpt_ma_ld_i     (dcache_xcpt_ma_ld),
-    .dmem_xcpt_pf_st_i     (dcache_xcpt_pf_st),
-    .dmem_xcpt_pf_ld_i     (dcache_xcpt_pf_ld),
-
-    // Interface request
-    .dmem_req_valid_o      (dcache_req_valid),
-    .dmem_req_cmd_o        (dcache_req_cmd ),
-    .dmem_req_addr_o       (dcache_req_addr),
-    .dmem_op_type_o        (dcache_op_type ),
-    .dmem_req_data_o       (dcache_req_data),
-    .dmem_req_tag_o        (dcache_req_tag ),
-    .dmem_req_invalidate_lr_o(dcache_req_invalidate_lr),
-    .dmem_req_kill_o       (dcache_req_kill),
-
-    // PMU
-    .dmem_is_store_o (  ),
-    .dmem_is_load_o  (   ),
-    
-    // DCACHE Answer to cpu
-    .resp_dcache_cpu_o     (resp_dcache_interface_datapath) 
+  lagarto_dcache_interface lagarto_dcache_interface_inst(
+    .clk_i                   (clk_i          ),
+    .rstn_i                  (rstn_i         ),
+    .req_cpu_dcache_i        (req_datapath_dcache_interface),
+    .ld_mem_req_addr_index_o (lagarto_ld_req_addr_index),
+    .ld_mem_req_addr_tag_o   (lagarto_ld_req_addr_tag),
+    .ld_mem_req_wdata_o      (lagarto_ld_req_wdata),
+    .ld_mem_req_valid_o      (lagarto_ld_req_valid),
+    .ld_mem_req_we_o         (lagarto_ld_req_we),
+    .ld_mem_req_be_o         (lagarto_ld_req_be),
+    .ld_mem_req_size_o       (lagarto_ld_req_size),
+    .ld_mem_req_kill_o       (lagarto_ld_req_kill),
+    .ld_mem_req_tag_valid_o  (lagarto_ld_req_tag_valid),
+    .st_mem_req_addr_index_o (lagarto_st_req_addr_index),
+    .st_mem_req_addr_tag_o   (lagarto_st_req_addr_tag),
+    .st_mem_req_wdata_o      (lagarto_st_req_wdata),
+    .st_mem_req_valid_o      (lagarto_st_req_valid),
+    .st_mem_req_we_o         (lagarto_st_req_we),
+    .st_mem_req_be_o         (lagarto_st_req_be),
+    .st_mem_req_size_o       (lagarto_st_req_size),
+    .st_mem_req_kill_o       (lagarto_st_req_kill),
+    .st_mem_req_tag_valid_o  (lagarto_st_req_tag_valid)    
 );
 
 
