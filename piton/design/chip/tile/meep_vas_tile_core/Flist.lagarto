@@ -176,3 +176,5 @@
 ./lagarto_verilog_wrap.sv
 ./lagarto_openpiton_top.sv
 ./lagarto_dcache_interface.sv
+./ld_st_FSM.v
+./l1_dcache_adapter.v

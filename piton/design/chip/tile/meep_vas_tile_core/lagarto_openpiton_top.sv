@@ -304,6 +304,13 @@ wire                           lagarto_st_req_tag_valid  ;
     //TLB
 wire        lsu_dtlb_hit;
 wire [63:0] lsu_paddr   ;
+wire        lsu_req     ;
+wire [63:0] lsu_vaddr   ;
+wire        lsu_store   ;
+wire        lsu_load    ;
+
+
+
 //--PMU
 to_PMU_t       pmu_flags    ;
 logic          buffer_miss  ;
@@ -602,9 +609,9 @@ datapath datapath_inst(
     .icache_areq_o         (mmu_icache_areq ),
     
     //.misaligned_ex_i       ('0  ),
-    .lsu_req_i             (    0           ),
-    .lsu_vaddr_i           (   0            ),
-    .lsu_is_store_i        (  0             ),
+    .lsu_req_i             (lsu_req         ),
+    .lsu_vaddr_i           (lsu_vaddr       ),
+    .lsu_is_store_i        (lsu_store       ),
     .lsu_dtlb_hit_o        (lsu_dtlb_hit    ),
     .lsu_valid_o           (                ),
     .lsu_paddr_o           (lsu_paddr       ),
@@ -625,9 +632,13 @@ datapath datapath_inst(
   lagarto_dcache_interface lagarto_dcache_interface_inst(
     .clk_i                      (clk_i              ),
     .rstn_i                     (rstn_i             ),
+    .req_cpu_dcache_i           (req_datapath_dcache_interface),
     .dtlb_hit_i                 (lsu_dtlb_hit       ),
     .paddr_i                    (lsu_paddr          ),
-    .req_cpu_dcache_i           (req_datapath_dcache_interface),
+    .mmu_req_o                  (lsu_req            ),
+    .mmu_vaddr_o                (lsu_vaddr          ),
+    .mmu_store_o                (lsu_store          ),
+    .mmu_load_o                 (lsu_load           ),
     .ld_mem_req_addr_index_o    (lagarto_ld_req_addr_index),
     .ld_mem_req_addr_tag_o      (lagarto_ld_req_addr_tag),
     .ld_mem_req_wdata_o         (lagarto_ld_req_wdata),
