@@ -276,25 +276,6 @@ ifill_req_o_t  ifill_req    ;
 logic          iflush       ;
 
 //dCache
-    // Request to dCache
-//logic        dcache_req_valid;
-//logic [4:0]  dcache_req_cmd;
-//addr_t       dcache_req_addr;
-//logic [3:0]  dcache_op_type;
-//bus64_t      dcache_req_data;
-//logic [7:0]  dcache_req_tag;
-//logic        dcache_req_invalidate_lr;
-//logic        dcache_req_kill;
-    // dCache Answer
-//logic        dcache_resp_replay;
-//bus64_t      dcache_resp_data;
-//logic        dcache_req_ready;
-//logic        dcache_resp_valid;
-//logic        dcache_resp_nack;
-//logic        dcache_xcpt_ma_st;
-//logic        dcache_xcpt_ma_ld;
-//logic        dcache_xcpt_pf_st;
-//logic        dcache_xcpt_pf_ld;
     // AMO Interface
 amo_req_t    dcache_amo_req;
 amo_resp_t   dcache_amo_resp;
@@ -320,6 +301,9 @@ wire [7:0]                     lagarto_st_req_be         ;
 wire [1:0]                     lagarto_st_req_size       ;
 wire                           lagarto_st_req_kill       ;
 wire                           lagarto_st_req_tag_valid  ;   
+    //TLB
+wire        lsu_dtlb_hit;
+wire [63:0] lsu_paddr   ;
 //--PMU
 to_PMU_t       pmu_flags    ;
 logic          buffer_miss  ;
@@ -608,26 +592,26 @@ datapath datapath_inst(
         .ASID_WIDTH       (ASID_WIDTH),
         .ArianeCfg        (ArianeCfg)
     ) i_mmu (
-    .clk_i                 (clk_i          ),
-    .rst_ni                (rstn_i         ),
-    .flush_i               (               ),
-    .enable_translation_i  (1'b0           ),
-    .en_ld_st_translation_i(1'b0           ),
+    .clk_i                 (clk_i           ),
+    .rst_ni                (rstn_i          ),
+    .flush_i               (                ),
+    .enable_translation_i  (1'b0            ),
+    .en_ld_st_translation_i(1'b0            ),
     // Address translation request
-    .icache_areq_i         (icache_mmu_areq),
-    .icache_areq_o         (mmu_icache_areq),
+    .icache_areq_i         (icache_mmu_areq ),
+    .icache_areq_o         (mmu_icache_areq ),
     
     //.misaligned_ex_i       ('0  ),
     .lsu_req_i             (    0           ),
     .lsu_vaddr_i           (   0            ),
     .lsu_is_store_i        (  0             ),
-    .lsu_dtlb_hit_o        (               ),
-    .lsu_valid_o           (               ),
-    .lsu_paddr_o           (               ),
+    .lsu_dtlb_hit_o        (lsu_dtlb_hit    ),
+    .lsu_valid_o           (                ),
+    .lsu_paddr_o           (lsu_paddr       ),
     //.lsu_exception_o       (               ),
     .priv_lvl_i            (riscv::PRIV_LVL_M),
     .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M),
-    .sum_i                 (              ),
+    .sum_i                 (               ),
     .mxr_i                 (1'b1           ),
     .satp_ppn_i            (44'h80000000   ),
     .asid_i                (1'b1           ),
@@ -639,27 +623,29 @@ datapath datapath_inst(
   );   
 
   lagarto_dcache_interface lagarto_dcache_interface_inst(
-    .clk_i                   (clk_i          ),
-    .rstn_i                  (rstn_i         ),
-    .req_cpu_dcache_i        (req_datapath_dcache_interface),
-    .ld_mem_req_addr_index_o (lagarto_ld_req_addr_index),
-    .ld_mem_req_addr_tag_o   (lagarto_ld_req_addr_tag),
-    .ld_mem_req_wdata_o      (lagarto_ld_req_wdata),
-    .ld_mem_req_valid_o      (lagarto_ld_req_valid),
-    .ld_mem_req_we_o         (lagarto_ld_req_we),
-    .ld_mem_req_be_o         (lagarto_ld_req_be),
-    .ld_mem_req_size_o       (lagarto_ld_req_size),
-    .ld_mem_req_kill_o       (lagarto_ld_req_kill),
-    .ld_mem_req_tag_valid_o  (lagarto_ld_req_tag_valid),
-    .st_mem_req_addr_index_o (lagarto_st_req_addr_index),
-    .st_mem_req_addr_tag_o   (lagarto_st_req_addr_tag),
-    .st_mem_req_wdata_o      (lagarto_st_req_wdata),
-    .st_mem_req_valid_o      (lagarto_st_req_valid),
-    .st_mem_req_we_o         (lagarto_st_req_we),
-    .st_mem_req_be_o         (lagarto_st_req_be),
-    .st_mem_req_size_o       (lagarto_st_req_size),
-    .st_mem_req_kill_o       (lagarto_st_req_kill),
-    .st_mem_req_tag_valid_o  (lagarto_st_req_tag_valid)    
+    .clk_i                      (clk_i              ),
+    .rstn_i                     (rstn_i             ),
+    .dtlb_hit_i                 (lsu_dtlb_hit       ),
+    .paddr_i                    (lsu_paddr          ),
+    .req_cpu_dcache_i           (req_datapath_dcache_interface),
+    .ld_mem_req_addr_index_o    (lagarto_ld_req_addr_index),
+    .ld_mem_req_addr_tag_o      (lagarto_ld_req_addr_tag),
+    .ld_mem_req_wdata_o         (lagarto_ld_req_wdata),
+    .ld_mem_req_valid_o         (lagarto_ld_req_valid),
+    .ld_mem_req_we_o            (lagarto_ld_req_we),
+    .ld_mem_req_be_o            (lagarto_ld_req_be),
+    .ld_mem_req_size_o          (lagarto_ld_req_size),
+    .ld_mem_req_kill_o          (lagarto_ld_req_kill),
+    .ld_mem_req_tag_valid_o     (lagarto_ld_req_tag_valid),
+    .st_mem_req_addr_index_o    (lagarto_st_req_addr_index),
+    .st_mem_req_addr_tag_o      (lagarto_st_req_addr_tag),
+    .st_mem_req_wdata_o         (lagarto_st_req_wdata),
+    .st_mem_req_valid_o         (lagarto_st_req_valid),
+    .st_mem_req_we_o            (lagarto_st_req_we),
+    .st_mem_req_be_o            (lagarto_st_req_be),
+    .st_mem_req_size_o          (lagarto_st_req_size),
+    .st_mem_req_kill_o          (lagarto_st_req_kill),
+    .st_mem_req_tag_valid_o     (lagarto_st_req_tag_valid)    
 );
 
 
