@@ -121,6 +121,7 @@ csr_cmd_t csr_op;
 assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
 assign ex_i.origin = CSR_PC;
 assign ex_i.valid  = CSR_EXCEPTION;
+riscv::priv_lvl_t   priv_lvl_csr_o;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
@@ -145,7 +146,7 @@ csr_regfile i_csr_regfile (
   .epc_o                 ( ),
   .eret_o                ( ),
   .trap_vector_base_o    ( ),
-  .priv_lvl_o            ( ),
+  .priv_lvl_o            ( priv_lvl_csr_o ),
   .fs_o                  ( ),
   .fflags_o              ( ),
   .frm_o                 ( ),
@@ -204,7 +205,7 @@ lagarto_openpiton_top #(
     .CSR_INTERRUPT       (1'b0                   ),
     .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000),
     .io_csr_csr_replay   (1'b0                   ),
-    .csr_priv_lvl_i      (2'b00                  ),
+    .csr_priv_lvl_i      (priv_lvl_csr_o         ),
     .csr_vpu_data_i      (0                      ),
     .csr_dcache_enable_i (dcache_en_csr          ), 
     // CSR Output
