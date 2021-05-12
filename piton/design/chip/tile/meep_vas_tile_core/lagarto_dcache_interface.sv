@@ -23,7 +23,7 @@ module lagarto_dcache_interface (
     // Request from Lagarto
     input req_cpu_dcache_t req_cpu_dcache_i, // Interface with cpu
     
-    //From/Towards TLB
+    // From/Towards TLB
     input           dtlb_hit_i,
     input  [63:0]   paddr_i,
     output          mmu_req_o,
@@ -50,9 +50,16 @@ module lagarto_dcache_interface (
     output                              st_mem_req_kill_o        ,
     output                              st_mem_req_tag_valid_o   ,
 
-    // Response from cache_subsystem
-    input         ld_resp_valid_i
+    // DCACHE Answer
+    input  bus64_t      dmem_resp_data_i,    // Readed data from Cache
+    input  logic        dmem_resp_valid_i,   // Response is valid
+    input  logic        dmem_resp_nack_i,    // Cache request not accepted
+    input  logic        dmem_xcpt_ma_st_i,   // Missaligned store
+    input  logic        dmem_xcpt_ma_ld_i,   // Missaligned load
+    input  logic        dmem_xcpt_pf_st_i,   // DTLB miss on store
+    input  logic        dmem_xcpt_pf_ld_i,   // DTLB miss on load
     // Response towards Lagarto
+    output resp_dcache_cpu_t resp_dcache_cpu_o
 
 );
 
@@ -67,28 +74,18 @@ wire trns_ena           ;
 
 wire dcache_lock;
 
+parameter MEM_NOP   = 2'b00,
+          MEM_LOAD  = 2'b01,
+          MEM_STORE = 2'b10,
+          MEM_AMO   = 2'b11;
 
+logic [1:0] type_of_op;
 
-always_comb begin
-    is_load_instr = 0;
-    is_store_instr = 0;
-
-    case(req_cpu_dcache_i.instr_type)
-        LD,LW,LWU,LH,LHU,LB,LBU: begin
-            is_load_instr = 1'b1; // Load
-        end
-
-        SD,SW,SH,SB:             begin
-            is_store_instr = 1'b1; // store
-
-        end
-
-        default: begin
-            is_load_instr  = 0;
-            is_store_instr = 0;
-        end
-    endcase
-end
+// registers of tlb exceptions to not propagate the stall signal
+logic dmem_xcpt_ma_st_reg;
+logic dmem_xcpt_ma_ld_reg; 
+logic dmem_xcpt_pf_st_reg;
+logic dmem_xcpt_pf_ld_reg;
 
 ld_st_FSM ld_st_FSM(
     .clk                  (clk_i                 ),
@@ -96,7 +93,7 @@ ld_st_FSM ld_st_FSM(
     .is_store_i           (is_sotre_instr        ),
     .is_load_i            (is_load_instr         ),
     .kill_mem_op_i        (req_cpu_dcache_i.kill ),
-    .ld_resp_valid_i      (ld_resp_valid_i       ),
+    .ld_resp_valid_i      (dmem_resp_valid_i     ),
     .dtlb_hit_i           (dtlb_hit_i            ),
     .str_rdy_o            (str_rdy               ),
     .mem_req_valid_o      (mem_req_valid         ),
@@ -144,5 +141,98 @@ l1_dcache_adapter l1_dcache_adapter(
     .st_mem_req_kill_o        (st_mem_req_kill_o         ),
     .st_mem_req_tag_valid_o   (st_mem_req_tag_valid_o    )
 );
+
+//-------------------------------------------------------------
+// STATE MACHINE LOGIC
+//-------------------------------------------------------------
+// UPDATE STATE
+always@(posedge clk_i, negedge rstn_i) begin
+    if(~rstn_i)begin
+        dmem_xcpt_ma_st_reg <= 1'b0;
+        dmem_xcpt_ma_ld_reg <= 1'b0; 
+        dmem_xcpt_pf_st_reg <= 1'b0;
+        dmem_xcpt_pf_ld_reg <= 1'b0;
+
+    end else begin
+        dmem_xcpt_ma_st_reg <= dmem_xcpt_ma_st_i;
+        dmem_xcpt_ma_ld_reg <= dmem_xcpt_ma_ld_i; 
+        dmem_xcpt_pf_st_reg <= dmem_xcpt_pf_st_i;
+        dmem_xcpt_pf_ld_reg <= dmem_xcpt_pf_ld_i;
+    end
+end
+
+// Decide type of memory operation
+always_comb begin
+    type_of_op      = MEM_NOP;
+    is_load_instr   = 0;
+    is_store_instr  = 0;
+    case(req_cpu_dcache_i.instr_type)
+        AMO_LRW,AMO_LRD:         begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_SCW,AMO_SCD:         begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_SWAPW,AMO_SWAPD:     begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_ADDW,AMO_ADDD:       begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_XORW,AMO_XORD:       begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_ANDW,AMO_ANDD:       begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_ORW,AMO_ORD:         begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_MINW,AMO_MIND:       begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_MAXW,AMO_MAXD:       begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_MINWU,AMO_MINDU:     begin
+                                    type_of_op = MEM_AMO;
+        end
+        AMO_MAXWU,AMO_MAXDU:     begin  
+                                    type_of_op = MEM_AMO;
+        end
+        LD,LW,LWU,LH,LHU,LB,LBU: begin
+                                    type_of_op = MEM_LOAD;
+                                    is_load_instr = 1'b1;
+
+        end
+        SD,SW,SH,SB:             begin
+                                    type_of_op = MEM_STORE;
+                                    is_store_instr = 1'b1;
+
+        end
+        default: begin
+                                    is_store_instr  = 1'b0;
+                                    is_load_instr   = 1'b0;
+                            
+                                    `ifdef ASSERTIONS
+                                        // DOES NOT NEED ASSERTION
+                                    `endif
+        end
+    endcase
+end
+
+// Dcache interface is ready
+assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op != MEM_STORE);
+
+// Readed data from load
+assign resp_dcache_cpu_o.data = dmem_resp_data_i;
+//Lock
+assign resp_dcache_cpu_o.lock  = dcache_lock;
+// Fill exceptions for exe stage
+assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;
+assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_reg;
+assign resp_dcache_cpu_o.xcpt_pf_st = dmem_xcpt_pf_st_reg;
+assign resp_dcache_cpu_o.xcpt_pf_ld = dmem_xcpt_pf_ld_reg;
+assign resp_dcache_cpu_o.addr       = req_cpu_dcache_i.io_base_addr;
 
 endmodule

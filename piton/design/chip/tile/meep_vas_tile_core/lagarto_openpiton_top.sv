@@ -301,15 +301,19 @@ wire [7:0]                     lagarto_st_req_be         ;
 wire [1:0]                     lagarto_st_req_size       ;
 wire                           lagarto_st_req_kill       ;
 wire                           lagarto_st_req_tag_valid  ;   
+
+wire            dcache_ld_data_gnt; 
+wire            dcache_ld_data_rvalid; 
+wire [63:0]     dcache_ld_data_rdata; 
+
     //TLB
 wire        lsu_dtlb_hit;
+wire        dtlb_miss   ;
 wire [63:0] lsu_paddr   ;
 wire        lsu_req     ;
 wire [63:0] lsu_vaddr   ;
 wire        lsu_store   ;
 wire        lsu_load    ;
-
-
 
 //--PMU
 to_PMU_t       pmu_flags    ;
@@ -590,6 +594,10 @@ datapath datapath_inst(
     .l15_rtrn_i        (l15_rtrn_i     )
 );
 
+    assign dcache_ld_data_gnt    = dcache_req_ports_o[1].data_gnt    ;               
+    assign dcache_ld_data_rvalid = dcache_req_ports_o[1].data_rvalid ;               
+    assign dcache_ld_data_rdata  = dcache_req_ports_o[1].data_rdata  ;
+
   //ariane_pkg::exception_t misaligned_ex;
   //assign misaligned_ex = '0;
 
@@ -609,54 +617,63 @@ datapath datapath_inst(
     .icache_areq_o         (mmu_icache_areq ),
     
     //.misaligned_ex_i       ('0  ),
-    .lsu_req_i             (lsu_req         ),
-    .lsu_vaddr_i           (lsu_vaddr       ),
-    .lsu_is_store_i        (lsu_store       ),
-    .lsu_dtlb_hit_o        (lsu_dtlb_hit    ),
-    .lsu_valid_o           (                ),
-    .lsu_paddr_o           (lsu_paddr       ),
+    .lsu_req_i             (lsu_req             ),
+    .lsu_vaddr_i           (lsu_vaddr           ),
+    .lsu_is_store_i        (lsu_store           ),
+    .lsu_dtlb_hit_o        (lsu_dtlb_hit        ),
+    .lsu_valid_o           (                    ),
+    .lsu_paddr_o           (lsu_paddr           ),
     //.lsu_exception_o       (               ),
-    .priv_lvl_i            (riscv::PRIV_LVL_M),
-    .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M),
-    .sum_i                 (               ),
-    .mxr_i                 (1'b1           ),
-    .satp_ppn_i            (44'h80000000   ),
-    .asid_i                (1'b1           ),
-    .flush_tlb_i           (               ),
-    .itlb_miss_o           (               ),
-    .dtlb_miss_o           (               ),
-    .req_port_i            (   '0           ),
-    .req_port_o            (dcache_lsu_req[0])
+    .priv_lvl_i            (riscv::PRIV_LVL_M   ),
+    .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M   ),
+    .sum_i                 (                    ),
+    .mxr_i                 (1'b1                ),
+    .satp_ppn_i            (44'h80000000        ),
+    .asid_i                (1'b1                ),
+    .flush_tlb_i           (                    ),
+    .itlb_miss_o           (                    ),
+    .dtlb_miss_o           (dtlb_miss           ),
+    .req_port_i            (dcache_lsu_resp[0]  ),
+    .req_port_o            (dcache_lsu_req[0]   )
   );   
 
   lagarto_dcache_interface lagarto_dcache_interface_inst(
-    .clk_i                      (clk_i              ),
-    .rstn_i                     (rstn_i             ),
-    .req_cpu_dcache_i           (req_datapath_dcache_interface),
-    .dtlb_hit_i                 (lsu_dtlb_hit       ),
-    .paddr_i                    (lsu_paddr          ),
-    .mmu_req_o                  (lsu_req            ),
-    .mmu_vaddr_o                (lsu_vaddr          ),
-    .mmu_store_o                (lsu_store          ),
-    .mmu_load_o                 (lsu_load           ),
-    .ld_mem_req_addr_index_o    (lagarto_ld_req_addr_index),
-    .ld_mem_req_addr_tag_o      (lagarto_ld_req_addr_tag),
-    .ld_mem_req_wdata_o         (lagarto_ld_req_wdata),
-    .ld_mem_req_valid_o         (lagarto_ld_req_valid),
-    .ld_mem_req_we_o            (lagarto_ld_req_we),
-    .ld_mem_req_be_o            (lagarto_ld_req_be),
-    .ld_mem_req_size_o          (lagarto_ld_req_size),
-    .ld_mem_req_kill_o          (lagarto_ld_req_kill),
-    .ld_mem_req_tag_valid_o     (lagarto_ld_req_tag_valid),
-    .st_mem_req_addr_index_o    (lagarto_st_req_addr_index),
-    .st_mem_req_addr_tag_o      (lagarto_st_req_addr_tag),
-    .st_mem_req_wdata_o         (lagarto_st_req_wdata),
-    .st_mem_req_valid_o         (lagarto_st_req_valid),
-    .st_mem_req_we_o            (lagarto_st_req_we),
-    .st_mem_req_be_o            (lagarto_st_req_be),
-    .st_mem_req_size_o          (lagarto_st_req_size),
-    .st_mem_req_kill_o          (lagarto_st_req_kill),
-    .st_mem_req_tag_valid_o     (lagarto_st_req_tag_valid)    
+    .clk_i                      (clk_i                          ),
+    .rstn_i                     (rstn_i                         ),
+    .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
+    .dtlb_hit_i                 (lsu_dtlb_hit                   ),
+    .paddr_i                    (lsu_paddr                      ),
+    .mmu_req_o                  (lsu_req                        ),
+    .mmu_vaddr_o                (lsu_vaddr                      ),
+    .mmu_store_o                (lsu_store                      ),
+    .mmu_load_o                 (lsu_load                       ),
+    .ld_mem_req_addr_index_o    (lagarto_ld_req_addr_index      ),
+    .ld_mem_req_addr_tag_o      (lagarto_ld_req_addr_tag        ),
+    .ld_mem_req_wdata_o         (lagarto_ld_req_wdata           ),
+    .ld_mem_req_valid_o         (lagarto_ld_req_valid           ),
+    .ld_mem_req_we_o            (lagarto_ld_req_we              ),
+    .ld_mem_req_be_o            (lagarto_ld_req_be              ),
+    .ld_mem_req_size_o          (lagarto_ld_req_size            ),
+    .ld_mem_req_kill_o          (lagarto_ld_req_kill            ),
+    .ld_mem_req_tag_valid_o     (lagarto_ld_req_tag_valid       ),
+    .st_mem_req_addr_index_o    (lagarto_st_req_addr_index      ),
+    .st_mem_req_addr_tag_o      (lagarto_st_req_addr_tag        ),
+    .st_mem_req_wdata_o         (lagarto_st_req_wdata           ),
+    .st_mem_req_valid_o         (lagarto_st_req_valid           ),
+    .st_mem_req_we_o            (lagarto_st_req_we              ),
+    .st_mem_req_be_o            (lagarto_st_req_be              ),
+    .st_mem_req_size_o          (lagarto_st_req_size            ),
+    .st_mem_req_kill_o          (lagarto_st_req_kill            ),
+    .st_mem_req_tag_valid_o     (lagarto_st_req_tag_valid       ),
+    .dmem_resp_data_i           (dcache_ld_data_rdata           ),    
+    .dmem_resp_valid_i          (dcache_ld_data_rvalid          ),
+    .dmem_resp_nack_i           (0                              ), //TODO !
+    .dmem_xcpt_ma_st_i          (0                              ), //TODO !
+    .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
+    .dmem_xcpt_pf_st_i          (dtlb_miss                      ), 
+    .dmem_xcpt_pf_ld_i          (dtlb_miss                      ),
+    // Response towards Lagarto
+    .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
 
