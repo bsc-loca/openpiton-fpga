@@ -254,8 +254,8 @@ endtask // get_thread_status
                       active_thread[(0*4)+1] <= 1'b1;
                       active_thread[(0*4)+2] <= 1'b1;
                       active_thread[(0*4)+3] <= 1'b1;
-                      spc0_inst_done         <= `LAGARTO_CORE0.piton_pc_vld;
-                      spc0_phy_pc_w          <= `LAGARTO_CORE0.piton_pc;
+                      spc0_inst_done         <= `LAGARTO_CORE0.CSR_RETIRE;
+                      spc0_phy_pc_w          <= `LAGARTO_CORE0.CSR_PC;
                     end
                 end
         `else // RTL_LAGARTO0
