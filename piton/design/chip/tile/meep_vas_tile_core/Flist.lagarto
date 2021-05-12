@@ -178,3 +178,6 @@
 ./lagarto_dcache_interface.sv
 ./ld_st_FSM.v
 ./l1_dcache_adapter.v
+
+./torture/src/models/hdl/torture_dump_behav.sv
+./torture/src/models/cxx/dpi_torture.cpp
