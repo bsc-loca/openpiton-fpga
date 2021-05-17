@@ -58,6 +58,7 @@ module lagarto_dcache_interface (
     input  logic        dmem_xcpt_ma_ld_i,   // Missaligned load
     input  logic        dmem_xcpt_pf_st_i,   // DTLB miss on store
     input  logic        dmem_xcpt_pf_ld_i,   // DTLB miss on load
+
     // Response towards Lagarto
     output resp_dcache_cpu_t resp_dcache_cpu_o
 
@@ -66,6 +67,10 @@ module lagarto_dcache_interface (
 
 logic is_load_instr;
 logic is_store_instr;
+logic kill_mem_ope;
+logic mem_xcpt;
+bus64_t dmem_req_addr_64;
+
 
 wire st_translation_req ;
 wire mem_req_valid      ;
@@ -87,12 +92,16 @@ logic dmem_xcpt_ma_ld_reg;
 logic dmem_xcpt_pf_st_reg;
 logic dmem_xcpt_pf_ld_reg;
 
+// There has been a exception
+assign mem_xcpt = dmem_xcpt_ma_st_i | dmem_xcpt_ma_ld_i | dmem_xcpt_pf_st_i | dmem_xcpt_pf_ld_i;
+assign kill_mem_ope = mem_xcpt | req_cpu_dcache_i.kill;
+
 ld_st_FSM ld_st_FSM(
     .clk                  (clk_i                 ),
     .rst                  (rstn_i                ),
     .is_store_i           (is_store_instr        ),
     .is_load_i            (is_load_instr         ),
-    .kill_mem_op_i        (req_cpu_dcache_i.kill ),
+    .kill_mem_op_i        (kill_mem_ope          ),
     .ld_resp_valid_i      (dmem_resp_valid_i     ),
     .dtlb_hit_i           (dtlb_hit_i            ),
     .str_rdy_o            (str_rdy               ),
@@ -103,14 +112,17 @@ ld_st_FSM ld_st_FSM(
     );
 
 
+// Address calculation
+assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
+
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                         ),
     .rst                      (rstn_i                        ),
     .is_store_i               (is_store_instr                ),
     .is_load_i                (is_load_instr                 ),
-    .vaddr_i                  (req_cpu_dcache_i.io_base_addr ),   
+    .vaddr_i                  (dmem_req_addr_64              ),   
     .paddr_i                  (paddr_i                       ),     
-    .data_i                   (req_cpu_dcache_i.imm          ),   
+    .data_i                   (req_cpu_dcache_i.data_rs2     ),   
     .op_bits_type_i           (req_cpu_dcache_i.instr_type   ),
     .dtlb_hit_i               (dtlb_hit_i                    ),    
     .st_translation_req_i     (st_translation_req            ),
@@ -164,8 +176,6 @@ end
 // Decide type of memory operation
 always_comb begin
     type_of_op      = MEM_NOP;
-    is_load_instr   = 0;
-    is_store_instr  = 0;
     case(req_cpu_dcache_i.instr_type)
         AMO_LRW,AMO_LRD:         begin
                                     type_of_op = MEM_AMO;
@@ -202,17 +212,13 @@ always_comb begin
         end
         LD,LW,LWU,LH,LHU,LB,LBU: begin
                                     type_of_op = MEM_LOAD;
-                                    is_load_instr = 1'b1;
 
         end
         SD,SW,SH,SB:             begin
                                     type_of_op = MEM_STORE;
-                                    is_store_instr = 1'b1;
 
         end
         default: begin
-                                    is_store_instr  = 1'b0;
-                                    is_load_instr   = 1'b0;
                             
                                     `ifdef ASSERTIONS
                                         // DOES NOT NEED ASSERTION
@@ -220,6 +226,9 @@ always_comb begin
         end
     endcase
 end
+
+assign is_store_instr = !req_cpu_dcache_i.kill & (type_of_op == MEM_STORE) & req_cpu_dcache_i.valid;
+assign is_load_instr  = !req_cpu_dcache_i.kill & (type_of_op == MEM_LOAD)  & req_cpu_dcache_i.valid;
 
 // Dcache interface is ready
 assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op != MEM_STORE);
@@ -233,6 +242,7 @@ assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;
 assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_reg;
 assign resp_dcache_cpu_o.xcpt_pf_st = dmem_xcpt_pf_st_reg;
 assign resp_dcache_cpu_o.xcpt_pf_ld = dmem_xcpt_pf_ld_reg;
-assign resp_dcache_cpu_o.addr       = req_cpu_dcache_i.io_base_addr;
+
+assign resp_dcache_cpu_o.addr       = dmem_req_addr_64;
 
 endmodule
