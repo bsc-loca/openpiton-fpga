@@ -90,7 +90,7 @@ logic dmem_xcpt_pf_ld_reg;
 ld_st_FSM ld_st_FSM(
     .clk                  (clk_i                 ),
     .rst                  (rstn_i                ),
-    .is_store_i           (is_sotre_instr        ),
+    .is_store_i           (is_store_instr        ),
     .is_load_i            (is_load_instr         ),
     .kill_mem_op_i        (req_cpu_dcache_i.kill ),
     .ld_resp_valid_i      (dmem_resp_valid_i     ),
@@ -106,7 +106,7 @@ ld_st_FSM ld_st_FSM(
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                         ),
     .rst                      (rstn_i                        ),
-    .is_store_i               (is_sotre_instr                ),
+    .is_store_i               (is_store_instr                ),
     .is_load_i                (is_load_instr                 ),
     .vaddr_i                  (req_cpu_dcache_i.io_base_addr ),   
     .paddr_i                  (paddr_i                       ),     
