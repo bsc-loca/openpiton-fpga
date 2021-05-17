@@ -594,9 +594,9 @@ datapath datapath_inst(
     .l15_rtrn_i        (l15_rtrn_i     )
 );
 
-    assign dcache_ld_data_gnt    = dcache_req_ports_o[1].data_gnt    ;               
-    assign dcache_ld_data_rvalid = dcache_req_ports_o[1].data_rvalid ;               
-    assign dcache_ld_data_rdata  = dcache_req_ports_o[1].data_rdata  ;
+    assign dcache_ld_data_gnt    = dcache_lsu_resp[1].data_gnt    ;               
+    assign dcache_ld_data_rvalid = dcache_lsu_resp[1].data_rvalid ;               
+    assign dcache_ld_data_rdata  = dcache_lsu_resp[1].data_rdata  ;
 
   //ariane_pkg::exception_t misaligned_ex;
   //assign misaligned_ex = '0;
