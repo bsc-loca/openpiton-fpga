@@ -1,7 +1,6 @@
 //`default_nettype none
 //`include "drac_pkg.sv"
 import drac_pkg::*;
-import ariane_pkg::*;
 
 /* -----------------------------------------------
  * Project Name   : 
@@ -72,7 +71,6 @@ logic kill_mem_ope;
 logic mem_xcpt;
 bus64_t dmem_req_addr_64;
 
-
 wire st_translation_req ;
 wire mem_req_valid      ;
 wire str_rdy            ;
@@ -86,14 +84,17 @@ parameter MEM_NOP   = 2'b00,
           MEM_AMO   = 2'b11;
 
 logic [1:0] type_of_op;
-logic [1:0] op_bits_type;
-
 
 // registers of tlb exceptions to not propagate the stall signal
 logic dmem_xcpt_ma_st_reg;
 logic dmem_xcpt_ma_ld_reg; 
 logic dmem_xcpt_pf_st_reg;
 logic dmem_xcpt_pf_ld_reg;
+
+
+// ----------------------
+// Extract Bytes from Op
+// ----------------------
 
 // There has been a exception
 assign mem_xcpt = dmem_xcpt_ma_st_i | dmem_xcpt_ma_ld_i | dmem_xcpt_pf_st_i | dmem_xcpt_pf_ld_i;
@@ -114,8 +115,6 @@ ld_st_FSM ld_st_FSM(
     .dmem_lock_o          (dcache_lock           )    
     );
 
-assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
-assign op_bits_type     = extract_transfer_size(req_cpu_dcache_i.instr_type );
 
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                        ),
@@ -125,7 +124,7 @@ l1_dcache_adapter l1_dcache_adapter(
     .vaddr_i                  (dmem_req_addr_64             ),   
     .paddr_i                  (paddr_i                      ),     
     .data_i                   (req_cpu_dcache_i.data_rs2    ),   
-    .op_bits_type_i           (op_bits_type                 ),
+    .op_bits_type_i           (req_cpu_dcache_i.mem_size[1:0]),
     .dtlb_hit_i               (dtlb_hit_i                   ),    
     .st_translation_req_i     (st_translation_req           ),
     .mem_req_valid_i          (mem_req_valid                ),
