@@ -115,6 +115,7 @@ ld_st_FSM ld_st_FSM(
     .dmem_lock_o          (dcache_lock           )    
     );
 
+assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
 
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                        ),
