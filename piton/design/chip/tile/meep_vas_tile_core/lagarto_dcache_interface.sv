@@ -1,6 +1,7 @@
 //`default_nettype none
 //`include "drac_pkg.sv"
 import drac_pkg::*;
+import ariane_pkg::*;
 
 /* -----------------------------------------------
  * Project Name   : 
@@ -85,6 +86,8 @@ parameter MEM_NOP   = 2'b00,
           MEM_AMO   = 2'b11;
 
 logic [1:0] type_of_op;
+logic [1:0] op_bits_type;
+
 
 // registers of tlb exceptions to not propagate the stall signal
 logic dmem_xcpt_ma_st_reg;
@@ -111,47 +114,46 @@ ld_st_FSM ld_st_FSM(
     .dmem_lock_o          (dcache_lock           )    
     );
 
-
-// Address calculation
 assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
+assign op_bits_type     = extract_transfer_size(req_cpu_dcache_i.instr_type );
 
 l1_dcache_adapter l1_dcache_adapter(
-    .clk                      (clk_i                         ),
-    .rst                      (rstn_i                        ),
-    .is_store_i               (is_store_instr                ),
-    .is_load_i                (is_load_instr                 ),
-    .vaddr_i                  (dmem_req_addr_64              ),   
-    .paddr_i                  (paddr_i                       ),     
-    .data_i                   (req_cpu_dcache_i.data_rs2     ),   
-    .op_bits_type_i           (req_cpu_dcache_i.instr_type   ),
-    .dtlb_hit_i               (dtlb_hit_i                    ),    
-    .st_translation_req_i     (st_translation_req            ),
-    .mem_req_valid_i          (mem_req_valid                 ),
-    .str_rdy_i                (str_rdy                       ),
-    .translation_req_o        (mmu_req_o                     ),   
-    .vaddr_o                  (mmu_vaddr_o                   ),   
-    .is_store_o               (mmu_store_o                   ),
-    .is_load_o                (mmu_load_o                    ),
-    .drain_nc                 (                          ),
-    .trns_ena_i               (trns_ena                  ),
-    .ld_mem_req_addr_index_o  (ld_mem_req_addr_index_o   ),
-    .ld_mem_req_addr_tag_o    (ld_mem_req_addr_tag_o     ),
-    .ld_mem_req_wdata_o       (ld_mem_req_wdata_o        ),
-    .ld_mem_req_valid_o       (ld_mem_req_valid_o        ),
-    .ld_mem_req_we_o          (ld_mem_req_we_o           ),
-    .ld_mem_req_be_o          (ld_mem_req_be_o           ),
-    .ld_mem_req_size_o        (ld_mem_req_size_o         ),
-    .ld_mem_req_kill_o        (ld_mem_req_kill_o         ),
-    .ld_mem_req_tag_valid_o   (ld_mem_req_tag_valid_o    ),
-    .st_mem_req_addr_index_o  (st_mem_req_addr_index_o   ),
-    .st_mem_req_addr_tag_o    (st_mem_req_addr_tag_o     ),
-    .st_mem_req_wdata_o       (st_mem_req_wdata_o        ),
-    .st_mem_req_valid_o       (st_mem_req_valid_o        ),
-    .st_mem_req_we_o          (st_mem_req_we_o           ),
-    .st_mem_req_be_o          (st_mem_req_be_o           ),
-    .st_mem_req_size_o        (st_mem_req_size_o         ),
-    .st_mem_req_kill_o        (st_mem_req_kill_o         ),
-    .st_mem_req_tag_valid_o   (st_mem_req_tag_valid_o    )
+    .clk                      (clk_i                        ),
+    .rst                      (rstn_i                       ),
+    .is_store_i               (is_store_instr               ),
+    .is_load_i                (is_load_instr                ),
+    .vaddr_i                  (dmem_req_addr_64             ),   
+    .paddr_i                  (paddr_i                      ),     
+    .data_i                   (req_cpu_dcache_i.data_rs2    ),   
+    .op_bits_type_i           (op_bits_type                 ),
+    .dtlb_hit_i               (dtlb_hit_i                   ),    
+    .st_translation_req_i     (st_translation_req           ),
+    .mem_req_valid_i          (mem_req_valid                ),
+    .str_rdy_i                (str_rdy                      ),
+    .translation_req_o        (mmu_req_o                    ),   
+    .vaddr_o                  (mmu_vaddr_o                  ),   
+    .is_store_o               (mmu_store_o                  ),
+    .is_load_o                (mmu_load_o                   ),
+    .drain_nc                 (                             ),
+    .trns_ena_i               (trns_ena                     ),
+    .ld_mem_req_addr_index_o  (ld_mem_req_addr_index_o      ),
+    .ld_mem_req_addr_tag_o    (ld_mem_req_addr_tag_o        ),
+    .ld_mem_req_wdata_o       (ld_mem_req_wdata_o           ),
+    .ld_mem_req_valid_o       (ld_mem_req_valid_o           ),
+    .ld_mem_req_we_o          (ld_mem_req_we_o              ),
+    .ld_mem_req_be_o          (ld_mem_req_be_o              ),
+    .ld_mem_req_size_o        (ld_mem_req_size_o            ),
+    .ld_mem_req_kill_o        (ld_mem_req_kill_o            ),
+    .ld_mem_req_tag_valid_o   (ld_mem_req_tag_valid_o       ),
+    .st_mem_req_addr_index_o  (st_mem_req_addr_index_o      ),
+    .st_mem_req_addr_tag_o    (st_mem_req_addr_tag_o        ),
+    .st_mem_req_wdata_o       (st_mem_req_wdata_o           ),
+    .st_mem_req_valid_o       (st_mem_req_valid_o           ),
+    .st_mem_req_we_o          (st_mem_req_we_o              ),
+    .st_mem_req_be_o          (st_mem_req_be_o              ),
+    .st_mem_req_size_o        (st_mem_req_size_o            ),
+    .st_mem_req_kill_o        (st_mem_req_kill_o            ),
+    .st_mem_req_tag_valid_o   (st_mem_req_tag_valid_o       )
 );
 
 //-------------------------------------------------------------
