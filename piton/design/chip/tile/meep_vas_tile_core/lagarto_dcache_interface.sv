@@ -70,6 +70,8 @@ logic is_store_instr;
 logic kill_mem_ope;
 logic mem_xcpt;
 bus64_t dmem_req_addr_64;
+reg[63:0] dmem_req_addr_reg;
+//reg [1:0] type_of_op_reg;
 
 wire st_translation_req ;
 wire mem_req_valid      ;
@@ -116,6 +118,18 @@ ld_st_FSM ld_st_FSM(
     );
 
 assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
+
+always @ (posedge clk_i) begin
+    if (!rstn_i) dmem_req_addr_reg <= 64'b0;
+    else if ( is_store_instr | is_load_instr ) dmem_req_addr_reg <=  dmem_req_addr_64;
+    else dmem_req_addr_reg <= dmem_req_addr_reg;
+end
+
+// always @ (posedge clk_i) begin
+//     if (!rstn_i) type_of_op_reg <= 2'b0;
+//     else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) type_of_op_reg <=  type_of_op;
+//     else type_of_op_reg <= type_of_op_reg;
+// end
 
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                        ),
@@ -245,6 +259,6 @@ assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_reg;
 assign resp_dcache_cpu_o.xcpt_pf_st = dmem_xcpt_pf_st_reg;
 assign resp_dcache_cpu_o.xcpt_pf_ld = dmem_xcpt_pf_ld_reg;
 
-assign resp_dcache_cpu_o.addr       = dmem_req_addr_64;
+assign resp_dcache_cpu_o.addr       = dmem_req_addr_reg;
 
 endmodule
