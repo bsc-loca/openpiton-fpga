@@ -71,7 +71,7 @@ logic kill_mem_ope;
 logic mem_xcpt;
 bus64_t dmem_req_addr_64;
 reg[63:0] dmem_req_addr_reg;
-//reg [1:0] type_of_op_reg;
+reg [1:0] type_of_op_reg;
 
 wire st_translation_req ;
 wire mem_req_valid      ;
@@ -125,11 +125,11 @@ always @ (posedge clk_i) begin
     else dmem_req_addr_reg <= dmem_req_addr_reg;
 end
 
-// always @ (posedge clk_i) begin
-//     if (!rstn_i) type_of_op_reg <= 2'b0;
-//     else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) type_of_op_reg <=  type_of_op;
-//     else type_of_op_reg <= type_of_op_reg;
-// end
+always @ (posedge clk_i) begin
+    if (!rstn_i) type_of_op_reg <= 2'b0;
+    else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) type_of_op_reg <=  type_of_op;
+    else type_of_op_reg <= type_of_op_reg;
+end
 
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                        ),
@@ -247,7 +247,7 @@ assign is_store_instr = !req_cpu_dcache_i.kill & (type_of_op == MEM_STORE) & req
 assign is_load_instr  = !req_cpu_dcache_i.kill & (type_of_op == MEM_LOAD)  & req_cpu_dcache_i.valid;
 
 // Dcache interface is ready
-assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op != MEM_STORE);
+assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op_reg != MEM_STORE);
 
 // Readed data from load
 assign resp_dcache_cpu_o.data = dmem_resp_data_i;
