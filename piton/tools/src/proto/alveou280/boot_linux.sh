@@ -24,8 +24,8 @@ sleep 2 &&
 dma-ctl qdma08000 reg write bar 2 0x0 0x1 && #Release system reset, we must wait until the memory is filled with 0s
 sleep 5 &&
 
-#Load the bbl (with tetris) into main memory, actually at address 0x0, but should be 0x8000_0000
-# dma-to-device -d /dev/qdma08000-MM-1 -s 14919792 -a 0x0000000 -f ./bbl8.bin
+#Load the bbl linux image (with tetris) into main memory, actually at address 0x0, but should be 0x8000_0000
+# dma-to-device -d /dev/qdma08000-MM-1 -s 14919792 -a 0x0000000 -f bbl8.bin
 
 # Loading Fedora:
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
