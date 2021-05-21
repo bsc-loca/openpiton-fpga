@@ -11,7 +11,7 @@ if [ $script == $0 ]; then
 fi
 
 #Load PCIe bitstream to FPGA and setup host PCIe environment
-source /home/tools/scripts/load-bitstream.sh qdma ../meep_openpiton/build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
+source /home/tools/scripts/load-bitstream.sh qdma ../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
 
 #Some sanity checks
 # dma-ctl qdma08000 reg dump
