@@ -9,6 +9,13 @@ rm $TEST.sig
 rm signature.txt
 rm result.diff
 
+echo "[MEEP] Cleaning..."
+sims clean
+rm -rf manycore/
+
+echo "[MEEP] Compiling..."
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+
 echo "[MEEP] Running simulation..."
 sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled 
 

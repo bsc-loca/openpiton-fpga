@@ -22,8 +22,7 @@ module ld_st_FSM(
     output     str_rdy_o            ,
     output reg mem_req_valid_o      ,
     output reg st_translation_req_o ,
-    output reg trns_ena,
-    output reg dmem_lock_o          
+    output reg trns_ena
 );
 
     reg  cnt_ena;
@@ -51,14 +50,10 @@ module ld_st_FSM(
             NO_REQ: begin
                 mem_req_valid_o      <= 1'b0;
                 st_translation_req_o <= 1'b0;
-                cnt_ena              <= 1'b0;
+                //cnt_ena              <= 1'b0;
                 Edo_Sgte             <= (kill_mem_op_i  ) ? NO_REQ      : 
 			                            (req_valid      ) ? TRANSLATION : 
                                                             NO_REQ      ;
-                                                                                
-                dmem_lock_o          <= (kill_mem_op_i ) ? 1'b0 : 
-			                            (req_valid     ) ? 1'b1 : 
-                                                           1'b0 ;
                                                                                                 
                 trns_ena             <= req_valid;          
             end
@@ -66,20 +61,18 @@ module ld_st_FSM(
             TRANSLATION: begin
                 mem_req_valid_o      <= 1'b0;
                 st_translation_req_o <= (kill_mem_op_i ) ? 1'b0   : 1'b1 ;
-                cnt_ena              <= 1'b0;
+                //cnt_ena              <= 1'b0;
                 Edo_Sgte             <= (kill_mem_op_i ) ? NO_REQ : WAITING_TRNS ;
-                dmem_lock_o          <= (kill_mem_op_i ) ? 1'b0   : 1'b1 ; 
                 trns_ena             <= 1'b1;          
             end
             
             REQ_VALID: begin
                 mem_req_valid_o      <= (kill_mem_op_i)  ? 1'b0 : 1'b1;
                 st_translation_req_o <= 1'b0;
-                cnt_ena              <= (!is_load_bf);
+                //cnt_ena              <= (!is_load_bf);
 
                 Edo_Sgte             <= (kill_mem_op_i)  ? NO_REQ : WAITING_LD_ST;
 
-                dmem_lock_o          <= (kill_mem_op_i ) ? 1'b0  : 1'b1 ; 
                 trns_ena             <= 1'b0;          
             end
             
@@ -87,28 +80,27 @@ module ld_st_FSM(
                 if ( dtlb_hit_i ) begin
                     mem_req_valid_o      <= 1'b0;
                     st_translation_req_o <= 1'b0;
-                    cnt_ena              <= 1'b0;
+                    //cnt_ena              <= 1'b0;
                     Edo_Sgte             <= REQ_VALID  ; 
-                    dmem_lock_o          <= 1'b0 ; 
                     trns_ena             <= 1'b0;          
                 end
                 else begin
                     mem_req_valid_o      <= 1'b0;
                     st_translation_req_o <= 1'b0;
-                    cnt_ena              <= (!is_load_bf);
+                    //cnt_ena              <= (!is_load_bf);
                     Edo_Sgte             <= WAITING_TRNS; 
-                    dmem_lock_o          <= 1'b1 ; 
                     trns_ena             <= 1'b1;          
                 end
             end
 	            
             WAITING_LD_ST: begin
-                if ( unlock || ld_resp_valid_i ) begin
+                //if ( unlock || ld_resp_valid_i ) begin
+                if ( ld_resp_valid_i ) begin
+
                     mem_req_valid_o      <= 1'b0;
                     st_translation_req_o <= 1'b0;
-                    cnt_ena              <= 1'b0;
+                    //cnt_ena              <= 1'b0;
                     Edo_Sgte             <= NO_REQ  ; 
-                    dmem_lock_o          <= 1'b0 ; 
                     trns_ena             <= 1'b0;          
                 end
                 else begin
@@ -116,7 +108,6 @@ module ld_st_FSM(
                     st_translation_req_o <= 1'b0;
                     //cnt_ena              <= 1'b1;
                     Edo_Sgte             <= WAITING_LD_ST; 
-                    dmem_lock_o          <= 1'b1; 
                     trns_ena             <= 1'b0;          
             
                 end
@@ -125,15 +116,15 @@ module ld_st_FSM(
 	    endcase
     end
 //-------------------------------------------------------------------
-    reg [2:0] cnt;
+    // reg [2:0] cnt;
 
-    always @ (posedge clk ) begin
-        if (!rst) cnt = 3'b0;
-        else if (cnt_ena) cnt = cnt + 1'b1;
-        else cnt = 1'b0;
-    end
+    // always @ (posedge clk ) begin
+    //     if (!rst) cnt = 3'b0;
+    //     else if (cnt_ena) cnt = cnt + 1'b1;
+    //     else cnt = 1'b0;
+    // end
 
-    assign unlock = cnt[2];
+    //assign unlock = cnt[2];
     assign str_rdy_o = cnt_ena;
 
     always @ (posedge clk) begin

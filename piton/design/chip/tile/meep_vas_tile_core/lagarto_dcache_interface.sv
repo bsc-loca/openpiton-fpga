@@ -78,8 +78,6 @@ wire mem_req_valid      ;
 wire str_rdy            ;
 wire trns_ena           ;
 
-wire dcache_lock;
-
 parameter MEM_NOP   = 2'b00,
           MEM_LOAD  = 2'b01,
           MEM_STORE = 2'b10,
@@ -113,8 +111,7 @@ ld_st_FSM ld_st_FSM(
     .str_rdy_o            (str_rdy               ),
     .mem_req_valid_o      (mem_req_valid         ),
     .st_translation_req_o (st_translation_req    ),
-    .trns_ena             (trns_ena              ),
-    .dmem_lock_o          (dcache_lock           )    
+    .trns_ena             (trns_ena              )  
     );
 
 assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : req_cpu_dcache_i.data_rs1 + req_cpu_dcache_i.imm;
@@ -252,7 +249,10 @@ assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op_reg != MEM_STOR
 // Readed data from load
 assign resp_dcache_cpu_o.data = dmem_resp_data_i;
 //Lock
-assign resp_dcache_cpu_o.lock  = dcache_lock;
+always_comb begin
+    if ( kill_mem_ope | dmem_resp_valid_i )     resp_dcache_cpu_o.lock <= 1'b0;    
+    else                                        resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
+end
 // Fill exceptions for exe stage
 assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;
 assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_reg;

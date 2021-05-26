@@ -71,7 +71,11 @@ module lagarto_openpiton_top #(
 // CSR OUTPUT INTERFACE
 //-----------------------------------------------------------------------------------
     output logic   [11:0]       CSR_RW_ADDR,
-    output logic   [2:0]        CSR_RW_CMD,
+    `ifdef PITON_LAGARTO
+        output csr_cmd_t            CSR_RW_CMD,
+    `else 
+        output logic   [2:0]        CSR_RW_CMD,
+    `endif 
     output bus64_t              CSR_RW_WDATA,
     output logic                CSR_EXCEPTION,
     output logic                CSR_RETIRE,
@@ -641,6 +645,7 @@ datapath datapath_inst(
     .clk_i                      (clk_i                          ),
     .rstn_i                     (rstn_i                         ),
     .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
+    //.req_cpu_dcache_i           (0),
     .dtlb_hit_i                 (lsu_dtlb_hit                   ),
     .paddr_i                    (lsu_paddr                      ),
     .mmu_req_o                  (lsu_req                        ),
@@ -674,6 +679,7 @@ datapath datapath_inst(
     .dmem_xcpt_pf_ld_i          (dtlb_miss                      ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
+    //.resp_dcache_cpu_o          ()    
 );
 
 

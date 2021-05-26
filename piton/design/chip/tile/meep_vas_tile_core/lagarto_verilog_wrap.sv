@@ -112,7 +112,8 @@ bus64_t  CSR_CAUSE;
 exception_t ex_i;
 logic   [11:0]       CSR_RW_ADDR;
 bus64_t              CSR_RW_WDATA;
-logic   [2:0]        CSR_RW_CMD;
+bus64_t              CSR_RW_RDATA;
+csr_cmd_t            CSR_RW_CMD;
 logic                CSR_RETIRE;
 addr_t               CSR_PC;
 logic                dcache_en_csr;
@@ -135,10 +136,10 @@ csr_regfile i_csr_regfile (
   .hart_id_i             ( hart_id_i ),
   .wfi_detect_op_i       ( wfi_detect_op_i),
   .ex_i                  ( ex_i ),
-  .csr_op_i              ( csr_op ),
+  .csr_op_i              ( CSR_RW_CMD ),
   .csr_addr_i            ( CSR_RW_ADDR ),
   .csr_wdata_i           ( CSR_RW_WDATA ),
-  .csr_rdata_o           ( ),
+  .csr_rdata_o           ( CSR_RW_RDATA),
   .dirty_fp_state_i      ( 1'b0 ),
   .csr_write_fflags_i    ( 0 ),
   .pc_i                  ( CSR_PC ),
@@ -195,7 +196,7 @@ lagarto_openpiton_top #(
     .DMEM_ORDERED        (1'b0                   ),
 
     // CSR Input
-    .CSR_RW_RDATA        (64'h0000_0000_0000_0000),
+    .CSR_RW_RDATA        (CSR_RW_RDATA           ),
     .CSR_CSR_STALL       (1'b0                   ),
     .CSR_XCPT            (1'b0                   ),
     .CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000),
