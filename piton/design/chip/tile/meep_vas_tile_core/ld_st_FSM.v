@@ -89,13 +89,13 @@ module ld_st_FSM(
                     st_translation_req_o <= 1'b0;
                     cnt_ena              <= 1'b0;
                     Edo_Sgte             <= REQ_VALID  ; 
-                    dmem_lock_o          <= 1'b1 ; 
+                    dmem_lock_o          <= 1'b0 ; 
                     trns_ena             <= 1'b0;          
                 end
                 else begin
                     mem_req_valid_o      <= 1'b0;
                     st_translation_req_o <= 1'b0;
-                    cnt_ena              <= 1'b0;
+                    cnt_ena              <= (!is_load_bf);
                     Edo_Sgte             <= WAITING_TRNS; 
                     dmem_lock_o          <= 1'b1 ; 
                     trns_ena             <= 1'b1;          
@@ -108,13 +108,13 @@ module ld_st_FSM(
                     st_translation_req_o <= 1'b0;
                     cnt_ena              <= 1'b0;
                     Edo_Sgte             <= NO_REQ  ; 
-                    dmem_lock_o          <= 1'b1 ; 
+                    dmem_lock_o          <= 1'b0 ; 
                     trns_ena             <= 1'b0;          
                 end
                 else begin
                     mem_req_valid_o      <= 1'b0;
                     st_translation_req_o <= 1'b0;
-                    cnt_ena              <= 1'b1;
+                    //cnt_ena              <= 1'b1;
                     Edo_Sgte             <= WAITING_LD_ST; 
                     dmem_lock_o          <= 1'b1; 
                     trns_ena             <= 1'b0;          
