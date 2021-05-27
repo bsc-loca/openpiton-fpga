@@ -82,14 +82,18 @@ module l1_dcache_adapter(
     end
 
     always @ ( posedge clk) begin
-        if (!rst || (!trns_ena_i && !is_store_i && mem_req_valid_i)) 
+        //if (!rst || (!trns_ena_i && !is_store_i && mem_req_valid_i)) 
+        if (!rst || mem_req_valid_i) 
+
                                                    is_store_bf <= 1'b0;
         else if ( is_store_i )                     is_store_bf <= 1'b1;
         else                                       is_store_bf <= is_store_bf;
     end
     
     always @ ( posedge clk) begin
-        if (!rst || (!trns_ena_i && !is_load_i && mem_req_valid_i)) 
+        //if (!rst || (!trns_ena_i && !is_load_i && mem_req_valid_i)) 
+        if (!rst || mem_req_valid_i) 
+
                                 is_load_bf <= 1'b0;
         else if ( is_load_i )   is_load_bf <= 1'b1;
         else                    is_load_bf <= is_load_bf;

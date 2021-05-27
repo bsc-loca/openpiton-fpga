@@ -59,6 +59,8 @@ module lagarto_dcache_interface (
     input  logic        dmem_xcpt_pf_st_i,   // DTLB miss on store
     input  logic        dmem_xcpt_pf_ld_i,   // DTLB miss on load
 
+    input  logic        dmem_resp_gnt_st_i,   // DTLB miss on load
+
     // Response towards Lagarto
     output resp_dcache_cpu_t resp_dcache_cpu_o
 
@@ -107,6 +109,7 @@ ld_st_FSM ld_st_FSM(
     .is_load_i            (is_load_instr         ),
     .kill_mem_op_i        (kill_mem_ope          ),
     .ld_resp_valid_i      (dmem_resp_valid_i     ),
+    .st_resp_gnt_i        (dmem_resp_gnt_st_i    ),
     .dtlb_hit_i           (dtlb_hit_i            ),
     .str_rdy_o            (str_rdy               ),
     .mem_req_valid_o      (mem_req_valid         ),
@@ -250,8 +253,8 @@ assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op_reg != MEM_STOR
 assign resp_dcache_cpu_o.data = dmem_resp_data_i;
 //Lock
 always_comb begin
-    if ( kill_mem_ope | dmem_resp_valid_i )     resp_dcache_cpu_o.lock <= 1'b0;    
-    else                                        resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
+    if ( kill_mem_ope | dmem_resp_valid_i | dmem_resp_gnt_st_i)     resp_dcache_cpu_o.lock <= 1'b0;    
+    else                                                            resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
 end
 // Fill exceptions for exe stage
 assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;

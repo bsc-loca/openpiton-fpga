@@ -310,6 +310,8 @@ wire            dcache_ld_data_gnt;
 wire            dcache_ld_data_rvalid; 
 wire [63:0]     dcache_ld_data_rdata; 
 
+wire            dcache_st_data_gnt; 
+
     //TLB
 wire        lsu_dtlb_hit;
 wire        dtlb_miss   ;
@@ -602,6 +604,8 @@ datapath datapath_inst(
     assign dcache_ld_data_rvalid = dcache_lsu_resp[1].data_rvalid ;               
     assign dcache_ld_data_rdata  = dcache_lsu_resp[1].data_rdata  ;
 
+    assign dcache_st_data_gnt    = dcache_lsu_resp[2].data_gnt    ;               
+
   //ariane_pkg::exception_t misaligned_ex;
   //assign misaligned_ex = '0;
 
@@ -645,7 +649,6 @@ datapath datapath_inst(
     .clk_i                      (clk_i                          ),
     .rstn_i                     (rstn_i                         ),
     .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
-    //.req_cpu_dcache_i           (0),
     .dtlb_hit_i                 (lsu_dtlb_hit                   ),
     .paddr_i                    (lsu_paddr                      ),
     .mmu_req_o                  (lsu_req                        ),
@@ -677,9 +680,9 @@ datapath datapath_inst(
     .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
     .dmem_xcpt_pf_st_i          (dtlb_miss                      ), 
     .dmem_xcpt_pf_ld_i          (dtlb_miss                      ),
+    .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
-    //.resp_dcache_cpu_o          ()    
 );
 
 
