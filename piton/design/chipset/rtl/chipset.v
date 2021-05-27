@@ -376,6 +376,17 @@ module chipset(
         output                                          net_phy_mdc,
 
     `endif // PITON_FPGA_ETHERNETLITE    
+    `ifdef PITON_FPGA_ETH_CMAC
+        // GTY quads connected to QSFP0 unit on Alveo board
+        output         qsfp_fs,
+        output         qsfp_oeb,
+        input          qsfp_ref_clk_n,
+        input          qsfp_ref_clk_p,
+        input   [3:0]  qsfp_4x_grx_n,
+        input   [3:0]  qsfp_4x_grx_p,
+        output  [3:0]  qsfp_4x_gtx_n,
+        output  [3:0]  qsfp_4x_gtx_p,
+    `endif // PITON_FPGA_ETH_CMAC
 `else // ifndef PITONSYS_IOCTRL
 
 `endif // endif PITONSYS_IOCTRL
@@ -930,6 +941,10 @@ end
                 .net_phy_clk    (net_phy_clk_inter  ),
                 .net_axi_clk    (net_axi_clk        )
             `endif
+            `ifdef PITON_FPGA_ETH_CMAC
+                ,
+                .net_axi_clk    (net_axi_clk        )
+            `endif
         );
         `endif // endif PITON_CHIPSET_CLKS_GEN
     `else // ifndef F1_BOARD
@@ -1477,6 +1492,18 @@ chipset_impl_noc_power_test  chipset_impl (
                 .net_phy_mdc        (net_phy_mdc            )
 
             `endif // PITON_FPGA_ETHERNETLITE   
+            `ifdef PITON_FPGA_ETH_CMAC
+                ,
+                .net_axi_clk         (net_axi_clk           ),
+                .qsfp_fs             (qsfp_fs),
+                .qsfp_oeb            (qsfp_oeb),
+                .qsfp_ref_clk_n      (qsfp_ref_clk_n),
+                .qsfp_ref_clk_p      (qsfp_ref_clk_p),
+                .qsfp_4x_grx_n       (qsfp_4x_grx_n),
+                .qsfp_4x_grx_p       (qsfp_4x_grx_p),
+                .qsfp_4x_gtx_n       (qsfp_4x_gtx_n),
+                .qsfp_4x_gtx_p       (qsfp_4x_gtx_p)
+              `endif // PITON_FPGA_ETH_CMAC
     `endif // endif PITONSYS_IOCTRL
 
     `ifdef PITON_ARIANE

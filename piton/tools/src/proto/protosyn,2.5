@@ -588,7 +588,13 @@ def makeDefList(options):
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo
         if options.board == "genesys2" or options.board == "nexysVideo":
+            defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
+        # Ethernet controller is also supported on Alveo-U280
+        elif options.board == "alveou280":
+          if options.eth:
+            defines.append("PITON_FPGA_ETH")
+            defines.append("PITON_FPGA_ETH_CMAC")
         else:
             print_info("--eth option is ignored for %s" % options.board)
 

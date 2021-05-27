@@ -378,6 +378,20 @@ module system(
         output                                          net_phy_mdc,
     `endif
 `endif // PITON_FPGA_ETHERNETLITE
+
+`ifdef PITON_FPGA_ETH_CMAC
+    `ifdef ALVEOU280_BOARD
+        // GTY quads connected to QSFP0 unit on Alveo board
+        output         qsfp0_fs,
+        output         qsfp0_oeb,
+        input          qsfp0_156mhz_clk_n,
+        input          qsfp0_156mhz_clk_p,
+        input   [3:0]  qsfp0_4x_grx_n,
+        input   [3:0]  qsfp0_4x_grx_p,
+        output  [3:0]  qsfp0_4x_gtx_n,
+        output  [3:0]  qsfp0_4x_gtx_p,
+    `endif
+`endif // PITON_FPGA_ETH_CMAC
 `endif // endif PITONSYS_IOCTRL
 
 `ifdef GENESYS2_BOARD
@@ -1284,6 +1298,17 @@ chipset chipset(
         .net_phy_mdc        (net_phy_mdc),
 
     `endif // PITON_FPGA_ETHERNETLITE
+    `ifdef PITON_FPGA_ETH_CMAC
+         // GTY quads connected to QSFP0 unit on Alveo board
+        .qsfp_fs            (qsfp0_fs),
+        .qsfp_oeb           (qsfp0_oeb),
+        .qsfp_ref_clk_n     (qsfp0_156mhz_clk_n),
+        .qsfp_ref_clk_p     (qsfp0_156mhz_clk_p),
+        .qsfp_4x_grx_n      (qsfp0_4x_grx_n),
+        .qsfp_4x_grx_p      (qsfp0_4x_grx_p),
+        .qsfp_4x_gtx_n      (qsfp0_4x_gtx_n),
+        .qsfp_4x_gtx_p      (qsfp0_4x_gtx_p),
+    `endif // PITON_FPGA_ETH_CMAC
 `endif // endif PITONSYS_IOCTRL
 
 `ifdef GENESYS2_BOARD

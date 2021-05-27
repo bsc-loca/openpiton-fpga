@@ -78,7 +78,7 @@ foreach prj_file ${ALL_FILES} {
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
 #Insert block design when needed
-if {$USE_BLOCK_DESIGN==1} {
+if {[info exists USE_BLOCK_DESIGN] && $USE_BLOCK_DESIGN==1} {
 	#add_files -norecurse ${DV_ROOT}/design/chipset/meep/meep_shell.bd 
 	add_files -norecurse ${ALL_BD_FILES}
 }
