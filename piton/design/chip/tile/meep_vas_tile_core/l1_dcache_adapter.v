@@ -13,7 +13,8 @@ module l1_dcache_adapter(
     input            clk                   ,
     input            rst                   ,
     input            is_store_i            ,
-    input            is_load_i            ,
+    input            is_load_i             ,
+    input            is_op_atm_i           ,
     input  [63:0]    vaddr_i               ,   
     input  [63:0]    paddr_i               ,  
     input  [63:0]    data_i                ,   
@@ -27,7 +28,7 @@ module l1_dcache_adapter(
     output [63:0]    vaddr_o               ,   
     output           is_store_o            ,   
     output           is_load_o             ,   
-    output           drain_nc               ,  
+    output           drain_nc              ,  
     output [10:0]    ld_mem_req_addr_index_o  ,
     output [44:0]    ld_mem_req_addr_tag_o    ,
     output [63:0]    ld_mem_req_wdata_o       ,
@@ -102,7 +103,7 @@ module l1_dcache_adapter(
     //- Sincroniza los datos para la solicitud a dcache 
     //- de un store con la maquina de estados 
     always @ ( posedge clk ) begin
-        if ( is_store_i || is_load_i ) begin
+        if ( is_store_i || is_load_i || is_op_atm_i) begin
             st_data_bf         <= data_i           ;
             st_op_bits_type_bf <= op_bits_type_i   ; 
             st_addr20_bf       <= vaddr_i[2:0]     ; 

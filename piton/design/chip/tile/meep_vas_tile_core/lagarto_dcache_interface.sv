@@ -18,19 +18,20 @@ import drac_pkg::*;
 // Interface with Data Cache. Stores a Memory request until it finishes
 
 module lagarto_dcache_interface (
-    input  wire         clk_i,               // Clock
-    input  wire         rstn_i,              // Negative Reset Signal
+    input  wire         clk_i   ,               // Clock
+    input  wire         rstn_i  ,              // Negative Reset Signal
     // Request from Lagarto
     input req_cpu_dcache_t req_cpu_dcache_i, // Interface with cpu
     
     // From/Towards TLB
-    input           dtlb_hit_i,
-    input  [63:0]   paddr_i,
-    output          mmu_req_o,
-    output [63:0]   mmu_vaddr_o,
-    output          mmu_store_o,
-    output          mmu_load_o, 
+    input           dtlb_hit_i  ,
+    input  [63:0]   paddr_i     ,
+    output          mmu_req_o   ,
+    output [63:0]   mmu_vaddr_o ,
+    output          mmu_store_o ,
+    output          mmu_load_o  , 
     // Request towards Cacache_subsystemche
+        //Load
     output [DCACHE_INDEX_WIDTH-1:0]     ld_mem_req_addr_index_o  ,
     output [DCACHE_TAG_WIDTH-1:0]       ld_mem_req_addr_tag_o    ,
     output [63:0]                       ld_mem_req_wdata_o       ,
@@ -40,6 +41,7 @@ module lagarto_dcache_interface (
     output [1:0]                        ld_mem_req_size_o        ,
     output                              ld_mem_req_kill_o        ,
     output                              ld_mem_req_tag_valid_o   ,
+        //Store
     output [DCACHE_INDEX_WIDTH-1:0]     st_mem_req_addr_index_o  ,
     output [DCACHE_TAG_WIDTH-1:0]       st_mem_req_addr_tag_o    ,
     output [63:0]                       st_mem_req_wdata_o       ,
@@ -49,6 +51,15 @@ module lagarto_dcache_interface (
     output [1:0]                        st_mem_req_size_o        ,
     output                              st_mem_req_kill_o        ,
     output                              st_mem_req_tag_valid_o   ,
+        //Atomic Req
+    output logic    atm_mem_req_valid       ,       // this request is valid
+    output [3:0]    atm_mem_req_amo_op      ,       // atomic memory operation to perform
+    output [1:0]    atm_mem_req_size        ,       // 2'b10 --> word operation, 2'b11 --> double word operation
+    output [63:0]   atm_mem_req_operand_a   ,       // address
+    output [63:0]   atm_mem_req_operand_b   ,    
+        //Atomic Resp
+    input           ack_atm_i           ,           // Response is valid
+    input  bus64_t  dmem_resp_atm_data_i,           // result
 
     // DCACHE Answer
     input  bus64_t      dmem_resp_data_i,    // Readed data from Cache
@@ -67,13 +78,14 @@ module lagarto_dcache_interface (
 );
 
 
-logic is_load_instr;
+logic is_load_instr ;
 logic is_store_instr;
-logic kill_mem_ope;
-logic mem_xcpt;
-bus64_t dmem_req_addr_64;
-reg[63:0] dmem_req_addr_reg;
-reg [1:0] type_of_op_reg;
+logic is_atm_instr  ;
+logic kill_mem_ope  ;
+logic mem_xcpt      ;
+
+bus64_t dmem_req_addr_64    ;
+reg[63:0] dmem_req_addr_reg ;
 
 wire st_translation_req ;
 wire mem_req_valid      ;
@@ -85,7 +97,10 @@ parameter MEM_NOP   = 2'b00,
           MEM_STORE = 2'b10,
           MEM_AMO   = 2'b11;
 
-logic [1:0] type_of_op;
+logic   [1:0] type_of_op        ;
+reg     [1:0] type_of_op_reg    ;
+logic   [3:0] type_of_op_atm    ;
+reg     [3:0] type_of_op_atm_reg;
 
 // registers of tlb exceptions to not propagate the stall signal
 logic dmem_xcpt_ma_st_reg;
@@ -93,10 +108,14 @@ logic dmem_xcpt_ma_ld_reg;
 logic dmem_xcpt_pf_st_reg;
 logic dmem_xcpt_pf_ld_reg;
 
+//ATOMIC
+logic [1:0] state_atm;
+logic [1:0] next_state_atm;
 
-// ----------------------
-// Extract Bytes from Op
-// ----------------------
+parameter ResetState    = 2'b00,
+          Idle          = 2'b01,
+          MakeRequest   = 2'b10,
+          WaitResponse  = 2'b11;
 
 // There has been a exception
 assign mem_xcpt = dmem_xcpt_ma_st_i | dmem_xcpt_ma_ld_i | dmem_xcpt_pf_st_i | dmem_xcpt_pf_ld_i;
@@ -126,9 +145,17 @@ always @ (posedge clk_i) begin
 end
 
 always @ (posedge clk_i) begin
-    if (!rstn_i) type_of_op_reg <= 2'b0;
-    else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) type_of_op_reg <=  type_of_op;
-    else type_of_op_reg <= type_of_op_reg;
+    if (!rstn_i) begin
+        type_of_op_reg      <= 2'b0;
+        type_of_op_atm_reg  <= 4'b0; 
+    end else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) begin
+        type_of_op_reg      <=  type_of_op;
+        type_of_op_atm_reg  <=  type_of_op_atm;
+
+    end else begin 
+        type_of_op_reg      <= type_of_op_reg;
+        type_of_op_atm_reg  <= type_of_op_atm_reg;
+    end
 end
 
 l1_dcache_adapter l1_dcache_adapter(
@@ -170,10 +197,6 @@ l1_dcache_adapter l1_dcache_adapter(
     .st_mem_req_tag_valid_o   (st_mem_req_tag_valid_o       )
 );
 
-//-------------------------------------------------------------
-// STATE MACHINE LOGIC
-//-------------------------------------------------------------
-// UPDATE STATE
 always@(posedge clk_i, negedge rstn_i) begin
     if(~rstn_i)begin
         dmem_xcpt_ma_st_reg <= 1'b0;
@@ -181,50 +204,66 @@ always@(posedge clk_i, negedge rstn_i) begin
         dmem_xcpt_pf_st_reg <= 1'b0;
         dmem_xcpt_pf_ld_reg <= 1'b0;
 
+        state_atm   <= ResetState;
+
     end else begin
         dmem_xcpt_ma_st_reg <= dmem_xcpt_ma_st_i;
         dmem_xcpt_ma_ld_reg <= dmem_xcpt_ma_ld_i; 
         dmem_xcpt_pf_st_reg <= dmem_xcpt_pf_st_i;
         dmem_xcpt_pf_ld_reg <= dmem_xcpt_pf_ld_i;
+
+        state_atm   <= next_state_atm;
     end
 end
 
 // Decide type of memory operation
 always_comb begin
     type_of_op      = MEM_NOP;
+    type_of_op_atm  = 4'b0000;
     case(req_cpu_dcache_i.instr_type)
         AMO_LRW,AMO_LRD:         begin
-                                    type_of_op = MEM_AMO;
+                                    type_of_op      = MEM_AMO;
+                                    type_of_op_atm  = 4'b0001;
         end
         AMO_SCW,AMO_SCD:         begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0010;
         end
         AMO_SWAPW,AMO_SWAPD:     begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0011;
         end
         AMO_ADDW,AMO_ADDD:       begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0100;
         end
         AMO_XORW,AMO_XORD:       begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0111;
         end
         AMO_ANDW,AMO_ANDD:       begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0101;
         end
         AMO_ORW,AMO_ORD:         begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b0110;
         end
         AMO_MINW,AMO_MIND:       begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b1010;
         end
         AMO_MAXW,AMO_MAXD:       begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b1000;
         end
         AMO_MINWU,AMO_MINDU:     begin
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b1011;
         end
         AMO_MAXWU,AMO_MAXDU:     begin  
                                     type_of_op = MEM_AMO;
+                                    type_of_op_atm  = 4'b1001;
         end
         LD,LW,LWU,LH,LHU,LB,LBU: begin
                                     type_of_op = MEM_LOAD;
@@ -245,16 +284,55 @@ end
 
 assign is_store_instr = !req_cpu_dcache_i.kill & (type_of_op == MEM_STORE) & req_cpu_dcache_i.valid;
 assign is_load_instr  = !req_cpu_dcache_i.kill & (type_of_op == MEM_LOAD)  & req_cpu_dcache_i.valid;
+assign is_atm_instr   = !req_cpu_dcache_i.kill & (type_of_op == MEM_AMO)   & req_cpu_dcache_i.valid;
+//ATOMIC
+always_comb begin
+    case(state_atm)
+        // IN RESET STATE
+        ResetState: begin
+            atm_mem_req_valid   = 1'b0;  // NO request
+            next_state_atm      = Idle;        // Next state IDLE
+        end
+        // IN IDLE STATE
+        Idle: begin
+            atm_mem_req_valid   = is_atm_instr;
+            next_state_atm      = atm_mem_req_valid ?  MakeRequest : req_cpu_dcache_i.kill ? ResetState : Idle;
+        end
+        // IN MAKE REQUEST STATE
+        MakeRequest: begin
+                atm_mem_req_valid   = 1'b0;
+                next_state_atm      = (!kill_mem_ope) ? WaitResponse : ResetState ;
+            //end
+        end
+        // IN WAIT RESPONSE STATE
+        WaitResponse: begin
+            if(ack_atm_i) begin
+                atm_mem_req_valid   = 1'b0;
+                next_state_atm      = Idle;
+            end else begin
+                atm_mem_req_valid   = 1'b0;
+                next_state_atm      = kill_mem_ope? ResetState : WaitResponse;
+            end
+        end
+    endcase
+end
+
+assign atm_mem_req_amo_op       = type_of_op_atm_reg        ;
+assign atm_mem_req_size         = ld_mem_req_be_o           ; // or st_mem_req_be_o, same 
+assign atm_mem_req_operand_a    = dmem_req_addr_64          ;
+assign atm_mem_req_operand_b    = req_cpu_dcache_i.data_rs1 ;
 
 // Dcache interface is ready
-assign resp_dcache_cpu_o.ready = dmem_resp_valid_i & (type_of_op_reg != MEM_STORE);
+assign resp_dcache_cpu_o.ready  = (type_of_op_reg == MEM_LOAD) ? dmem_resp_valid_i : ack_atm_i;
 
 // Readed data from load
-assign resp_dcache_cpu_o.data = dmem_resp_data_i;
+assign resp_dcache_cpu_o.data   = (type_of_op_reg == MEM_LOAD) ? dmem_resp_data_i : dmem_resp_atm_data_i;
+
 //Lock
 always_comb begin
-    if ( kill_mem_ope | dmem_resp_valid_i | dmem_resp_gnt_st_i)     resp_dcache_cpu_o.lock <= 1'b0;    
-    else                                                            resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
+    if ( kill_mem_ope       | dmem_resp_valid_i | 
+         dmem_resp_gnt_st_i | ack_atm_i         )   resp_dcache_cpu_o.lock <= 1'b0;    
+    else                                            resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
 end
 // Fill exceptions for exe stage
 assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;
