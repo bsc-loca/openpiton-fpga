@@ -283,6 +283,14 @@ logic          iflush       ;
     // AMO Interface
 amo_req_t    dcache_amo_req;
 amo_resp_t   dcache_amo_resp;
+
+        //Atomic Req
+wire        lagarto_atm_req_valid       ; 
+amo_t       lagarto_atm_req_amo_op      ;
+wire [1:0]  lagarto_atm_req_size        ;
+wire [63:0] lagarto_atm_req_operand_a   ;
+wire [63:0] lagarto_atm_req_operand_b   ; 
+
     //Load Store INterface
 dcache_req_i_t[2:0] dcache_lsu_req;   
 dcache_req_o_t[2:0] dcache_lsu_resp;
@@ -314,6 +322,7 @@ wire            dcache_st_data_gnt;
 
     //TLB
 wire        lsu_dtlb_hit;
+wire        lsu_dtlb_valid;
 wire        dtlb_miss   ;
 wire [63:0] lsu_paddr   ;
 wire        lsu_req     ;
@@ -561,7 +570,13 @@ datapath datapath_inst(
   assign dcache_lsu_req[2].data_be       =  lagarto_st_req_be        ;     
   assign dcache_lsu_req[2].data_size     =  lagarto_st_req_size      ;     
   assign dcache_lsu_req[2].kill_req      =  lagarto_st_req_kill      ;     
-  assign dcache_lsu_req[2].tag_valid     =  lagarto_st_req_tag_valid ;     
+  assign dcache_lsu_req[2].tag_valid     =  lagarto_st_req_tag_valid ;
+
+  assign dcache_amo_req.req              =  lagarto_atm_req_valid    ;
+  assign dcache_amo_req.amo_op           =  lagarto_atm_req_amo_op   ;
+  assign dcache_amo_req.size             =  lagarto_atm_req_size     ;
+  assign dcache_amo_req.operand_a        =  lagarto_atm_req_operand_a;  
+  assign dcache_amo_req.operand_b        =  lagarto_atm_req_operand_b;
 
   // this is a cache subsystem that is compatible with OpenPiton
   wt_cache_subsystem #(
@@ -587,8 +602,9 @@ datapath datapath_inst(
     .dcache_flush_i    (               0),
     .dcache_flush_ack_o(               ),
     // to commit stage
-    .dcache_amo_req_i  ( ),
-    .dcache_amo_resp_o (),
+    .dcache_amo_req_i  (dcache_amo_req ),
+    .dcache_amo_resp_o (dcache_amo_resp),
+
     // from PTW, Load Unit  and Store Unit
     .dcache_miss_o     (               ),
     .dcache_req_ports_i(dcache_lsu_req ),
@@ -629,7 +645,7 @@ datapath datapath_inst(
     .lsu_vaddr_i           (lsu_vaddr           ),
     .lsu_is_store_i        (lsu_store           ),
     .lsu_dtlb_hit_o        (lsu_dtlb_hit        ),
-    .lsu_valid_o           (                    ),
+    .lsu_valid_o           (lsu_dtlb_valid      ),
     .lsu_paddr_o           (lsu_paddr           ),
     //.lsu_exception_o       (               ),
     .priv_lvl_i            (riscv::PRIV_LVL_M   ),
@@ -650,6 +666,7 @@ datapath datapath_inst(
     .rstn_i                     (rstn_i                         ),
     .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
     .dtlb_hit_i                 (lsu_dtlb_hit                   ),
+    .dtlb_valid_i               (lsu_dtlb_valid                 ),
     .paddr_i                    (lsu_paddr                      ),
     .mmu_req_o                  (lsu_req                        ),
     .mmu_vaddr_o                (lsu_vaddr                      ),
@@ -673,6 +690,13 @@ datapath datapath_inst(
     .st_mem_req_size_o          (lagarto_st_req_size            ),
     .st_mem_req_kill_o          (lagarto_st_req_kill            ),
     .st_mem_req_tag_valid_o     (lagarto_st_req_tag_valid       ),
+    .atm_mem_req_valid          (lagarto_atm_req_valid          ),
+    .atm_mem_req_amo_op         (lagarto_atm_req_amo_op         ),
+    .atm_mem_req_size           (lagarto_atm_req_size           ),
+    .atm_mem_req_operand_a      (lagarto_atm_req_operand_a      ),
+    .atm_mem_req_operand_b      (lagarto_atm_req_operand_b      ),
+    .ack_atm_i                  (dcache_amo_resp.ack            ),
+    .dmem_resp_atm_data_i       (dcache_amo_resp.result         ),
     .dmem_resp_data_i           (dcache_ld_data_rdata           ),    
     .dmem_resp_valid_i          (dcache_ld_data_rvalid          ),
     .dmem_resp_nack_i           (0                              ), //TODO !

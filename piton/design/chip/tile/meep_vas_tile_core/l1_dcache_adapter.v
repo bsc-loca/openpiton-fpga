@@ -21,8 +21,10 @@ module l1_dcache_adapter(
     input   [1:0]    op_bits_type_i        ,   
     input            dtlb_hit_i            ,  
     input            st_translation_req_i  , 
+    input            st_translation_req_amt_i, 
     input            str_rdy_i             ,  
     input            mem_req_valid_i       ,  
+    input            dmem_resp_gnt_st_i    ,
     input            trns_ena_i           ,
     output           translation_req_o     ,   
     output [63:0]    vaddr_o               ,   
@@ -76,28 +78,27 @@ module l1_dcache_adapter(
     //- Sincroniza los datos para la solicitud de traduccion 
     //- en un store, con la maquina de estados 
     always @ ( posedge clk) begin 
-        if ( !rst || (!trns_ena_i && !is_store_i && !is_load_i)) 
-                                           st_vaddr_bf <= 64'b0 ;
-        else if ( is_store_i || is_load_i) st_vaddr_bf <= vaddr_i;
-        else                               st_vaddr_bf <= st_vaddr_bf;
+        //if ( !rst || (!trns_ena_i && !is_store_i && !is_load_i && !is_op_atm_i)) 
+        if ( !rst ) 
+
+                                        st_vaddr_bf <= 64'b0 ;
+        else if ( is_store_i || is_load_i  ||  is_op_atm_i) 
+                                        st_vaddr_bf <= vaddr_i;
+        else                            st_vaddr_bf <= st_vaddr_bf;
     end
 
     always @ ( posedge clk) begin
         //if (!rst || (!trns_ena_i && !is_store_i && mem_req_valid_i)) 
-        if (!rst || mem_req_valid_i) 
-
-                                                   is_store_bf <= 1'b0;
-        else if ( is_store_i )                     is_store_bf <= 1'b1;
-        else                                       is_store_bf <= is_store_bf;
+        if (!rst) 
+                is_store_bf <= 1'b0;
+        else    is_store_bf <= is_store_i;
     end
     
     always @ ( posedge clk) begin
         //if (!rst || (!trns_ena_i && !is_load_i && mem_req_valid_i)) 
-        if (!rst || mem_req_valid_i) 
-
-                                is_load_bf <= 1'b0;
-        else if ( is_load_i )   is_load_bf <= 1'b1;
-        else                    is_load_bf <= is_load_bf;
+        if (!rst)
+                is_load_bf <= 1'b0;
+        else    is_load_bf <= is_load_i;
     end
     
     //- Sincroniza los datos para la solicitud a dcache 
@@ -180,8 +181,8 @@ module l1_dcache_adapter(
     //------------------------------------------------ interfaz con la mmu
     assign is_store_o        = is_store_bf;
     assign is_load_o         = is_load_bf;
-    assign vaddr_o           = ( is_store_o || is_load_o ) ? st_vaddr_bf : 64'b0;
-    assign translation_req_o = ( is_store_o || is_load_o ) ? st_translation_req_i : 1'b0;
+    assign vaddr_o           = ( is_store_o || is_load_o ||  is_op_atm_i) ? st_vaddr_bf : 64'b0;
+    assign translation_req_o = ( is_store_o || is_load_o ) ? st_translation_req_i : ( is_op_atm_i ) ? st_translation_req_amt_i :1'b0;
 
     //-------------------------------------------------------------------- 
     //----------------------------------------------interfaz con la dcache

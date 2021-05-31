@@ -1,6 +1,7 @@
 //`default_nettype none
 //`include "drac_pkg.sv"
 import drac_pkg::*;
+import ariane_pkg::*;
 
 /* -----------------------------------------------
  * Project Name   : 
@@ -25,6 +26,7 @@ module lagarto_dcache_interface (
     
     // From/Towards TLB
     input           dtlb_hit_i  ,
+    input           dtlb_valid_i,
     input  [63:0]   paddr_i     ,
     output          mmu_req_o   ,
     output [63:0]   mmu_vaddr_o ,
@@ -53,7 +55,7 @@ module lagarto_dcache_interface (
     output                              st_mem_req_tag_valid_o   ,
         //Atomic Req
     output logic    atm_mem_req_valid       ,       // this request is valid
-    output [3:0]    atm_mem_req_amo_op      ,       // atomic memory operation to perform
+    output amo_t    atm_mem_req_amo_op      ,       // atomic memory operation to perform
     output [1:0]    atm_mem_req_size        ,       // 2'b10 --> word operation, 2'b11 --> double word operation
     output [63:0]   atm_mem_req_operand_a   ,       // address
     output [63:0]   atm_mem_req_operand_b   ,    
@@ -99,8 +101,8 @@ parameter MEM_NOP   = 2'b00,
 
 logic   [1:0] type_of_op        ;
 reg     [1:0] type_of_op_reg    ;
-logic   [3:0] type_of_op_atm    ;
-reg     [3:0] type_of_op_atm_reg;
+amo_t   type_of_op_atm    ;
+amo_t   type_of_op_atm_reg;
 
 // registers of tlb exceptions to not propagate the stall signal
 logic dmem_xcpt_ma_st_reg;
@@ -109,13 +111,16 @@ logic dmem_xcpt_pf_st_reg;
 logic dmem_xcpt_pf_ld_reg;
 
 //ATOMIC
-logic [1:0] state_atm;
-logic [1:0] next_state_atm;
+logic [2:0] state_atm;
 
-parameter ResetState    = 2'b00,
-          Idle          = 2'b01,
-          MakeRequest   = 2'b10,
-          WaitResponse  = 2'b11;
+parameter ResetState    = 3'b000,
+          Idle          = 3'b001,
+          Transaction   = 3'b010,
+          MakeRequest   = 3'b011,
+          WaitResponse  = 3'b100;
+
+logic atm_trans_req_valid   ;
+
 
 // There has been a exception
 assign mem_xcpt = dmem_xcpt_ma_st_i | dmem_xcpt_ma_ld_i | dmem_xcpt_pf_st_i | dmem_xcpt_pf_ld_i;
@@ -147,7 +152,7 @@ end
 always @ (posedge clk_i) begin
     if (!rstn_i) begin
         type_of_op_reg      <= 2'b0;
-        type_of_op_atm_reg  <= 4'b0; 
+        type_of_op_atm_reg  <= AMO_NONE; 
     end else if ( !req_cpu_dcache_i.kill & req_cpu_dcache_i.valid ) begin
         type_of_op_reg      <=  type_of_op;
         type_of_op_atm_reg  <=  type_of_op_atm;
@@ -163,13 +168,16 @@ l1_dcache_adapter l1_dcache_adapter(
     .rst                      (rstn_i                       ),
     .is_store_i               (is_store_instr               ),
     .is_load_i                (is_load_instr                ),
+    .is_op_atm_i              (is_atm_instr                 ),
     .vaddr_i                  (dmem_req_addr_64             ),   
     .paddr_i                  (paddr_i                      ),     
     .data_i                   (req_cpu_dcache_i.data_rs2    ),   
     .op_bits_type_i           (req_cpu_dcache_i.mem_size[1:0]),
     .dtlb_hit_i               (dtlb_hit_i                   ),    
     .st_translation_req_i     (st_translation_req           ),
+    .st_translation_req_amt_i (atm_trans_req_valid          ), 
     .mem_req_valid_i          (mem_req_valid                ),
+    .dmem_resp_gnt_st_i       (dmem_resp_gnt_st_i           ),
     .str_rdy_i                (str_rdy                      ),
     .translation_req_o        (mmu_req_o                    ),   
     .vaddr_o                  (mmu_vaddr_o                  ),   
@@ -203,67 +211,62 @@ always@(posedge clk_i, negedge rstn_i) begin
         dmem_xcpt_ma_ld_reg <= 1'b0; 
         dmem_xcpt_pf_st_reg <= 1'b0;
         dmem_xcpt_pf_ld_reg <= 1'b0;
-
-        state_atm   <= ResetState;
-
     end else begin
         dmem_xcpt_ma_st_reg <= dmem_xcpt_ma_st_i;
         dmem_xcpt_ma_ld_reg <= dmem_xcpt_ma_ld_i; 
         dmem_xcpt_pf_st_reg <= dmem_xcpt_pf_st_i;
         dmem_xcpt_pf_ld_reg <= dmem_xcpt_pf_ld_i;
-
-        state_atm   <= next_state_atm;
     end
 end
 
 // Decide type of memory operation
 always_comb begin
     type_of_op      = MEM_NOP;
-    type_of_op_atm  = 4'b0000;
+    type_of_op_atm  = AMO_NONE;
     case(req_cpu_dcache_i.instr_type)
         AMO_LRW,AMO_LRD:         begin
                                     type_of_op      = MEM_AMO;
-                                    type_of_op_atm  = 4'b0001;
+                                    type_of_op_atm  = AMO_LR;
         end
         AMO_SCW,AMO_SCD:         begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0010;
+                                    type_of_op_atm  = AMO_SC;
         end
         AMO_SWAPW,AMO_SWAPD:     begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0011;
+                                    type_of_op_atm  = AMO_SWAP;
         end
         AMO_ADDW,AMO_ADDD:       begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0100;
+                                    type_of_op_atm  = AMO_ADD;
         end
         AMO_XORW,AMO_XORD:       begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0111;
+                                    type_of_op_atm  = AMO_XOR;
         end
         AMO_ANDW,AMO_ANDD:       begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0101;
+                                    type_of_op_atm  = AMO_AND;
         end
         AMO_ORW,AMO_ORD:         begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b0110;
+                                    type_of_op_atm  = AMO_OR;
         end
         AMO_MINW,AMO_MIND:       begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b1010;
+                                    type_of_op_atm  = AMO_MIN;
         end
         AMO_MAXW,AMO_MAXD:       begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b1000;
+                                    type_of_op_atm  = AMO_MAX;
         end
         AMO_MINWU,AMO_MINDU:     begin
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b1011;
+                                    type_of_op_atm  = AMO_MINU;
         end
         AMO_MAXWU,AMO_MAXDU:     begin  
                                     type_of_op = MEM_AMO;
-                                    type_of_op_atm  = 4'b1001;
+                                    type_of_op_atm  = AMO_MAXU;
         end
         LD,LW,LWU,LH,LHU,LB,LBU: begin
                                     type_of_op = MEM_LOAD;
@@ -286,41 +289,63 @@ assign is_store_instr = !req_cpu_dcache_i.kill & (type_of_op == MEM_STORE) & req
 assign is_load_instr  = !req_cpu_dcache_i.kill & (type_of_op == MEM_LOAD)  & req_cpu_dcache_i.valid;
 assign is_atm_instr   = !req_cpu_dcache_i.kill & (type_of_op == MEM_AMO)   & req_cpu_dcache_i.valid;
 //ATOMIC
-always_comb begin
+always @ (posedge clk_i) begin
     case(state_atm)
         // IN RESET STATE
         ResetState: begin
             atm_mem_req_valid   = 1'b0;  // NO request
-            next_state_atm      = Idle;        // Next state IDLE
+            atm_trans_req_valid = 1'b0;
+            state_atm           = Idle;        // Next state IDLE
         end
         // IN IDLE STATE
         Idle: begin
-            atm_mem_req_valid   = is_atm_instr;
-            next_state_atm      = atm_mem_req_valid ?  MakeRequest : req_cpu_dcache_i.kill ? ResetState : Idle;
+            atm_trans_req_valid = is_atm_instr;
+            atm_mem_req_valid   = 1'b0;
+
+            state_atm           = is_atm_instr ?  Transaction : req_cpu_dcache_i.kill ? ResetState : Idle;
+        end
+
+        Transaction: begin
+            if ( dtlb_valid_i ) begin
+                atm_trans_req_valid = 1'b0;
+                atm_mem_req_valid   = (!kill_mem_ope)  ? 1'b1 : 1'b0;
+                state_atm           = (!kill_mem_ope)  ? MakeRequest : ResetState;
+
+            end
+            else begin
+                atm_trans_req_valid = 1'b0;
+                atm_mem_req_valid   = 1'b0;
+                state_atm           = Transaction;
+            end
         end
         // IN MAKE REQUEST STATE
         MakeRequest: begin
                 atm_mem_req_valid   = 1'b0;
-                next_state_atm      = (!kill_mem_ope) ? WaitResponse : ResetState ;
+                state_atm           = (!kill_mem_ope) ? WaitResponse : ResetState ;
             //end
         end
         // IN WAIT RESPONSE STATE
         WaitResponse: begin
             if(ack_atm_i) begin
                 atm_mem_req_valid   = 1'b0;
-                next_state_atm      = Idle;
+                state_atm           = Idle;
             end else begin
-                atm_mem_req_valid   = 1'b0;
-                next_state_atm      = kill_mem_ope? ResetState : WaitResponse;
+                atm_mem_req_valid   = (!kill_mem_ope)  ? 1'b1 : 1'b0;
+                state_atm           = kill_mem_ope? ResetState : WaitResponse;
             end
         end
     endcase
+    if(~rstn_i) begin
+        state_atm           = ResetState; 
+        atm_mem_req_valid   = 1'b0;
+        atm_trans_req_valid = 1'b0;
+    end 
 end
 
 assign atm_mem_req_amo_op       = type_of_op_atm_reg        ;
-assign atm_mem_req_size         = ld_mem_req_be_o           ; // or st_mem_req_be_o, same 
-assign atm_mem_req_operand_a    = dmem_req_addr_64          ;
-assign atm_mem_req_operand_b    = req_cpu_dcache_i.data_rs1 ;
+assign atm_mem_req_size         = st_mem_req_size_o         ; // or ld_mem_req_size_o, same 
+assign atm_mem_req_operand_a    = paddr_i                   ;
+assign atm_mem_req_operand_b    = req_cpu_dcache_i.data_rs2 ;
 
 // Dcache interface is ready
 assign resp_dcache_cpu_o.ready  = (type_of_op_reg == MEM_LOAD) ? dmem_resp_valid_i : ack_atm_i;
