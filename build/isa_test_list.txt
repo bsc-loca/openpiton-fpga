@@ -1,0 +1,3 @@
+rv64ui-p-addi
+rv64ui-p-ld
+rv64ui-p-sd
