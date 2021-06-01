@@ -47,9 +47,10 @@ module eth_top #(
 
     output                                  noc_out_val,
     output      [`NOC_DATA_WIDTH-1:0]       noc_out_data,
-    input                                   noc_out_rdy,
+    input                                   noc_out_rdy
 
 `ifdef PITON_FPGA_ETHERNETLITE
+                                            ,
     input                                   net_axi_clk,
     output                                  net_phy_rst_n,
 
@@ -66,6 +67,7 @@ module eth_top #(
     output                                  net_phy_mdc
 `endif // PITON_FPGA_ETHERNETLITE
 `ifdef PITON_FPGA_ETH_CMAC
+                   ,
     input          net_axi_clk,
     output         qsfp_fs,
     output         qsfp_oeb,

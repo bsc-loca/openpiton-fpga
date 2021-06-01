@@ -85,7 +85,7 @@ if {[info exists USE_BLOCK_DESIGN] && $USE_BLOCK_DESIGN==1} {
 
 #Generate Ethernet subsystem for Alveo280 board
 if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
-  source $DV_ROOT/design/chipset/xilinx/alveou280/eth_cmac_syst/eth_cmac_syst.tcl
+  source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
   cr_bd_Eth_CMAC_syst ""
   make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
   add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
