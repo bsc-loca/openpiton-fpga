@@ -256,8 +256,10 @@ IOBUF u_iobuf_dq (
 `endif // PITON_FPGA_ETHERNETLITE
 
 `ifdef PITON_FPGA_ETH_CMAC
-wire [2:0] net_s_axi_arprot;
-wire [2:0] net_s_axi_awprot;
+wire [2:0] net_s_axi_arprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} read  access by default
+wire [2:0] net_s_axi_awprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} write access by default
+wire [1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
+assign unsync_net_int = net_cmac_intc[1]; // connecting receive event so far 
 Eth_CMAC_syst eth_cmac_syst (
   .s_axi_clk        (net_axi_clk),          // input wire s_axi_aclk
   .s_axi_resetn     (rst_n),                // input wire s_axi_aresetn
@@ -278,10 +280,10 @@ Eth_CMAC_syst eth_cmac_syst (
   .s_axi_rresp      (net_s_axi_rresp),      // output wire [1 : 0] s_axi_rresp
   .s_axi_rvalid     (net_s_axi_rvalid),     // output wire s_axi_rvalid
   .s_axi_rready     (net_s_axi_rready),     // input wire s_axi_rready
-  .s_axi_arprot     (net_s_axi_arprot),
-  .s_axi_awprot     (net_s_axi_awprot),
+  .s_axi_arprot     (net_s_axi_arprot),     // input read  access permissions
+  .s_axi_awprot     (net_s_axi_awprot),     // input write access permissions
 
-  .intc             (unsync_net_int),     // output interrupts (0-tx, 1-rx)
+  .intc             (net_cmac_intc),     
 
   .qsfp0_fs            (qsfp_fs),
   .qsfp0_oeb           (qsfp_oeb),
