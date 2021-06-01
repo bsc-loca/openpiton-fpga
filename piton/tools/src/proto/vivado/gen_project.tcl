@@ -89,6 +89,8 @@ if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
   cr_bd_Eth_CMAC_syst ""
   make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
   add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
+  #Use this script to save BD after editing
+  # source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
 }
 
 # Set 'sources_1' fileset file properties for local files
