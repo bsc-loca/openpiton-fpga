@@ -285,14 +285,14 @@ Eth_CMAC_syst eth_cmac_syst (
 
   .intc             (net_cmac_intc),     
 
-  .qsfp0_fs            (qsfp_fs),
-  .qsfp0_oeb           (qsfp_oeb),
-  .qsfp0_156mhz_clk_n  (qsfp_ref_clk_n),
-  .qsfp0_156mhz_clk_p  (qsfp_ref_clk_p),
-  .qsfp0_4x_grx_n      (qsfp_4x_grx_n),
-  .qsfp0_4x_grx_p      (qsfp_4x_grx_p),
-  .qsfp0_4x_gtx_n      (qsfp_4x_gtx_n),
-  .qsfp0_4x_gtx_p      (qsfp_4x_gtx_p)
+  .qsfp_fs            (qsfp_fs),
+  .qsfp_oeb           (qsfp_oeb),
+  .qsfp_refck_clk_n   (qsfp_ref_clk_n),
+  .qsfp_refck_clk_p   (qsfp_ref_clk_p),
+  .qsfp_4x_grx_n      (qsfp_4x_grx_n),
+  .qsfp_4x_grx_p      (qsfp_4x_grx_p),
+  .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
+  .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
 `endif // PITON_FPGA_ETH_CMAC
 
