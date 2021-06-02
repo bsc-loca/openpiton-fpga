@@ -588,7 +588,7 @@ datapath datapath_inst(
     
     // I$
     .icache_en_i       (1'b1           ),
-    .icache_flush_i    (iflush         ),
+    .icache_flush_i    (1'b0),//iflush         ),
     .icache_miss_o     (               ),
     // I$ address translation requests
     .icache_areq_i     (mmu_icache_areq),
