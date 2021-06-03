@@ -70,6 +70,11 @@ print("`define PITON_Y_TILES %d"   % PITON_Y_TILES)
 `define NOC_OFF_CHIP_NODE_X `OFF_CHIP_NODE_X
 `define NOC_OFF_CHIP_NODE_Y `OFF_CHIP_NODE_Y
 
+// Definitions for noc_axilite_bridge
+`define C_M_AXI_LITE_DATA_WIDTH  `NOC_DATA_WIDTH
+`define C_M_AXI_LITE_ADDR_WIDTH  `NOC_DATA_WIDTH
+`define C_M_AXI_LITE_RESP_WIDTH  2
+
 `define NOC_FBITS_WIDTH     `FINAL_BITS
 `define NOC_FBITS_RESERVED  4'd1
 `define NOC_FBITS_L1        4'd0

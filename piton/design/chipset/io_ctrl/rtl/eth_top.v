@@ -92,27 +92,27 @@ wire    [`NOC_DATA_WIDTH-1:0]   netbridge_afifo_data;
 wire                            fifo_netbridge_rdy;
 
 // netbridge <-> mac axi
-wire [12:0]                     net_s_axi_awaddr;
-wire                            net_s_axi_awvalid;
-wire                            net_s_axi_awready;
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   net_s_axi_awaddr;
+wire                                  net_s_axi_awvalid;
+wire                                  net_s_axi_awready;
 
-wire [31:0]                     net_s_axi_wdata;
-wire [3:0]                      net_s_axi_wstrb;
-wire                            net_s_axi_wvalid;
-wire                            net_s_axi_wready;
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   net_s_axi_wdata;
+wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] net_s_axi_wstrb;
+wire                                  net_s_axi_wvalid;
+wire                                  net_s_axi_wready;
 
-wire [1:0]                      net_s_axi_bresp;
-wire                            net_s_axi_bvalid;
-wire                            net_s_axi_bready;
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   net_s_axi_bresp;
+wire                                  net_s_axi_bvalid;
+wire                                  net_s_axi_bready;
 
-wire [12:0]                     net_s_axi_araddr;
-wire                            net_s_axi_arvalid;
-wire                            net_s_axi_arready;
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   net_s_axi_araddr;
+wire                                  net_s_axi_arvalid;
+wire                                  net_s_axi_arready;
 
-wire [31:0]                     net_s_axi_rdata;
-wire [1:0]                      net_s_axi_rresp;
-wire                            net_s_axi_rvalid;
-wire                            net_s_axi_rready;
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   net_s_axi_rdata;
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   net_s_axi_rresp;
+wire                                  net_s_axi_rvalid;
+wire                                  net_s_axi_rready;
 
 // MDIO
 wire                            net_phy_mdio_i;
