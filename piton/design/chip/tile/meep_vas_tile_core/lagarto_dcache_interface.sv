@@ -350,8 +350,46 @@ assign atm_mem_req_operand_b    = req_cpu_dcache_i.data_rs2 ;
 // Dcache interface is ready
 assign resp_dcache_cpu_o.ready  = (type_of_op_reg == MEM_LOAD) ? dmem_resp_valid_i : ack_atm_i;
 
+bus64_t dmem_resp_data_result;
 // Readed data from load
-assign resp_dcache_cpu_o.data   = (type_of_op_reg == MEM_LOAD) ? dmem_resp_data_i : dmem_resp_atm_data_i;
+assign dmem_resp_data_result     = (type_of_op_reg == MEM_LOAD) ? dmem_resp_data_i : dmem_resp_atm_data_i;
+
+// ---------------
+// Sign Extend and realign
+// ---------------
+
+bus64_t shifted_data; 
+always_comb begin
+    unique case (req_cpu_dcache_i.instr_type)
+        LWU: begin 
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = shifted_data[31:0];
+        end
+        LHU: begin
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = shifted_data[15:0];
+        end
+        LBU: begin
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = shifted_data[7:0];
+        end
+        LW: begin
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = 64'(signed'(shifted_data[31:0]));
+        end
+        LH: begin 
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = 64'(signed'(shifted_data[15:0]));
+        end
+        LB: begin    
+            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            resp_dcache_cpu_o.data = 64'(signed'(shifted_data[7:0]));
+        end
+        default:    
+        resp_dcache_cpu_o.data = dmem_resp_data_result;
+    endcase
+end 
+
 
 //Lock
 always_comb begin

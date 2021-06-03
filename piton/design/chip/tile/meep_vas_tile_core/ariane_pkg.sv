@@ -164,8 +164,8 @@ package ariane_pkg;
     localparam bit RVD = 1'b1; // Is D extension enabled
 `elsif PITON_LAGARTO
     // Floating-point extensions configuration
-    localparam bit RVF = 1'b1; // Is F extension enabled
-    localparam bit RVD = 1'b1; // Is D extension enabled
+    localparam bit RVF = 1'b0; // Is F extension enabled
+    localparam bit RVD = 1'b0; // Is D extension enabled
 `else
     // Floating-point extensions configuration
     localparam bit RVF = 1'b1; // Is F extension enabled
