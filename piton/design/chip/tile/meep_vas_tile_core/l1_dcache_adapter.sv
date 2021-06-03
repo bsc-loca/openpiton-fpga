@@ -9,6 +9,9 @@
  *
  * Adaptador de load y stores para L1 Cache System
  */  
+
+import ariane_pkg::*;
+
 module l1_dcache_adapter(
     input            clk                   ,
     input            rst                   ,
@@ -189,7 +192,7 @@ module l1_dcache_adapter(
     //- store request 
     assign st_mem_req_addr_index_o = paddr_q[10:0]  ;
     assign st_mem_req_addr_tag_o   = paddr_q[55:11] ;
-    assign st_mem_req_wdata_o      = st_data_bf     ;
+    assign st_mem_req_wdata_o      = data_align(paddr_q[2:0],st_data_bf);
     assign st_mem_req_valid_o      = mem_req_valid_i & is_store_o;  
     assign st_mem_req_we_o         = mem_req_valid_i & is_store_o;
     assign st_mem_req_be_o         = mem_req_be_o;

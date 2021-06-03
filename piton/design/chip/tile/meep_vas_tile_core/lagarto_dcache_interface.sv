@@ -362,27 +362,27 @@ bus64_t shifted_data;
 always_comb begin
     unique case (req_cpu_dcache_i.instr_type)
         LWU: begin 
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = shifted_data[31:0];
         end
         LHU: begin
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = shifted_data[15:0];
         end
         LBU: begin
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = shifted_data[7:0];
         end
         LW: begin
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = 64'(signed'(shifted_data[31:0]));
         end
         LH: begin 
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = 64'(signed'(shifted_data[15:0]));
         end
         LB: begin    
-            shifted_data = ((dmem_resp_data_result) >> {dmem_req_addr_64[2:0],3'b000});
+            shifted_data = ((dmem_resp_data_result) >> {ld_mem_req_addr_index_o[2:0],3'b000});
             resp_dcache_cpu_o.data = 64'(signed'(shifted_data[7:0]));
         end
         default:    

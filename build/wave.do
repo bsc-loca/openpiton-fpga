@@ -539,7 +539,6 @@ add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/dmem_resp_gnt_st_i
 add wave -noupdate -expand -group dcache_if -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/resp_dcache_cpu_o
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/dmem_resp_data_result
-add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/mask
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/is_load_instr
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/is_store_instr
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/is_atm_instr
@@ -561,6 +560,61 @@ add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/dmem_xcpt_pf_ld_reg
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/state_atm
 add wave -noupdate -expand -group dcache_if /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/atm_trans_req_valid
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/clk
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/rst
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_store_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_load_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_op_atm_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/vaddr_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/paddr_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/data_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/op_bits_type_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/dtlb_hit_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_translation_req_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_translation_req_amt_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/str_rdy_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/mem_req_valid_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/dmem_resp_gnt_st_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/trns_ena_i
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/translation_req_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/vaddr_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_store_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_load_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/drain_nc
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_addr_index_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_addr_tag_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_wdata_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_valid_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_we_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_be_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_size_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_kill_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_mem_req_tag_valid_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_addr_index_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_addr_tag_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_wdata_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_valid_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_we_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_be_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_size_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_kill_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_mem_req_tag_valid_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/mem_req_be_o
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_vaddr_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_data_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_op_bits_type_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_addr20_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_store_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_load_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_translation_req
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/paddr_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/paddr_q
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/mem_req_valid_bf
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/is_load
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/st_vaddr
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/ld_vaddr
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/op_bits_type
+add wave -noupdate -expand -group dcache_if -expand -group l1_adaptar /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/lagarto_dcache_interface_inst/l1_dcache_adapter/addr20
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/clk_i
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/rst_ni
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/enable_i
@@ -570,7 +624,7 @@ add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/wbuffer_empty_o
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/amo_req_i
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/amo_resp_o
-add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/req_ports_i
+add wave -noupdate -expand -group wt_dcache -expand -subitemconfig {{/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/req_ports_i[2]} -expand} /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/req_ports_i
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/req_ports_o
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/mem_rtrn_vld_i
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/mem_rtrn_i
@@ -618,288 +672,288 @@ add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/tx_paddr
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/tx_vld
 add wave -noupdate -expand -group wt_dcache /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/wbuffer_data
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/clk_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rst_ni
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_idx_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_off_i
-add wave -noupdate -expand -group wt_dcache_mem -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag_only_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_prio_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_ack_o
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_vld_bits_o
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_hit_oh_o
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_data_o
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_vld_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_nc_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_we_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_tag_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_idx_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_off_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_data_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_data_be_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_vld_bits_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_req_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_ack_o
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_idx_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_off_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_data_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_data_be_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_data_i
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_req
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_we
-add wave -noupdate -expand -group wt_dcache_mem -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_be
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx_d
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx_q
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_off_d
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_off_q
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_wdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_rdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rdata_cl
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_req
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_we
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_wdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/tag_rdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_addr
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_sel_d
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_sel_q
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_hit_oh
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_be
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_rdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rdata
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_cmp_addr
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/cmp_en_d
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/cmp_en_q
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_acked
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_collision
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_masked
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_prio
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_off
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_hit_idx
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_hit_idx
-add wave -noupdate -expand -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/tag_write_duplicate_test
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/clk_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rst_ni
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/cache_en_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/empty_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/req_port_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/req_port_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_ack_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_paddr_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_req_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_we_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_wdata_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_vld_bits_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_nc_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_size_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_id_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_rtrn_vld_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_rtrn_id_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_idx_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_off_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_req_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_only_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_ack_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_data_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_vld_bits_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_req_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_ack_i
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_idx_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_off_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_data_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_data_be_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_data_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_paddr_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_vld_o
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_stat_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_stat_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/valid
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tocheck
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_hit_oh
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/inval_hit
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/bdirty
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/next_ptr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty_ptr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/hit_ptr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_ptr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_q1
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_ptr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_id
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_id
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/bdirty_off
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_be
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_paddr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_paddr
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_q1
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/full
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty_rd_en
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rdy
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_empty
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/evict
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/nc_pending_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/nc_pending_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/addr_is_nc
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_wren
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/free_tx_slots
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_q
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_d
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_check_mux
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_dirty_mux
-add wave -noupdate -expand -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wtag_comp
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/clk_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rst_ni}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/cache_en_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_i}
-add wave -noupdate -expand -group wt_dcache_ctrl -expand {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_req_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_ack_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_we_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_wdata_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_vld_bits_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_paddr_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_nc_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_size_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_id_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_replay_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/wr_cl_vld_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_tag_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_idx_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_off_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_tag_only_o}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_data_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_vld_bits_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_hit_oh_i}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/state_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/state_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/save_tag}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_q}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_d}
-add wave -noupdate -expand -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_q}
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/clk_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/rst_ni
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wbuffer_empty_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cache_en_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_resp_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_ack_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_nc_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_we_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_wdata_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_paddr_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_vld_bits_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_size_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_id_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_replay_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_rtrn_vld_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_rtrn_id_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_paddr_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_vld_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_vld_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_nc_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_we_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_tag_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_idx_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_off_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_data_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_data_be_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_vld_bits_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_rtrn_vld_i
-add wave -noupdate -expand -group wt_dcache_miss_unit -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_rtrn_i
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_req_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_ack_i
-add wave -noupdate -expand -group wt_dcache_miss_unit -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_o
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/state_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/state_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/repl_way
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_way
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/rnd_way
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_q1
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_allocate
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/update_lfsr
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/all_ways_valid
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_en
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_done
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mask_reads
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/lock_reqs
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_sel
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_is_write
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_data
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_rtrn_mux
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tmp_paddr
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_port_idx
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cnt_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cnt_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_masked_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_masked_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_vld
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_vld_all
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cl_write_en
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/load_ack
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/store_ack
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_ack
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision_q
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_rdwr_collision
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdwr_collision
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_fail
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_pass
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_backoff_over
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/store_sent
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/stores_inflight_d
-add wave -noupdate -expand -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/stores_inflight_q
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/clk_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rst_ni
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_idx_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_off_i
+add wave -noupdate -group wt_dcache_mem -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag_only_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_prio_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_ack_o
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_vld_bits_o
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_hit_oh_o
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_data_o
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_vld_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_nc_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_we_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_tag_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_idx_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_off_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_data_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_data_be_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_vld_bits_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_req_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_ack_o
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_idx_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_off_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_data_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_data_be_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_data_i
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_req
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_we
+add wave -noupdate -group wt_dcache_mem -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_be
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx_d
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_idx_q
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_off_d
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_off_q
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_wdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_rdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rdata_cl
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_tag
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_req
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_we
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_wdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/tag_rdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_addr
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_sel_d
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/vld_sel_q
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_hit_oh
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_be
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_rdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rdata
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_cmp_addr
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/cmp_en_d
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/cmp_en_q
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_acked
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/bank_collision
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_masked
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req_prio
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_req
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wr_cl_off
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/wbuffer_hit_idx
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/rd_hit_idx
+add wave -noupdate -group wt_dcache_mem /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_mem/tag_write_duplicate_test
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/clk_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rst_ni
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/cache_en_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/empty_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/req_port_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/req_port_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_ack_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_paddr_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_req_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_we_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_wdata_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_vld_bits_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_nc_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_size_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_id_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_rtrn_vld_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/miss_rtrn_id_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_idx_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_off_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_req_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_only_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_ack_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_data_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_vld_bits_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_req_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_ack_i
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_idx_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_off_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_data_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_data_be_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_data_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_paddr_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_vld_o
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_stat_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_stat_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/valid
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tocheck
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_hit_oh
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/inval_hit
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/bdirty
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/next_ptr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty_ptr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/hit_ptr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_ptr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_ptr_q1
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_ptr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_id
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_id
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/bdirty_off
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/tx_be
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_paddr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_paddr
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_tag_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rd_hit_oh_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/check_en_q1
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/full
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/dirty_rd_en
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rdy
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/rtrn_empty
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/evict
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/nc_pending_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/nc_pending_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/addr_is_nc
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_wren
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/free_tx_slots
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_vld_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_q
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wr_cl_idx_d
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_check_mux
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wbuffer_dirty_mux
+add wave -noupdate -group wt_dcache_wb /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_wbuffer/wtag_comp
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/clk_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rst_ni}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/cache_en_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_i}
+add wave -noupdate -group wt_dcache_ctrl -expand {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/req_port_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_req_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_ack_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_we_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_wdata_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_vld_bits_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_paddr_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_nc_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_size_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_id_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_replay_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/miss_rtrn_vld_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/wr_cl_vld_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_tag_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_idx_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_off_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_tag_only_o}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_data_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_vld_bits_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_hit_oh_i}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/state_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/state_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_tag_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_idx_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/address_off_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/vld_data_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/save_tag}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_req_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/rd_ack_q}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_d}
+add wave -noupdate -group wt_dcache_ctrl {/cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/gen_rd_ports[1]/i_wt_dcache_ctrl/data_size_q}
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/clk_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/rst_ni
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wbuffer_empty_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cache_en_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_resp_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_ack_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_nc_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_we_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_wdata_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_paddr_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_vld_bits_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_size_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_id_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_replay_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_rtrn_vld_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_rtrn_id_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_paddr_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_vld_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_vld_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_nc_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_we_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_tag_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_idx_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_off_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_data_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_cl_data_be_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/wr_vld_bits_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_rtrn_vld_i
+add wave -noupdate -group wt_dcache_miss_unit -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_rtrn_i
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_req_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_ack_i
+add wave -noupdate -group wt_dcache_miss_unit -expand /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mem_data_o
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/state_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/state_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/repl_way
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_way
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/rnd_way
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_vld_q1
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_allocate
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/update_lfsr
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/all_ways_valid
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/enable_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_ack_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_en
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/flush_done
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mask_reads
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/lock_reqs
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_sel
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_is_write
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_req_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_data
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_rtrn_mux
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tmp_paddr
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_port_idx
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cnt_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cnt_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_masked_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/miss_req_masked_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_vld
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/inv_vld_all
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/cl_write_en
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/load_ack
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/store_ack
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/amo_ack
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision_q
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdrd_collision
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/tx_rdwr_collision
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/mshr_rdwr_collision
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_fail
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_pass
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/sc_backoff_over
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/store_sent
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/stores_inflight_d
+add wave -noupdate -group wt_dcache_miss_unit /cmp_top/system/chip/tile0/g_lagarto_m20_core/core/lagarto_m20/i_cache_subsystem/i_wt_dcache/i_wt_dcache_missunit/stores_inflight_q
 TreeUpdate [SetDefaultTree]
-WaveRestoreCursors {{Cursor 1} {36461771 ps} 1}
-quietly wave cursor active 1
+WaveRestoreCursors {{Cursor 1} {36519500 ps} 1} {{Cursor 2} {36514500 ps} 1} {{Cursor 3} {36513088 ps} 0}
+quietly wave cursor active 3
 configure wave -namecolwidth 207
 configure wave -valuecolwidth 169
 configure wave -justifyvalue left
@@ -914,4 +968,4 @@ configure wave -griddelta 40
 configure wave -timeline 0
 configure wave -timelineunits ns
 update
-WaveRestoreZoom {35858701 ps} {37064841 ps}
+WaveRestoreZoom {36504580 ps} {36523550 ps}
