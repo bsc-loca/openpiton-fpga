@@ -80,12 +80,12 @@ current_bd_design $design_name
   xilinx.com:ip:xlslice:1.0\
   xilinx.com:ip:cmac_usplus:3.1\
   xilinx.com:ip:axi_dma:7.1\
+  xilinx.com:ip:blk_mem_gen:8.4\
   xilinx.com:ip:util_vector_logic:2.0\
   xilinx.com:ip:axi_gpio:2.0\
   xilinx.com:ip:util_reduced_logic:2.0\
   xilinx.com:ip:axis_data_fifo:2.0\
   xilinx.com:ip:axis_switch:1.1\
-  xilinx.com:ip:blk_mem_gen:8.4\
   xilinx.com:ip:axi_bram_ctrl:4.1\
   xilinx.com:ip:proc_sys_reset:5.0\
   "
@@ -149,7 +149,7 @@ current_bd_design $design_name
 
   set s_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi ]
   set_property -dict [ list \
-   CONFIG.ADDR_WIDTH {32} \
+   CONFIG.ADDR_WIDTH {22} \
    CONFIG.ARUSER_WIDTH {0} \
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
@@ -364,6 +364,54 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.c_sg_length_width {22} \
  ] $eth_dma
 
+  # Create instance: eth_rx_mem, and set properties
+  set eth_rx_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 eth_rx_mem ]
+  set_property -dict [ list \
+   CONFIG.Assume_Synchronous_Clk {false} \
+   CONFIG.EN_SAFETY_CKT {true} \
+   CONFIG.Enable_B {Use_ENB_Pin} \
+   CONFIG.Memory_Type {True_Dual_Port_RAM} \
+   CONFIG.Operating_Mode_A {WRITE_FIRST} \
+   CONFIG.Operating_Mode_B {WRITE_FIRST} \
+   CONFIG.PRIM_type_to_Implement {BRAM} \
+   CONFIG.Port_B_Clock {100} \
+   CONFIG.Port_B_Enable_Rate {100} \
+   CONFIG.Port_B_Write_Rate {50} \
+   CONFIG.Use_RSTB_Pin {true} \
+ ] $eth_rx_mem
+
+  # Create instance: eth_sg_mem, and set properties
+  set eth_sg_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 eth_sg_mem ]
+  set_property -dict [ list \
+   CONFIG.Assume_Synchronous_Clk {true} \
+   CONFIG.EN_SAFETY_CKT {false} \
+   CONFIG.Enable_B {Use_ENB_Pin} \
+   CONFIG.Memory_Type {True_Dual_Port_RAM} \
+   CONFIG.Operating_Mode_A {NO_CHANGE} \
+   CONFIG.Operating_Mode_B {NO_CHANGE} \
+   CONFIG.PRIM_type_to_Implement {URAM} \
+   CONFIG.Port_B_Clock {100} \
+   CONFIG.Port_B_Enable_Rate {100} \
+   CONFIG.Port_B_Write_Rate {50} \
+   CONFIG.Use_RSTB_Pin {true} \
+ ] $eth_sg_mem
+
+  # Create instance: eth_tx_mem, and set properties
+  set eth_tx_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 eth_tx_mem ]
+  set_property -dict [ list \
+   CONFIG.Assume_Synchronous_Clk {false} \
+   CONFIG.EN_SAFETY_CKT {true} \
+   CONFIG.Enable_B {Use_ENB_Pin} \
+   CONFIG.Memory_Type {True_Dual_Port_RAM} \
+   CONFIG.Operating_Mode_A {WRITE_FIRST} \
+   CONFIG.Operating_Mode_B {WRITE_FIRST} \
+   CONFIG.PRIM_type_to_Implement {BRAM} \
+   CONFIG.Port_B_Clock {100} \
+   CONFIG.Port_B_Enable_Rate {100} \
+   CONFIG.Port_B_Write_Rate {50} \
+   CONFIG.Use_RSTB_Pin {true} \
+ ] $eth_tx_mem
+
   # Create instance: ext_rstn_inv, and set properties
   set ext_rstn_inv [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 ext_rstn_inv ]
   set_property -dict [ list \
@@ -447,22 +495,6 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.ROUTING_MODE {1} \
  ] $rx_axis_switch
 
-  # Create instance: rx_mem, and set properties
-  set rx_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 rx_mem ]
-  set_property -dict [ list \
-   CONFIG.Assume_Synchronous_Clk {false} \
-   CONFIG.EN_SAFETY_CKT {true} \
-   CONFIG.Enable_B {Use_ENB_Pin} \
-   CONFIG.Memory_Type {True_Dual_Port_RAM} \
-   CONFIG.Operating_Mode_A {WRITE_FIRST} \
-   CONFIG.Operating_Mode_B {WRITE_FIRST} \
-   CONFIG.PRIM_type_to_Implement {BRAM} \
-   CONFIG.Port_B_Clock {100} \
-   CONFIG.Port_B_Enable_Rate {100} \
-   CONFIG.Port_B_Write_Rate {50} \
-   CONFIG.Use_RSTB_Pin {true} \
- ] $rx_mem
-
   # Create instance: rx_mem_cpu, and set properties
   set rx_mem_cpu [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 rx_mem_cpu ]
   set_property -dict [ list \
@@ -486,22 +518,6 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.RESET_BOARD_INTERFACE {resetn} \
    CONFIG.USE_BOARD_FLOW {true} \
  ] $rx_rst_gen
-
-  # Create instance: sg_mem, and set properties
-  set sg_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 sg_mem ]
-  set_property -dict [ list \
-   CONFIG.Assume_Synchronous_Clk {true} \
-   CONFIG.EN_SAFETY_CKT {false} \
-   CONFIG.Enable_B {Use_ENB_Pin} \
-   CONFIG.Memory_Type {True_Dual_Port_RAM} \
-   CONFIG.Operating_Mode_A {NO_CHANGE} \
-   CONFIG.Operating_Mode_B {NO_CHANGE} \
-   CONFIG.PRIM_type_to_Implement {URAM} \
-   CONFIG.Port_B_Clock {100} \
-   CONFIG.Port_B_Enable_Rate {100} \
-   CONFIG.Port_B_Write_Rate {50} \
-   CONFIG.Use_RSTB_Pin {true} \
- ] $sg_mem
 
   # Create instance: sg_mem_cpu, and set properties
   set sg_mem_cpu [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 sg_mem_cpu ]
@@ -528,22 +544,6 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.NUM_SI {1} \
    CONFIG.ROUTING_MODE {1} \
  ] $tx_axis_switch
-
-  # Create instance: tx_mem, and set properties
-  set tx_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 tx_mem ]
-  set_property -dict [ list \
-   CONFIG.Assume_Synchronous_Clk {false} \
-   CONFIG.EN_SAFETY_CKT {true} \
-   CONFIG.Enable_B {Use_ENB_Pin} \
-   CONFIG.Memory_Type {True_Dual_Port_RAM} \
-   CONFIG.Operating_Mode_A {WRITE_FIRST} \
-   CONFIG.Operating_Mode_B {WRITE_FIRST} \
-   CONFIG.PRIM_type_to_Implement {BRAM} \
-   CONFIG.Port_B_Clock {100} \
-   CONFIG.Port_B_Enable_Rate {100} \
-   CONFIG.Port_B_Write_Rate {50} \
-   CONFIG.Use_RSTB_Pin {true} \
- ] $tx_mem
 
   # Create instance: tx_mem_cpu, and set properties
   set tx_mem_cpu [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 tx_mem_cpu ]
@@ -579,7 +579,7 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
 
   # Create interface connections
   connect_bd_intf_net -intf_net S00_AXI_0_1 [get_bd_intf_ports s_axi] [get_bd_intf_pins microblaze_0_axi_periph/S00_AXI]
-  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins tx_mem/BRAM_PORTA] [get_bd_intf_pins tx_mem_cpu/BRAM_PORTA]
+  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins eth_tx_mem/BRAM_PORTA] [get_bd_intf_pins tx_mem_cpu/BRAM_PORTA]
   connect_bd_intf_net -intf_net cmac_usplus_0_axis_rx [get_bd_intf_pins eth100gb/axis_rx] [get_bd_intf_pins rx_axis_switch/S01_AXIS]
   connect_bd_intf_net -intf_net cmac_usplus_0_gt_serial_port [get_bd_intf_ports qsfp_4x] [get_bd_intf_pins eth100gb/gt_serial_port]
   connect_bd_intf_net -intf_net eth_dma_M_AXIS_MM2S [get_bd_intf_pins eth_dma/M_AXIS_MM2S] [get_bd_intf_pins tx_axis_switch/S00_AXIS]
@@ -599,11 +599,11 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M09_AXI [get_bd_intf_pins microblaze_0_axi_periph/M09_AXI] [get_bd_intf_pins rx_mem_cpu/S_AXI]
   connect_bd_intf_net -intf_net qsfp0_156mhz_1 [get_bd_intf_ports qsfp_refck] [get_bd_intf_pins eth100gb/gt_ref_clk]
   connect_bd_intf_net -intf_net rx_axis_switch_M00_AXIS [get_bd_intf_pins eth_dma/S_AXIS_S2MM] [get_bd_intf_pins rx_axis_switch/M00_AXIS]
-  connect_bd_intf_net -intf_net rx_mem_ctr_BRAM_PORTA [get_bd_intf_pins rx_mem/BRAM_PORTA] [get_bd_intf_pins rx_mem_cpu/BRAM_PORTA]
-  connect_bd_intf_net -intf_net rx_mem_dma_BRAM_PORTA [get_bd_intf_pins rx_mem/BRAM_PORTB] [get_bd_intf_pins rx_mem_dma/BRAM_PORTA]
-  connect_bd_intf_net -intf_net sg_mem_dma1_BRAM_PORTA [get_bd_intf_pins sg_mem/BRAM_PORTA] [get_bd_intf_pins sg_mem_cpu/BRAM_PORTA]
-  connect_bd_intf_net -intf_net sg_mem_dma_BRAM_PORTA [get_bd_intf_pins sg_mem/BRAM_PORTB] [get_bd_intf_pins sg_mem_dma/BRAM_PORTA]
-  connect_bd_intf_net -intf_net tx_mem_cpu1_BRAM_PORTA [get_bd_intf_pins tx_mem/BRAM_PORTB] [get_bd_intf_pins tx_mem_dma/BRAM_PORTA]
+  connect_bd_intf_net -intf_net rx_mem_ctr_BRAM_PORTA [get_bd_intf_pins eth_rx_mem/BRAM_PORTA] [get_bd_intf_pins rx_mem_cpu/BRAM_PORTA]
+  connect_bd_intf_net -intf_net rx_mem_dma_BRAM_PORTA [get_bd_intf_pins eth_rx_mem/BRAM_PORTB] [get_bd_intf_pins rx_mem_dma/BRAM_PORTA]
+  connect_bd_intf_net -intf_net sg_mem_dma1_BRAM_PORTA [get_bd_intf_pins eth_sg_mem/BRAM_PORTA] [get_bd_intf_pins sg_mem_cpu/BRAM_PORTA]
+  connect_bd_intf_net -intf_net sg_mem_dma_BRAM_PORTA [get_bd_intf_pins eth_sg_mem/BRAM_PORTB] [get_bd_intf_pins sg_mem_dma/BRAM_PORTA]
+  connect_bd_intf_net -intf_net tx_mem_cpu1_BRAM_PORTA [get_bd_intf_pins eth_tx_mem/BRAM_PORTB] [get_bd_intf_pins tx_mem_dma/BRAM_PORTA]
   connect_bd_intf_net -intf_net tx_switch_M00_AXIS [get_bd_intf_pins loopback_fifo/S_AXIS] [get_bd_intf_pins tx_axis_switch/M00_AXIS]
   connect_bd_intf_net -intf_net tx_switch_M01_AXIS [get_bd_intf_pins eth100gb/axis_tx] [get_bd_intf_pins tx_axis_switch/M01_AXIS]
 
