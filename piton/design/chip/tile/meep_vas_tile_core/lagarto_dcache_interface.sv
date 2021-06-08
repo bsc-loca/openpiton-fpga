@@ -134,7 +134,7 @@ ld_st_FSM ld_st_FSM(
     .kill_mem_op_i        (kill_mem_ope          ),
     .ld_resp_valid_i      (dmem_resp_valid_i     ),
     .st_resp_gnt_i        (dmem_resp_gnt_st_i    ),
-    .dtlb_hit_i           (dtlb_hit_i            ),
+    .dtlb_hit_i           (dtlb_valid_i          ),
     .str_rdy_o            (str_rdy               ),
     .mem_req_valid_o      (mem_req_valid         ),
     .st_translation_req_o (st_translation_req    ),
@@ -309,7 +309,7 @@ always @ (posedge clk_i) begin
             if ( dtlb_valid_i ) begin
                 atm_trans_req_valid = 1'b0;
                 atm_mem_req_valid   = (!kill_mem_ope)  ? 1'b1 : 1'b0;
-                state_atm           = (!kill_mem_ope)  ? MakeRequest : ResetState;
+                state_atm           = (!kill_mem_ope)  ? WaitResponse : ResetState;
 
             end
             else begin
@@ -319,11 +319,11 @@ always @ (posedge clk_i) begin
             end
         end
         // IN MAKE REQUEST STATE
-        MakeRequest: begin
-                atm_mem_req_valid   = 1'b0;
-                state_atm           = (!kill_mem_ope) ? WaitResponse : ResetState ;
-            //end
-        end
+        // MakeRequest: begin
+        //         atm_mem_req_valid   = 1'b0;
+        //         state_atm           = (!kill_mem_ope) ? WaitResponse : ResetState ;
+        //     //end
+        // end
         // IN WAIT RESPONSE STATE
         WaitResponse: begin
             if(ack_atm_i) begin

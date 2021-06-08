@@ -33,9 +33,8 @@ module mmu #(
         // LSU interface
         // this is a more minimalistic interface because the actual addressing logic is handled
         // in the LSU as we distinguish load and stores, what we do here is simple address translation
-`ifndef PITON_LAGARTO
-        input  exception_t                      misaligned_ex_i,
-`endif
+        input  ariane_pkg::exception_t                      misaligned_ex_i,
+          
         input  logic                            lsu_req_i,        // request address translation
         input  logic [riscv::VLEN-1:0]          lsu_vaddr_i,      // virtual address in
         input  logic                            lsu_is_store_i,   // the translation is requested by a store
@@ -45,9 +44,7 @@ module mmu #(
         // Cycle 1
         output logic                            lsu_valid_o,      // translation is valid
         output logic [riscv::PLEN-1:0]          lsu_paddr_o,      // translated address
-`ifndef PITON_LAGARTO
-        output exception_t                      lsu_exception_o,  // address translation threw an exception
-`endif
+        output ariane_pkg::exception_t          lsu_exception_o,  // address translation threw an exception
         // General control signals
         input riscv::priv_lvl_t                 priv_lvl_i,
         input riscv::priv_lvl_t                 ld_st_priv_lvl_i,
@@ -255,9 +252,7 @@ module mmu #(
     //-----------------------
     logic [riscv::VLEN-1:0] lsu_vaddr_n,     lsu_vaddr_q;
     riscv::pte_t dtlb_pte_n,      dtlb_pte_q;
-`ifndef PITON_LAGARTO
-    exception_t  misaligned_ex_n, misaligned_ex_q;
-`endif
+    ariane_pkg::exception_t  misaligned_ex_n, misaligned_ex_q;
     logic        lsu_req_n,       lsu_req_q;
     logic        lsu_is_store_n,  lsu_is_store_q;
     logic        dtlb_hit_n,      dtlb_hit_q;
@@ -272,9 +267,7 @@ module mmu #(
         // save request and DTLB response
         lsu_vaddr_n           = lsu_vaddr_i;
         lsu_req_n             = lsu_req_i;
-`ifndef PITON_LAGARTO
         misaligned_ex_n       = misaligned_ex_i;
-`endif
         dtlb_pte_n            = dtlb_content;
         dtlb_hit_n            = dtlb_lu_hit;
         lsu_is_store_n        = lsu_is_store_i;
@@ -284,22 +277,16 @@ module mmu #(
         lsu_paddr_o           = lsu_vaddr_q[riscv::PLEN-1:0];
         lsu_valid_o           = lsu_req_q;
 
-`ifndef PITON_LAGARTO  
         lsu_exception_o       = misaligned_ex_q;
         // mute misaligned exceptions if there is no request otherwise they will throw accidental exceptions
         misaligned_ex_n.valid = misaligned_ex_i.valid & lsu_req_i;
-`endif
 
         // Check if the User flag is set, then we may only access it in supervisor mode
         // if SUM is enabled
         daccess_err = (ld_st_priv_lvl_i == riscv::PRIV_LVL_S && !sum_i && dtlb_pte_q.u) || // SUM is not set and we are trying to access a user page in supervisor mode
                       (ld_st_priv_lvl_i == riscv::PRIV_LVL_U && !dtlb_pte_q.u);            // this is not a user page but we are in user mode and trying to access it
         // translation is enabled and no misaligned exception occurred
-`ifndef PITON_LAGARTO
         if (en_ld_st_translation_i && !misaligned_ex_q.valid) begin
-`else
-        if (en_ld_st_translation_i) begin // Todo: [MEEP] we need to add the right misaligned.valid
-`endif
             lsu_valid_o = 1'b0;
             // 4K page
             lsu_paddr_o = {dtlb_pte_q.ppn, lsu_vaddr_q[11:0]};
@@ -317,7 +304,6 @@ module mmu #(
             if (dtlb_hit_q && lsu_req_q) begin
                 lsu_valid_o = 1'b1;
                 // this is a store
-`ifndef PITON_LAGARTO
                 if (lsu_is_store_q) begin
                     // check if the page is write-able and we are not violating privileges
                     // also check if the dirty flag is set
@@ -329,7 +315,6 @@ module mmu #(
                 end else if (daccess_err) begin
                     lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},lsu_vaddr_q}, 1'b1};
                 end
-`endif
             end else
 
             // ---------
@@ -342,13 +327,11 @@ module mmu #(
                     // an error makes the translation valid
                     lsu_valid_o = 1'b1;
                     // the page table walker can only throw page faults
-`ifndef PITON_LAGARTO
                     if (lsu_is_store_q) begin
                         lsu_exception_o = {riscv::STORE_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end else begin
                         lsu_exception_o = {riscv::LOAD_PAGE_FAULT, {{64-riscv::VLEN{lsu_vaddr_q[riscv::VLEN-1]}},update_vaddr}, 1'b1};
                     end
-`endif
                 end
             end
         end
@@ -360,9 +343,7 @@ module mmu #(
         if (~rst_ni) begin
             lsu_vaddr_q      <= '0;
             lsu_req_q        <= '0;
-`ifndef PITON_LAGARTO
             misaligned_ex_q  <= '0;
-`endif   
             dtlb_pte_q       <= '0;
             dtlb_hit_q       <= '0;
             lsu_is_store_q   <= '0;
@@ -371,9 +352,7 @@ module mmu #(
         end else begin
             lsu_vaddr_q      <=  lsu_vaddr_n;
             lsu_req_q        <=  lsu_req_n;
-`ifndef PITON_LAGARTO
             misaligned_ex_q  <=  misaligned_ex_n;
-`endif
             dtlb_pte_q       <=  dtlb_pte_n;
             dtlb_hit_q       <=  dtlb_hit_n;
             lsu_is_store_q   <=  lsu_is_store_n;

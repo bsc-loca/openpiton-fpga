@@ -65,7 +65,9 @@ module lagarto_openpiton_top #(
     input logic                 io_csr_csr_replay,
     input [1:0]                 csr_priv_lvl_i,
     input ovi_csr_data_t        csr_vpu_data_i,
-    input  logic                csr_dcache_enable_i,
+    input logic                 csr_dcache_enable_i,
+    input logic                 en_translation_i,           // enable VA translation
+    input logic                 en_ld_st_translation_i, 
 
 //-----------------------------------------------------------------------------------
 // CSR OUTPUT INTERFACE
@@ -323,12 +325,13 @@ wire            dcache_st_data_gnt;
     //TLB
 wire        lsu_dtlb_hit;
 wire        lsu_dtlb_valid;
-wire        dtlb_miss   ;
 wire [63:0] lsu_paddr   ;
 wire        lsu_req     ;
 wire [63:0] lsu_vaddr   ;
 wire        lsu_store   ;
 wire        lsu_load    ;
+
+ariane_pkg::exception_t lsu_dtlb_exception;
 
 //--PMU
 to_PMU_t       pmu_flags    ;
@@ -622,8 +625,8 @@ datapath datapath_inst(
 
     assign dcache_st_data_gnt    = dcache_lsu_resp[2].data_gnt    ;               
 
-  //ariane_pkg::exception_t misaligned_ex;
-  //assign misaligned_ex = '0;
+  ariane_pkg::exception_t misaligned_ex;
+  assign misaligned_ex = '0;
 
   mmu #(
         .INSTR_TLB_ENTRIES(16),
@@ -634,20 +637,20 @@ datapath datapath_inst(
     .clk_i                 (clk_i           ),
     .rst_ni                (rstn_i          ),
     .flush_i               (                ),
-    .enable_translation_i  (1'b0            ),
-    .en_ld_st_translation_i(1'b0            ),
+    .enable_translation_i  (en_translation_i),
+    .en_ld_st_translation_i(en_ld_st_translation_i),
     // Address translation request
     .icache_areq_i         (icache_mmu_areq ),
     .icache_areq_o         (mmu_icache_areq ),
     
-    //.misaligned_ex_i       ('0  ),
+    .misaligned_ex_i       (misaligned_ex       ),
     .lsu_req_i             (lsu_req             ),
     .lsu_vaddr_i           (lsu_vaddr           ),
     .lsu_is_store_i        (lsu_store           ),
     .lsu_dtlb_hit_o        (lsu_dtlb_hit        ),
     .lsu_valid_o           (lsu_dtlb_valid      ),
     .lsu_paddr_o           (lsu_paddr           ),
-    //.lsu_exception_o       (               ),
+    .lsu_exception_o       (lsu_dtlb_exception  ),
     .priv_lvl_i            (riscv::PRIV_LVL_M   ),
     .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M   ),
     .sum_i                 (                    ),
@@ -656,7 +659,7 @@ datapath datapath_inst(
     .asid_i                (1'b1                ),
     .flush_tlb_i           (                    ),
     .itlb_miss_o           (                    ),
-    .dtlb_miss_o           (dtlb_miss           ),
+    .dtlb_miss_o           (                    ),
     .req_port_i            (dcache_lsu_resp[0]  ),
     .req_port_o            (dcache_lsu_req[0]   )
   );   
@@ -702,8 +705,8 @@ datapath datapath_inst(
     .dmem_resp_nack_i           (0                              ), //TODO !
     .dmem_xcpt_ma_st_i          (0                              ), //TODO !
     .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
-    .dmem_xcpt_pf_st_i          (dtlb_miss                      ), 
-    .dmem_xcpt_pf_ld_i          (dtlb_miss                      ),
+    .dmem_xcpt_pf_st_i          (0                              ), 
+    .dmem_xcpt_pf_ld_i          (0                              ),
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    

@@ -109,7 +109,7 @@ module lagarto_verilog_wrap #(
 
 logic    CSR_EXCEPTION;
 bus64_t  CSR_CAUSE;
-exception_t ex_i;
+drac_pkg::exception_t ex_i;
 logic   [11:0]       CSR_RW_ADDR;
 bus64_t              CSR_RW_WDATA;
 bus64_t              CSR_RW_RDATA;
@@ -117,6 +117,8 @@ csr_cmd_t            CSR_RW_CMD;
 logic                CSR_RETIRE;
 addr_t               CSR_PC;
 logic                dcache_en_csr;
+logic                en_translation;           
+logic                en_ld_st_translation; 
 
 csr_cmd_t csr_op;
 assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
@@ -153,8 +155,8 @@ csr_regfile i_csr_regfile (
   .frm_o                 ( ),
   .fprec_o               ( ),
   .irq_ctrl_o            ( ),
-  .en_translation_o      ( ),
-  .en_ld_st_translation_o( ),
+  .en_translation_o      ( en_translation),
+  .en_ld_st_translation_o( en_ld_st_translation),
   .ld_st_priv_lvl_o      ( ),
   .sum_o                 ( ),
   .mxr_o                 ( ),
@@ -209,6 +211,8 @@ lagarto_openpiton_top #(
     .csr_priv_lvl_i      (priv_lvl_csr_o         ),
     .csr_vpu_data_i      (0                      ),
     .csr_dcache_enable_i (dcache_en_csr          ), 
+    .en_translation_i    (en_translation         ),
+    .en_ld_st_translation_i(en_ld_st_translation ),
     // CSR Output
     .CSR_RW_ADDR          (CSR_RW_ADDR),
     .CSR_RW_CMD           (CSR_RW_CMD),

@@ -289,7 +289,7 @@ package ariane_pkg;
     // maximum instructions we can fetch on one request (we support compressed instructions)
     localparam int unsigned INSTR_PER_FETCH = FETCH_WIDTH / 16;
 
-`ifndef PITON_LAGARTO
+//`ifndef PITON_LAGARTO
     // Only use struct when signals have same direction
     // exception
     typedef struct packed {
@@ -298,7 +298,7 @@ package ariane_pkg;
                              // address of LD/ST fault
          logic        valid;
     } exception_t;
-`endif
+//`endif
 
     typedef enum logic [2:0] {
       NoCF,   // No control flow prediction
