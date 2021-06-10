@@ -1169,7 +1169,7 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
                                      transducer_l15_rqtype == `PCX_REQTYPE_IFILL && 
                                     ~transducer_l15_invalidate_cacheline) ? `MSG_DATA_SIZE_32B : `MSG_DATA_SIZE_16B; 
          
-    wire [40-1:0] lagarto_bootaddr;
+    wire [64-1:0] lagarto_bootaddr;
 
 <%
 def clipAddress(addr, digits):
@@ -1227,7 +1227,7 @@ bootAddr = cacheBase
 if romIsPresent:
   bootAddr = romBase
 
-print("    assign lagarto_bootaddr  =  40'h%s;" % bootAddr)
+print("    assign lagarto_bootaddr  =  64'h%s;" % bootAddr)
 %>
     lagarto_verilog_wrap #(
 <%
