@@ -125,6 +125,10 @@ assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
 assign ex_i.origin = CSR_PC;
 assign ex_i.valid  = CSR_EXCEPTION;
 riscv::priv_lvl_t   priv_lvl_csr_o;
+logic sum;
+logic mxr;
+logic [43:0] satp_ppn;
+logic asid;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
@@ -158,10 +162,10 @@ csr_regfile i_csr_regfile (
   .en_translation_o      ( en_translation),
   .en_ld_st_translation_o( en_ld_st_translation),
   .ld_st_priv_lvl_o      ( ),
-  .sum_o                 ( ),
-  .mxr_o                 ( ),
-  .satp_ppn_o            ( ),
-  .asid_o                ( ),
+  .sum_o                 (sum ),
+  .mxr_o                 (mxr ),
+  .satp_ppn_o            (satp_ppn ),
+  .asid_o                (asid ),
   .irq_i                 ( 0 ),
   .ipi_i                 ( 0 ),
   .debug_req_i           ( 0 ),
@@ -213,6 +217,10 @@ lagarto_openpiton_top #(
     .csr_dcache_enable_i (dcache_en_csr          ), 
     .en_translation_i    (en_translation         ),
     .en_ld_st_translation_i(en_ld_st_translation ),
+    .sum_i                 (sum),
+    .mxr_i                 (mxr),
+    .satp_ppn_i            (satp_ppn),
+    .asid_i                (asid),
     // CSR Output
     .CSR_RW_ADDR          (CSR_RW_ADDR),
     .CSR_RW_CMD           (CSR_RW_CMD),

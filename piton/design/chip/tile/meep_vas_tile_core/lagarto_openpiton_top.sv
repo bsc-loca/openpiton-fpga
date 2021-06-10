@@ -68,7 +68,13 @@ module lagarto_openpiton_top #(
     input logic                 csr_dcache_enable_i,
     input logic                 en_translation_i,           // enable VA translation
     input logic                 en_ld_st_translation_i, 
+`ifdef PITON_LAGARTO
+    input logic                 sum_i,
+    input logic                 mxr_i,
+    input [43:0]                satp_ppn_i,
+    input logic                 asid_i,
 
+`endif
 //-----------------------------------------------------------------------------------
 // CSR OUTPUT INTERFACE
 //-----------------------------------------------------------------------------------
@@ -396,7 +402,7 @@ assign CSR_RW_WDATA     = req_datapath_csr_interface.csr_rw_data;
 assign CSR_EXCEPTION    = req_datapath_csr_interface.csr_exception;
 assign CSR_RETIRE       = req_datapath_csr_interface.csr_retire;
 assign CSR_CAUSE        = req_datapath_csr_interface.csr_xcpt_cause;
-assign CSR_PC           = req_datapath_csr_interface.csr_pc[39:0];
+assign CSR_PC           = req_datapath_csr_interface.csr_pc;
 
 `ifndef PITON_LAGARTO
 //L2 Network conection - response
@@ -651,12 +657,12 @@ datapath datapath_inst(
     .lsu_valid_o           (lsu_dtlb_valid      ),
     .lsu_paddr_o           (lsu_paddr           ),
     .lsu_exception_o       (lsu_dtlb_exception  ),
-    .priv_lvl_i            (riscv::PRIV_LVL_M   ),
-    .ld_st_priv_lvl_i      (riscv::PRIV_LVL_M   ),
-    .sum_i                 (                    ),
-    .mxr_i                 (1'b1                ),
-    .satp_ppn_i            (44'h80000000        ),
-    .asid_i                (1'b1                ),
+    .priv_lvl_i            (riscv::priv_lvl_t'(csr_priv_lvl_i) ),
+    .ld_st_priv_lvl_i      (riscv::priv_lvl_t'(csr_priv_lvl_i) ),
+    .sum_i                 (sum_i               ),
+    .mxr_i                 (mxr                 ),
+    .satp_ppn_i            (satp_ppn_i          ),
+    .asid_i                (asid_i              ),
     .flush_tlb_i           (                    ),
     .itlb_miss_o           (                    ),
     .dtlb_miss_o           (                    ),
