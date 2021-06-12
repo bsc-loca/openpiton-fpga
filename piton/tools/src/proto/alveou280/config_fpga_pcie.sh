@@ -3,6 +3,8 @@
 #  $ cd $PITON_ROOT/
 #  $ source piton/ariane_setup.sh # Piton tools setup (https://github.com/PrincetonUniversity/openpiton#environment-setup-1)
 #  $ protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
+#             --eth                     # adding Ethernet unit
+#             --bram-test hello_world.c # adding VCS-based simulation
 
 script=${BASH_SOURCE[0]}
 if [ $script == $0 ]; then

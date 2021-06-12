@@ -672,7 +672,7 @@ wire  [2:0]                                     chip_intf_credit_back;
 // Chipset DRAM initialization/calibration complete
 wire                                            init_calib_complete;
 
-//wire                                        test_start;
+wire                                        test_start;
 
 // Ethernet
 wire            net_phy_clk_inter;

@@ -851,9 +851,16 @@ def main():
         if options.core == 'ariane':
             config += ' -ariane'
 
+        vcs_verdi_cfg = ' -vcs_build_args=-LDFLAGS'           + \
+                        ' -vcs_build_args=-Wl,--no-as-needed' + \
+                        ' -vcs_build_args=+vcs+fsdbon'        + \
+                        ' -vcs_build_args=-kdb'               + \
+                        ' -vcs_build_args=-debug_access+all'  + \
+                        ' -vcs_build_args=-debug_region=cell+encrypt'
+        
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
-        ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
+        ret_val = os.system('sims -sys=manycore' + config + vcs_verdi_cfg + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
         if ret_val != 0:
             print_error("Compilation didn't finish successfully!")
             print_info("See for Errors in %s/compilation.log" % rc_dir.log)
