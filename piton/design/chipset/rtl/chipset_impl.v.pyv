@@ -131,10 +131,10 @@ module chipset_impl(
     // Not all signals will be used for all FPGA boards (see constraints)
 `ifdef PITONSYS_DDR4
     ,
-
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
 `else // PITONSYS_DDR4
+    ,
     output                                      ddr_cas_n,
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
@@ -861,10 +861,8 @@ credit_to_valrdy noc3_xbar_to_%s(
         `ifdef PITONSYS_DDR4
         `ifdef XUPP3R_BOARD
             .ddr_parity(ddr_parity),
-	`elsif ALVEOU280_BOARD
-	    .ddr_parity(ddr_parity),
-
-
+        `elsif ALVEOU280_BOARD
+            .ddr_parity(ddr_parity),
         `else
             .ddr_dm(ddr_dm),
         `endif // XUPP3R_BOARD
