@@ -704,11 +704,11 @@ package ariane_pkg;
     typedef struct packed {
         logic                     fetch_valid;     // address translation valid
         logic [riscv::PLEN-1:0]   fetch_paddr;     // physical address in
-`ifdef PITON_LAGARTO
-        drac_pkg::exception_t     fetch_exception; // exception occurred during fetch
-`else
-        exception_t               fetch_exception; // exception occurred during fetch
-`endif
+//`ifdef PITON_LAGARTO
+        //drac_pkg::exception_t     fetch_exception; // exception occurred during fetch
+//`else
+        ariane_pkg::exception_t               fetch_exception; // exception occurred during fetch
+//`endif
     } icache_areq_i_t;
 
     typedef struct packed {
@@ -729,11 +729,11 @@ package ariane_pkg;
         logic                     valid;                  // signals a valid read
         logic [FETCH_WIDTH-1:0]   data;                   // 2+ cycle out: tag
         logic [riscv::VLEN-1:0]   vaddr;                  // virtual address out
-`ifdef PITON_LAGARTO
-        drac_pkg::exception_t     ex;                     // we've encountered an exception
-`else
-        exception_t               ex;                     // we've encountered an exception
-`endif
+//`ifdef PITON_LAGARTO
+        //drac_pkg::exception_t     ex;                     // we've encountered an exception
+//`else
+        ariane_pkg::exception_t               ex;                     // we've encountered an exception
+//`endif
     } icache_dreq_o_t;
 
     // AMO request going to cache. this request is unconditionally valid as soon
