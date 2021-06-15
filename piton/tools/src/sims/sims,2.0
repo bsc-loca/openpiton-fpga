@@ -2655,6 +2655,7 @@ sub parse_args
             'num_tile=s',
             'x_tiles=s',
             'y_tiles=s',
+            'board=s',
             'dynamic_csm=s',
             'gui!',
             'log_all!',
@@ -2712,9 +2713,15 @@ sub parse_args
     }
   }
 
-  $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/verif/env/manycore";
-  $ENV{PROTOSYN_RUNTIME_BOARD} = "";
-
+  # Alex Kropotov: just in case considering board specific defines
+  if ($opt{board}) {
+    $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
+    $ENV{PROTOSYN_RUNTIME_BOARD} = $opt{board};
+  }
+  else {
+    $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/verif/env/manycore";
+    $ENV{PROTOSYN_RUNTIME_BOARD} = "";
+  }
 
   # these arguments may not have any options associated with them
   foreach my $x (@ARGV) {
@@ -2989,6 +2996,7 @@ OPENPITON ARGUMENTS
             in the x dimension and Y tiles in the y dimension. If
             -x_tiles and -y_tiles is not specified, the default is
             X=1 and Y=1. The maximum value for both X and Y is 1024.
+            -board=<board_type> enables board specific definitions.
 
     -ed_enable
             enable Execution Drafting in each core.

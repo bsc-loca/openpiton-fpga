@@ -524,8 +524,9 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
 
+    # Alex Kropotov: no limitation of test mapping just for BRAM
     # --bram-test option
-    if options.test_name != None:
+    if (options.test_name != None and options.uart_dmw == None):
         defines.append("PITON_FPGA_BRAM_TEST")
         defines.append("PITONSYS_NO_MC")
 
@@ -535,6 +536,7 @@ def makeDefList(options):
     elif options.uart_dmw == "bram":
         defines.append("PITONSYS_UART_BOOT")
         defines.append("PITON_FPGA_BRAM_TEST")
+        defines.append("PITONSYS_NO_MC")
 
     if options.uart_reset == True:
         defines.append("PITONSYS_UART_RESET")
@@ -842,6 +844,10 @@ def main():
                  ' -config_l15_associativity=' + str(options.config_l15_associativity) + \
                  ' -config_l2_associativity='  + str(options.config_l2_associativity)
 
+        # Alex Kropotov: passing board option to simulation to consider board specific defines
+        if options.board:
+            config += ' -board=' + options.board
+
         if options.core == 'pico':
             config += ' -pico'
 
@@ -885,7 +891,8 @@ def main():
     ###################################
 
     if run_map_test:
-        if options.test_name != None:
+        # Alex Kropotov: no limitation of test mapping just for BRAM
+        if (options.test_name != None and options.uart_dmw == None):
             strg_type = "bram"
         else:
             strg_type = options.uart_dmw
