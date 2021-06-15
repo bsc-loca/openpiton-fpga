@@ -346,6 +346,7 @@ logic imiss_time_pmu  ;
 logic imiss_kill_pmu ;
 logic imiss_l2_hit ;
 logic dmiss_l2_hit ;
+logic dcache_resp_lock;
 
 assign debug_in.halt_valid=debug_halt_i;
 assign debug_in.change_pc_addr={24'b0,IO_FETCH_PC_VALUE};
@@ -596,7 +597,7 @@ datapath datapath_inst(
     .rst_ni            (rstn_i         ),
     
     // I$
-    .icache_en_i       (1'b1           ),
+    .icache_en_i       (!dcache_resp_lock),
     .icache_flush_i    (iflush         ),
     .icache_miss_o     (               ),
     // I$ address translation requests
@@ -718,7 +719,7 @@ datapath datapath_inst(
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
-
+assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
 icache_interface icache_interface_inst(
