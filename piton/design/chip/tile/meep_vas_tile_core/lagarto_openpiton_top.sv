@@ -558,7 +558,7 @@ datapath datapath_inst(
   assign icache_resp.vaddr = icache_dreq_o.vaddr;
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
-  assign icache_resp.xcpt  = 1'b0;//icache_dreq_o.ex.valid;
+  assign icache_resp.xcpt  = (icache_dreq_o.ex.tval == 64'b0) ? 1'b0 : icache_dreq_o.ex.valid;
   
   // D$ request
                                                                                            
@@ -598,6 +598,7 @@ datapath datapath_inst(
     
     // I$
     .icache_en_i       (!dcache_resp_lock),
+    //.icache_en_i       (1'b1),
     .icache_flush_i    (iflush         ),
     .icache_miss_o     (               ),
     // I$ address translation requests
