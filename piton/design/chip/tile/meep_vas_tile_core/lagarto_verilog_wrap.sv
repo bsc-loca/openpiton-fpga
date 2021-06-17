@@ -119,6 +119,7 @@ addr_t               CSR_PC;
 logic                dcache_en_csr;
 logic                en_translation;           
 logic                en_ld_st_translation; 
+logic                icache_en_csr;
 
 csr_cmd_t csr_op;
 assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
@@ -175,7 +176,7 @@ csr_regfile i_csr_regfile (
   .tsr_o                 ( ),
   .debug_mode_o          ( ),
   .single_step_o         ( ),
-  .icache_en_o           ( ),
+  .icache_en_o           (icache_en_csr),
   .dcache_en_o           (dcache_en_csr),
   .perf_addr_o           ( ),
   .perf_data_o           ( ),
@@ -215,6 +216,7 @@ lagarto_openpiton_top #(
     .csr_priv_lvl_i      (priv_lvl_csr_o         ),
     .csr_vpu_data_i      (0                      ),
     .csr_dcache_enable_i (dcache_en_csr          ), 
+    .csr_icache_enable_i (icache_en_csr          ), 
     .en_translation_i    (en_translation         ),
     .en_ld_st_translation_i(en_ld_st_translation ),
     .sum_i                 (sum),

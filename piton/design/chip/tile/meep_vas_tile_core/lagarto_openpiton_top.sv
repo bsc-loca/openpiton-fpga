@@ -66,6 +66,7 @@ module lagarto_openpiton_top #(
     input [1:0]                 csr_priv_lvl_i,
     input ovi_csr_data_t        csr_vpu_data_i,
     input logic                 csr_dcache_enable_i,
+    input logic                 csr_icache_enable_i,
     input logic                 en_translation_i,           // enable VA translation
     input logic                 en_ld_st_translation_i, 
 `ifdef PITON_LAGARTO
@@ -558,7 +559,7 @@ datapath datapath_inst(
   assign icache_resp.vaddr = icache_dreq_o.vaddr;
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
-  assign icache_resp.xcpt  = (icache_dreq_o.ex.tval == 64'b0) ? 1'b0 : icache_dreq_o.ex.valid;
+  assign icache_resp.xcpt  = 1'b0;// (icache_dreq_o.ex.tval == 64'b0) ? 1'b0 : icache_dreq_o.ex.valid;
   
   // D$ request
                                                                                            
@@ -597,8 +598,9 @@ datapath datapath_inst(
     .rst_ni            (rstn_i         ),
     
     // I$
-    .icache_en_i       (!dcache_resp_lock),
-    //.icache_en_i       (1'b1),
+    //.icache_en_i       (!dcache_resp_lock),
+    //.icache_en_i       (csr_icache_enable_i),
+    .icache_en_i       (1'b1),
     .icache_flush_i    (iflush         ),
     .icache_miss_o     (               ),
     // I$ address translation requests
