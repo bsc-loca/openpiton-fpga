@@ -520,9 +520,11 @@ system system(
         .clk (jtag_clk)
         );
 
+    `ifndef PITONSYS_IOCTRL
     iob_mon iob_mon(
         .clk (chipset_clk)
     );
+    `endif
     // sas, more debug info
 
     // turn on sas interface after a delay

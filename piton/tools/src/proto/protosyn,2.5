@@ -844,9 +844,12 @@ def main():
                  ' -config_l15_associativity=' + str(options.config_l15_associativity) + \
                  ' -config_l2_associativity='  + str(options.config_l2_associativity)
 
-        # Alex Kropotov: passing board option to simulation to consider board specific defines
+        # Alex Kropotov: passing board and ethernet option to simulation
         if options.board:
             config += ' -board=' + options.board
+
+        if options.eth:
+            config += ' -eth'
 
         if options.core == 'pico':
             config += ' -pico'
@@ -857,6 +860,7 @@ def main():
         if options.core == 'ariane':
             config += ' -ariane'
 
+        # Alex Kropotov: simulation configs needed for MEEP project
         vcs_verdi_cfg = ' -vcs_build_args=-LDFLAGS'           + \
                         ' -vcs_build_args=-Wl,--no-as-needed' + \
                         ' -vcs_build_args=+vcs+fsdbon'        + \
