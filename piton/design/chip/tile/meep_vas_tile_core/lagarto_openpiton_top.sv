@@ -599,8 +599,7 @@ datapath datapath_inst(
     
     // I$
     //.icache_en_i       (!dcache_resp_lock),
-    //.icache_en_i       (csr_icache_enable_i),
-    .icache_en_i       (1'b1),
+    .icache_en_i       (csr_icache_enable_i),
     .icache_flush_i    (iflush         ),
     .icache_miss_o     (               ),
     // I$ address translation requests
