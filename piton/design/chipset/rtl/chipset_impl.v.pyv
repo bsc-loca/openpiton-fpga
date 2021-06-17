@@ -1103,7 +1103,8 @@ ciop_fake_iob ciop_fake_iob(
         `endif
         `ifdef RTL_LAGARTO0
           .spc0_inst_done    ( 1'b1   ),
-          .pc_w0             ( `LAGARTO_CORE0.IO_FETCH_PC[48:0] ),
+          .pc_w0             ( {9'b0 ,`LAGARTO_CORE0.IO_FETCH_PC[39:0]} ),
+
         `endif
         '''
 
