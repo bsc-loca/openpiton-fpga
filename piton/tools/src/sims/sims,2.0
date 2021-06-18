@@ -366,7 +366,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_OST1")     if ($opt{ost1} || $opt{pico_
 push (@{$opt{config_cpp_args}}, "-DFLIST_PICO")     if ($opt{pico} || $opt{pico_het}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
-push (@{$opt{config_cpp_args}}, "-DETH_CMAC")       if ($opt{eth} && ($opt{board} eq "alveou280")) ;
+push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth} && ($opt{board} eq "alveou280")) ;
 
 ################################################################################
 # define $result_dir

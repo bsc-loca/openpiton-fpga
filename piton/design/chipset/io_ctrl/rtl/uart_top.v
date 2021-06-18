@@ -480,6 +480,7 @@ uart_mux   uart_mux (
       assign s_axi_bvalid  = s_axi_bready;
       assign s_axi_bresp   = 2'h0;
 
+      assign uart_interrupt = 1'b0;
     `else
       uart_16550   uart_16550 (
         .s_axi_aclk       (axi_clk          ),  // input wire s_axi_aclk

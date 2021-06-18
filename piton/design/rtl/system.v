@@ -377,9 +377,7 @@ module system(
         inout                                           net_phy_mdio_io,
         output                                          net_phy_mdc,
     `endif
-`endif // PITON_FPGA_ETHERNETLITE
-
-`ifdef PITON_FPGA_ETH_CMAC
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
     `ifdef ALVEOU280_BOARD
         // GTY quads connected to QSFP unit on Alveo board
         output         qsfp_fs,
@@ -1296,9 +1294,7 @@ chipset chipset(
         .net_phy_rst_n      (net_phy_rst_n),
         .net_phy_mdio_io    (net_phy_mdio_io),
         .net_phy_mdc        (net_phy_mdc),
-
-    `endif // PITON_FPGA_ETHERNETLITE
-    `ifdef PITON_FPGA_ETH_CMAC
+    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
          // GTY quads connected to QSFP unit on Alveo board
         .qsfp_fs            (qsfp_fs),
         .qsfp_oeb           (qsfp_oeb),

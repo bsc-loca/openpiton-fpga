@@ -284,8 +284,7 @@ module chipset_impl(
 
     inout                                       net_phy_mdio_io,
     output                                      net_phy_mdc
-`endif // PITON_FPGA_ETHERNETLITE
-`ifdef PITON_FPGA_ETH_CMAC
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
     ,
     input          net_axi_clk,
     output         qsfp_fs,
@@ -297,7 +296,7 @@ module chipset_impl(
     output  [3:0]  qsfp_4x_gtx_n,
     output  [3:0]  qsfp_4x_gtx_p
 `endif // PITON_FPGA_ETH_CMAC
-`endif // endif PITONSYS_IO_CTRL
+`endif // endif PITONSYS_IOCTRL
 `ifdef PITON_ARIANE
     ,
     // Debug
@@ -1089,9 +1088,10 @@ uart_top        uart_top (
 
         .noc_out_val     ( net_buf_noc3_valid ),
         .noc_out_data    ( net_buf_noc3_data  ),
-        .noc_out_rdy     ( buf_net_noc3_ready ),
+        .noc_out_rdy     ( buf_net_noc3_ready )
 
     `ifdef PITON_FPGA_ETHERNETLITE
+        ,
         .net_axi_clk     ( net_axi_clk        ),
         .net_phy_rst_n   ( net_phy_rst_n      ),
 
@@ -1106,8 +1106,8 @@ uart_top        uart_top (
 
         .net_phy_mdio_io ( net_phy_mdio_io    ),
         .net_phy_mdc     ( net_phy_mdc        )
-    `endif // PITON_FPGA_ETHERNETLITE
-    `ifdef PITON_FPGA_ETH_CMAC
+    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+        ,
         .net_axi_clk     (net_axi_clk         ),
         .qsfp_fs         (qsfp_fs),
         .qsfp_oeb        (qsfp_oeb),

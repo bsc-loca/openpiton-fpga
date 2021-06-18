@@ -375,8 +375,7 @@ module chipset(
         inout                                           net_phy_mdio_io,
         output                                          net_phy_mdc,
 
-    `endif // PITON_FPGA_ETHERNETLITE    
-    `ifdef PITON_FPGA_ETH_CMAC
+    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
         // GTY quads connected to QSFP0 unit on Alveo board
         output         qsfp_fs,
         output         qsfp_oeb,
@@ -1491,8 +1490,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 .net_phy_mdio_io    (net_phy_mdio_io        ),
                 .net_phy_mdc        (net_phy_mdc            )
 
-            `endif // PITON_FPGA_ETHERNETLITE   
-            `ifdef PITON_FPGA_ETH_CMAC
+            `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                 ,
                 .net_axi_clk         (net_axi_clk           ),
                 .qsfp_fs             (qsfp_fs),
@@ -1503,7 +1501,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 .qsfp_4x_grx_p       (qsfp_4x_grx_p),
                 .qsfp_4x_gtx_n       (qsfp_4x_gtx_n),
                 .qsfp_4x_gtx_p       (qsfp_4x_gtx_p)
-              `endif // PITON_FPGA_ETH_CMAC
+            `endif // PITON_FPGA_ETH_CMAC
     `endif // endif PITONSYS_IOCTRL
 
     `ifdef PITON_ARIANE

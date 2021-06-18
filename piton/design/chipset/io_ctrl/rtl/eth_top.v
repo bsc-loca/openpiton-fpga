@@ -65,8 +65,7 @@ module eth_top #(
 
     inout                                   net_phy_mdio_io,
     output                                  net_phy_mdc
-`endif // PITON_FPGA_ETHERNETLITE
-`ifdef PITON_FPGA_ETH_CMAC
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
     input          net_axi_clk,
     output         qsfp_fs,
@@ -124,6 +123,13 @@ wire net_phy_col = 1'b0;
 
 (* dont_touch = "true" *) wire unsync_net_int;
 
+`ifndef PITON_FPGA_ETH_CMAC
+`ifndef PITON_FPGA_ETHERNETLITE
+  `define NO_ETH_CORE
+`endif
+`endif
+
+`ifndef NO_ETH_CORE
 noc_bidir_afifo  net_afifo  (
     .clk_1           (chipset_clk           ),
     .rst_1           (~rst_n                ),
@@ -149,6 +155,16 @@ noc_bidir_afifo  net_afifo  (
     .flit_out_data_1 (noc_out_data     ),
     .flit_out_rdy_1  (noc_out_rdy      )
 );
+`else // NO_ETH_CORE
+  wire net_axi_clk = chipset_clk;
+  assign afifo_netbridge_val  = noc_in_val;
+  assign afifo_netbridge_data = noc_in_data;
+  assign noc_in_rdy = netbridge_afifo_rdy;
+
+  assign noc_out_val  = netbridge_afifo_val;
+  assign noc_out_data = netbridge_afifo_data;
+  assign afifo_netbridge_rdy = noc_out_rdy;
+`endif
 
 noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   (4),
@@ -253,9 +269,9 @@ IOBUF u_iobuf_dq (
     .T  (net_phy_mdio_t),
     .IO (net_phy_mdio_io)
 );
-`endif // PITON_FPGA_ETHERNETLITE
 
-`ifdef PITON_FPGA_ETH_CMAC
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+
 wire [2:0] net_s_axi_arprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} read  access by default
 wire [2:0] net_s_axi_awprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} write access by default
 wire [1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
@@ -294,7 +310,21 @@ Eth_CMAC_syst eth_cmac_syst (
   .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
   .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
-`endif // PITON_FPGA_ETH_CMAC
+`else // PITON_FPGA_ETH_CMAC
+  // Ethernet core stub for simulation
+  assign net_s_axi_awready = 1'b1;
+  assign net_s_axi_wready = 1'b1;
+  assign net_s_axi_arready = 1'b1;
+
+  assign net_s_axi_rvalid = net_s_axi_rready;
+  assign net_s_axi_rdata  = `C_M_AXI_LITE_DATA_WIDTH'hFEEDC0DE;
+  assign net_s_axi_rresp  = 2'h0;
+
+  assign net_s_axi_bvalid  = net_s_axi_bready;
+  assign net_s_axi_bresp   = 2'h0;
+
+  assign unsync_net_int = 1'h0;
+`endif
 
 `else  // PITON_FPGA_ETH
 
