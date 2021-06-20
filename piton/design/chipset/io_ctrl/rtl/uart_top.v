@@ -246,6 +246,8 @@ assign uart16550_rx   = uart_rx;
     `else   // PITONSYS_UART_BOOT
       assign init_done = 1'b1;
     `endif  // PITONSYS_UART_BOOT
+  `else   // PITON_FPGA_MC_SIM
+      assign init_done = 1'b1;
   `endif  // PITON_FPGA_MC_SIM
 `endif  // PITON_BOARD
 
@@ -280,8 +282,11 @@ assign uart16550_rx   = uart_rx;
   `else   // PITONSYS_UART_BOOT
     assign writer_finish      = 1'b1;
   `endif  // PITONSYS_UART_BOOT
+`else   // PITON_FPGA_MC_SIM
+    assign writer_finish      = 1'b1;
 `endif
 
+`ifndef PITON_FPGA_MC_SIM
 `ifdef PITONSYS_UART_BOOT
   uart_reader   uart_reader (
     .axi_clk              (axi_clk              ),
@@ -309,6 +314,9 @@ assign uart16550_rx   = uart_rx;
 `else   // PITONSYS_UART_BOOT
   assign reader_stop = 1'b1;
 `endif  // PITONSYS_UART_BOOT
+`else   // PITON_FPGA_MC_SIM
+  assign reader_stop = 1'b1;
+`endif
 
 `ifdef PITONSYS_UART_RESET
   uart_reseter uart_reseter(

@@ -851,6 +851,9 @@ def main():
         if options.eth:
             config += ' -eth'
 
+        if options.uart_dmw:
+            config += ' -uart_dmw'
+
         if options.core == 'pico':
             config += ' -pico'
 

@@ -351,6 +351,7 @@ GetOptions (\%opt,
             'build_id=s',
             'board=s',
             'eth!',
+            'uart_dmw!',
            ) ;
 
 die ("DIE. -ariane and -pico/-pico_het cannot be set simultaneously") if ($opt{ariane} && ($opt{pico} || $opt{pico_het})) ;
@@ -366,7 +367,9 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_OST1")     if ($opt{ost1} || $opt{pico_
 push (@{$opt{config_cpp_args}}, "-DFLIST_PICO")     if ($opt{pico} || $opt{pico_het}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
+# Alex Kropotov: other boards supporting Ethernet may be added here for simple Ethernet access simulation 
 push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth} && ($opt{board} eq "alveou280")) ;
+push (@{$opt{config_cpp_args}}, "-DUART_BOOT")      if ($opt{uart_dmw}) ;
 
 ################################################################################
 # define $result_dir
@@ -2716,7 +2719,7 @@ sub parse_args
     }
   }
 
-  # Alex Kropotov: just in case considering board specific defines
+  # Alex Kropotov: considering board specific defines
   if ($opt{board}) {
     $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
     $ENV{PROTOSYN_RUNTIME_BOARD} = $opt{board};
