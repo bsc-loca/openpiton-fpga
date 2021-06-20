@@ -49,6 +49,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <name>net</name>
         <base>0xfff0800000</base>
         <length>0x400000</length>
+        <stream_accessible/>
     </port>
     <!-- note: the following modules are ariane-specific and are only instantiated in HW when using the ariane core -->
     <port>
