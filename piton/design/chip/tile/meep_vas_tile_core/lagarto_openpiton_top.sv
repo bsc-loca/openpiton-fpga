@@ -74,7 +74,6 @@ module lagarto_openpiton_top #(
     input logic                 mxr_i,
     input [43:0]                satp_ppn_i,
     input logic                 asid_i,
-
 `endif
 //-----------------------------------------------------------------------------------
 // CSR OUTPUT INTERFACE

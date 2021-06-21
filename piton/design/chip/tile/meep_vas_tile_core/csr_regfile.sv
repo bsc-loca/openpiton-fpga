@@ -13,7 +13,7 @@
 // Description: CSR Register File as specified by RISC-V
 
 import ariane_pkg::*;
-import drac_pkg::*;
+//import drac_pkg::*;
 
 module csr_regfile #(
     parameter logic [63:0] DmBaseAddress   = 64'h0, // debug module base address
@@ -35,11 +35,11 @@ module csr_regfile #(
     input  logic  [63:0]          boot_addr_i,                // Address from which to start booting, mtvec is set to the same address
     input  logic  [63:0]          hart_id_i,                  // Hart id in a multicore environment (reflected in a CSR)
     // we are taking an exception
-`ifndef PITON_LAGARTO
-    input exception_t             ex_i,                       // We've got an exception from the commit stage, take it
-`else   
-    input drac_pkg::exception_t   ex_i,
-`endif    
+//`ifndef PITON_LAGARTO
+    input ariane_pkg::exception_t             ex_i,                       // We've got an exception from the commit stage, take it
+//`else   
+    //input drac_pkg::exception_t   ex_i,
+//`endif    
 
     input  logic                  wfi_detect_op_i,            // Operation WFI
     input  csr_cmd_t              csr_op_i,                   // Operation to perform on the CSR file
@@ -49,11 +49,11 @@ module csr_regfile #(
     input  logic                  dirty_fp_state_i,           // Mark the FP sate as dirty
     input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [riscv::VLEN-1:0]  pc_i,                    // PC of instruction accessing the CSR
-`ifndef PITON_LAGARTO
-    input exception_t             csr_exception_o,                       // We've got an exception from the commit stage, take it
-`else   
-    input drac_pkg::exception_t   csr_exception_o,
-`endif                                                               // level or to write  a read-only register also
+//`ifndef PITON_LAGARTO
+    input ariane_pkg::exception_t             csr_exception_o,                       // We've got an exception from the commit stage, take it
+//`else   
+    //input drac_pkg::exception_t   csr_exception_o,
+//`endif                                                               // level or to write  a read-only register also
                                                               // raises illegal instruction exceptions.
     // Interrupts/Exceptions
     output logic  [riscv::VLEN-1:0] epc_o,                    // Output the exception PC to PC Gen, the correct CSR (mepc, sepc) is set accordingly
@@ -632,7 +632,7 @@ module csr_regfile #(
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.origin;
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -651,7 +651,7 @@ module csr_regfile #(
                                     riscv::ENV_CALL_UMODE,
                                     riscv::ENV_CALL_SMODE,
                                     riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.origin;
+                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;

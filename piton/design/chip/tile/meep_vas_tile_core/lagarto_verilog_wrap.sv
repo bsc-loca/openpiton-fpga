@@ -109,21 +109,25 @@ module lagarto_verilog_wrap #(
 
 logic    CSR_EXCEPTION;
 bus64_t  CSR_CAUSE;
-drac_pkg::exception_t ex_i;
+ariane_pkg::exception_t ex_i;
 logic   [11:0]       CSR_RW_ADDR;
 bus64_t              CSR_RW_WDATA;
 bus64_t              CSR_RW_RDATA;
 csr_cmd_t            CSR_RW_CMD;
 logic                CSR_RETIRE;
 addr_t               CSR_PC;
+addr_t               CSR_EPC;
+addr_t               CSR_TVAL;
+logic                CSR_ERET; 
 logic                dcache_en_csr;
 logic                en_translation;           
 logic                en_ld_st_translation; 
 logic                icache_en_csr;
 
 csr_cmd_t csr_op;
-assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
-assign ex_i.origin = CSR_PC;
+//assign ex_i.cause  =  riscv_pkg::exception_cause_t'(CSR_CAUSE);
+assign ex_i.cause  = CSR_CAUSE;
+assign ex_i.tval   = CSR_PC;
 assign ex_i.valid  = CSR_EXCEPTION;
 riscv::priv_lvl_t   priv_lvl_csr_o;
 logic sum;
@@ -151,9 +155,10 @@ csr_regfile i_csr_regfile (
   .csr_write_fflags_i    ( 0 ),
   .pc_i                  ( CSR_PC ),
   .csr_exception_o       ( ),
-  .epc_o                 ( ),
-  .eret_o                ( ),
+  .epc_o                 ( CSR_EPC),
+  .eret_o                ( CSR_ERET),
   .trap_vector_base_o    ( ),
+  //.trap_vector_base_o    ( CSR_TVAL),
   .priv_lvl_o            ( priv_lvl_csr_o ),
   .fs_o                  ( ),
   .fflags_o              ( ),
@@ -208,8 +213,9 @@ lagarto_openpiton_top #(
     .CSR_XCPT            (1'b0                   ),
     .CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000),
     .CSR_TVAL            (64'h0000_0000_0000_0000),
-    .CSR_ERET            (1'b0                   ),
-    .CSR_EVEC            (64'h0000_0000_0000_0000),
+    //.CSR_TVAL            (CSR_TVAL               ),
+    .CSR_ERET            (CSR_ERET               ),
+    .CSR_EVEC            (CSR_EPC                ),
     .CSR_INTERRUPT       (1'b0                   ),
     .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000),
     .io_csr_csr_replay   (1'b0                   ),
