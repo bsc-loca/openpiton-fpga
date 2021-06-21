@@ -216,7 +216,7 @@ lagarto_openpiton_top #(
     //.CSR_TVAL            (CSR_TVAL               ),
     .CSR_ERET            (CSR_ERET               ),
     //.CSR_EVEC            (CSR_EPC                ),
-    .CSR_EVEC            (),
+    .CSR_EVEC            (64'h0000_0000_0000_0000),
     .CSR_INTERRUPT       (1'b0                   ),
     .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000),
     .io_csr_csr_replay   (1'b0                   ),
