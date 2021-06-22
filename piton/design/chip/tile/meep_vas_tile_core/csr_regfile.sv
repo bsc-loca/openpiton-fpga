@@ -50,7 +50,7 @@ module csr_regfile #(
     input  logic                  csr_write_fflags_i,         // Write fflags register e.g.: we are retiring a floating point instruction
     input  logic  [riscv::VLEN-1:0]  pc_i,                    // PC of instruction accessing the CSR
 //`ifndef PITON_LAGARTO
-    input ariane_pkg::exception_t             csr_exception_o,                       // We've got an exception from the commit stage, take it
+    output ariane_pkg::exception_t             csr_exception_o,                       // We've got an exception from the commit stage, take it
 //`else   
     //input drac_pkg::exception_t   csr_exception_o,
 //`endif                                                               // level or to write  a read-only register also

@@ -1530,6 +1530,7 @@ sub generic_sim_build
       # always_comb blocks that operate on arrays inside a generate statement.
       # [SVCHK] - Some checking for conflicts with always_comb and always_latch variables not yet supported.
       $build_cmd .= " -suppress 2583 ";
+      $build_cmd .= " -svinputport=compat ";
     }
     if ($opt{riv_build}) {
       $build_cmd = "vlib work; vlog " ;

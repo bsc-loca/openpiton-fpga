@@ -559,8 +559,6 @@ datapath datapath_inst(
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = icache_dreq_o.valid && icache_dreq_o.ex.valid;
-                            //1'b0;
-                            //(icache_dreq_o.ex.tval == 64'b0) ? 1'b0 : icache_dreq_o.ex.valid;
   
   // D$ request
                                                                                            
