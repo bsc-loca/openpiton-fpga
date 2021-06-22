@@ -96,7 +96,9 @@ def usage():
     print("       --config_l2_associativity  <number>", file=sys.stderr)
     print("              Cache associativities, default: 4", file=sys.stderr)
     print("\n       --bram-test <test_name>", file=sys.stderr)
-    print("              Name of the test to be mapped into BRAM", file=sys.stderr)
+    print("              Name of the test to be simulated and mapped into BRAM/DRAM", file=sys.stderr)
+    print("\n       --verdi-dbg", file=sys.stderr)
+    print("              Create Verdi compliant simulation database of test specified by --bram-test option", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
@@ -459,6 +461,7 @@ def setParserOptions(parser):
     parser.add_option("--config_l15_associativity", dest="config_l15_associativity",   action="store", default=4)
     parser.add_option("--config_l2_associativity", dest="config_l2_associativity",   action="store", default=4)
     parser.add_option("--bram-test", dest="test_name", action="store")
+    parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
@@ -524,7 +527,7 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
 
-    # Alex Kropotov: no limitation of test mapping just for BRAM
+    # Alex Kropotov: no limitation for mapping of test just to BRAM
     # --bram-test option
     if (options.test_name != None and options.uart_dmw == None):
         defines.append("PITON_FPGA_BRAM_TEST")
@@ -844,6 +847,15 @@ def main():
                  ' -config_l15_associativity=' + str(options.config_l15_associativity) + \
                  ' -config_l2_associativity='  + str(options.config_l2_associativity)
 
+        if options.core == 'pico':
+            config += ' -pico'
+
+        if options.core == 'pico_het':
+            config += ' -pico -pico_het'
+
+        if options.core == 'ariane':
+            config += ' -ariane'
+
         # Alex Kropotov: passing board and ethernet option to simulation
         if options.board:
             config += ' -board=' + options.board
@@ -854,26 +866,17 @@ def main():
         if options.uart_dmw:
             config += ' -uart_dmw'
 
-        if options.core == 'pico':
-            config += ' -pico'
+        if options.verdi_dbg:
+            config += ' -vcs_build_args=+vcs+fsdbon'                + \
+                      ' -vcs_build_args=-kdb'                       + \
+                      ' -vcs_build_args=-debug_access+all'          + \
+                      ' -vcs_build_args=-debug_region=cell+encrypt' + \
+                      ' -vcs_build_args=-LDFLAGS'                   + \
+                      ' -vcs_build_args=-Wl,--no-as-needed'
 
-        if options.core == 'pico_het':
-            config += ' -pico -pico_het'
-
-        if options.core == 'ariane':
-            config += ' -ariane'
-
-        # Alex Kropotov: simulation configs needed for MEEP project
-        vcs_verdi_cfg = ' -vcs_build_args=-LDFLAGS'           + \
-                        ' -vcs_build_args=-Wl,--no-as-needed' + \
-                        ' -vcs_build_args=+vcs+fsdbon'        + \
-                        ' -vcs_build_args=-kdb'               + \
-                        ' -vcs_build_args=-debug_access+all'  + \
-                        ' -vcs_build_args=-debug_region=cell+encrypt'
-        
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
-        ret_val = os.system('sims -sys=manycore' + config + vcs_verdi_cfg + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
+        ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
         if ret_val != 0:
             print_error("Compilation didn't finish successfully!")
             print_info("See for Errors in %s/compilation.log" % rc_dir.log)
@@ -898,7 +901,7 @@ def main():
     ###################################
 
     if run_map_test:
-        # Alex Kropotov: no limitation of test mapping just for BRAM
+        # Alex Kropotov: no limitation for mapping of test just to BRAM
         if (options.test_name != None and options.uart_dmw == None):
             strg_type = "bram"
         else:
