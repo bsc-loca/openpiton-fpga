@@ -91,6 +91,10 @@ if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
   add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
   #Use this script to save BD after editing
   # source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
+
+  # adding bare microBlaze to above BD and exporting BSP with xparameters.h from it
+  file copy -force $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl ${PROJECT_DIR}/../bd/Eth_CMAC_syst/
+  source           $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_syst_bsp.tcl
 }
 
 # Set 'sources_1' fileset file properties for local files
