@@ -142,16 +142,45 @@ module csr_regfile #(
     logic [63:0] icache_q,    icache_d;
 
     logic        wfi_d,       wfi_q;
+    // Vector extension registers
+    logic [63:0] vstart_q,    vstart_d;
+    logic        vxsat_q,     vxsat_d;
+    logic [1:0]  vxrm_q,      vxrm_d;
+    logic [63:0] vl_q,        vl_d;
+    logic [63:0] vtype_q,     vtype_d;
+
 
     logic [63:0] cycle_q,     cycle_d;
     logic [63:0] instret_q,   instret_d;
 
     riscv::fcsr_t fcsr_q, fcsr_d;
+
+    logic system_insn;
+    logic priv_sufficient;
+    logic insn_call;
+    logic insn_break; 
+    logic insn_wfi;
+
+    logic        csr_xcpt;          // Internal csr exception bit.
+    logic [63:0] csr_xcpt_cause;    // cause of the internal csr exception
+    logic [63:0] ex_tval;
+    //////////////////////////////////////////////
+    // Vector Instructions Decode
+    //////////////////////////////////////////////
+    //assign vsetvl_insn = (rw_cmd_i == 3'b110 || rw_cmd_i == 3'b111) ? 1'b1 : 1'b0;
+
+    //////////////////////////////////////////////
+    // VPU Instructions Decode
+    //////////////////////////////////////////////
+    // indicates if the request is a system instuction
+
     // ----------------
     // Assignments
     // ----------------
     assign csr_addr = riscv::csr_t'(csr_addr_i);
+    
     assign fs_o = mstatus_q.fs;
+    
     // ----------------
     // CSR Read logic
     // ----------------
@@ -273,6 +302,89 @@ module csr_regfile #(
                 riscv::CSR_MHPM_COUNTER_29,
                 riscv::CSR_MHPM_COUNTER_30,
                 riscv::CSR_MHPM_COUNTER_31:           csr_rdata   = perf_data_i;
+                riscv::CSR_MEM_MAP_0,
+                riscv::CSR_MEM_MAP_1,
+                riscv::CSR_MEM_MAP_2,
+                riscv::CSR_MEM_MAP_3,
+                riscv::CSR_MEM_MAP_4,
+                riscv::CSR_MEM_MAP_5,
+                riscv::CSR_MEM_MAP_6,
+                riscv::CSR_MEM_MAP_7,
+                riscv::CSR_MEM_MAP_8,
+                riscv::CSR_MEM_MAP_9,
+                riscv::CSR_MEM_MAP_10,                
+                riscv::CSR_MEM_MAP_11,                
+                riscv::CSR_MEM_MAP_12,                
+                riscv::CSR_MEM_MAP_13,                
+                riscv::CSR_MEM_MAP_14,                
+                riscv::CSR_MEM_MAP_15,
+                riscv::CSR_IO_MAP_0,
+                riscv::CSR_IO_MAP_1,
+                riscv::CSR_IO_MAP_2,
+                riscv::CSR_IO_MAP_3,
+                riscv::CSR_IO_MAP_4,
+                riscv::CSR_IO_MAP_5,
+                riscv::CSR_IO_MAP_6,
+                riscv::CSR_IO_MAP_7,
+                riscv::CSR_IO_MAP_8,
+                riscv::CSR_IO_MAP_9,
+                riscv::CSR_IO_MAP_10,
+                riscv::CSR_IO_MAP_11,
+                riscv::CSR_IO_MAP_12,
+                riscv::CSR_IO_MAP_13,
+                riscv::CSR_IO_MAP_14,
+                riscv::CSR_IO_MAP_15,
+                riscv::CSR_IRQ_MAP_0,
+                riscv::CSR_IRQ_MAP_1,
+                riscv::CSR_IRQ_MAP_2,
+                riscv::CSR_IRQ_MAP_3,
+                riscv::CSR_IRQ_MAP_4,
+                riscv::CSR_IRQ_MAP_5,
+                riscv::CSR_IRQ_MAP_6,
+                riscv::CSR_IRQ_MAP_7,
+                riscv::CSR_IRQ_MAP_8,
+                riscv::CSR_IRQ_MAP_9,
+                riscv::CSR_IRQ_MAP_10,
+                riscv::CSR_IRQ_MAP_11,
+                riscv::CSR_IRQ_MAP_12,
+                riscv::CSR_IRQ_MAP_13,
+                riscv::CSR_IRQ_MAP_14,
+                riscv::CSR_IRQ_MAP_15,
+                riscv::FROM_HOST,
+                riscv::CSR_HYPERRAM_CONFIG, 
+                riscv::CSR_CNM_CONFIG,
+                riscv::TO_HOST: begin            
+                                        //csr_rdata = pcr_resp_data_i;
+                                        //pcr_addr_valid = 1'b1;
+                end
+                
+                riscv::CSR_PMPCFG_0:;
+                riscv::CSR_PMPCFG_1:;
+                riscv::CSR_PMPCFG_2:;
+                riscv::CSR_PMPCFG_3:;
+
+                riscv::CSR_PMPADDR_0:;
+                riscv::CSR_PMPADDR_1:;
+                riscv::CSR_PMPADDR_2:;
+                riscv::CSR_PMPADDR_3:;
+                riscv::CSR_PMPADDR_4:;
+                riscv::CSR_PMPADDR_5:;
+                riscv::CSR_PMPADDR_6:;
+                riscv::CSR_PMPADDR_7:;
+                riscv::CSR_PMPADDR_8:;
+                riscv::CSR_PMPADDR_9:;
+                riscv::CSR_PMPADDR_10:;
+                riscv::CSR_PMPADDR_11:;
+                riscv::CSR_PMPADDR_12:;
+                riscv::CSR_PMPADDR_13:;
+                riscv::CSR_PMPADDR_14:;
+                riscv::CSR_PMPADDR_15:;
+                //vector extension registers
+                riscv::CSR_VSTART: csr_rdata = vstart_q;
+                riscv::CSR_VXSAT: csr_rdata = {'0,vxsat_q};
+                riscv::CSR_VXRM: csr_rdata = {'0,vxrm_q};
+                riscv::CSR_VL: csr_rdata = vl_q;
+                riscv::CSR_VTYPE: csr_rdata = vtype_q;
                 // custom (non RISC-V) cache control
                 riscv::CSR_DCACHE:             csr_rdata = dcache_q;
                 riscv::CSR_ICACHE:             csr_rdata = icache_q;
@@ -392,6 +504,8 @@ module csr_regfile #(
                     end else begin
                         dirty_fp_state_csr = 1'b1;
                         fcsr_d[7:0] = csr_wdata[7:0]; // ignore writes to reserved space
+                        vxsat_d = csr_wdata[8];
+                        vxrm_d = csr_wdata[10:9];
                         // this instruction has side-effects
                         flush_o = 1'b1;
                     end
@@ -560,6 +674,94 @@ module csr_regfile #(
                                         perf_data_o = csr_wdata;
                                         perf_we_o   = 1'b1;
                 end
+                riscv::CSR_MEM_MAP_0,
+                riscv::CSR_MEM_MAP_1,
+                riscv::CSR_MEM_MAP_2,
+                riscv::CSR_MEM_MAP_3,
+                riscv::CSR_MEM_MAP_4,
+                riscv::CSR_MEM_MAP_5,
+                riscv::CSR_MEM_MAP_6,
+                riscv::CSR_MEM_MAP_7,
+                riscv::CSR_MEM_MAP_8,
+                riscv::CSR_MEM_MAP_9,
+                riscv::CSR_MEM_MAP_10,                
+                riscv::CSR_MEM_MAP_11,                
+                riscv::CSR_MEM_MAP_12,                
+                riscv::CSR_MEM_MAP_13,                
+                riscv::CSR_MEM_MAP_14,                
+                riscv::CSR_MEM_MAP_15,
+                riscv::CSR_IO_MAP_0,
+                riscv::CSR_IO_MAP_1,
+                riscv::CSR_IO_MAP_2,
+                riscv::CSR_IO_MAP_3,
+                riscv::CSR_IO_MAP_4,
+                riscv::CSR_IO_MAP_5,
+                riscv::CSR_IO_MAP_6,
+                riscv::CSR_IO_MAP_7,
+                riscv::CSR_IO_MAP_8,
+                riscv::CSR_IO_MAP_9,
+                riscv::CSR_IO_MAP_10,
+                riscv::CSR_IO_MAP_11,
+                riscv::CSR_IO_MAP_12,
+                riscv::CSR_IO_MAP_13,
+                riscv::CSR_IO_MAP_14,
+                riscv::CSR_IO_MAP_15,
+                riscv::CSR_IRQ_MAP_0,
+                riscv::CSR_IRQ_MAP_1,
+                riscv::CSR_IRQ_MAP_2,
+                riscv::CSR_IRQ_MAP_3,
+                riscv::CSR_IRQ_MAP_4,
+                riscv::CSR_IRQ_MAP_5,
+                riscv::CSR_IRQ_MAP_6,
+                riscv::CSR_IRQ_MAP_7,
+                riscv::CSR_IRQ_MAP_8,
+                riscv::CSR_IRQ_MAP_9,
+                riscv::CSR_IRQ_MAP_10,
+                riscv::CSR_IRQ_MAP_11,
+                riscv::CSR_IRQ_MAP_12,
+                riscv::CSR_IRQ_MAP_13,
+                riscv::CSR_IRQ_MAP_14,
+                riscv::CSR_IRQ_MAP_15,
+                riscv::FROM_HOST,
+                riscv::CSR_HYPERRAM_CONFIG, 
+                riscv::CSR_CNM_CONFIG,
+                riscv::TO_HOST: begin
+                                        //pcr_req_data_o = csr_wdata;
+
+                end
+
+                riscv::CSR_PMPCFG_0:;
+                riscv::CSR_PMPCFG_1:;
+                riscv::CSR_PMPCFG_2:;
+                riscv::CSR_PMPCFG_3:;
+
+                riscv::CSR_PMPADDR_0:;
+                riscv::CSR_PMPADDR_1:;
+                riscv::CSR_PMPADDR_2:;
+                riscv::CSR_PMPADDR_3:;
+                riscv::CSR_PMPADDR_4:;
+                riscv::CSR_PMPADDR_5:;
+                riscv::CSR_PMPADDR_6:;
+                riscv::CSR_PMPADDR_7:;
+                riscv::CSR_PMPADDR_8:;
+                riscv::CSR_PMPADDR_9:;
+                riscv::CSR_PMPADDR_10:;
+                riscv::CSR_PMPADDR_11:;
+                riscv::CSR_PMPADDR_12:;
+                riscv::CSR_PMPADDR_13:;
+                riscv::CSR_PMPADDR_14:;
+                riscv::CSR_PMPADDR_15:;
+
+                //vector extension registers
+                riscv::CSR_VSTART: vstart_d  = csr_wdata;
+                riscv::CSR_VXSAT:  begin
+                    vxsat_d = csr_wdata[0];
+                    fcsr_d[8] = csr_wdata[0];
+                end
+                riscv::CSR_VXRM:   begin
+                    vxrm_d = csr_wdata[1:0];
+                    fcsr_d[10:9] = csr_wdata[1:0];
+                end
 
                 riscv::CSR_DCACHE:             dcache_d    = csr_wdata[0]; // enable bit
                 riscv::CSR_ICACHE:             icache_d    = csr_wdata[0]; // enable bit
@@ -599,15 +801,37 @@ module csr_regfile #(
         trap_to_priv_lvl = riscv::PRIV_LVL_M;
         // Exception is taken and we are not in debug mode
         // exceptions in debug mode don't update any fields
-        if (!debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid) begin
+        ex_tval = {{24{pc_i[riscv::VLEN-1]}},pc_i};
+
+        if (!debug_mode_q && ex_i.cause != riscv::DEBUG_REQUEST && ex_i.valid  || csr_xcpt) begin
             // do not flush, flush is reserved for CSR writes with side effects
             flush_o   = 1'b0;
+            
+            //tval is the actual pc except for the data access exeptions
+            if (ex_i.valid && ex_i.cause inside {riscv::LD_ADDR_MISALIGNED, riscv::LD_ACCESS_FAULT, 
+                                    riscv::ST_ADDR_MISALIGNED, riscv::ST_ACCESS_FAULT,
+                                    riscv::LOAD_PAGE_FAULT, riscv::STORE_PAGE_FAULT,
+                                    riscv::INSTR_PAGE_FAULT}) begin
+                ex_tval = csr_wdata_i;
+            end else if (ex_i.valid && ex_i.cause == riscv::INSTR_ADDR_MISALIGNED) begin
+                ex_tval = 64'b0; //TODO: mirar si es la seguent o la anterior
+            end else if ((ex_i.valid && ex_i.cause == riscv::ILLEGAL_INSTR) || (csr_xcpt && csr_xcpt_cause == riscv::ILLEGAL_INSTR)) begin
+                ex_tval = 64'b0; //TODO: propagar instrucció
+        end else if (csr_xcpt && csr_xcpt_cause == riscv::BREAKPOINT) begin
+                ex_tval = pc_i;
+            end else begin
+                ex_tval = 64'b0;
+            end
+
+            
             // figure out where to trap to
             // a m-mode trap might be delegated if we are taking it in S mode
             // first figure out if this was an exception or an interrupt e.g.: look at bit 63
             // the cause register can only be 6 bits long (as we only support 64 exceptions)
-            if ((ex_i.cause[63] && mideleg_q[ex_i.cause[5:0]]) ||
-                (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]])) begin
+            if ((ex_i.valid && ((ex_i.cause[63] && mideleg_q[ex_i.cause[5:0]]) ||
+                (~ex_i.cause[63] && medeleg_q[ex_i.cause[5:0]]))) ||
+                (csr_xcpt && ((csr_xcpt_cause[63] && mideleg_q[csr_xcpt_cause[5:0]]) ||
+                (~csr_xcpt_cause[63] && medeleg_q[csr_xcpt_cause[5:0]]))))  begin
                 // traps never transition from a more-privileged mode to a less privileged mode
                 // so if we are already in M mode, stay there
                 trap_to_priv_lvl = (priv_lvl_o == riscv::PRIV_LVL_M) ? riscv::PRIV_LVL_M : riscv::PRIV_LVL_S;
@@ -621,18 +845,11 @@ module csr_regfile #(
                 // this can either be user or supervisor mode
                 mstatus_d.spp  = priv_lvl_q[0];
                 // set cause
-                scause_d       = ex_i.cause;
+                scause_d       = csr_xcpt ? csr_xcpt_cause : ex_i.cause;
                 // set epc
-                sepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                sepc_d         = {{8{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
-                stval_d        = (ariane_pkg::ZERO_TVAL
-                                  && (ex_i.cause inside {
-                                    riscv::ILLEGAL_INSTR,
-                                    riscv::BREAKPOINT,
-                                    riscv::ENV_CALL_UMODE,
-                                    riscv::ENV_CALL_SMODE,
-                                    riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
+                stval_d        = ex_tval;
             // trap to machine mode
             end else begin
                 // update mstatus
@@ -640,18 +857,11 @@ module csr_regfile #(
                 mstatus_d.mpie = mstatus_q.mie;
                 // save the previous privilege mode
                 mstatus_d.mpp  = priv_lvl_q;
-                mcause_d       = ex_i.cause;
+                mcause_d       = csr_xcpt ? csr_xcpt_cause : ex_i.cause;
                 // set epc
-                mepc_d         = {{64-riscv::VLEN{pc_i[riscv::VLEN-1]}},pc_i};
+                mepc_d         = {{8{pc_i[riscv::VLEN-1]}},pc_i};
                 // set mtval or stval
-                mtval_d        = (ariane_pkg::ZERO_TVAL
-                                  && (ex_i.cause inside {
-                                    riscv::ILLEGAL_INSTR,
-                                    riscv::BREAKPOINT,
-                                    riscv::ENV_CALL_UMODE,
-                                    riscv::ENV_CALL_SMODE,
-                                    riscv::ENV_CALL_MMODE
-                                  } || ex_i.cause[63])) ? '0 : ex_i.tval;
+                mtval_d        = ex_tval;
             end
 
             priv_lvl_d = trap_to_priv_lvl;
@@ -870,29 +1080,54 @@ module csr_regfile #(
             end
         end
     end
+
+    //System Instructions Decode
+
+    assign system_insn = (csr_op_i == 3'b100) ? 1'b1 : 1'b0;
+    assign priv_sufficient = priv_lvl_q >= csr_addr_i[9:8];
+
+
+    assign insn_call = (10'b0000000000 == csr_addr_i[9:0] && system_insn) ? 1'b1 : 1'b0;
+    assign insn_break = (10'b0000000001 == csr_addr_i[9:0] && system_insn) ? 1'b1 : 1'b0;
+    assign insn_wfi = (10'b0100000101 == csr_addr_i[9:0] && system_insn && priv_sufficient) ? 1'b1 : 1'b0;
+
     // ----------------------
     // CSR Exception Control
     // ----------------------
+    assign csr_exception_o.valid = csr_xcpt;
+    assign csr_exception_o.cause = csr_xcpt_cause;
+    assign csr_exception_o.tval = ex_tval;
+
+
     always_comb begin : exception_ctrl
-        csr_exception_o = {
-            64'b0, 64'b0, 1'b0
-        };
+        csr_xcpt_cause = 64'b0;
+        csr_xcpt = 1'b0;
+
         // ----------------------------------
         // Illegal Access (decode exception)
         // ----------------------------------
         // we got an exception in one of the processes above
         // throw an illegal instruction exception
         if (update_access_exception || read_access_exception) begin
-            csr_exception_o.cause = ILLEGAL_INSTR;
+            csr_xcpt_cause = riscv::ILLEGAL_INSTR;
             // we don't set the tval field as this will be set by the commit stage
             // this spares the extra wiring from commit to CSR and back to commit
-            csr_exception_o.valid = 1'b1;
+            csr_xcpt = 1'b1;
+
+        end else if (privilege_violation) begin
+          csr_xcpt_cause = riscv::ILLEGAL_INSTR;
+          csr_xcpt = 1'b1;
+        end else if (insn_call) begin
+            csr_xcpt_cause = riscv::ENV_CALL_UMODE + priv_lvl_q;
+            csr_xcpt = 1'b1;
+        end else if (insn_break) begin
+            csr_xcpt_cause = riscv::BREAKPOINT;
+            csr_xcpt = 1'b1;
+        end else if (insn_wfi && mstatus_q.tw) begin
+            csr_xcpt_cause = riscv::ILLEGAL_INSTR;
+            csr_xcpt = 1'b1;
         end
 
-        if (privilege_violation) begin
-          csr_exception_o.cause = ILLEGAL_INSTR;
-          csr_exception_o.valid = 1'b1;
-        end
     end
 
     // -------------------
@@ -912,6 +1147,42 @@ module csr_regfile #(
         end
     end
 
+
+    // -------------------
+    // Vector instruccions excecution
+    // -------------------
+    /*
+    always_comb begin : vsetvl_ctrl
+        vtype_new = rw_addr_i[10:0];
+        // new vlmax depending on the vtype config
+        vlmax = ((EPI_pkg::MAX_VLEN << vtype_new[1:0]) >> 3 ) >> vtype_new[4:2];
+        if (vsetvl_insn) begin
+            // vl assignation depending of the AVL respect VLMAX
+        if (rw_cmd_i == 3'b111) begin
+            vl_d = vlmax;
+        end else if (vlmax >= w_data_core_i) begin
+                vl_d = w_data_core_i;
+            end else if ((vlmax<<1) >= w_data_core_i) begin
+                vl_d = w_data_core_i>>1 + w_data_core_i[0];
+            end else begin
+                vl_d = vlmax;
+            end
+            // vtype assignation
+            if (vtype_new[10:4] != 6'b0) begin
+                vtype_d = {1'b1,63'b0};
+            end else begin
+                vtype_d = {'0,vtype_new};
+            end                
+        end else  begin
+            // default, keeps the old value
+            vl_d = vl_q;
+            vtype_d = vtype_q;
+        end
+    end
+    
+    assign vpu_csr_o = {vtype_q[63], vtype_q[4:0], fcsr_q[7:5], vxrm_q, vl_q[14:0], vstart_q[13:0]};
+    */
+    
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
         trap_vector_base_o = {mtvec_q[riscv::VLEN-1:2], 2'b0};
@@ -1038,6 +1309,12 @@ module csr_regfile #(
             en_ld_st_translation_q <= 1'b0;
             // wait for interrupt
             wfi_q                  <= 1'b0;
+            // Vector extension
+            vstart_q               <= 64'b0;
+            vxsat_q                <= 1'b0;
+            vxrm_q                 <= 2'b0;
+            vl_q                   <= 64'b0;
+            vtype_q                <= {1'b1,63'b0};                          
         end else begin
             priv_lvl_q             <= priv_lvl_d;
             // floating-point registers
@@ -1078,6 +1355,13 @@ module csr_regfile #(
             en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
             wfi_q                  <= wfi_d;
+
+            // Vector extension
+            vstart_q               <= vstart_d;
+            vxsat_q                <= vxsat_d;
+            vxrm_q                 <= vxrm_d;
+            vl_q                   <= vl_d;
+            vtype_q                <= vtype_d;                                
         end
     end
 

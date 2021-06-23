@@ -4,7 +4,8 @@
 ./meep-vpu/src/package/EPI_pkg.sv
 ./drac-inorder/includes/riscv_pkg.sv
 ./drac-inorder/includes/drac_pkg.sv
-./../ariane/include/riscv_pkg.sv
+./riscv_pkg.sv
+
 ./../ariane/src/riscv-dbg/src/dm_pkg.sv
 ./ariane_pkg.sv
 ./ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv

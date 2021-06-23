@@ -134,6 +134,7 @@ logic sum;
 logic mxr;
 logic [43:0] satp_ppn;
 logic asid;
+ariane_pkg::exception_t csr_ex_o;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
@@ -153,8 +154,8 @@ csr_regfile i_csr_regfile (
   .csr_rdata_o           ( CSR_RW_RDATA),
   .dirty_fp_state_i      ( 1'b0 ),
   .csr_write_fflags_i    ( 0 ),
-  .pc_i                  ( CSR_PC ),
-  .csr_exception_o       ( ),
+  .pc_i                  ( {24'b0, CSR_PC} ),
+  .csr_exception_o       ( csr_ex_o),
   .epc_o                 ( CSR_EPC),
   .eret_o                ( CSR_ERET),
   .trap_vector_base_o    ( ),
@@ -210,9 +211,9 @@ lagarto_openpiton_top #(
     // CSR Input
     .CSR_RW_RDATA        (CSR_RW_RDATA           ),
     .CSR_CSR_STALL       (1'b0                   ),
-    .CSR_XCPT            (1'b0                   ),
-    .CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000),
-    .CSR_TVAL            (64'h0000_0000_0000_0000),
+    .CSR_XCPT            (csr_ex_o.valid  ),
+    .CSR_XCPT_CAUSE      (csr_ex_o.cause  ),
+    .CSR_TVAL            (csr_ex_o.tval   ),
     //.CSR_TVAL            (CSR_TVAL               ),
     .CSR_ERET            (CSR_ERET               ),
     .CSR_EVEC            (CSR_EPC                ),
