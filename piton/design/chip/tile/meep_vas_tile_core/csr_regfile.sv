@@ -974,7 +974,7 @@ module csr_regfile #(
             mstatus_d.mpie = 1'b1;
         end
 
-        if (sret) begin
+        if (sret && !(priv_lvl_q == riscv::PRIV_LVL_S && mstatus_q.tsr == 1'b1)) begin
             // return from exception, IF doesn't care from where we are returning
             eret_o = 1'b1;
             // return the previous supervisor interrupt enable flag
@@ -1185,34 +1185,28 @@ module csr_regfile #(
     
     // output assignments dependent on privilege mode
     always_comb begin : priv_output
-        trap_vector_base_o = {mtvec_q[riscv::VLEN-1:2], 2'b0};
+        // vectorized trap addres
+        trap_vector_base_o[63:8] = mtvec_q[63:8];
+        trap_vector_base_o[7:2] = mtvec_q[1:0] == 2'b0 ? mtvec_q[7:2] : csr_xcpt ? csr_xcpt_cause[5:0] : ex_i.cause[5:0];
+        trap_vector_base_o[1:0] = 2'b0;
         // output user mode stvec
         if (trap_to_priv_lvl == riscv::PRIV_LVL_S) begin
-            trap_vector_base_o = {stvec_q[riscv::VLEN-1:2], 2'b0};
+            // vectorized trap addres
+            trap_vector_base_o[63:8] = stvec_q[63:8];
+            trap_vector_base_o[7:2] = stvec_q[1:0] == 2'b0 ? stvec_q[7:2] : csr_xcpt ? csr_xcpt_cause[5:0] : ex_i.cause[5:0];
+            trap_vector_base_o[1:0] = 2'b0;
         end
 
-        // if we are in debug mode jump to a specific address
-        if (debug_mode_q) begin
-            trap_vector_base_o = DmBaseAddress[riscv::VLEN-1:0] + dm::ExceptionAddress[riscv::VLEN-1:0];
-        end
-
-        // check if we are in vectored mode, if yes then do BASE + 4 * cause
-        // we are imposing an additional alignment-constraint of 64 * 4 bytes since
-        // we want to spare the costly addition
-        if ((mtvec_q[0] || stvec_q[0]) && ex_i.cause[63]) begin
-            trap_vector_base_o[7:2] = ex_i.cause[5:0];
-        end
-
-        epc_o = mepc_q[riscv::VLEN-1:0];
-        // we are returning from supervisor mode, so take the sepc register
-        if (sret) begin
-            epc_o = sepc_q[riscv::VLEN-1:0];
-        end
-        // we are returning from debug mode, to take the dpc register
-        if (dret) begin
-            epc_o = dpc_q[riscv::VLEN-1:0];
+        epc_o = mepc_q; // we are returning from machine mode, so take the mepc register
+        
+        if (ex_i.valid || csr_xcpt) begin // an exception is detected in the core and it is send the trap address
+            epc_o = trap_vector_base_o;
+        end else if (sret) begin // we are returning from supervisor mode, so take the sepc register
+            epc_o = sepc_q;
         end
     end
+
+
 
     // -------------------
     // Output Assignments

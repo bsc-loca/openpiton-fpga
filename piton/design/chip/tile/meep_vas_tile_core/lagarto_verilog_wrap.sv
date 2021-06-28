@@ -117,8 +117,9 @@ csr_cmd_t            CSR_RW_CMD;
 logic                CSR_RETIRE;
 addr_t               CSR_PC;
 addr_t               CSR_EPC;
-addr_t               CSR_TVAL;
+addr_t               CSR_TRAP_VECTOR_BASE;
 logic                CSR_ERET; 
+logic                CSR_STALL; 
 logic                dcache_en_csr;
 logic                en_translation;           
 logic                en_ld_st_translation; 
@@ -141,7 +142,7 @@ csr_regfile i_csr_regfile (
   .rst_ni                ( spc_grst_l ),
   .time_irq_i            ( 0 ),
   .flush_o               ( ),
-  .halt_csr_o            ( ),
+  .halt_csr_o            ( CSR_STALL),
   //.commit_instr_i        ( ),
   .commit_ack_i          ( 0 ),
   .boot_addr_i           ( boot_addr_i ),
@@ -158,8 +159,7 @@ csr_regfile i_csr_regfile (
   .csr_exception_o       ( csr_ex_o),
   .epc_o                 ( CSR_EPC),
   .eret_o                ( CSR_ERET),
-  .trap_vector_base_o    ( ),
-  //.trap_vector_base_o    ( CSR_TVAL),
+  .trap_vector_base_o    ( CSR_TRAP_VECTOR_BASE),
   .priv_lvl_o            ( priv_lvl_csr_o ),
   .fs_o                  ( ),
   .fflags_o              ( ),
@@ -210,11 +210,14 @@ lagarto_openpiton_top #(
 
     // CSR Input
     .CSR_RW_RDATA        (CSR_RW_RDATA           ),
-    .CSR_CSR_STALL       (1'b0                   ),
+    .CSR_CSR_STALL       (CSR_STALL              ),
     .CSR_XCPT            (csr_ex_o.valid  ),
     .CSR_XCPT_CAUSE      (csr_ex_o.cause  ),
     .CSR_TVAL            (csr_ex_o.tval   ),
-    //.CSR_TVAL            (CSR_TVAL               ),
+    //.CSR_TVAL            (CSR_TRAP_VECTOR_BASE),
+    //.CSR_XCPT            (1'b0            ),
+    //.CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000),
+    //.CSR_TVAL            (64'h0000_0000_0000_0000),
     .CSR_ERET            (CSR_ERET               ),
     .CSR_EVEC            (CSR_EPC                ),
     .CSR_INTERRUPT       (1'b0                   ),
