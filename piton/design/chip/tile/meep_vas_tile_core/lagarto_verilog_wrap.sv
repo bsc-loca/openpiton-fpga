@@ -115,7 +115,7 @@ bus64_t              CSR_RW_WDATA;
 bus64_t              CSR_RW_RDATA;
 csr_cmd_t            CSR_RW_CMD;
 logic                CSR_RETIRE;
-addr_t               CSR_PC;
+bus64_t              CSR_PC;
 addr_t               CSR_EPC;
 addr_t               CSR_TRAP_VECTOR_BASE;
 logic                CSR_ERET; 
@@ -155,7 +155,7 @@ csr_regfile i_csr_regfile (
   .csr_rdata_o           ( CSR_RW_RDATA),
   .dirty_fp_state_i      ( 1'b0 ),
   .csr_write_fflags_i    ( 0 ),
-  .pc_i                  ( {24'b0, CSR_PC} ),
+  .pc_i                  ( CSR_PC ),
   .csr_exception_o       ( csr_ex_o),
   .epc_o                 ( CSR_EPC),
   .eret_o                ( CSR_ERET),

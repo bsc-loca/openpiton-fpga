@@ -88,7 +88,11 @@ module lagarto_openpiton_top #(
     output logic                CSR_EXCEPTION,
     output logic                CSR_RETIRE,
     output bus64_t              CSR_CAUSE,
+`ifdef PITON_LAGARTO
+    output bus64_t              CSR_PC,
+`else 
     output addr_t               CSR_PC,
+`endif
 
     output fflags_t             fflags_o,
     output logic                vxsat_o,
