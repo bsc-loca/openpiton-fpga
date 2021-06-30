@@ -483,6 +483,8 @@ logic [DBG_DATA_WIDTH-1:0]   dbg_read_data_d, dbg_read_data_q;
 
 vpu_state_t vpu_state_int;
 logic [31:0] velem_cnt;
+logic dtlb_miss;
+logic dtlb_miss_st;
 
 
 datapath datapath_inst(
@@ -671,7 +673,7 @@ datapath datapath_inst(
     .asid_i                (asid_i              ),
     .flush_tlb_i           (                    ),
     .itlb_miss_o           (                    ),
-    .dtlb_miss_o           (                    ),
+    .dtlb_miss_o           (dtlb_miss           ),
     .req_port_i            (dcache_lsu_resp[0]  ),
     .req_port_o            (dcache_lsu_req[0]   )
   );   
@@ -717,13 +719,14 @@ datapath datapath_inst(
     .dmem_resp_nack_i           (0                              ), //TODO !
     .dmem_xcpt_ma_st_i          (0                              ), //TODO !
     .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
-    .dmem_xcpt_pf_st_i          (0                              ), 
+    .dmem_xcpt_pf_st_i          (dtlb_miss_st                    ), 
     .dmem_xcpt_pf_ld_i          (0                              ),
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
+assign dtlb_miss_st = dtlb_miss & lsu_store;
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
