@@ -87,10 +87,10 @@ module ld_st_FSM(
                 end
                 else begin
                     mem_req_valid_o      <= 1'b0;
-                    st_translation_req_o <= 1'b0;
+                    st_translation_req_o <= 1'b1;
                     //cnt_ena              <= 1'b0;
-                    Edo_Sgte             <= WAITING_TRNS; 
-                    trns_ena             <= 1'b1;          
+                    Edo_Sgte             <= (kill_mem_op_i)  ? NO_REQ : WAITING_TRNS; 
+                    trns_ena             <= (kill_mem_op_i)  ? 1'b0   :   1'b1;          
                 end
             end
                 
