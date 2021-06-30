@@ -557,7 +557,7 @@ datapath datapath_inst(
   assign icache_dreq_i.req     = lagarto_ireq.valid;
   assign icache_dreq_i.kill_s1 = iflush;
   assign icache_dreq_i.kill_s2 = lagarto_ireq.kill;
-  assign icache_dreq_i.vaddr   = {24'b0, lagarto_ireq.vpn, lagarto_ireq.idx};
+  assign icache_dreq_i.vaddr   = {lagarto_ireq.vpn, lagarto_ireq.idx};
   assign icache_resp.data  = icache_dreq_o.data;
   assign icache_resp.vaddr = icache_dreq_o.vaddr;
   assign icache_resp.valid = icache_dreq_o.valid;
