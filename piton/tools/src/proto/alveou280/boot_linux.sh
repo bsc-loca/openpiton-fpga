@@ -45,3 +45,5 @@ echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above ste
 
 sleep 2
 dma-ctl qdma08000 reg write bar 2 0x0 0x7 #Release Ariane's reset
+
+picocom -b 115200 /dev/ttyUSB2
