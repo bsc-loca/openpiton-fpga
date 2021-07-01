@@ -99,29 +99,6 @@ int main(int argc, char *argv[])
 
     switch (choice) {
       case 'l': {
-        printf("------- Running CPU Short Loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: CPU->LB, DMA->Eth
-        ethSyst.switch_CPU_DMAxEth_LB(false, false); // Rx switch: LB->CPU, Eth->DMA
-        sleep(1); // in seconds
-        // transmitToChan(CPU_PACKET_WORDS, SHORT_LOOPBACK_DEPTH, true, true);
-        // receiveFrChan (CPU_PACKET_WORDS, SHORT_LOOPBACK_DEPTH);
-        printf("------- CPU Short Loopback test PASSED -------\n\n");
-
-        ethSyst.ethCoreInit(true);
-
-        printf("\n------- Running CPU Near-end Loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  true); // Tx switch: CPU->Eth, DMA->LB
-        ethSyst.switch_CPU_DMAxEth_LB(false, true); // Rx switch: Eth->CPU, LB->DMA
-        sleep(1); // in seconds
-
-        // transmitToChan(CPU_PACKET_WORDS, TRANSMIT_FIFO_DEPTH, true, true);
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
-    
-        // receiveFrChan (CPU_PACKET_WORDS, TRANSMIT_FIFO_DEPTH);
-        ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
-        printf("------- CPU Near-end Loopback test PASSED -------\n\n");
-
-
         printf("------- Running DMA Tx/Rx/SG memory test -------\n");
         printf("Checking memories with random values from %0X to %0X \n", 0, RAND_MAX);
         // first clearing previously stored values
@@ -133,7 +110,7 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = rand();
         for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMem[addr] = rand();
         srand(1);
-        printf("Checking TX memory at addr 0X%lx with size %ld \n", size_t(ethSyst.txMem), txMemSize);
+        printf("Checking TX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+TX_MEM_CPU_BASEADDR, size_t(ethSyst.txMem), txMemSize);
         for (size_t addr = 0; addr < txMemWords; ++addr) {
           uint32_t expectVal = rand(); 
           if (ethSyst.txMem[addr] != expectVal) {
@@ -141,7 +118,7 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("Checking RX memory at addr 0X%lx with size %ld \n", size_t(ethSyst.rxMem), rxMemSize);
+        printf("Checking RX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+RX_MEM_CPU_BASEADDR, size_t(ethSyst.rxMem), rxMemSize);
         for (size_t addr = 0; addr < rxMemWords; ++addr) {
           uint32_t expectVal = rand(); 
           if (ethSyst.rxMem[addr] != expectVal) {
@@ -149,7 +126,7 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("Checking BD memory at addr 0X%lx with size %ld \n", size_t(ethSyst.sgMem), sgMemSize);
+        printf("Checking BD memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+SG_MEM_CPU_BASEADDR, size_t(ethSyst.sgMem), sgMemSize);
         for (size_t addr = 0; addr < sgMemWords; ++addr) {
           uint32_t expectVal = rand(); 
           if (ethSyst.sgMem[addr] != expectVal) {
@@ -161,92 +138,6 @@ int main(int argc, char *argv[])
 
         ethSyst.axiDmaInit();
 
-        printf("\n------- Running DMA-CPU Short Loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  true);  // Tx switch: DMA->LB, CPU->Eth
-        ethSyst.switch_CPU_DMAxEth_LB(false, false); // Rx switch: LB->CPU, Eth->DMA
-        sleep(1); // in seconds
-
-        srand(1);
-        for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
-
-        size_t packets = DMA_TX_LOOPBACK_DEPTH/CPU_PACKET_WORDS;
-        printf("DMA: Transmitting %ld whole packets with length %d bytes to channel with depth %d words\n",
-                    packets, CPU_PACKET_LEN, DMA_TX_LOOPBACK_DEPTH);
-        size_t dmaMemPtr = size_t(ethSyst.txMem);
-        if (XAxiDma_HasSg(&ethSyst.axiDma)) {
-          XAxiDma_Bd* BdPtr = ethSyst.dmaBDAlloc(false, packets, CPU_PACKET_LEN, CPU_PACKET_LEN, dmaMemPtr);
-          ethSyst.dmaBDTransfer                 (false, packets, packets,        BdPtr);
-          BdPtr             = ethSyst.dmaBDPoll (false, packets);
-          ethSyst.dmaBDFree                     (false, packets, CPU_PACKET_LEN, BdPtr);
-          uint32_t transDat = packets * CPU_PACKET_LEN;
-          float txTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
-          float speed = (transDat * 8) / txTime;
-          printf("Transfer: %d Bytes, Tx time: %f ns, Speed: %f Gb/s \n", transDat, txTime, speed);
-        }
-        else for (size_t packet = 0; packet < packets; packet++) {
-		      int status = XAxiDma_SimpleTransfer(&(ethSyst.axiDma), dmaMemPtr, CPU_PACKET_LEN, XAXIDMA_DMA_TO_DEVICE);
-         	if (XST_SUCCESS != status) {
-            printf("\nERROR: XAxiDma Tx transfer %ld failed with status %d\n", packet, status);
-            exit(1);
-	        }
-		      while (XAxiDma_Busy(&(ethSyst.axiDma), XAXIDMA_DMA_TO_DEVICE)) {
-            printf("Waiting untill Tx transfer %ld finishes \n", packet);
-            // sleep(1); // in seconds, user wait process
-    		  }
-          dmaMemPtr += CPU_PACKET_LEN;
-        }
-
-        // receiveFrChan(CPU_PACKET_WORDS, packets * CPU_PACKET_WORDS);
-        printf("------- DMA-CPU Short Loopback test PASSED -------\n\n");
-
-
-        printf("------- Running CPU-DMA Short Loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: CPU->LB, DMA->Eth
-        ethSyst.switch_CPU_DMAxEth_LB(false, true);  // Rx switch: LB->DMA, Eth->CPU
-        sleep(1); // in seconds
-
-        for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
-
-        packets = DMA_RX_LOOPBACK_DEPTH/CPU_PACKET_WORDS;
-        // transmitToChan(CPU_PACKET_WORDS, packets * CPU_PACKET_WORDS, true, CPU_PACKET_WORDS==1);
-
-        printf("DMA: Receiving %ld whole packets with length %d bytes from channel with depth %d words \n",
-                packets, CPU_PACKET_LEN, DMA_RX_LOOPBACK_DEPTH);
-        dmaMemPtr = size_t(ethSyst.rxMem);
-        if (XAxiDma_HasSg(&ethSyst.axiDma)) {
-          XAxiDma_Bd* BdPtr = ethSyst.dmaBDAlloc(true, packets, CPU_PACKET_LEN, CPU_PACKET_LEN, dmaMemPtr);
-          ethSyst.dmaBDTransfer                 (true, packets, packets,        BdPtr);
-          BdPtr             = ethSyst.dmaBDPoll (true, packets);
-          ethSyst.dmaBDFree                     (true, packets, CPU_PACKET_LEN, BdPtr);
-          uint32_t transDat = packets * CPU_PACKET_LEN;
-          float rxTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
-          float speed = (transDat * 8) / rxTime;
-          printf("Transfer: %d Bytes, Rx time: %f ns, Speed: %f Gb/s \n", transDat, rxTime, speed);
-        }
-        else for (size_t packet = 0; packet < packets; packet++) {
-		      int status = XAxiDma_SimpleTransfer(&(ethSyst.axiDma), dmaMemPtr, CPU_PACKET_LEN, XAXIDMA_DEVICE_TO_DMA);
-         	if (XST_SUCCESS != status) {
-            printf("\nERROR: XAxiDma Rx transfer %ld failed with status %d\n", packet, status);
-            exit(1);
-	        }
-		      while (XAxiDma_Busy(&(ethSyst.axiDma),XAXIDMA_DEVICE_TO_DMA)) {
-            printf("Waiting untill Rx transfer %ld finishes \n", packet);
-            // sleep(1); // in seconds, user wait process
-    		  }
-          dmaMemPtr += CPU_PACKET_LEN;
-        }
-
-        srand(1);
-        for (size_t addr = 0; addr < (packets * CPU_PACKET_LEN)/sizeof(uint32_t); ++addr) {
-          uint32_t expectVal = rand(); 
-          if (ethSyst.rxMem[addr] != expectVal) {
-            printf("\nERROR: Incorrect data recieved by DMA at addr %0lX: %0X, expected: %0X \n", addr, ethSyst.rxMem[addr], expectVal);
-            exit(1);
-          }
-        }
-        printf("------- CPU-DMA Short Loopback test PASSED -------\n\n");
-
-
         printf("------- Running DMA Short Loopback test -------\n");
         ethSyst.switch_CPU_DMAxEth_LB(true,  true); // Tx switch: DMA->LB, CPU->Eth
         ethSyst.switch_CPU_DMAxEth_LB(false, true); // Rx switch: LB->DMA, Eth->CPU
@@ -256,7 +147,7 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
 
-        packets = txrxMemSize/DMA_PACKET_LEN;
+        size_t packets = txrxMemSize/DMA_PACKET_LEN;
         if (XAxiDma_HasSg(&ethSyst.axiDma))
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
@@ -313,6 +204,7 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
+        ethSyst.ethCoreInit(true);
 
         printf("------- Running DMA Near-end loopback test -------\n");
         ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: DMA->Eth, CPU->LB

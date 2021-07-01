@@ -201,7 +201,8 @@
 
 /**************************** Type Definitions *******************************/
 class EthSyst {
-  uint32_t* ethCore = reinterpret_cast<uint32_t*>(ETH100GB_BASEADDR); // Ethernet core base address
+  uint32_t* ethSystBase; // Whole Ethernet system base address
+  uint32_t* ethCore;     // Ethernet core base address
   //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
@@ -216,7 +217,7 @@ class EthSyst {
     GT_LOOPBACK_REG       = GT_LOOPBACK_REG_OFFSET       / sizeof(uint32_t)
   };
   // Ethernet core control via pins
-  uint32_t* rxtxCtrl = reinterpret_cast<uint32_t*>(TX_RX_CTL_STAT_BASEADDR);
+  uint32_t* rxtxCtrl;
   enum {
     TX_CTRL = XGPIO_DATA_OFFSET  / sizeof(uint32_t),
     RX_CTRL = XGPIO_DATA2_OFFSET / sizeof(uint32_t)
@@ -241,9 +242,9 @@ class EthSyst {
     RX_SG_MEM_ADDR = SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE,
     RX_SG_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2
   };
-  uint32_t* txMem = reinterpret_cast<uint32_t*>(TX_MEM_CPU_BASEADDR); // Tx mem base address
-  uint32_t* rxMem = reinterpret_cast<uint32_t*>(RX_MEM_CPU_BASEADDR); // Rx mem base address
-  uint32_t* sgMem = reinterpret_cast<uint32_t*>(SG_MEM_CPU_BASEADDR); // SG mem base address
+  uint32_t* txMem; // Tx mem base address
+  uint32_t* rxMem; // Rx mem base address
+  uint32_t* sgMem; // SG mem base address
 
   size_t txBdCount = 0;
   size_t rxBdCount = 0;
@@ -252,6 +253,7 @@ class EthSyst {
   uint8_t physConnOrder;
   enum {PHYS_CONN_WAIT_INI = 2};
 
+  EthSyst();
   void ethCoreInit(bool);
   void ethTxRxEnable();
   void ethTxRxDisable();

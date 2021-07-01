@@ -49,6 +49,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <algorithm>
+#include <fcntl.h>
+#include <sys/mman.h>
 
 #include "EthSyst.h"
 #include "eth_defs.h"
@@ -57,11 +59,35 @@ void xil_printf( const char8 *str, ...) {
 	printf(str);
 }
 
+
+//***************** Initialization of address pointers *****************
+EthSyst::EthSyst() {
+  int fid = open("/dev/mem", O_RDWR);
+  if( fid < 0 ) {
+    printf("Could not open /dev/mem.\n");
+    exit(1);
+  }
+
+  ethSystBase = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, ETH_SYST_BASEADDR));
+  if (ethSystBase == MAP_FAILED) {
+    printf("Memory mapping of Ethernet system failed.\n");
+    exit(1);
+  }
+
+  ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
+  rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
+  txMem    = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  rxMem    = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  sgMem    = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+
+}
+
+
 //***************** Initialization of 100Gb Ethernet Core *****************
 void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("------- Initializing Ethernet Core -------\n");
   // GT control via pins 
-  uint32_t* gtCtrl = reinterpret_cast<uint32_t*>(GT_CTL_BASEADDR);
+  uint32_t* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
   enum { GT_CTRL = XGPIO_DATA_OFFSET / sizeof(uint32_t) };
   enum { ETH_FULL_RST_ASSERT = RESET_REG_USR_RX_SERDES_RESET_MASK |
                                RESET_REG_USR_RX_RESET_MASK        |
@@ -240,7 +266,7 @@ void EthSyst::timerCntInit() {
 void EthSyst::axiDmaInit() {
   printf("------- Initializing DMA -------\n");
   // AXI DMA direct control: http://www.xilinx.com/support/documentation/ip_documentation/axi_dma/v7_1/pg021_axi_dma.pdf
-  uint32_t* dmaCore = reinterpret_cast<uint32_t*>(XPAR_AXIDMA_0_BASEADDR);
+  uint32_t* dmaCore = ethSystBase + (XPAR_AXIDMA_0_BASEADDR / sizeof(uint32_t));
   enum {
     MM2S_DMACR = (XAXIDMA_CR_OFFSET + XAXIDMA_TX_OFFSET) / sizeof(uint32_t),
     MM2S_DMASR = (XAXIDMA_SR_OFFSET + XAXIDMA_TX_OFFSET) / sizeof(uint32_t),
@@ -542,8 +568,8 @@ uint32_t EthSyst::dmaBDCheck(bool RxnTx)
 //***************** AXI-Stream Switches control *****************
 void EthSyst::switch_CPU_DMAxEth_LB(bool txNrx, bool cpu2eth_dma2lb) {
   // AXIS switches control: http://www.xilinx.com/support/documentation/ip_documentation/axis_infrastructure_ip_suite/v1_1/pg085-axi4stream-infrastructure.pdf#page=27
-  uint32_t* strSwitch = txNrx ? reinterpret_cast<uint32_t*>(TX_AXIS_SWITCH_BASEADDR) :
-                                reinterpret_cast<uint32_t*>(RX_AXIS_SWITCH_BASEADDR);
+  uint32_t* strSwitch = txNrx ? ethSystBase + (TX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t)) :
+                                ethSystBase + (RX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t));
   enum {SW_CTR = XAXIS_SCR_CTRL_OFFSET         / sizeof(uint32_t),
         MI_MUX = XAXIS_SCR_MI_MUX_START_OFFSET / sizeof(uint32_t)
        };
