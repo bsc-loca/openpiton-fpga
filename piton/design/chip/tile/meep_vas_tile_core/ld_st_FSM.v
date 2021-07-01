@@ -20,6 +20,7 @@ module ld_st_FSM(
     input      dtlb_hit_i           ,
     input      ld_resp_valid_i      ,
     input      st_resp_gnt_i        ,
+    input      ld_resp_gnt_i        ,
     output     str_rdy_o            ,
     output reg mem_req_valid_o      ,
     output reg st_translation_req_o ,
@@ -106,7 +107,9 @@ module ld_st_FSM(
                     trns_ena             <= 1'b0;          
                 end
                 else begin
-                    mem_req_valid_o      <= 1'b0;
+                    if (ld_resp_gnt_i)begin
+                        mem_req_valid_o      <= 1'b0;
+                    end
                     st_translation_req_o <= 1'b0;
                     //cnt_ena              <= 1'b1;
                     Edo_Sgte             <= WAITING_LD_ST; 

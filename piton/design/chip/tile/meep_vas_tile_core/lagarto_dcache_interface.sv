@@ -72,8 +72,8 @@ module lagarto_dcache_interface (
     input  logic        dmem_xcpt_pf_st_i,   // DTLB miss on store
     input  logic        dmem_xcpt_pf_ld_i,   // DTLB miss on load
 
-    input  logic        dmem_resp_gnt_st_i,   // DTLB miss on load
-
+    input  logic        dmem_resp_gnt_st_i,   
+    input  logic        dmem_resp_gnt_ld_i, 
     // Response towards Lagarto
     output resp_dcache_cpu_t resp_dcache_cpu_o
 
@@ -134,6 +134,7 @@ ld_st_FSM ld_st_FSM(
     .kill_mem_op_i        (kill_mem_ope          ),
     .ld_resp_valid_i      (dmem_resp_valid_i     ),
     .st_resp_gnt_i        (dmem_resp_gnt_st_i    ),
+    .ld_resp_gnt_i        (dmem_resp_gnt_ld_i    ),
     .dtlb_hit_i           (dtlb_valid_i          ),
     .str_rdy_o            (str_rdy               ),
     .mem_req_valid_o      (mem_req_valid         ),
