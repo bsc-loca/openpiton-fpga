@@ -79,6 +79,8 @@ EthSyst::EthSyst() {
   txMem    = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
   rxMem    = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
   sgMem    = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  sgTxMem  = sgMem;
+  sgRxMem  = sgMem + (TX_SG_MEM_SIZE / sizeof(uint32_t));
 
 }
 
@@ -281,6 +283,8 @@ void EthSyst::axiDmaInit() {
     printf("\nERROR: No config found for XAxiDma %ld at addr %lx \n", XPAR_AXIDMA_0_DEVICE_ID, XPAR_AXIDMA_0_BASEADDR);
     exit(1);
   }
+  // assigning virtual address in DMA config 
+  cfgPtr->BaseAddr = reinterpret_cast<UINTPTR>(dmaCore);
   // XAxiDma definitions initialization
   int status = XAxiDma_CfgInitialize(&axiDma, cfgPtr);
   if (XST_SUCCESS != status) {
@@ -308,8 +312,8 @@ void EthSyst::axiDmaInit() {
   printf("XAxiDma is initialized and reset: \n");
   printf("HasSg       = %d  \n", axiDma.HasSg);
   printf("Initialized = %d  \n", axiDma.Initialized);
-  if (0) {
-    printf("RegBase                  = %ld \n", axiDma.RegBase);
+  if (1) {
+    printf("RegBase                  = %lX \n", axiDma.RegBase);
     printf("HasMm2S                  = %d  \n", axiDma.HasMm2S);
     printf("HasS2Mm                  = %d  \n", axiDma.HasS2Mm);
     printf("TxNumChannels            = %d  \n", axiDma.TxNumChannels);
@@ -319,14 +323,14 @@ void EthSyst::axiDmaInit() {
     printf("TxBdRing.DataWidth       = %d  \n", axiDma.TxBdRing.DataWidth);
     printf("TxBdRing.Addr_ext        = %d  \n", axiDma.TxBdRing.Addr_ext);
     printf("TxBdRing.MaxTransferLen  = %X  \n", axiDma.TxBdRing.MaxTransferLen);
-    printf("TxBdRing.FirstBdPhysAddr = %ld \n", axiDma.TxBdRing.FirstBdPhysAddr);
-    printf("TxBdRing.FirstBdAddr     = %ld \n", axiDma.TxBdRing.FirstBdAddr);
-    printf("TxBdRing.LastBdAddr      = %ld \n", axiDma.TxBdRing.LastBdAddr);
+    printf("TxBdRing.FirstBdPhysAddr = %lX \n", axiDma.TxBdRing.FirstBdPhysAddr);
+    printf("TxBdRing.FirstBdAddr     = %lX \n", axiDma.TxBdRing.FirstBdAddr);
+    printf("TxBdRing.LastBdAddr      = %lX \n", axiDma.TxBdRing.LastBdAddr);
     printf("TxBdRing.Length          = %X  \n", axiDma.TxBdRing.Length);
     printf("TxBdRing.Separation      = %ld \n", axiDma.TxBdRing.Separation);
     printf("TxBdRing.Cyclic          = %d  \n", axiDma.TxBdRing.Cyclic);
-    printf("TxBdRing pointer         = %lx \n", size_t(XAxiDma_GetTxRing(&axiDma)));
-    printf("RxBdRing pointer         = %lx \n", size_t(XAxiDma_GetRxRing(&axiDma)));
+    printf("TxBdRing pointer         = %lX \n", size_t(XAxiDma_GetTxRing(&axiDma)));
+    printf("RxBdRing pointer         = %lX \n", size_t(XAxiDma_GetRxRing(&axiDma)));
     printf("Tx_control reg = %0X \n", dmaCore[MM2S_DMACR]);
     printf("Tx_status  reg = %0X \n", dmaCore[MM2S_DMASR]);
     printf("Rx_control reg = %0X \n", dmaCore[S2MM_DMACR]);
@@ -354,17 +358,20 @@ void EthSyst::dmaBDSetup(bool RxnTx)
 	int const Delay    = 0;
 	XAxiDma_BdRingSetCoalesce(BdRingPtr, Coalesce, Delay);
 
-	// Setup BD space
-	size_t const sgMemAddr = RxnTx ? RX_SG_MEM_ADDR : TX_SG_MEM_ADDR;
-	size_t const sgMemSize = RxnTx ? RX_SG_MEM_SIZE : TX_SG_MEM_SIZE;
+  // Setup BD space
+  size_t const sgMemVirtAddr = reinterpret_cast<size_t>(RxnTx ? sgRxMem        : sgTxMem);
+  size_t const sgMemPhysAddr =                          RxnTx ? RX_SG_MEM_ADDR : TX_SG_MEM_ADDR;
+  size_t const sgMemSize     =                          RxnTx ? RX_SG_MEM_SIZE : TX_SG_MEM_SIZE;
+
 	uint32_t BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT, sgMemSize);
-	int Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemAddr, sgMemAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
+	int Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
 	if (Status != XST_SUCCESS) {
-      printf("\nERROR: RxnTx=%d, Creation of BD ring with %d BDs at addr %lx failed with status %d\r\n",
-	               RxnTx, BdCount, sgMemAddr, Status);
+      printf("\nERROR: RxnTx=%d, Creation of BD ring with %d BDs at addr %lX(virt: %lX) failed with status %d\r\n",
+	           RxnTx, BdCount, sgMemPhysAddr, sgMemVirtAddr, Status);
       exit(1);
 	}
-    printf("RxnTx=%d, DMA BD memory size %lx at addr %lx, BD ring with %d BDs created \n", RxnTx, sgMemSize, sgMemAddr, BdCount);
+  printf("RxnTx=%d, DMA BD memory size %lx at addr %lX(virt: %lX), BD ring with %d BDs created \n",
+          RxnTx, sgMemSize, sgMemPhysAddr, sgMemVirtAddr, BdCount);
 	if (RxnTx) rxBdCount = BdCount;
 	else       txBdCount = BdCount;
 

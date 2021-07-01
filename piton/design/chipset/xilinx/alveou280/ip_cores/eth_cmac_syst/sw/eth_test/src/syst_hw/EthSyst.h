@@ -237,14 +237,16 @@ class EthSyst {
   enum {
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
-    TX_SG_MEM_ADDR = SG_MEM_CPU_BASEADDR,
+    TX_SG_MEM_ADDR = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,                  // physical addresss
     TX_SG_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
-    RX_SG_MEM_ADDR = SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE,
+    RX_SG_MEM_ADDR = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE, // physical addresss
     RX_SG_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2
   };
   uint32_t* txMem; // Tx mem base address
   uint32_t* rxMem; // Rx mem base address
   uint32_t* sgMem; // SG mem base address
+  uint32_t* sgTxMem; // Tx SG mem base address
+  uint32_t* sgRxMem; // Rx SG mem base address
 
   size_t txBdCount = 0;
   size_t rxBdCount = 0;
