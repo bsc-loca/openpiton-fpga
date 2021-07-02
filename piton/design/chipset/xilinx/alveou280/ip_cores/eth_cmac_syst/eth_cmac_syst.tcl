@@ -78,13 +78,13 @@ current_bd_design $design_name
   xilinx.com:ip:axi_timer:2.0\
   xilinx.com:ip:xlconstant:1.1\
   xilinx.com:ip:xlslice:1.0\
+  xilinx.com:ip:axis_data_fifo:2.0\
   xilinx.com:ip:cmac_usplus:3.1\
   xilinx.com:ip:axi_dma:7.1\
   xilinx.com:ip:blk_mem_gen:8.4\
   xilinx.com:ip:util_vector_logic:2.0\
   xilinx.com:ip:axi_gpio:2.0\
   xilinx.com:ip:util_reduced_logic:2.0\
-  xilinx.com:ip:axis_data_fifo:2.0\
   xilinx.com:ip:axis_switch:1.1\
   xilinx.com:ip:axi_bram_ctrl:4.1\
   xilinx.com:ip:proc_sys_reset:5.0\
@@ -319,6 +319,13 @@ current_bd_design $design_name
    CONFIG.DOUT_WIDTH {1} \
  ] $ctl_tx_test_pattern
 
+  # Create instance: dma_loopback_fifo, and set properties
+  set dma_loopback_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 dma_loopback_fifo ]
+  set_property -dict [ list \
+   CONFIG.FIFO_DEPTH {16} \
+   CONFIG.IS_ACLK_ASYNC {1} \
+ ] $dma_loopback_fifo
+
   # Create instance: eth100gb, and set properties
   set eth100gb [ create_bd_cell -type ip -vlnv xilinx.com:ip:cmac_usplus:3.1 eth100gb ]
   set_property -dict [ list \
@@ -365,6 +372,13 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.c_sg_include_stscntrl_strm {0} \
    CONFIG.c_sg_length_width {22} \
  ] $eth_dma
+
+  # Create instance: eth_loopback_fifo, and set properties
+  set eth_loopback_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 eth_loopback_fifo ]
+  set_property -dict [ list \
+   CONFIG.FIFO_DEPTH {16} \
+   CONFIG.IS_ACLK_ASYNC {1} \
+ ] $eth_loopback_fifo
 
   # Create instance: eth_rx_mem, and set properties
   set eth_rx_mem [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 eth_rx_mem ]
@@ -473,13 +487,6 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.C_SIZE {4} \
  ] $gts_pwr_ok
 
-  # Create instance: loopback_fifo, and set properties
-  set loopback_fifo [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_data_fifo:2.0 loopback_fifo ]
-  set_property -dict [ list \
-   CONFIG.FIFO_DEPTH {16} \
-   CONFIG.IS_ACLK_ASYNC {1} \
- ] $loopback_fifo
-
   # Create instance: microblaze_0_axi_periph, and set properties
   set microblaze_0_axi_periph [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 microblaze_0_axi_periph ]
   set_property -dict [ list \
@@ -491,8 +498,8 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   # Create instance: rx_axis_switch, and set properties
   set rx_axis_switch [ create_bd_cell -type ip -vlnv xilinx.com:ip:axis_switch:1.1 rx_axis_switch ]
   set_property -dict [ list \
-   CONFIG.DECODER_REG {0} \
-   CONFIG.NUM_MI {1} \
+   CONFIG.DECODER_REG {1} \
+   CONFIG.NUM_MI {2} \
    CONFIG.NUM_SI {2} \
    CONFIG.ROUTING_MODE {1} \
  ] $rx_axis_switch
@@ -543,7 +550,7 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
    CONFIG.DECODER_REG {1} \
    CONFIG.M00_S00_CONNECTIVITY {1} \
    CONFIG.NUM_MI {2} \
-   CONFIG.NUM_SI {1} \
+   CONFIG.NUM_SI {2} \
    CONFIG.ROUTING_MODE {1} \
  ] $tx_axis_switch
 
@@ -584,11 +591,12 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins eth_tx_mem/BRAM_PORTA] [get_bd_intf_pins tx_mem_cpu/BRAM_PORTA]
   connect_bd_intf_net -intf_net cmac_usplus_0_axis_rx [get_bd_intf_pins eth100gb/axis_rx] [get_bd_intf_pins rx_axis_switch/S01_AXIS]
   connect_bd_intf_net -intf_net cmac_usplus_0_gt_serial_port [get_bd_intf_ports qsfp_4x] [get_bd_intf_pins eth100gb/gt_serial_port]
-  connect_bd_intf_net -intf_net eth_dma_M_AXIS_MM2S [get_bd_intf_pins eth_dma/M_AXIS_MM2S] [get_bd_intf_pins tx_axis_switch/S00_AXIS]
+  connect_bd_intf_net -intf_net eth_dma_M_AXIS_MM2S [get_bd_intf_pins eth_dma/M_AXIS_MM2S] [get_bd_intf_pins tx_axis_switch/S01_AXIS]
   connect_bd_intf_net -intf_net eth_dma_M_AXI_MM2S [get_bd_intf_pins eth_dma/M_AXI_MM2S] [get_bd_intf_pins tx_mem_dma/S_AXI]
   connect_bd_intf_net -intf_net eth_dma_M_AXI_S2MM [get_bd_intf_pins eth_dma/M_AXI_S2MM] [get_bd_intf_pins rx_mem_dma/S_AXI]
   connect_bd_intf_net -intf_net eth_dma_M_AXI_SG [get_bd_intf_pins eth_dma/M_AXI_SG] [get_bd_intf_pins sg_mem_dma/S_AXI]
-  connect_bd_intf_net -intf_net loopback_fifo_M_AXIS [get_bd_intf_pins loopback_fifo/M_AXIS] [get_bd_intf_pins rx_axis_switch/S00_AXIS]
+  connect_bd_intf_net -intf_net eth_loopback_fifo_M_AXIS [get_bd_intf_pins eth_loopback_fifo/M_AXIS] [get_bd_intf_pins tx_axis_switch/S00_AXIS]
+  connect_bd_intf_net -intf_net loopback_fifo_M_AXIS [get_bd_intf_pins dma_loopback_fifo/M_AXIS] [get_bd_intf_pins rx_axis_switch/S00_AXIS]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M00_AXI [get_bd_intf_pins eth100gb/s_axi] [get_bd_intf_pins microblaze_0_axi_periph/M00_AXI]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M01_AXI [get_bd_intf_pins eth_dma/S_AXI_LITE] [get_bd_intf_pins microblaze_0_axi_periph/M01_AXI]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M02_AXI [get_bd_intf_pins microblaze_0_axi_periph/M02_AXI] [get_bd_intf_pins tx_rx_ctl_stat/S_AXI]
@@ -600,13 +608,14 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M08_AXI [get_bd_intf_pins microblaze_0_axi_periph/M08_AXI] [get_bd_intf_pins tx_mem_cpu/S_AXI]
   connect_bd_intf_net -intf_net microblaze_0_axi_periph_M09_AXI [get_bd_intf_pins microblaze_0_axi_periph/M09_AXI] [get_bd_intf_pins rx_mem_cpu/S_AXI]
   connect_bd_intf_net -intf_net qsfp0_156mhz_1 [get_bd_intf_ports qsfp_refck] [get_bd_intf_pins eth100gb/gt_ref_clk]
-  connect_bd_intf_net -intf_net rx_axis_switch_M00_AXIS [get_bd_intf_pins eth_dma/S_AXIS_S2MM] [get_bd_intf_pins rx_axis_switch/M00_AXIS]
+  connect_bd_intf_net -intf_net rx_axis_switch_M00_AXIS [get_bd_intf_pins eth_loopback_fifo/S_AXIS] [get_bd_intf_pins rx_axis_switch/M00_AXIS]
+  connect_bd_intf_net -intf_net rx_axis_switch_M01_AXIS [get_bd_intf_pins eth_dma/S_AXIS_S2MM] [get_bd_intf_pins rx_axis_switch/M01_AXIS]
   connect_bd_intf_net -intf_net rx_mem_ctr_BRAM_PORTA [get_bd_intf_pins eth_rx_mem/BRAM_PORTA] [get_bd_intf_pins rx_mem_cpu/BRAM_PORTA]
   connect_bd_intf_net -intf_net rx_mem_dma_BRAM_PORTA [get_bd_intf_pins eth_rx_mem/BRAM_PORTB] [get_bd_intf_pins rx_mem_dma/BRAM_PORTA]
   connect_bd_intf_net -intf_net sg_mem_dma1_BRAM_PORTA [get_bd_intf_pins eth_sg_mem/BRAM_PORTA] [get_bd_intf_pins sg_mem_cpu/BRAM_PORTA]
   connect_bd_intf_net -intf_net sg_mem_dma_BRAM_PORTA [get_bd_intf_pins eth_sg_mem/BRAM_PORTB] [get_bd_intf_pins sg_mem_dma/BRAM_PORTA]
   connect_bd_intf_net -intf_net tx_mem_cpu1_BRAM_PORTA [get_bd_intf_pins eth_tx_mem/BRAM_PORTB] [get_bd_intf_pins tx_mem_dma/BRAM_PORTA]
-  connect_bd_intf_net -intf_net tx_switch_M00_AXIS [get_bd_intf_pins loopback_fifo/S_AXIS] [get_bd_intf_pins tx_axis_switch/M00_AXIS]
+  connect_bd_intf_net -intf_net tx_switch_M00_AXIS [get_bd_intf_pins dma_loopback_fifo/S_AXIS] [get_bd_intf_pins tx_axis_switch/M00_AXIS]
   connect_bd_intf_net -intf_net tx_switch_M01_AXIS [get_bd_intf_pins eth100gb/axis_tx] [get_bd_intf_pins tx_axis_switch/M01_AXIS]
 
   # Create port connections
@@ -617,8 +626,8 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_net -net axi_gpio_0_gpio2_io_o [get_bd_pins ctl_rx_enable/Din] [get_bd_pins ctl_rx_force_resync/Din] [get_bd_pins ctl_rx_test_pattern/Din] [get_bd_pins tx_rx_ctl_stat/gpio2_io_o]
   connect_bd_net -net axi_gpio_0_gpio_io_o [get_bd_pins ctl_tx_enable/Din] [get_bd_pins ctl_tx_send_idle/Din] [get_bd_pins ctl_tx_send_lfi/Din] [get_bd_pins ctl_tx_send_rfi/Din] [get_bd_pins ctl_tx_test_pattern/Din] [get_bd_pins tx_rx_ctl_stat/gpio_io_o]
   connect_bd_net -net cmac_usplus_0_gt_powergoodout [get_bd_pins GT_STATUS/In0] [get_bd_pins eth100gb/gt_powergoodout] [get_bd_pins gts_pwr_ok/Op1]
-  connect_bd_net -net cmac_usplus_0_gt_rxusrclk2 [get_bd_pins eth100gb/gt_rxusrclk2] [get_bd_pins eth100gb/rx_clk] [get_bd_pins eth_dma/m_axi_s2mm_aclk] [get_bd_pins loopback_fifo/m_axis_aclk] [get_bd_pins rx_axis_switch/aclk] [get_bd_pins rx_mem_dma/s_axi_aclk] [get_bd_pins rx_rst_gen/slowest_sync_clk]
-  connect_bd_net -net cmac_usplus_0_gt_txusrclk2 [get_bd_pins eth100gb/gt_txusrclk2] [get_bd_pins eth_dma/m_axi_mm2s_aclk] [get_bd_pins loopback_fifo/s_axis_aclk] [get_bd_pins tx_axis_switch/aclk] [get_bd_pins tx_mem_dma/s_axi_aclk] [get_bd_pins tx_rst_gen/slowest_sync_clk]
+  connect_bd_net -net cmac_usplus_0_gt_rxusrclk2 [get_bd_pins dma_loopback_fifo/m_axis_aclk] [get_bd_pins eth100gb/gt_rxusrclk2] [get_bd_pins eth100gb/rx_clk] [get_bd_pins eth_dma/m_axi_s2mm_aclk] [get_bd_pins eth_loopback_fifo/s_axis_aclk] [get_bd_pins rx_axis_switch/aclk] [get_bd_pins rx_mem_dma/s_axi_aclk] [get_bd_pins rx_rst_gen/slowest_sync_clk]
+  connect_bd_net -net cmac_usplus_0_gt_txusrclk2 [get_bd_pins dma_loopback_fifo/s_axis_aclk] [get_bd_pins eth100gb/gt_txusrclk2] [get_bd_pins eth_dma/m_axi_mm2s_aclk] [get_bd_pins eth_loopback_fifo/m_axis_aclk] [get_bd_pins tx_axis_switch/aclk] [get_bd_pins tx_mem_dma/s_axi_aclk] [get_bd_pins tx_rst_gen/slowest_sync_clk]
   connect_bd_net -net cmac_usplus_0_stat_rx_aligned [get_bd_pins STAT_RX_STATUS_REG/In1] [get_bd_pins eth100gb/stat_rx_aligned]
   connect_bd_net -net cmac_usplus_0_stat_rx_aligned_err [get_bd_pins STAT_RX_STATUS_REG/In3] [get_bd_pins eth100gb/stat_rx_aligned_err]
   connect_bd_net -net cmac_usplus_0_stat_rx_bad_preamble [get_bd_pins STAT_RX_STATUS_REG/In10] [get_bd_pins eth100gb/stat_rx_bad_preamble]
@@ -654,10 +663,10 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_net -net gt_loopback3_Dout [get_bd_pins gt_loopback/In3] [get_bd_pins gt_loopback3/Dout]
   connect_bd_net -net resetn_1 [get_bd_ports s_axi_resetn] [get_bd_pins axi_timer_0/s_axi_aresetn] [get_bd_pins eth_dma/axi_resetn] [get_bd_pins ext_rstn_inv/Op1] [get_bd_pins gt_ctl/s_axi_aresetn] [get_bd_pins microblaze_0_axi_periph/ARESETN] [get_bd_pins microblaze_0_axi_periph/M00_ARESETN] [get_bd_pins microblaze_0_axi_periph/M01_ARESETN] [get_bd_pins microblaze_0_axi_periph/M02_ARESETN] [get_bd_pins microblaze_0_axi_periph/M03_ARESETN] [get_bd_pins microblaze_0_axi_periph/M04_ARESETN] [get_bd_pins microblaze_0_axi_periph/M05_ARESETN] [get_bd_pins microblaze_0_axi_periph/M06_ARESETN] [get_bd_pins microblaze_0_axi_periph/M07_ARESETN] [get_bd_pins microblaze_0_axi_periph/M08_ARESETN] [get_bd_pins microblaze_0_axi_periph/M09_ARESETN] [get_bd_pins microblaze_0_axi_periph/S00_ARESETN] [get_bd_pins rx_axis_switch/s_axi_ctrl_aresetn] [get_bd_pins rx_mem_cpu/s_axi_aresetn] [get_bd_pins rx_rst_gen/aux_reset_in] [get_bd_pins rx_rst_gen/ext_reset_in] [get_bd_pins sg_mem_cpu/s_axi_aresetn] [get_bd_pins sg_mem_dma/s_axi_aresetn] [get_bd_pins tx_axis_switch/s_axi_ctrl_aresetn] [get_bd_pins tx_mem_cpu/s_axi_aresetn] [get_bd_pins tx_rst_gen/aux_reset_in] [get_bd_pins tx_rst_gen/ext_reset_in] [get_bd_pins tx_rx_ctl_stat/s_axi_aresetn]
   connect_bd_net -net resetn_inv_0_Res [get_bd_pins eth100gb/core_drp_reset] [get_bd_pins eth100gb/gtwiz_reset_rx_datapath] [get_bd_pins eth100gb/gtwiz_reset_tx_datapath] [get_bd_pins eth100gb/s_axi_sreset] [get_bd_pins eth100gb/sys_reset] [get_bd_pins ext_rstn_inv/Res] [get_bd_pins rx_rst_gen/mb_debug_sys_rst] [get_bd_pins tx_rst_gen/mb_debug_sys_rst]
-  connect_bd_net -net rx_rst_gen_peripheral_aresetn [get_bd_pins rx_axis_switch/aresetn] [get_bd_pins rx_rst_gen/peripheral_aresetn]
+  connect_bd_net -net rx_rst_gen_peripheral_aresetn [get_bd_pins eth_loopback_fifo/s_axis_aresetn] [get_bd_pins rx_axis_switch/aresetn] [get_bd_pins rx_rst_gen/peripheral_aresetn]
   connect_bd_net -net rx_rst_gen_peripheral_reset [get_bd_pins eth100gb/core_rx_reset] [get_bd_pins rx_rst_gen/peripheral_reset]
   connect_bd_net -net stat_tx_local_fault_dout [get_bd_pins STAT_TX_STATUS_REG/dout] [get_bd_pins tx_rx_ctl_stat/gpio_io_i]
-  connect_bd_net -net tx_rst_gen_peripheral_aresetn [get_bd_pins loopback_fifo/s_axis_aresetn] [get_bd_pins tx_axis_switch/aresetn] [get_bd_pins tx_rst_gen/peripheral_aresetn]
+  connect_bd_net -net tx_rst_gen_peripheral_aresetn [get_bd_pins dma_loopback_fifo/s_axis_aresetn] [get_bd_pins tx_axis_switch/aresetn] [get_bd_pins tx_rst_gen/peripheral_aresetn]
   connect_bd_net -net tx_rst_gen_peripheral_reset [get_bd_pins eth100gb/core_tx_reset] [get_bd_pins tx_rst_gen/peripheral_reset]
   connect_bd_net -net util_reduced_logic_0_Res [get_bd_pins gts_pwr_ok/Res] [get_bd_pins rx_rst_gen/dcm_locked] [get_bd_pins tx_rst_gen/dcm_locked]
 

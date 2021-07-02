@@ -206,9 +206,11 @@ set_property IOSTANDARD  LVCMOS18  [get_ports "qsfp_oeb"]  ;# Bank  75 VCCO - VC
 # https://www.xilinx.com/support/documentation/sw_manuals/xilinx2020_1/ug912-vivado-properties.pdf#page=386
 set tx_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical eth100gb/gt_txusrclk2]]]
 set rx_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical eth100gb/gt_rxusrclk2]]]
+#As clocks are not applied to memories explicitly in BD, include them separately to SLR placement.
 set eth_txmem [get_cells -hierarchical eth_tx_mem]
 set eth_rxmem [get_cells -hierarchical eth_rx_mem]
-set_property USER_SLR_ASSIGNMENT eth_cmac_slr [get_cells "$tx_clk_units $rx_clk_units $eth_txmem $eth_rxmem"]
+#Setting specific SLR to which QSFP are wired since placer may miss it if just "group_name" is applied
+set_property USER_SLR_ASSIGNMENT SLR2 [get_cells "$tx_clk_units $rx_clk_units $eth_txmem $eth_rxmem"]
 #
 #--------------------------------------------
 # Timing constraints for clock domains crossings (CDC), which didn't apply automatically (e.g. for GPIO)

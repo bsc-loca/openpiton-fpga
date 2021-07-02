@@ -139,8 +139,8 @@ int main(int argc, char *argv[])
         ethSyst.axiDmaInit();
 
         printf("------- Running DMA Short Loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  true); // Tx switch: DMA->LB, CPU->Eth
-        ethSyst.switch_CPU_DMAxEth_LB(false, true); // Rx switch: LB->DMA, Eth->CPU
+        ethSyst.switch_LB_DMA_Eth(true,  true); // Tx switch: DMA->LB, LB->Eth
+        ethSyst.switch_LB_DMA_Eth(false, true); // Rx switch: LB->DMA, Eth->LB
         sleep(1); // in seconds
 
         srand(1);
@@ -207,8 +207,8 @@ int main(int argc, char *argv[])
         ethSyst.ethCoreInit(true);
 
         printf("------- Running DMA Near-end loopback test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: DMA->Eth, CPU->LB
-        ethSyst.switch_CPU_DMAxEth_LB(false, false); // Rx switch: Eth->DMA, LB->CPU
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
         sleep(1); // in seconds
 
         srand(1);
@@ -299,25 +299,11 @@ int main(int argc, char *argv[])
         if (confirm != 'y') break;
 
         ethSyst.ethCoreInit(false);
-
-        printf("------- CPU 2-boards communication test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  true); // Tx switch: CPU->Eth, DMA->LB
-        ethSyst.switch_CPU_DMAxEth_LB(false, true); // Rx switch: Eth->CPU, LB->DMA
-        sleep(1); // in seconds
-
-        // transmitToChan(CPU_PACKET_WORDS, TRANSMIT_FIFO_DEPTH, false, true);
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
-
-        sleep(1); // in seconds, delay not to use blocking read in receive process
-        // receiveFrChan (CPU_PACKET_WORDS, TRANSMIT_FIFO_DEPTH);
-        ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
-        printf("------- CPU 2-boards communication test PASSED -------\n\n");
-
         ethSyst.axiDmaInit();
 
         printf("------- Async DMA 2-boards communication test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: DMA->Eth, CPU->LB
-        ethSyst.switch_CPU_DMAxEth_LB(false, false); // Rx switch: Eth->DMA, LB->CPU
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
         sleep(1); // in seconds
 
         srand(1);
@@ -399,8 +385,8 @@ int main(int argc, char *argv[])
 
 
         printf("------- Round-trip DMA 2-boards communication test -------\n");
-        ethSyst.switch_CPU_DMAxEth_LB(true,  false); // Tx switch: DMA->Eth, CPU->LB
-        ethSyst.switch_CPU_DMAxEth_LB(false, false); // Rx switch: Eth->DMA, LB->CPU
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
         sleep(1); // in seconds
 
         srand(1);

@@ -578,7 +578,7 @@ uint32_t EthSyst::dmaBDCheck(bool RxnTx)
 
 
 //***************** AXI-Stream Switches control *****************
-void EthSyst::switch_CPU_DMAxEth_LB(bool txNrx, bool cpu2eth_dma2lb) {
+void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
   // AXIS switches control: http://www.xilinx.com/support/documentation/ip_documentation/axis_infrastructure_ip_suite/v1_1/pg085-axi4stream-infrastructure.pdf#page=27
   uint32_t* strSwitch = txNrx ? ethSystBase + (TX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t)) :
                                 ethSystBase + (RX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t));
@@ -590,19 +590,19 @@ void EthSyst::switch_CPU_DMAxEth_LB(bool txNrx, bool cpu2eth_dma2lb) {
   else       printf("RX ");
   printf("Stream Switch state:\n");
   printf("Control = %0X, Out0 = %0X, Out1 = %0X \n", strSwitch[SW_CTR], strSwitch[MI_MUX], strSwitch[MI_MUX+1]);
-  if (cpu2eth_dma2lb) {
-    printf("Connecting CPU to Ethernet core, DMA to Short LB, ");
-    strSwitch[MI_MUX+0] = 1; // connect Out0(Tx:LB /Rx:CPU) to In1(Tx:DMA/Rx:Eth)
-    strSwitch[MI_MUX+1] = 0; // connect Out1(Tx:Eth/Rx:DMA) to In0(Tx:CPU/Rx:LB)
+  if (lbEn) {
+    printf("Connecting Ethernet core and DMA to LB, ");
+    strSwitch[MI_MUX+0] = 1; // connect Out0(Tx:DMA LB/Rx:Eth LB) to In1(Tx:DMA Tx/Rx:Eth Rx)
+    strSwitch[MI_MUX+1] = 0; // connect Out1(Tx:Eth Tx/Rx:DMA Rx) to In0(Tx:Eth LB/Rx:DMA LB)
   } else {
-    printf("Connecting DMA to Ethernet core, CPU to Short LB, ");
-    strSwitch[MI_MUX+0] = 0; // connect Out0(Tx:LB /Rx:CPU) to In0(Tx:CPU/Rx:LB)
-    strSwitch[MI_MUX+1] = 1; // connect Out1(Tx:Eth/Rx:DMA) to In1(Tx:DMA/Rx:Eth)
+    printf("Connecting Ethernet core and DMA to each other, ");
+    strSwitch[MI_MUX+0] = 0; // connect Out0(Tx:DMA LB / Rx:Eth LB) to In0(Tx:Eth LB / Rx:DMA LB)
+    strSwitch[MI_MUX+1] = 1; // connect Out1(Tx:Eth Tx / Rx:DMA Rx) to In1(Tx:DMA Tx / Rx:Eth Rx)
   }
-  if (strSwitch[MI_MUX+0] != uint32_t( cpu2eth_dma2lb) ||
-      strSwitch[MI_MUX+1] != uint32_t(!cpu2eth_dma2lb)) {
+  if (strSwitch[MI_MUX+0] != uint32_t( lbEn) ||
+      strSwitch[MI_MUX+1] != uint32_t(!lbEn)) {
     printf("\nERROR: Incorrect Stream Switch control readback: Out0 = %0X, Out1 = %0X, expected: Out0 = %0X, Out1 = %0X \n",
-                strSwitch[MI_MUX], strSwitch[MI_MUX+1], cpu2eth_dma2lb, !cpu2eth_dma2lb);
+                strSwitch[MI_MUX], strSwitch[MI_MUX+1], lbEn, !lbEn);
     exit(1);
   }
   printf("Commiting the setting\n");
@@ -617,8 +617,8 @@ void EthSyst::switch_CPU_DMAxEth_LB(bool txNrx, bool cpu2eth_dma2lb) {
 void EthSyst::ethSystInit() {
   timerCntInit();
   axiDmaInit();
-  switch_CPU_DMAxEth_LB(true,  false); // Tx switch: DMA->Eth, CPU->LB
-  switch_CPU_DMAxEth_LB(false, false); // Rx switch: Eth->DMA, LB->CPU
+  switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+  switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
   ethTxRxEnable();
   sleep(1); // in seconds
 }

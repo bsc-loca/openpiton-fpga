@@ -265,7 +265,7 @@ class EthSyst {
   void        dmaBDTransfer(bool, size_t, size_t, XAxiDma_Bd*);
   XAxiDma_Bd* dmaBDPoll    (bool, size_t);
   void        dmaBDFree    (bool, size_t, size_t, XAxiDma_Bd*);
-  void switch_CPU_DMAxEth_LB(bool, bool);
+  void switch_LB_DMA_Eth   (bool, bool);
 
   void timerCntInit();
 
