@@ -245,7 +245,11 @@ void EthSyst::ethTxRxDisable() {
 void EthSyst::timerCntInit() {
   // AXI Timer direct control: http://www.xilinx.com/support/documentation/ip_documentation/axi_timer/v2_0/pg079-axi-timer.pdf
   printf("------- Initializing Timer -------\n");
+  uint32_t* tmrCore = ethSystBase + (XPAR_TMRCTR_0_BASEADDR / sizeof(uint32_t));
   // Controlling Timer via Xilinx driver.
+  // assigning virtual address in Timer config table
+  extern XTmrCtr_Config XTmrCtr_ConfigTable[XPAR_XTMRCTR_NUM_INSTANCES];
+  XTmrCtr_ConfigTable[XPAR_TMRCTR_0_DEVICE_ID].BaseAddress = reinterpret_cast<UINTPTR>(tmrCore);
   // Initialize the Timer driver so that it is ready to use
   int status = XTmrCtr_Initialize(&timerCnt, XPAR_TMRCTR_0_DEVICE_ID);
   if (status != XST_SUCCESS &&
@@ -261,6 +265,7 @@ void EthSyst::timerCntInit() {
       exit(1);
     }
   }
+  printf("Timer is initialized and tested\n\n");
 }
 
 
