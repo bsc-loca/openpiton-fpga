@@ -22,7 +22,7 @@ void torture_dump (unsigned long long PC, unsigned long long inst, unsigned long
     //Exceptions can come from the core (xcpt) or from the csrs (csr_xcpt)
     //And cannot happen both at once, so a simple OR suffices
     unsigned long long var_xcpt = xcpt | csr_xcpt;
-    unsigned long long var_xcpt_cause = xcpt_cause | csr_xcpt_cause;
+    unsigned long long var_xcpt_cause = xcpt ? xcpt_cause : csr_xcpt_cause;
     //We need to extend the PC sign
     signed long long signedPC = PC;
     signedPC = signedPC << 24;
@@ -157,6 +157,7 @@ void tortureSignature::dump_xcpt(uint64_t xcpt_cause, uint64_t epc, uint64_t tva
         case CAUSE_INSTR_PAGE_FAULT:
             //signatureFile << "trap_instruction_ecall";
             signatureFile << "trap_instruction_page_fault"; // Neiel-leyva
+            //tval = epc;
             break;
         case CAUSE_LD_PAGE_FAULT:
             signatureFile << "trap_load_page_fault";
