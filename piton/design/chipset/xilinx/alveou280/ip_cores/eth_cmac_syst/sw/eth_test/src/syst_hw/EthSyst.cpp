@@ -283,13 +283,15 @@ void EthSyst::axiDmaInit() {
 
   // Controlling DMA via Xilinx driver.
   // Initialize the XAxiDma device.
+  // assigning virtual address in DMA config table
+  extern XAxiDma_Config XAxiDma_ConfigTable[XPAR_XAXIDMA_NUM_INSTANCES];
+  XAxiDma_ConfigTable[XPAR_AXIDMA_0_DEVICE_ID].BaseAddr = reinterpret_cast<UINTPTR>(dmaCore);
   XAxiDma_Config *cfgPtr = XAxiDma_LookupConfig(XPAR_AXIDMA_0_DEVICE_ID);
-  if (!cfgPtr || cfgPtr->BaseAddr != XPAR_AXIDMA_0_BASEADDR) {
-    printf("\nERROR: No config found for XAxiDma %ld at addr %lx \n", XPAR_AXIDMA_0_DEVICE_ID, XPAR_AXIDMA_0_BASEADDR);
+  if (!cfgPtr || cfgPtr->BaseAddr != reinterpret_cast<UINTPTR>(dmaCore)) {
+    printf("\nERROR: No config found for XAxiDma %ld at addr %lX(virt: %lX) \n",
+           XPAR_AXIDMA_0_DEVICE_ID, ETH_SYST_BASEADDR + XPAR_AXIDMA_0_BASEADDR, size_t(dmaCore));
     exit(1);
   }
-  // assigning virtual address in DMA config 
-  cfgPtr->BaseAddr = reinterpret_cast<UINTPTR>(dmaCore);
   // XAxiDma definitions initialization
   int status = XAxiDma_CfgInitialize(&axiDma, cfgPtr);
   if (XST_SUCCESS != status) {
