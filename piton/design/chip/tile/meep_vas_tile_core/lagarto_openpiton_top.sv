@@ -720,16 +720,16 @@ datapath datapath_inst(
     .dmem_resp_nack_i           (0                              ), //TODO !
     .dmem_xcpt_ma_st_i          (0                              ), //TODO !
     .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
-    .dmem_xcpt_pf_st_i          (dtlb_miss_st                   ), 
-    .dmem_xcpt_pf_ld_i          (dtlb_miss_ld                   ),
+    .dmem_xcpt_pf_st_i          (dtlb_miss_st                   ), //TODO !
+    .dmem_xcpt_pf_ld_i          (dtlb_miss_ld                   ), //TODO !
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     .dmem_resp_gnt_ld_i         (dcache_ld_data_gnt             ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
-assign dtlb_miss_st = dtlb_miss & lsu_store;
-assign dtlb_miss_ld = dtlb_miss & (!lsu_store);
+assign dtlb_miss_st = 0;//dtlb_miss & lsu_store;
+assign dtlb_miss_ld = 0;//dtlb_miss & (!lsu_store);
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
