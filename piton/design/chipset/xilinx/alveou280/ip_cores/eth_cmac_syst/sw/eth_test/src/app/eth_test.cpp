@@ -65,8 +65,8 @@ int main(int argc, char *argv[])
                                                  XPAR_AXI_DMA_0_S2MM_BURST_SIZE),
         CPU_PACKET_LEN   = ETH_WORD_SIZE * 8, // the parameter to play with
         CPU_PACKET_WORDS = (CPU_PACKET_LEN + ETH_WORD_SIZE - 1) / ETH_WORD_SIZE,
-        DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
-        ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
+        DMA_PACKET_LEN   = txrxMemSize/4,     //  - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
+        ETH_PACKET_LEN   = ETH_WORD_SIZE*128, //  - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
                                                                  // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN > DMA_AXI_BURST/2  ? ((ETH_PACKET_LEN + DMA_AXI_BURST-1) / DMA_AXI_BURST) * DMA_AXI_BURST :
                            ETH_PACKET_LEN > DMA_AXI_BURST/4  ? DMA_AXI_BURST/2  :
@@ -154,8 +154,8 @@ int main(int argc, char *argv[])
                              ethSyst.rxBdCount));
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes \n",
                     packets, DMA_PACKET_LEN, txrxMemSize);
-        size_t dmaTxMemPtr = size_t(ethSyst.txMem);
-        size_t dmaRxMemPtr = size_t(ethSyst.rxMem);
+        size_t dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
+        size_t dmaRxMemPtr = size_t(ethSyst.RX_DMA_MEM_ADDR);
         if (XAxiDma_HasSg(&ethSyst.axiDma)) {
           XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, DMA_PACKET_LEN, DMA_PACKET_LEN, dmaRxMemPtr); // Rx
           XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, DMA_PACKET_LEN, DMA_PACKET_LEN, dmaTxMemPtr); // Tx
@@ -225,8 +225,8 @@ int main(int argc, char *argv[])
         size_t txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
-        dmaTxMemPtr = size_t(ethSyst.txMem);
-        dmaRxMemPtr = size_t(ethSyst.rxMem);
+        dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
+        dmaRxMemPtr = size_t(ethSyst.RX_DMA_MEM_ADDR);
         if (XAxiDma_HasSg(&ethSyst.axiDma)) {
           XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaRxMemPtr); // Rx
           XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaTxMemPtr); // Tx
@@ -299,6 +299,7 @@ int main(int argc, char *argv[])
         if (confirm != 'y') break;
 
         ethSyst.ethCoreInit(false);
+        for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMem[addr] = 0; //resetting BD memory to flush its cashe
         ethSyst.axiDmaInit();
 
         printf("------- Async DMA 2-boards communication test -------\n");
@@ -320,13 +321,13 @@ int main(int argc, char *argv[])
         size_t txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
-        size_t dmaTxMemPtr = size_t(ethSyst.txMem);
-        size_t dmaRxMemPtr = size_t(ethSyst.rxMem);
+        size_t dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
+        size_t dmaRxMemPtr = size_t(ethSyst.RX_DMA_MEM_ADDR);
         if (XAxiDma_HasSg(&ethSyst.axiDma)) {
           XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaRxMemPtr); // Rx
           XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaTxMemPtr); // Tx
           ethSyst.dmaBDTransfer                   (true,  packets, packets,        rxBdPtr); // Rx
-          sleep(1); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
+          sleep(3); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
           ethSyst.dmaBDTransfer                   (false, packets, txBunch,        txBdPtr); // Tx, each packet kick-off for big packets
           txBdPtr             = ethSyst.dmaBDPoll (false, packets); // Tx
           rxBdPtr             = ethSyst.dmaBDPoll (true,  packets); // Rx
@@ -403,15 +404,15 @@ int main(int argc, char *argv[])
         txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
-        dmaTxMemPtr = size_t(ethSyst.txMem);
-        dmaRxMemPtr = size_t(ethSyst.rxMem);
+        dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
+        dmaRxMemPtr = size_t(ethSyst.RX_DMA_MEM_ADDR);
         if (XAxiDma_HasSg(&ethSyst.axiDma)) {
           XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaRxMemPtr); // Rx
           XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_PACKET_LEN, ETH_MEMPACK_SIZE, dmaTxMemPtr); // Tx
           ethSyst.dmaBDTransfer                   (true,  packets, packets,        rxBdPtr); // Rx
           if (ethSyst.physConnOrder) { // depending on board instance play "initiator" role
             printf("Initiator side: starting the transfer and receiving it back \n");
-            sleep(1); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
+            sleep(3); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
             ethSyst.dmaBDTransfer                 (false, packets, txBunch,        txBdPtr); // Tx, each packet kick-off for big packets
             txBdPtr           = ethSyst.dmaBDPoll (false, packets); // Tx
             rxBdPtr           = ethSyst.dmaBDPoll (true,  packets); // Rx

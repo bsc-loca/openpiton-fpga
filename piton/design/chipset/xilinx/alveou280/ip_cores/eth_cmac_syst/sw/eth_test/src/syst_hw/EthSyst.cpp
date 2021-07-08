@@ -84,12 +84,16 @@ EthSyst::EthSyst() {
 
 }
 
+// EthSyst::~EthSyst() {
+//   munmap(ethSystBase, ETH_SYST_ADRRANGE);
+// }
+
 
 //***************** Initialization of 100Gb Ethernet Core *****************
 void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("------- Initializing Ethernet Core -------\n");
   // GT control via pins 
-  uint32_t* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
+  uint32_t volatile* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
   enum { GT_CTRL = XGPIO_DATA_OFFSET / sizeof(uint32_t) };
   enum { ETH_FULL_RST_ASSERT = RESET_REG_USR_RX_SERDES_RESET_MASK |
                                RESET_REG_USR_RX_RESET_MASK        |
@@ -245,7 +249,7 @@ void EthSyst::ethTxRxDisable() {
 void EthSyst::timerCntInit() {
   // AXI Timer direct control: http://www.xilinx.com/support/documentation/ip_documentation/axi_timer/v2_0/pg079-axi-timer.pdf
   printf("------- Initializing Timer -------\n");
-  uint32_t* tmrCore = ethSystBase + (XPAR_TMRCTR_0_BASEADDR / sizeof(uint32_t));
+  uint32_t volatile* tmrCore = ethSystBase + (XPAR_TMRCTR_0_BASEADDR / sizeof(uint32_t));
   // Controlling Timer via Xilinx driver.
   // assigning virtual address in Timer config table
   extern XTmrCtr_Config XTmrCtr_ConfigTable[XPAR_XTMRCTR_NUM_INSTANCES];
@@ -273,7 +277,7 @@ void EthSyst::timerCntInit() {
 void EthSyst::axiDmaInit() {
   printf("------- Initializing DMA -------\n");
   // AXI DMA direct control: http://www.xilinx.com/support/documentation/ip_documentation/axi_dma/v7_1/pg021_axi_dma.pdf
-  uint32_t* dmaCore = ethSystBase + (XPAR_AXIDMA_0_BASEADDR / sizeof(uint32_t));
+  uint32_t volatile* dmaCore = ethSystBase + (XPAR_AXIDMA_0_BASEADDR / sizeof(uint32_t));
   enum {
     MM2S_DMACR = (XAXIDMA_CR_OFFSET + XAXIDMA_TX_OFFSET) / sizeof(uint32_t),
     MM2S_DMASR = (XAXIDMA_SR_OFFSET + XAXIDMA_TX_OFFSET) / sizeof(uint32_t),
@@ -319,7 +323,7 @@ void EthSyst::axiDmaInit() {
   printf("XAxiDma is initialized and reset: \n");
   printf("HasSg       = %d  \n", axiDma.HasSg);
   printf("Initialized = %d  \n", axiDma.Initialized);
-  if (1) {
+  if (0) {
     printf("RegBase                  = %lX \n", axiDma.RegBase);
     printf("HasMm2S                  = %d  \n", axiDma.HasMm2S);
     printf("HasS2Mm                  = %d  \n", axiDma.HasS2Mm);
@@ -357,13 +361,18 @@ void EthSyst::dmaBDSetup(bool RxnTx)
 	XAxiDma_BdRing* BdRingPtr = RxnTx ? XAxiDma_GetRxRing(&axiDma) :
 	                                    XAxiDma_GetTxRing(&axiDma);
 
-	// Disable all TX/RX interrupts before BD space setup
-	XAxiDma_BdRingIntDisable(BdRingPtr, XAXIDMA_IRQ_ALL_MASK);
+  // Disable all TX/RX interrupts before BD space setup
+  XAxiDma_BdRingIntDisable(BdRingPtr, XAXIDMA_IRQ_ALL_MASK);
 
-	// Set delay and coalesce
-	int const Coalesce = 1;
-	int const Delay    = 0;
-	XAxiDma_BdRingSetCoalesce(BdRingPtr, Coalesce, Delay);
+  // Set delay and coalesce
+  int const CoalesCount = 1;
+  int const CoalesDelay = 0;
+  int Status = XAxiDma_BdRingSetCoalesce(BdRingPtr, CoalesCount, CoalesDelay);
+  if (Status != XST_SUCCESS) {
+    printf("\nERROR while setting interrupt coalescing parameters for BD ring(RxnTx=%d): packet counter %d, timer delay %d\r\n",
+           RxnTx, CoalesCount, CoalesDelay);
+    exit(1);
+  }
 
   // Setup BD space
   size_t const sgMemVirtAddr = reinterpret_cast<size_t>(RxnTx ? sgRxMem        : sgTxMem);
@@ -371,13 +380,13 @@ void EthSyst::dmaBDSetup(bool RxnTx)
   size_t const sgMemSize     =                          RxnTx ? RX_SG_MEM_SIZE : TX_SG_MEM_SIZE;
 
 	uint32_t BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT, sgMemSize);
-	int Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
+	Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
 	if (Status != XST_SUCCESS) {
       printf("\nERROR: RxnTx=%d, Creation of BD ring with %d BDs at addr %lX(virt: %lX) failed with status %d\r\n",
 	           RxnTx, BdCount, sgMemPhysAddr, sgMemVirtAddr, Status);
       exit(1);
 	}
-  printf("RxnTx=%d, DMA BD memory size %lx at addr %lX(virt: %lX), BD ring with %d BDs created \n",
+  printf("RxnTx=%d, DMA BD memory size %ld at addr 0x%lX(virt: %lX), BD ring with %d BDs created \n",
           RxnTx, sgMemSize, sgMemPhysAddr, sgMemVirtAddr, BdCount);
 	if (RxnTx) rxBdCount = BdCount;
 	else       txBdCount = BdCount;
@@ -418,11 +427,12 @@ XAxiDma_Bd* EthSyst::dmaBDAlloc(bool RxnTx, size_t packets, size_t packLen, size
 	XAxiDma_Bd* BdPtr;
 	int Status = XAxiDma_BdRingAlloc(BdRingPtr, packets, &BdPtr);
 	if (Status != XST_SUCCESS) {
-      printf("\nERROR: RxnTx=%d, Allocation of BD ring with %ld BDs failed with status %d\r\n", RxnTx, packets, Status);
+      printf("\nERROR: RxnTx=%d, Allocation of %ld BDs failed with status %d\r\n", RxnTx, packets, Status);
       exit(1);
 	}
 	freeBdCount = XAxiDma_BdRingGetFreeCnt(BdRingPtr);
-    if (packets > 1) printf("RxnTx=%d, DMA in SG mode: %d free BDs are available after BDs allocation \n", RxnTx, freeBdCount);
+  if (packets > 1) printf("RxnTx=%d, DMA in SG mode: %ld BDs are allocated at addr %lX, %d BDs are still free. \n",
+                           RxnTx, packets, size_t(BdPtr), freeBdCount);
 
 
 	XAxiDma_Bd* CurBdPtr = BdPtr;
@@ -482,7 +492,7 @@ void EthSyst::dmaBDTransfer(bool RxnTx, size_t packets, size_t bunchSize, XAxiDm
     for (packet = 0; packet < packets; packet++) {
       Status = XAxiDma_BdRingToHw(BdRingPtr, 1, CurBdPtr);
       if (Status != XST_SUCCESS) break;
-      // (XAxiDma_Bd*)XAxiDma_BdRingNext(BdRingPtr, CurBdPtr);
+      // CurBdPtr = (XAxiDma_Bd*)XAxiDma_BdRingNext(BdRingPtr, CurBdPtr);
       CurBdPtr = (XAxiDma_Bd*)((UINTPTR)CurBdPtr + (BdRingPtr->Separation));
     }
   else
@@ -513,7 +523,7 @@ XAxiDma_Bd* EthSyst::dmaBDPoll(bool RxnTx, size_t packets)
       XAxiDma_Bd* CurBdPtr;
       ProcessedBdCount += XAxiDma_BdRingFromHw(BdRingPtr, XAXIDMA_ALL_BDS, &CurBdPtr);
       if (ProcessedBdCount && !BdPtr) BdPtr = CurBdPtr;
-      // printf("RxnTx=%d, Waiting untill %d BD transfers finish: %ld BDs processed from BD %x \n",
+      // printf("RxnTx=%d, Waiting untill %ld BD transfers finish: %d BDs processed from BD %lx \n",
       //             RxnTx, packets, ProcessedBdCount, size_t(CurBdPtr));
       // sleep(1); // in seconds, user wait process
 	}
@@ -543,15 +553,15 @@ void EthSyst::dmaBDFree(bool RxnTx, size_t packets, size_t packCheckLen, XAxiDma
     }
   }
 
-	// Free all processed BDs for future transfers
+  // Free all processed BDs for future transfers
   int status = XAxiDma_BdRingFree(BdRingPtr, packets, BdPtr);
   if (status != XST_SUCCESS) {
     printf("\nERROR: RxnTx=%d, Failed to free %ld BDs with status %d \r\n", RxnTx, packets, status);
     exit(1);
-	}
-	uint32_t freeBdCount = XAxiDma_BdRingGetFreeCnt(BdRingPtr);
-  printf("RxnTx=%d, DMA in SG mode: %ld BD transfers are waited up, %d free BDs are available after their release \n",
-              RxnTx, packets, freeBdCount);
+  }
+  uint32_t freeBdCount = XAxiDma_BdRingGetFreeCnt(BdRingPtr);
+  printf("RxnTx=%d, DMA in SG mode: %ld BD transfers are waited up, %d free BDs at addr %lX after their release \n",
+          RxnTx, packets, freeBdCount, size_t(BdPtr));
 }
 
 
@@ -582,8 +592,8 @@ uint32_t EthSyst::dmaBDCheck(bool RxnTx)
 //***************** AXI-Stream Switches control *****************
 void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
   // AXIS switches control: http://www.xilinx.com/support/documentation/ip_documentation/axis_infrastructure_ip_suite/v1_1/pg085-axi4stream-infrastructure.pdf#page=27
-  uint32_t* strSwitch = txNrx ? ethSystBase + (TX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t)) :
-                                ethSystBase + (RX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t));
+  uint32_t volatile* strSwitch = txNrx ? ethSystBase + (TX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t)) :
+                                         ethSystBase + (RX_AXIS_SWITCH_BASEADDR / sizeof(uint32_t));
   enum {SW_CTR = XAXIS_SCR_CTRL_OFFSET         / sizeof(uint32_t),
         MI_MUX = XAXIS_SCR_MI_MUX_START_OFFSET / sizeof(uint32_t)
        };

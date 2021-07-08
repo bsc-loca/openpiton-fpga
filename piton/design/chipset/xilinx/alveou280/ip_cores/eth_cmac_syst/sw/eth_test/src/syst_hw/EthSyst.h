@@ -201,8 +201,8 @@
 
 /**************************** Type Definitions *******************************/
 class EthSyst {
-  uint32_t* ethSystBase; // Whole Ethernet system base address
-  uint32_t* ethCore;     // Ethernet core base address
+  uint32_t volatile* ethSystBase; // Whole Ethernet system base address
+  uint32_t volatile* ethCore;     // Ethernet core base address
   //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
@@ -217,7 +217,7 @@ class EthSyst {
     GT_LOOPBACK_REG       = GT_LOOPBACK_REG_OFFSET       / sizeof(uint32_t)
   };
   // Ethernet core control via pins
-  uint32_t* rxtxCtrl;
+  uint32_t volatile* rxtxCtrl;
   enum {
     TX_CTRL = XGPIO_DATA_OFFSET  / sizeof(uint32_t),
     RX_CTRL = XGPIO_DATA2_OFFSET / sizeof(uint32_t)
@@ -237,16 +237,19 @@ class EthSyst {
   enum {
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
-    TX_SG_MEM_ADDR = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,                  // physical addresss
-    TX_SG_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
-    RX_SG_MEM_ADDR = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE, // physical addresss
-    RX_SG_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2
+    // DMA physical addresses, DMA doesn't see CPU address space, just own memories, so full address is not needed
+    TX_DMA_MEM_ADDR = 0, // ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_DMA_MEM_ADDR = 0, // ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
+    TX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
+    RX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
+    TX_SG_MEM_ADDR  = 0,              //   ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
+    RX_SG_MEM_ADDR  = TX_SG_MEM_SIZE, // + ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
   };
-  uint32_t* txMem; // Tx mem base address
-  uint32_t* rxMem; // Rx mem base address
-  uint32_t* sgMem; // SG mem base address
-  uint32_t* sgTxMem; // Tx SG mem base address
-  uint32_t* sgRxMem; // Rx SG mem base address
+  uint32_t volatile* txMem;   // Tx mem base address
+  uint32_t volatile* rxMem;   // Rx mem base address
+  uint32_t volatile* sgMem;   // SG mem base address
+  uint32_t volatile* sgTxMem; // Tx SG mem base address
+  uint32_t volatile* sgRxMem; // Rx SG mem base address
 
   size_t txBdCount = 0;
   size_t rxBdCount = 0;
@@ -256,6 +259,7 @@ class EthSyst {
   enum {PHYS_CONN_WAIT_INI = 2};
 
   EthSyst();
+  // ~EthSyst();
   void ethCoreInit(bool);
   void ethTxRxEnable();
   void ethTxRxDisable();
