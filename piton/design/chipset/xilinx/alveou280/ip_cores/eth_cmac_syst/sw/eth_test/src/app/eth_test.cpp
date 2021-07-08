@@ -268,6 +268,14 @@ int main(int argc, char *argv[])
               exit(1);
             }
           }
+          else if (word == ETH_PACKET_LEN/sizeof(uint32_t)) {
+            uint32_t expectVal = ethSyst.txMem[addr] & ((1<<(8*(ETH_PACKET_LEN%sizeof(uint32_t))))-1);
+            if (ethSyst.rxMem[addr] != expectVal) {
+              printf("\nERROR: Incorrect data transferred by DMA in last 32-bit word %ld of packet %ld at addr %ld: %0X, expected: %0X \n",
+                          word, packet, addr, ethSyst.rxMem[addr], expectVal);
+              exit(1);
+            }
+          }
           else if (ethSyst.rxMem[addr] != 0) {
               printf("\nERROR: Data in 32-bit word %ld of packet %ld overwrite stored zero at addr %ld: %0X \n",
                          word, packet, addr, ethSyst.rxMem[addr]);
@@ -367,6 +375,14 @@ int main(int argc, char *argv[])
               exit(1);
             }
           }
+          else if (word == ETH_PACKET_LEN/sizeof(uint32_t)) {
+            uint32_t expectVal = ethSyst.txMem[addr] & ((1<<(8*(ETH_PACKET_LEN%sizeof(uint32_t))))-1);
+            if (ethSyst.rxMem[addr] != expectVal) {
+              printf("\nERROR: Incorrect data transferred by DMA in last 32-bit word %ld of packet %ld at addr %ld: %0X, expected: %0X \n",
+                          word, packet, addr, ethSyst.rxMem[addr], expectVal);
+              exit(1);
+            }
+          }
           else if (ethSyst.rxMem[addr] != 0) {
               printf("\nERROR: Data in 32-bit word %ld of packet %ld overwrite stored zero at addr %ld: %0X \n",
                           word, packet, addr, ethSyst.rxMem[addr]);
@@ -457,6 +473,14 @@ int main(int argc, char *argv[])
             if (ethSyst.rxMem[addr] != ethSyst.txMem[addr]) {
               printf("\nERROR: Incorrect data transferred by DMA in 32-bit word %ld of packet %ld at addr %ld: %0X, expected: %0X \n",
                           word, packet, addr, ethSyst.rxMem[addr], ethSyst.txMem[addr]);
+              exit(1);
+            }
+          }
+          else if (word == ETH_PACKET_LEN/sizeof(uint32_t)) {
+            uint32_t expectVal = ethSyst.txMem[addr] & ((1<<(8*(ETH_PACKET_LEN%sizeof(uint32_t))))-1);
+            if (ethSyst.rxMem[addr] != expectVal) {
+              printf("\nERROR: Incorrect data transferred by DMA in last 32-bit word %ld of packet %ld at addr %ld: %0X, expected: %0X \n",
+                          word, packet, addr, ethSyst.rxMem[addr], expectVal);
               exit(1);
             }
           }
