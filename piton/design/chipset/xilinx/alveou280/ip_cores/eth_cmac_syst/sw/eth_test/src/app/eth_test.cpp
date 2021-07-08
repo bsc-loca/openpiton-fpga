@@ -63,10 +63,8 @@ int main(int argc, char *argv[])
   enum {ETH_WORD_SIZE = ETH_DMA_AXIS_WIDTH / 8,
         DMA_AXI_BURST = ETH_WORD_SIZE * std::max(XPAR_AXI_DMA_0_MM2S_BURST_SIZE, // the parameter set in Vivado AXI_DMA IP
                                                  XPAR_AXI_DMA_0_S2MM_BURST_SIZE),
-        CPU_PACKET_LEN   = ETH_WORD_SIZE * 8, // the parameter to play with
-        CPU_PACKET_WORDS = (CPU_PACKET_LEN + ETH_WORD_SIZE - 1) / ETH_WORD_SIZE,
-        DMA_PACKET_LEN   = txrxMemSize/4,     //  - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
-        ETH_PACKET_LEN   = ETH_WORD_SIZE*128, //  - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
+        DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
+        ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
                                                                  // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN > DMA_AXI_BURST/2  ? ((ETH_PACKET_LEN + DMA_AXI_BURST-1) / DMA_AXI_BURST) * DMA_AXI_BURST :
                            ETH_PACKET_LEN > DMA_AXI_BURST/4  ? DMA_AXI_BURST/2  :
@@ -74,12 +72,6 @@ int main(int argc, char *argv[])
                            ETH_PACKET_LEN > DMA_AXI_BURST/16 ? DMA_AXI_BURST/8  :
                            ETH_PACKET_LEN > DMA_AXI_BURST/32 ? DMA_AXI_BURST/16 : ETH_PACKET_LEN
         // ETH_PACKET_DECR = 7*sizeof(uint32_t) // optional length decrement for some packets for test purposes
-  };
-  enum { // hardware defined depths of channels
-        SHORT_LOOPBACK_DEPTH  = 104,
-        TRANSMIT_FIFO_DEPTH   = 40,
-        DMA_TX_LOOPBACK_DEPTH = CPU_PACKET_WORDS==1 ? 95 : 96,
-        DMA_RX_LOOPBACK_DEPTH = CPU_PACKET_WORDS==1 ? 43 : 40
   };
 
 
@@ -495,13 +487,13 @@ int main(int argc, char *argv[])
         while (true) {
           ethSyst.ethSystInit(); // resetting hardware before any test
           printf("\n------- Please choose particular IP-based test:\n");
-          printf("  Ping reply test:      p\n");
-          printf("  Ping request test:    q\n");
-          printf("  LwIP UDP Perf Server: u\n");
-          printf("  LwIP UDP Perf Client: d\n");
-          printf("  LwIP TCP Perf Server: t\n");
-          printf("  LwIP TCP Perf Client: c\n");
-          printf("  Exit to main menu:    e\n");
+          printf("  Ping reply   test:       p\n");
+          printf("  Ping request test:       q\n");
+          printf("  LwIP UDP Server (empty): u\n");
+          printf("  LwIP UDP Client (empty): d\n");
+          printf("  LwIP TCP Server (empty): t\n");
+          printf("  LwIP TCP Client (empty): c\n");
+          printf("  Exit to main menu:       e\n");
           char choice;
           scanf("%s", &choice);
           printf("You have entered: %c\n\n", choice);
