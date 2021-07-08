@@ -628,6 +628,8 @@ void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
 //***************** Initialization of Full Ethernet System *****************
 void EthSyst::ethSystInit() {
   timerCntInit();
+  //resetting BD memory to flush its cashe before BD ring initialization
+  for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
   axiDmaInit();
   switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
   switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
@@ -642,21 +644,21 @@ int EthSyst::flushReceive() {
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
 	  uint32_t rxdBDs = 0;
 	  do {
-        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, size_t(rxMem));
+        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
         dmaBDTransfer(true, 1, 1, BdPtr);
         rxdBDs = dmaBDCheck(true);
         printf("Flushing %d Rx transfers \n", rxdBDs);
 	  } while (rxdBDs != 0);
   } else // in simple mode
     while ((XAxiDma_ReadReg(axiDma.RxBdRing[0].ChanBase, XAXIDMA_SR_OFFSET) & XAXIDMA_HALTED_MASK) ||
-	       !XAxiDma_Busy   (&axiDma, XAXIDMA_DEVICE_TO_DMA)) {
-      int status = XAxiDma_SimpleTransfer(&axiDma, size_t(rxMem), XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+           !XAxiDma_Busy  (&axiDma, XAXIDMA_DEVICE_TO_DMA)) {
+      int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
       if (XST_SUCCESS != status) {
-        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr %0lX with max lenth %d failed with status %d\n",
-                   size_t(rxMem), XAE_MAX_FRAME_SIZE, status);
+        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
+                RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
         return status;
       }
-	  printf("Flushing Rx data... \n");
+      printf("Flushing Rx data... \n");
     }
 
   return XST_SUCCESS;
@@ -873,14 +875,14 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 	 */
     ByteCount = std::max((unsigned)ETH_MIN_PACK_SIZE, std::min(ByteCount, (unsigned)XAE_MAX_TX_FRAME_SIZE));
     if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, size_t(txMem));
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, TX_DMA_MEM_ADDR);
       dmaBDTransfer(false, 1, 1, BdPtr);
 	    return XST_SUCCESS;
     } else { // in simple mode
-      int status = XAxiDma_SimpleTransfer(&axiDma, size_t(txMem), ByteCount, XAXIDMA_DMA_TO_DEVICE);
+      int status = XAxiDma_SimpleTransfer(&axiDma, TX_DMA_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
       if (XST_SUCCESS != status) {
-         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr %0lX with lenth %d failed with status %d\n",
-                size_t(txMem), ByteCount, status);
+         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%X with lenth %d failed with status %d\n",
+                TX_DMA_MEM_ADDR, ByteCount, status);
       }
 	  return status;
 	}
@@ -1126,20 +1128,17 @@ uint16_t EthSyst::frameRecv(uint8_t* FramePtr)
 
 	alignedRead(FramePtr, Length);
 
-	/*
-	 * Acknowledge the frame.
-	 */
+  // Acknowledge the frame.
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, size_t(rxMem));
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
       dmaBDTransfer(true, 1, 1, BdPtr);
+  } else { // in simple mode
+    int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+    if (XST_SUCCESS != status) {
+      printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
+             RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
+    }
   }
-	else { // in simple mode
-	  int status = XAxiDma_SimpleTransfer(&axiDma, size_t(rxMem), XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
-      if (XST_SUCCESS != status) {
-        printf("\nERROR: Ethernet XAxiDma Rx transfer to addr %0lX with max lenth %d failed with status %d\n",
-		       size_t(rxMem), XAE_MAX_FRAME_SIZE, status);
-	  }
-	}
 
-	return Length;
+  return Length;
 }
