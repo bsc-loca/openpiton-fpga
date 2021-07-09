@@ -142,7 +142,8 @@ before_script:
   #- export IMPERASD_LICENSE_FILE=2700@eda03.bsc.es
   #- export LM_LICENSE_FILE=$LM_LICENSE_FILE:$IMPERASD_LICENSE_FILE
   # piton setup
-  - . ./piton/piton_settings.bash
+  #- . ./piton/piton_settings.bash
+  - . ./piton/lagarto_setup.sh
   # setup python
   - export PITON_ROOT=`pwd`
   - export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/meep_vas_tile_core/
@@ -161,7 +162,6 @@ before_script:
 
 # source OpenPiton setup script
 # note: customize this script to reflect your tool setup
-  - . ./piton/piton_settings.bash
   - export RISCV=/home/tools/openpiton/riscv_install
   - export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
   - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
