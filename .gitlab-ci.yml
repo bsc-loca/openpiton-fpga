@@ -225,17 +225,18 @@ build:msm-torture:
 
 ##############################################################33333
 
-#test:tile1_asm_tests_p:
-#  stage: lagarto
-#  dependencies: 
-#    - build:msm-torture
-#  tags: 
-#    - test
-#  script:
-#    - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
-#    - "cd 2*"
-#    - "regreport . -summary | tee regress.log"
-#    - "grep 'REGRESSION PASSED' regress.log"
+test:tile1_asm_tests_p:
+  stage: lagarto
+  dependencies: 
+    - build:msm-torture
+  tags: 
+    - test
+  script:
+    - . piton/lagarto_setup.sh
+    - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
     
 test:rv64ui-v-add:
   stage: lagarto
