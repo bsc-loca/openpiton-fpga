@@ -399,10 +399,10 @@ always_comb begin
     else                                            resp_dcache_cpu_o.lock <= req_cpu_dcache_i.valid;
 end
 // Fill exceptions for exe stage
-assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_reg;
-assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_reg;
-assign resp_dcache_cpu_o.xcpt_pf_st = dmem_xcpt_pf_st_reg;
-assign resp_dcache_cpu_o.xcpt_pf_ld = dmem_xcpt_pf_ld_reg;
+assign resp_dcache_cpu_o.xcpt_ma_st = dmem_xcpt_ma_st_i;
+assign resp_dcache_cpu_o.xcpt_ma_ld = dmem_xcpt_ma_ld_i;
+assign resp_dcache_cpu_o.xcpt_pf_st = dmem_xcpt_pf_st_i;
+assign resp_dcache_cpu_o.xcpt_pf_ld = dmem_xcpt_pf_ld_i;
 
 assign resp_dcache_cpu_o.addr       = dmem_req_addr_reg;
 

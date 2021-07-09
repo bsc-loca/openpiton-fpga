@@ -684,7 +684,7 @@ datapath datapath_inst(
     .rstn_i                     (rstn_i                         ),
     .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
     .dtlb_hit_i                 (lsu_dtlb_hit                   ),
-    .dtlb_valid_i               (lsu_dtlb_valid                 ),
+    .dtlb_valid_i               (lsu_dtlb_valid & !(lsu_dtlb_exception.valid)),
     .paddr_i                    (lsu_paddr                      ),
     .mmu_req_o                  (lsu_req                        ),
     .mmu_vaddr_o                (lsu_vaddr                      ),
@@ -728,8 +728,8 @@ datapath datapath_inst(
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
-assign dtlb_miss_st = 0;//dtlb_miss & lsu_store;
-assign dtlb_miss_ld = 0;//dtlb_miss & (!lsu_store);
+assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store;//dtlb_miss & lsu_store;
+assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store);//dtlb_miss & (!lsu_store);
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
