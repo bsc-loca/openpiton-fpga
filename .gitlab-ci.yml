@@ -238,19 +238,23 @@ test:tile1_asm_tests_p:
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-    
-test:rv64ui-v-add:
-  stage: lagarto
-  dependencies: 
-    - build:msm-torture
-  tags: 
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
-    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
-    - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
+
+#test:rv64ui-v-add:
+#  stage: lagarto
+#  dependencies: 
+#    - build:msm-torture
+#  tags: 
+#    - test
+#  script:
+#    - . piton/lagarto_setup.sh
+#    - cd build
+#    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+#    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
+#    - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
+
+
+
+
 
 #test:rv64ui-v-add1:
 #  stage: lagarto
