@@ -684,7 +684,7 @@ datapath datapath_inst(
     .rstn_i                     (rstn_i                         ),
     .req_cpu_dcache_i           (req_datapath_dcache_interface  ),
     .dtlb_hit_i                 (lsu_dtlb_hit                   ),
-    .dtlb_valid_i               (lsu_dtlb_valid & !(lsu_dtlb_exception.valid)),
+    .dtlb_valid_i               (lsu_dtlb_valid                 ),
     .paddr_i                    (lsu_paddr                      ),
     .mmu_req_o                  (lsu_req                        ),
     .mmu_vaddr_o                (lsu_vaddr                      ),
@@ -720,16 +720,16 @@ datapath datapath_inst(
     .dmem_resp_nack_i           (0                              ), //TODO !
     .dmem_xcpt_ma_st_i          (0                              ), //TODO !
     .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
-    .dmem_xcpt_pf_st_i          (dtlb_miss_st                   ), //TODO !
-    .dmem_xcpt_pf_ld_i          (dtlb_miss_ld                   ), //TODO !
+    .dmem_xcpt_pf_st_i          (dtlb_miss_st                   ), 
+    .dmem_xcpt_pf_ld_i          (dtlb_miss_ld                   ), 
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     .dmem_resp_gnt_ld_i         (dcache_ld_data_gnt             ),
     // Response towards Lagarto
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
-assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store;//dtlb_miss & lsu_store;
-assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store);//dtlb_miss & (!lsu_store);
+assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store & lsu_req;
+assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store) & lsu_req;
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
