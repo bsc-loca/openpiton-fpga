@@ -190,8 +190,6 @@ tools:build:
     - test
   stage: tools
   script:
-    #- mkdir -p piton/design/chip/tile/ariane
-    #- . piton/ariane_build_tools.sh
     - . piton/lagarto_setup.sh
   artifacts:
     paths:
@@ -212,7 +210,7 @@ build:msm-lagarto:
     - tools:build
   script:
     - cd build
-    - ../piton/tools/bin/sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     - "grep 'Errors: 0' sims.log"
 
 build:msm-torture:
@@ -223,7 +221,7 @@ build:msm-torture:
     - tools:build
   script:
     - cd build
-    - ../piton/tools/bin/sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
     - "grep 'Errors: 0' sims.log"
 
 ##############################################################33333
@@ -236,7 +234,7 @@ test:rv64ui-v-add:
     - test
   script:
     - cd build
-    - ../piton/tools/bin/sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
+    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
@@ -249,7 +247,7 @@ test:rv64ui-v-add1:
     - test
   script:
     - cd build
-    - ../piton/tools/bin/sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add1.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
+    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add1.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
