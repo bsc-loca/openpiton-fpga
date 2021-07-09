@@ -233,6 +233,7 @@ test:tile1_asm_tests_p:
     - test
   script:
     - . piton/lagarto_setup.sh
+    - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
