@@ -225,6 +225,15 @@ build:msm-torture:
 
 ##############################################################33333
 
+tile1_asm_tests_p:
+  stage: ariane
+  script:
+    - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    
+    
 test:rv64ui-v-add:
   stage: lagarto
   dependencies: 
