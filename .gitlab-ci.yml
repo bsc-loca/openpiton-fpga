@@ -142,8 +142,7 @@ before_script:
   #- export IMPERASD_LICENSE_FILE=2700@eda03.bsc.es
   #- export LM_LICENSE_FILE=$LM_LICENSE_FILE:$IMPERASD_LICENSE_FILE
   # piton setup
-  #- . ./piton/piton_settings.bash
-  - . ./piton/lagarto_setup.sh
+  - . ./piton/piton_settings.bash
   # setup python
   - export PITON_ROOT=`pwd`
   - export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/meep_vas_tile_core/
@@ -233,6 +232,7 @@ test:rv64ui-v-add:
   tags: 
     - test
   script:
+    - . piton/lagarto_setup.sh
     - cd build
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
     - "cd 2*"
