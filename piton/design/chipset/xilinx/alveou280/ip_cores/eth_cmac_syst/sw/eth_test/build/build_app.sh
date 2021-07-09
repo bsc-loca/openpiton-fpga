@@ -45,4 +45,4 @@ echo "Riscv to Host:"
 echo "riscv_$   send-file <filename>            # the file is copied to the intermediate memory"
 echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above step"
 
-./send-file ./eth_test
+# ./send-file ./eth_test
