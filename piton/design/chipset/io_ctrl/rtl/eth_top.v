@@ -275,7 +275,6 @@ IOBUF u_iobuf_dq (
 wire [2:0] net_s_axi_arprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} read  access by default
 wire [2:0] net_s_axi_awprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} write access by default
 wire [1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
-assign unsync_net_int = net_cmac_intc[1]; // connecting receive event so far 
 Eth_CMAC_syst eth_cmac_syst (
   .s_axi_clk        (net_axi_clk),          // input wire s_axi_aclk
   .s_axi_resetn     (rst_n),                // input wire s_axi_aresetn
@@ -310,6 +309,14 @@ Eth_CMAC_syst eth_cmac_syst (
   .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
   .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
+
+reg net_cmac_intc_comb;
+always @(posedge net_axi_clk) begin
+  if (~rst_n) net_cmac_intc_comb <= 1'b0;
+  else        net_cmac_intc_comb <= |net_cmac_intc; // combining Tx/Rx events to single event going to NOC
+end
+assign unsync_net_int = net_cmac_intc_comb;
+
 `else // PITON_FPGA_ETH_CMAC
   // Ethernet core stub for simulation
   assign net_s_axi_awready = 1'b1;
