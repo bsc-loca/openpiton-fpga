@@ -42,6 +42,7 @@ echo "riscv_$   get-file  <filesize> <filename> # this is indicated in above ste
 echo "Riscv to Host:"
 echo "riscv_$   send-file <filename>            # the file is copied to the intermediate memory"
 echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above step"
+echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma-to-device/dma-from-device utils"
 
 sleep 2
 dma-ctl qdma08000 reg write bar 2 0x0 0x7 #Release Ariane's reset
