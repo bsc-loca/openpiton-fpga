@@ -96,7 +96,9 @@ def usage():
     print("       --config_l2_associativity  <number>", file=sys.stderr)
     print("              Cache associativities, default: 4", file=sys.stderr)
     print("\n       --bram-test <test_name>", file=sys.stderr)
-    print("              Name of the test to be mapped into BRAM", file=sys.stderr)
+    print("              Name of the test to be simulated and mapped into BRAM/DRAM", file=sys.stderr)
+    print("\n       --verdi-dbg", file=sys.stderr)
+    print("              Create Verdi compliant simulation database of test specified by --bram-test option", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
@@ -459,6 +461,7 @@ def setParserOptions(parser):
     parser.add_option("--config_l15_associativity", dest="config_l15_associativity",   action="store", default=4)
     parser.add_option("--config_l2_associativity", dest="config_l2_associativity",   action="store", default=4)
     parser.add_option("--bram-test", dest="test_name", action="store")
+    parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
@@ -524,8 +527,9 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
 
+    # Alex Kropotov: no limitation for mapping of test just to BRAM
     # --bram-test option
-    if options.test_name != None:
+    if (options.test_name != None and options.uart_dmw == None):
         defines.append("PITON_FPGA_BRAM_TEST")
         defines.append("PITONSYS_NO_MC")
 
@@ -535,6 +539,7 @@ def makeDefList(options):
     elif options.uart_dmw == "bram":
         defines.append("PITONSYS_UART_BOOT")
         defines.append("PITON_FPGA_BRAM_TEST")
+        defines.append("PITONSYS_NO_MC")
 
     if options.uart_reset == True:
         defines.append("PITONSYS_UART_RESET")
@@ -588,7 +593,13 @@ def makeDefList(options):
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo
         if options.board == "genesys2" or options.board == "nexysVideo":
+            defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
+        # Ethernet controller is also supported on Alveo-U280
+        elif options.board == "alveou280":
+          if options.eth:
+            defines.append("PITON_FPGA_ETH")
+            defines.append("PITON_FPGA_ETH_CMAC")
         else:
             print_info("--eth option is ignored for %s" % options.board)
 
@@ -845,6 +856,24 @@ def main():
         if options.core == 'ariane':
             config += ' -ariane'
 
+        # Alex Kropotov: passing board and ethernet option to simulation
+        if options.board:
+            config += ' -board=' + options.board
+
+        if options.eth:
+            config += ' -eth'
+
+        if options.uart_dmw:
+            config += ' -uart_dmw'
+
+        if options.verdi_dbg:
+            config += ' -vcs_build_args=+vcs+fsdbon'                + \
+                      ' -vcs_build_args=-kdb'                       + \
+                      ' -vcs_build_args=-debug_access+all'          + \
+                      ' -vcs_build_args=-debug_region=cell+encrypt' + \
+                      ' -vcs_build_args=-LDFLAGS'                   + \
+                      ' -vcs_build_args=-Wl,--no-as-needed'
+
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
         ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
@@ -872,7 +901,8 @@ def main():
     ###################################
 
     if run_map_test:
-        if options.test_name != None:
+        # Alex Kropotov: no limitation for mapping of test just to BRAM
+        if (options.test_name != None and options.uart_dmw == None):
             strg_type = "bram"
         else:
             strg_type = options.uart_dmw

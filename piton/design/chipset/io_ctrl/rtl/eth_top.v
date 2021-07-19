@@ -47,8 +47,10 @@ module eth_top #(
 
     output                                  noc_out_val,
     output      [`NOC_DATA_WIDTH-1:0]       noc_out_data,
-    input                                   noc_out_rdy,
+    input                                   noc_out_rdy
 
+`ifdef PITON_FPGA_ETHERNETLITE
+                                            ,
     input                                   net_axi_clk,
     output                                  net_phy_rst_n,
 
@@ -63,9 +65,21 @@ module eth_top #(
 
     inout                                   net_phy_mdio_io,
     output                                  net_phy_mdc
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+                   ,
+    input          net_axi_clk,
+    output         qsfp_fs,
+    output         qsfp_oeb,
+    input          qsfp_ref_clk_n,
+    input          qsfp_ref_clk_p,
+    input   [3:0]  qsfp_4x_grx_n,
+    input   [3:0]  qsfp_4x_grx_p,
+    output  [3:0]  qsfp_4x_gtx_n,
+    output  [3:0]  qsfp_4x_gtx_p
+`endif // PITON_FPGA_ETH_CMAC
 );
 
-`ifdef PITON_FPGA_ETHERNETLITE
+`ifdef PITON_FPGA_ETH
 
 // afifo <-> netbridge
 wire                            afifo_netbridge_val;
@@ -77,27 +91,27 @@ wire    [`NOC_DATA_WIDTH-1:0]   netbridge_afifo_data;
 wire                            fifo_netbridge_rdy;
 
 // netbridge <-> mac axi
-wire [12:0]                     net_s_axi_awaddr;
-wire                            net_s_axi_awvalid;
-wire                            net_s_axi_awready;
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   net_s_axi_awaddr;
+wire                                  net_s_axi_awvalid;
+wire                                  net_s_axi_awready;
 
-wire [31:0]                     net_s_axi_wdata;
-wire [3:0]                      net_s_axi_wstrb;
-wire                            net_s_axi_wvalid;
-wire                            net_s_axi_wready;
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   net_s_axi_wdata;
+wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] net_s_axi_wstrb;
+wire                                  net_s_axi_wvalid;
+wire                                  net_s_axi_wready;
 
-wire [1:0]                      net_s_axi_bresp;
-wire                            net_s_axi_bvalid;
-wire                            net_s_axi_bready;
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   net_s_axi_bresp;
+wire                                  net_s_axi_bvalid;
+wire                                  net_s_axi_bready;
 
-wire [12:0]                     net_s_axi_araddr;
-wire                            net_s_axi_arvalid;
-wire                            net_s_axi_arready;
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   net_s_axi_araddr;
+wire                                  net_s_axi_arvalid;
+wire                                  net_s_axi_arready;
 
-wire [31:0]                     net_s_axi_rdata;
-wire [1:0]                      net_s_axi_rresp;
-wire                            net_s_axi_rvalid;
-wire                            net_s_axi_rready;
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   net_s_axi_rdata;
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   net_s_axi_rresp;
+wire                                  net_s_axi_rvalid;
+wire                                  net_s_axi_rready;
 
 // MDIO
 wire                            net_phy_mdio_i;
@@ -109,6 +123,13 @@ wire net_phy_col = 1'b0;
 
 (* dont_touch = "true" *) wire unsync_net_int;
 
+`ifndef PITON_FPGA_ETH_CMAC
+`ifndef PITON_FPGA_ETHERNETLITE
+  `define NO_ETH_CORE
+`endif
+`endif
+
+`ifndef NO_ETH_CORE
 noc_bidir_afifo  net_afifo  (
     .clk_1           (chipset_clk           ),
     .rst_1           (~rst_n                ),
@@ -134,6 +155,16 @@ noc_bidir_afifo  net_afifo  (
     .flit_out_data_1 (noc_out_data     ),
     .flit_out_rdy_1  (noc_out_rdy      )
 );
+`else // NO_ETH_CORE
+  wire net_axi_clk = chipset_clk;
+  assign afifo_netbridge_val  = noc_in_val;
+  assign afifo_netbridge_data = noc_in_data;
+  assign noc_in_rdy = netbridge_afifo_rdy;
+
+  assign noc_out_val  = netbridge_afifo_val;
+  assign noc_out_data = netbridge_afifo_data;
+  assign afifo_netbridge_rdy = noc_out_rdy;
+`endif
 
 noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   (4),
@@ -188,6 +219,7 @@ net_int_sync net_int_sync(
 );
 
 
+`ifdef PITON_FPGA_ETHERNETLITE
 mac_eth_axi_lite mac_eth_axi_lite (
   .s_axi_aclk       (net_axi_clk),       // input wire s_axi_aclk
   .s_axi_aresetn    (rst_n),    // input wire s_axi_aresetn
@@ -238,7 +270,70 @@ IOBUF u_iobuf_dq (
     .IO (net_phy_mdio_io)
 );
 
-`else   // PITON_FPGA_ETHERNETLITE
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+
+wire [2:0] net_s_axi_arprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} read  access by default
+wire [2:0] net_s_axi_awprot = 3'h0; // {Data(not Instruction),Secure,Unprivileged} write access by default
+wire [1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
+Eth_CMAC_syst eth_cmac_syst (
+  .s_axi_clk        (net_axi_clk),          // input wire s_axi_aclk
+  .s_axi_resetn     (rst_n),                // input wire s_axi_aresetn
+  .s_axi_awaddr     (net_s_axi_awaddr),     // input wire [12 : 0] s_axi_awaddr
+  .s_axi_awvalid    (net_s_axi_awvalid),    // input wire s_axi_awvalid
+  .s_axi_awready    (net_s_axi_awready),    // output wire s_axi_awready
+  .s_axi_wdata      (net_s_axi_wdata),      // input wire [31 : 0] s_axi_wdata
+  .s_axi_wstrb      (net_s_axi_wstrb),      // input wire [3 : 0] s_axi_wstrb
+  .s_axi_wvalid     (net_s_axi_wvalid),     // input wire s_axi_wvalid
+  .s_axi_wready     (net_s_axi_wready),     // output wire s_axi_wready
+  .s_axi_bresp      (net_s_axi_bresp),      // output wire [1 : 0] s_axi_bresp
+  .s_axi_bvalid     (net_s_axi_bvalid),     // output wire s_axi_bvalid
+  .s_axi_bready     (net_s_axi_bready),     // input wire s_axi_bready
+  .s_axi_araddr     (net_s_axi_araddr),     // input wire [12 : 0] s_axi_araddr
+  .s_axi_arvalid    (net_s_axi_arvalid),    // input wire s_axi_arvalid
+  .s_axi_arready    (net_s_axi_arready),    // output wire s_axi_arready
+  .s_axi_rdata      (net_s_axi_rdata),      // output wire [31 : 0] s_axi_rdata
+  .s_axi_rresp      (net_s_axi_rresp),      // output wire [1 : 0] s_axi_rresp
+  .s_axi_rvalid     (net_s_axi_rvalid),     // output wire s_axi_rvalid
+  .s_axi_rready     (net_s_axi_rready),     // input wire s_axi_rready
+  .s_axi_arprot     (net_s_axi_arprot),     // input read  access permissions
+  .s_axi_awprot     (net_s_axi_awprot),     // input write access permissions
+
+  .intc             (net_cmac_intc),     
+
+  .qsfp_fs            (qsfp_fs),
+  .qsfp_oeb           (qsfp_oeb),
+  .qsfp_refck_clk_n   (qsfp_ref_clk_n),
+  .qsfp_refck_clk_p   (qsfp_ref_clk_p),
+  .qsfp_4x_grx_n      (qsfp_4x_grx_n),
+  .qsfp_4x_grx_p      (qsfp_4x_grx_p),
+  .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
+  .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
+);
+
+reg net_cmac_intc_comb;
+always @(posedge net_axi_clk) begin
+  if (~rst_n) net_cmac_intc_comb <= 1'b0;
+  else        net_cmac_intc_comb <= |net_cmac_intc; // combining Tx/Rx events to single event going to NOC
+end
+assign unsync_net_int = net_cmac_intc_comb;
+
+`else // PITON_FPGA_ETH_CMAC
+  // Ethernet core stub for simulation
+  assign net_s_axi_awready = 1'b1;
+  assign net_s_axi_wready = 1'b1;
+  assign net_s_axi_arready = 1'b1;
+
+  assign net_s_axi_rvalid = net_s_axi_rready;
+  assign net_s_axi_rdata  = `C_M_AXI_LITE_DATA_WIDTH'hFEEDC0DE;
+  assign net_s_axi_rresp  = 2'h0;
+
+  assign net_s_axi_bvalid  = net_s_axi_bready;
+  assign net_s_axi_bresp   = 2'h0;
+
+  assign unsync_net_int = 1'h0;
+`endif
+
+`else  // PITON_FPGA_ETH
 
     assign noc_in_rdy    = 1'b0;
     assign noc_out_val    = 1'b0;
@@ -247,6 +342,6 @@ IOBUF u_iobuf_dq (
     assign net_phy_tx_en        = 1'b0;
     assign net_phy_mdc          = 1'b0;
 
-`endif  // PITON_FPGA_ETHERNETLITE
+`endif  // PITON_FPGA_ETH
 
 endmodule

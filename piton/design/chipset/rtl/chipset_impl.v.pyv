@@ -119,20 +119,22 @@ module chipset_impl(
     input                                       intf_chipset_val_noc3,
     output                                      intf_chipset_rdy_noc1,
     output                                      intf_chipset_rdy_noc2,
-    output                                      intf_chipset_rdy_noc3,
+    output                                      intf_chipset_rdy_noc3
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
-    output                                      init_calib_complete,
+    ,
+    output                                      init_calib_complete
 `ifndef F1_BOARD
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
 `ifdef PITONSYS_DDR4
-
+    ,
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
 `else // PITONSYS_DDR4
+    ,
     output                                      ddr_cas_n,
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
@@ -282,8 +284,19 @@ module chipset_impl(
 
     inout                                       net_phy_mdio_io,
     output                                      net_phy_mdc
-`endif // PITON_FPGA_ETHERNETLITE
-`endif // endif PITONSYS_IO_CTRL
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+    ,
+    input          net_axi_clk,
+    output         qsfp_fs,
+    output         qsfp_oeb,
+    input          qsfp_ref_clk_n,
+    input          qsfp_ref_clk_p,
+    input   [3:0]  qsfp_4x_grx_n,
+    input   [3:0]  qsfp_4x_grx_p,
+    output  [3:0]  qsfp_4x_gtx_n,
+    output  [3:0]  qsfp_4x_gtx_p
+`endif // PITON_FPGA_ETH_CMAC
+`endif // endif PITONSYS_IOCTRL
 `ifdef PITON_ARIANE
     ,
     // Debug
@@ -847,10 +860,8 @@ credit_to_valrdy noc3_xbar_to_%s(
         `ifdef PITONSYS_DDR4
         `ifdef XUPP3R_BOARD
             .ddr_parity(ddr_parity),
-	`elsif ALVEOU280_BOARD
-	    .ddr_parity(ddr_parity),
-
-
+        `elsif ALVEOU280_BOARD
+            .ddr_parity(ddr_parity),
         `else
             .ddr_dm(ddr_dm),
         `endif // XUPP3R_BOARD
@@ -975,7 +986,11 @@ uart_top        uart_top (
     .uart_lb_sw                 ( 1'b0                                  ),
 `endif // endif PITONSYS_UART_LOOBACK
 
+`ifdef PITONSYS_PCIE
     .uart_boot_en               ( pcie_gpio[4]                          ), //uart_boot_en
+`else // PITONSYS_PCIE
+    .uart_boot_en               ( uart_boot_en                          ),
+`endif // PITONSYS_PCIE
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
     .init_calib_complete        (init_calib_complete_ff                 ),
@@ -1053,7 +1068,7 @@ uart_top        uart_top (
 `endif
 
 
-`ifdef PITON_FPGA_ETHERNETLITE
+`ifdef PITON_FPGA_ETH
 
     eth_top #(
     `ifdef PITON_ARIANE
@@ -1073,8 +1088,10 @@ uart_top        uart_top (
 
         .noc_out_val     ( net_buf_noc3_valid ),
         .noc_out_data    ( net_buf_noc3_data  ),
-        .noc_out_rdy     ( buf_net_noc3_ready ),
+        .noc_out_rdy     ( buf_net_noc3_ready )
 
+    `ifdef PITON_FPGA_ETHERNETLITE
+        ,
         .net_axi_clk     ( net_axi_clk        ),
         .net_phy_rst_n   ( net_phy_rst_n      ),
 
@@ -1089,8 +1106,20 @@ uart_top        uart_top (
 
         .net_phy_mdio_io ( net_phy_mdio_io    ),
         .net_phy_mdc     ( net_phy_mdc        )
+    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+        ,
+        .net_axi_clk     (net_axi_clk         ),
+        .qsfp_fs         (qsfp_fs),
+        .qsfp_oeb        (qsfp_oeb),
+        .qsfp_ref_clk_n  (qsfp_ref_clk_n),
+        .qsfp_ref_clk_p  (qsfp_ref_clk_p),
+        .qsfp_4x_grx_n   (qsfp_4x_grx_n),
+        .qsfp_4x_grx_p   (qsfp_4x_grx_p),
+        .qsfp_4x_gtx_n   (qsfp_4x_gtx_n),
+        .qsfp_4x_gtx_p   (qsfp_4x_gtx_p)
+    `endif // PITON_FPGA_ETH_CMAC
     );
-`endif // PITON_FPGA_ETHERNETLITE
+`endif // PITON_FPGA_ETH
 
 `else // PITONSYS_IOCTRL
 
