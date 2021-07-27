@@ -182,3 +182,7 @@
 
 ./torture/src/models/hdl/torture_dump_behav.sv
 ./torture/src/models/cxx/dpi_torture.cpp
+
+
+./pmu/rtl/noc_pmu.sv
+./pmu/rtl/axi_pmu.sv

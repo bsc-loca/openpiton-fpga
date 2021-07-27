@@ -54,7 +54,10 @@ module lagarto_verilog_wrap #(
 
     // L15 (memory side)
     output wt_cache_pkg::l15_req_t       l15_req_o,
-    input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+    input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
+
+    // PMU
+    output logic[22:0]          pmu_sig_o
 );
 
     localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
@@ -191,6 +194,12 @@ csr_regfile i_csr_regfile (
 );
 
 
+logic[22:0] pmu_sig;
+assign pmu_sig[0] = 1'b1;
+// assign pmu_sig = {s0,s1,s2,{20{1'b0}}};
+
+assign pmu_sig_o = pmu_sig;
+
 lagarto_openpiton_top #(
   .ArianeCfg(ArianeOpenPitonCfg)
 ) lagarto_m20 (
@@ -256,7 +265,35 @@ lagarto_openpiton_top #(
     // debugging module signal
     .io_core_pmu_l2_hit_i(1'b0                   ),
     .io_dc_gvalid_i      (1'b0                   ),
-    .io_dc_addrbit_i     (2'b0                   )
+    .io_dc_addrbit_i     (2'b0                   ),
+
+    // PMU signals
+    // TODO icache_miss
+    // TODO itlb_miss
+    // TODO dache_miss
+    // TODO dtlb_miss
+    .io_core_pmu_EXE_STORE(pmu_sig[5]),
+    .io_core_pmu_EXE_LOAD(pmu_sig[6]),
+    .io_core_pmu_branch_miss(pmu_sig[7]),
+    .io_core_pmu_new_instruction(pmu_sig[8]),
+    .io_core_pmu_icache_req(pmu_sig[9]),
+    .io_core_pmu_icache_kill(pmu_sig[10]),
+    .io_core_pmu_stall_if(pmu_sig[11]),
+    .io_core_pmu_stall_id(pmu_sig[12]),
+    .io_core_pmu_stall_rr(pmu_sig[13]),
+    .io_core_pmu_stall_exe(pmu_sig[14]),
+    .io_core_pmu_stall_wb(pmu_sig[15]),
+    .io_core_pmu_buffer_miss(pmu_sig[16]),
+    .io_core_pmu_imiss_time(pmu_sig[17]),
+    .io_core_pmu_icache_bussy(pmu_sig[18]),
+    .io_core_pmu_imiss_kill(pmu_sig[19]),
+    .io_core_pmu_is_branch(pmu_sig[20]),
+    .io_core_pmu_branch_taken(pmu_sig[21]),
+    .io_core_pmu_dmiss_l2hit(pmu_sig[22])
 );
+
+always_ff @(posedge clk_i ) begin : test
+  $display("PMU Test @ lagarto_verilog_wrap %b",pmu_sig);
+end
 
 endmodule
