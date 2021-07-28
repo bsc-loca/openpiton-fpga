@@ -4,7 +4,7 @@
 [submodule "aws"]
 	path = piton/design/aws
 	url = https://github.com/PrincetonUniversity/openpiton-aws.git
-[[submodule "piton/design/chip/tile/meep_vas_tile_core/drac-inorder"]
+[submodule "piton/design/chip/tile/meep_vas_tile_core/drac-inorder"]
 	path = piton/design/chip/tile/meep_vas_tile_core/drac-inorder
 	url = https://gitlab-ci-token:$MEEP_PERSONAL_TOKEN@gitlab.bsc.es/meep/rtl_designs/drac-inorder.git
 [submodule "piton/design/chip/tile/meep_vas_tile_core/meep-vpu"]
