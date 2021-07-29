@@ -4,17 +4,13 @@
 		// Width of S_AXI data bus
 		parameter integer C_S_AXI_DATA_WIDTH	= 64,
 		// Width of S_AXI address bus
-		parameter integer C_S_AXI_ADDR_WIDTH	= 7
+		parameter integer C_S_AXI_ADDR_WIDTH	= 64
 		// Amount of counters
 		// parameter integer N_COUNTERS	= 23,
 		// Configuration registers
 		// parameter integer N_CONF_REGS	= 1
 	)
 	(
-        input logic[63:0] counter_data_in,
-        output logic[7:0] counter_address_out, //TODO use parameters
-
-
 		// Global Clock Signal
 		input wire  S_AXI_ACLK,
 		// Global Reset Signal. This Signal is Active LOW
@@ -74,11 +70,25 @@
 		output wire  S_AXI_RVALID,
 		// Read ready. This signal indicates that the master can
     		// accept the read data and response information.
-		input wire  S_AXI_RREADY
+		input wire  S_AXI_RREADY,
+
+		//TODO use parameters
+		// Interface to counters
+		// Read interface		
+		output logic counter_read_enable,
+		input logic counter_read_valid,
+        output logic[7:0] counter_read_address,
+        input logic[63:0] counter_read_data, 
+		// Write interface
+		output logic counter_write_enable,
+		input logic counter_write_valid,
+        output logic[7:0] counter_write_address,
+		output logic[63:0] counter_write_data
 	);
 
 	// AXI4LITE signals
 	reg [C_S_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+	logic axi_awaddr_ready;
 	reg  	axi_awready;
 	reg  	axi_wready;
 	reg [1 : 0] 	axi_bresp;
@@ -94,24 +104,15 @@
 	// ADDR_LSB is used for addressing 32/64 bit registers/memories
 	// ADDR_LSB = 2 for 32 bits (n downto 2)
 	// ADDR_LSB = 3 for 64 bits (n downto 3)
+	// TODO remove ADDR_LSB
     localparam integer ADDR_LSB = (C_S_AXI_DATA_WIDTH/32) + 1;
 	localparam integer OPT_MEM_ADDR_BITS = 4;
-	//----------------------------------------------
-	//-- Signals for user logic register space example
-	//------------------------------------------------
-	//-- Number of Slave Registers 
+	
+	localparam integer ADDRESS_OFFSET = 'hfff5100000;
 
-    // reg [C_S_AXI_DATA_WIDTH-1:0] slv_reg [0:N_CONF_REGS+N_COUNTERS-1] /*verilator public*/;.
-
-
-    wire	 slv_reg_rden;
-	wire	 slv_reg_wren;
-	reg [C_S_AXI_DATA_WIDTH-1:0]	 reg_data_out;
-	integer	 byte_index;
 	reg	 aw_en;
 
 	// I/O Connections assignments
-
 	assign S_AXI_AWREADY	= axi_awready;
 	assign S_AXI_WREADY	= axi_wready;
 	assign S_AXI_BRESP	= axi_bresp;
@@ -120,12 +121,10 @@
 	assign S_AXI_RDATA	= axi_rdata;
 	assign S_AXI_RRESP	= axi_rresp;
 	assign S_AXI_RVALID	= axi_rvalid;
-	// Implement axi_awready generation
-	// axi_awready is asserted for one S_AXI_ACLK clock cycle when both
-	// S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
-	// de-asserted when reset is low.
 
-	always @( posedge S_AXI_ACLK )
+
+	// Writing logic
+	always_ff @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
 	    begin
@@ -159,127 +158,89 @@
 	// This process is used to latch the address when both 
 	// S_AXI_AWVALID and S_AXI_WVALID are valid. 
 
-	always @( posedge S_AXI_ACLK )
+	always_ff @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
 	    begin
 	      axi_awaddr <= 0;
+		  axi_awaddr_ready <= 0;
 	    end 
 	  else
 	    begin    
 	      if (~axi_awready && S_AXI_AWVALID && S_AXI_WVALID && aw_en)
 	        begin
-	          // Write Address latching 
-	          axi_awaddr <= S_AXI_AWADDR;
-	        end
+	          	// Write Address latching 
+	          	axi_awaddr <= S_AXI_AWADDR;
+		  		axi_awaddr_ready <= 1;
+			end else if(axi_awaddr_ready) begin
+				axi_awaddr <= 0;
+				axi_awaddr_ready <= 0;
+			end
 	    end 
 	end       
+
+	// Write logic
 
 	// Implement axi_wready generation
 	// axi_wready is asserted for one S_AXI_ACLK clock cycle when both
 	// S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_wready is 
 	// de-asserted when reset is low. 
 
-	always @( posedge S_AXI_ACLK )
+	// Synchronyzer for read_valid signal from register bank
+	logic counter_write_valid_syn;
+	synchronyzer_2_stage write_syn(
+	.in(counter_write_valid),
+	.out(counter_write_valid_syn),
+	.clk(S_AXI_ACLK)
+	);
+
+	always_ff @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
 	    begin
 	      axi_wready <= 1'b0;
+	      axi_bvalid  <= 0;
+	      axi_bresp   <= 2'b0;
+		counter_write_enable <= 1'b0;
 	    end 
 	  else
 	    begin    
-	      if (~axi_wready && S_AXI_WVALID && S_AXI_AWVALID && aw_en )
-	        begin
-	          // slave is ready to accept write data when 
-	          // there is a valid write address and write data
-	          // on the write address and data bus. This design 
-	          // expects no outstanding transactions. 
-	          axi_wready <= 1'b1;
-	        end
-	      else
-	        begin
+	      if ( axi_awaddr_ready ) begin
+				// slave is ready to accept write data when 
+				// there is a valid write address and write data
+				// on the write address and data bus. This design 
+				// expects no outstanding transactions. 
+	          	axi_wready <= 1'b1;
+
+			  	// Send write data to register bank
+				counter_write_enable <= 1'b1;
+				counter_write_address <= (axi_awaddr-ADDRESS_OFFSET)>>3;	// Access must be 8-byte aligned
+				counter_write_data <= S_AXI_WDATA;
+	        end else begin
 	          axi_wready <= 1'b0;
 	        end
+
+		if(counter_write_enable && counter_write_valid_syn) begin
+				// Data is written
+				counter_write_enable <= 1'b0;
+				counter_write_address <= 0;
+				counter_write_data <= 0;
+
+				axi_bvalid <= 1'b1;
+	          	axi_bresp  <= 2'b0;
+			end else if(S_AXI_BREADY && axi_bvalid) begin
+				axi_bvalid <= 1'b0;
+			end
 	    end 
 	end       
 
-	// Implement memory mapped register select and write logic generation
-	// The write data is accepted and written to memory mapped registers when
-	// axi_awready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted. Write strobes are used to
-	// select byte enables of slave registers while writing.
-	// These registers are cleared when reset (active low) is applied.
-	// Slave register write enable is asserted when valid address and data are available
-	// and the slave is ready to accept the write address and write data.
-	assign slv_reg_wren = axi_wready && S_AXI_WVALID && axi_awready && S_AXI_AWVALID;
 
-	always @( posedge S_AXI_ACLK )
-	begin
-	  if ( S_AXI_ARESETN == 1'b0 )
-	    begin : reset_all
-        integer i;
-        // for (i=N_COUNTERS; i<N_CONF_REGS+N_COUNTERS; i=i+1) slv_reg[i] <={C_S_AXI_DATA_WIDTH{1'b0}};
-	    end 
-	  else begin
-	    if (slv_reg_wren)
-	      begin : strobes
-            integer i;
-            // for (i=N_COUNTERS; i<N_CONF_REGS+N_COUNTERS; i=i+1)begin
-            //     if (axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] == i) begin
-            //         for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
-            //           if ( S_AXI_WSTRB[byte_index] == 1 ) begin
-            //             // Respective byte enables are asserted as per write strobes 
-            //             // slv_reg[i][(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
-            //           end  
-            //     end
-            // end
-            // if(axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]>N_CONF_REGS+N_COUNTERS) begin
-            //                 // for (i=N_COUNTERS; i<N_CONF_REGS+N_COUNTERS; i=i+1) slv_reg[i] <=slv_reg[i];
-            // end
-	      end
-	  end
-	end    
 
-	// Implement write response logic generation
-	// The write response and response valid signals are asserted by the slave 
-	// when axi_wready, S_AXI_WVALID, axi_wready and S_AXI_WVALID are asserted.  
-	// This marks the acceptance of address and indicates the status of 
-	// write transaction.
 
-	always @( posedge S_AXI_ACLK )
-	begin
-	  if ( S_AXI_ARESETN == 1'b0 )
-	    begin
-	      axi_bvalid  <= 0;
-	      axi_bresp   <= 2'b0;
-	    end 
-	  else
-	    begin    
-	      if (axi_awready && S_AXI_AWVALID && ~axi_bvalid && axi_wready && S_AXI_WVALID)
-	        begin
-	          // indicates a valid write response is available
-	          axi_bvalid <= 1'b1;
-	          axi_bresp  <= 2'b0; // 'OKAY' response 
-	        end                   // work error responses in future
-	      else
-	        begin
-	          if (S_AXI_BREADY && axi_bvalid) 
-	            //check if bready is asserted while bvalid is high) 
-	            //(there is a possibility that bready is always asserted high)   
-	            begin
-	              axi_bvalid <= 1'b0; 
-	            end  
-	        end
-	    end
-	end   
 
-	// Implement axi_arready generation
-	// axi_arready is asserted for one S_AXI_ACLK clock cycle when
-	// S_AXI_ARVALID is asserted. axi_awready is 
-	// de-asserted when reset (active low) is asserted. 
-	// The read address is also latched when S_AXI_ARVALID is 
-	// asserted. axi_araddr is reset to zero on reset assertion.
+	// Read address logic
 
-	always @( posedge S_AXI_ACLK )
+	always_ff @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
 	    begin
@@ -302,94 +263,45 @@
 	    end 
 	end       
 
-	// Implement axi_arvalid generation
-	// axi_rvalid is asserted for one S_AXI_ACLK clock cycle when both 
-	// S_AXI_ARVALID and axi_arready are asserted. The slave registers 
-	// data are available on the axi_rdata bus at this instance. The 
-	// assertion of axi_rvalid marks the validity of read data on the 
-	// bus and axi_rresp indicates the status of read transaction.axi_rvalid 
-	// is deasserted on reset (active low). axi_rresp and axi_rdata are 
-	// cleared to zero on reset (active low).  
-	always @( posedge S_AXI_ACLK )
+	// Read data logic
+
+	// Synchronyzer for read_valid signal from register bank
+	logic counter_read_valid_syn;
+	synchronyzer_2_stage read_syn(
+	.in(counter_read_valid),
+	.out(counter_read_valid_syn),
+	.clk(S_AXI_ACLK)
+	);
+
+	always_ff @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
+		// Reset all to 0
 	    begin
 	      axi_rvalid <= 0;
 	      axi_rresp  <= 0;
+		  counter_read_enable <= 0;
 	    end 
 	  else
 	    begin    
-	      if (axi_arready && S_AXI_ARVALID && ~axi_rvalid)
+	      if (axi_arready && S_AXI_ARVALID && ~axi_rvalid) begin
+				// When address is ready, request data to register bank 
+				if(~counter_read_enable) begin
+					counter_read_address <= (axi_araddr-ADDRESS_OFFSET)>>3;
+					counter_read_enable <= 1'b1;
+				end
+	          axi_rresp  <= 2'b0; // 'OKAY' response  What to do with this signal??
+	    	end else if(counter_read_enable && ~axi_rvalid && counter_read_valid_syn) begin
+				// If data has been requested to register bank and it is ready, read it, assign it to output and set rvalid signal
+				counter_read_enable <= 1'b0;
+				axi_rvalid <= 1'b1;
+				axi_rdata <= counter_read_data;
+			end else if (axi_rvalid && S_AXI_RREADY)
 	        begin
-	          // Valid read data is available at the read data bus
-	          axi_rvalid <= 1'b1;
-	          axi_rresp  <= 2'b0; // 'OKAY' response
-	        end   
-	      else if (axi_rvalid && S_AXI_RREADY)
-	        begin
-	          // Read data is accepted by the master
+	          // Deassert valid signal and remove output data when read by master
 	          axi_rvalid <= 1'b0;
+			  axi_rdata <= 0;
 	        end                
 	    end
 	end    
-
-	// Implement memory mapped register select and read logic generation
-	// Slave register read enable is asserted when valid address is available
-	// and the slave is ready to accept the read address.
-	assign slv_reg_rden = axi_arready & S_AXI_ARVALID & ~axi_rvalid;
-	always @(*)
-	begin :decode_read
-	      // Address decoding for reading registers
-	    //   integer i;
-        //   reg_data_out = 0;
-        //   for (i=0; i<N_CONF_REGS+N_COUNTERS; i=i+1) begin
-        //     if (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]==i) begin
-        //         reg_data_out = slv_reg[i];
-        //     end
-        //   end
-        //   if (axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]>N_CONF_REGS+N_COUNTERS)
-        //     reg_data_out = 0;
-
-        counter_address_out = axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB];
-        reg_data_out = counter_data_in;
-	end
-
-	// Output register or memory read data
-	always @( posedge S_AXI_ACLK )
-	begin
-	  if ( S_AXI_ARESETN == 1'b0 )
-	    begin
-	      axi_rdata  <= 0;
-	    end 
-	  else
-	    begin    
-	      // When there is a valid read address (S_AXI_ARVALID) with 
-	      // acceptance of read address by the slave (axi_arready), 
-	      // output the read dada 
-	      if (slv_reg_rden)
-	        begin
-	          axi_rdata <= reg_data_out;     // register read data
-	        end   
-	    end
-	end    
-
-// 	// Add user logic here
-//     wire en_PMU, reset_PMU;
-//     assign en_PMU = slv_reg[N_COUNTERS][0];//the first bit of the first config register is the enable
-//     assign reset_PMU = slv_reg[N_COUNTERS][1];//the second bit of the first config register is the reset
-// //-------------Adders with reset
-//     genvar k;
-//     generate
-//     for (k=0; k<N_COUNTERS; k=k+1) begin : generated_counter
-//         always @(posedge S_AXI_ACLK) begin
-//             if(!S_AXI_ARESETN)
-//                 slv_reg[k] <={C_S_AXI_DATA_WIDTH{1'b0}};
-//             else begin
-//                 if(reset_PMU) slv_reg[k] <={C_S_AXI_DATA_WIDTH{1'b0}};
-//                 else if(events[k] & en_PMU) slv_reg[k] <= slv_reg[k]+1;
-//             end
-//         end
-//     end
-//     endgenerate
-//          // User logic ends
 endmodule

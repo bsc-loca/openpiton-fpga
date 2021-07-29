@@ -186,3 +186,4 @@
 
 ./pmu/rtl/noc_pmu.sv
 ./pmu/rtl/axi_pmu.sv
+./pmu/rtl/synchronyzer.sv

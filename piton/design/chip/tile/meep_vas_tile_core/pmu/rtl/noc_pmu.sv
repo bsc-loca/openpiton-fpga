@@ -27,7 +27,7 @@ module noc_pmu #(
   localparam int unsigned AxiAddrWidth  = 64;
   localparam int unsigned AxiDataWidth  = 64;
   localparam int unsigned AxiUserWidth  =  1;
-  localparam SwapEndianess = 0;
+  localparam SwapEndianess = 1;
 
   AXI_BUS #(
     .AXI_ID_WIDTH   ( AxiIdWidth   ),
@@ -83,8 +83,10 @@ module noc_pmu #(
   );
 
 
-logic[63:0] req_counter_data;
-logic[7:0] req_counter_addr; //TODO use parameters
+logic[63:0] counter_read_data, counter_write_data;
+logic[7:0] counter_read_address, counter_write_address; //TODO use parameters
+logic counter_read_enable, counter_read_valid, counter_write_enable, counter_write_valid;
+logic counter_read_enable_syn, counter_write_enable_syn;    // Synchronized signals
 axi_pmu axi_pmu(
     .S_AXI_ACLK(noc_clk),
     .S_AXI_ARESETN(rst),
@@ -107,31 +109,85 @@ axi_pmu axi_pmu(
     .S_AXI_RRESP(plic_master.r_resp),
     .S_AXI_RVALID(plic_master.r_valid),
     .S_AXI_RREADY(plic_master.r_ready),
+    
+    // Data read from AXI bridge to registers
+    .counter_read_enable(counter_read_enable),
+    .counter_read_valid(counter_read_valid),
+    .counter_read_address(counter_read_address),
+    .counter_read_data(counter_read_data),
 
-    .counter_data_in(req_counter_data),
-    .counter_address_out(req_counter_addr)
+    // Data write from AXI bridge to registers
+    .counter_write_enable(counter_write_enable),
+    .counter_write_valid(counter_write_valid),
+    .counter_write_address(counter_write_address),
+    .counter_write_data(counter_write_data)
 );
 
-logic[TILE_COUNT-1:0][22:0][COUNTER_LENGTH-1:0] counters;
+logic[TILE_COUNT-1:0][23:0][COUNTER_LENGTH-1:0] counters;  //23 counters + 1 config register
 
-always_comb begin
-    if(0'b0)begin
-        
-    end   //TODO check if out of bounds
-    else begin
-        req_counter_data = counters[0][req_counter_addr];
+// Read logic
+synchronyzer_2_stage read_syn(
+  .in(counter_read_enable),
+  .out(counter_read_enable_syn),
+  .clk(counter_clk)
+  );
+always_ff @( counter_clk ) begin
+    if(counter_read_enable_syn && ~counter_read_valid) begin
+      counter_read_data <= counters[0][counter_read_address];
+      counter_read_valid <= 1'b1;
+    end else if(~counter_read_enable_syn) begin
+      counter_read_data <= 0;
+      counter_read_valid <= 1'b0;
     end
 end
 
-always_ff @( counter_clk ) begin
+// Write logic
+synchronyzer_2_stage write_syn(
+  .in(counter_write_enable),
+  .out(counter_write_enable_syn),
+  .clk(counter_clk)
+  );
+logic[7:0] write_address;
+logic[63:0] write_data;
+logic write_enable;
+always_ff @( counter_clk ) begin 
+    if(counter_write_enable_syn) begin
+      write_enable <= 1'b1;
+      write_data <= counter_write_data;
+      write_address <= counter_write_address;
+      // Inform successfull write
+      counter_write_valid <= 1'b1;
+    end else begin
+      write_enable <= 1'b0;
+      counter_write_valid <= 1'b0;
+    end
+end
 
-    for(int tile = 0; tile < TILE_COUNT; tile++)
-        for(int signal = 0; signal < 23; signal++) begin
-            if(rst == 1'b0)
-                counters[tile][signal] = 0;
-            else if(pmu_sig_i[tile][signal] == 1'b1)
-                counters[tile][signal] = counters[tile][signal]+1;
-        end
+always_ff @( posedge counter_clk ) begin
+    for(int tile = 0; tile < TILE_COUNT; tile++) begin
+        logic counter_enable, counter_reset;
+        counter_enable = counters[tile][23][0];
+        counter_reset = counters[tile][23][1];
+
+          // Logic for counters
+          for(int signal = 0; signal < 23; signal++) begin
+            if(rst == 1'b0 || counter_reset == 1'b1)
+              counters[tile][signal] <= 0; // Reset logic
+            else if(write_enable && write_address == signal) begin
+              counters[tile][signal] <= write_data; // Write incoming data to register
+            end
+            else if(counter_enable == 1'b1 && pmu_sig_i[tile][signal] == 1'b1)
+              counters[tile][signal] <= counters[tile][signal]+1; // Increment counters when required
+          end
+
+          // Logic for config register
+          if(rst == 1'b0)
+            counters[tile][23] <= 2'b01; // Reset config
+          else if(write_enable && write_address == 23) begin
+            counters[tile][23] <= write_data; // Write incoming data to register
+          end
+        
+    end
         
 end
     

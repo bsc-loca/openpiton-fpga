@@ -72,7 +72,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     <port>
         <name>lagarto_pmu</name>
         <base>0xfff5100000</base>
-        <length>0x1000</length>
+        <length>0x10000</length>
         <!-- length is expected to change -->
     </port>
     <!-- end ariane specific periphs -->

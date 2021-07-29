@@ -1279,7 +1279,7 @@ print str
         .TILE_COUNT(`NUM_TILES)
     ) pmu (
         .noc_clk(chipset_clk),
-        .buf_noc2_data_i     ( lagarto_pmu_noc2_data     ),
+        .buf_noc2_data_i     ( buf_lagarto_pmu_noc2_data     ),
         .buf_noc2_valid_i    ( buf_lagarto_pmu_noc2_valid    ),
         .buf_noc2_ready_o    ( lagarto_pmu_buf_noc2_ready    ),
         .buf_noc3_data_o     ( lagarto_pmu_buf_noc3_data     ),

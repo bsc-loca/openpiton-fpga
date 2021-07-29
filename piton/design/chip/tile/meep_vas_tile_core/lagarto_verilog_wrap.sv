@@ -292,8 +292,8 @@ lagarto_openpiton_top #(
     .io_core_pmu_dmiss_l2hit(pmu_sig[22])
 );
 
-always_ff @(posedge clk_i ) begin : test
-  $display("PMU Test @ lagarto_verilog_wrap %b",pmu_sig);
-end
+// always_ff @(posedge clk_i ) begin : test
+//   $display("PMU Test @ lagarto_verilog_wrap %b",pmu_sig);
+// end
 
 endmodule
