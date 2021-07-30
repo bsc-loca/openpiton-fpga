@@ -24,11 +24,11 @@ module axi_pmu #(
     // Width of S_AXI data bus
     parameter integer C_S_AXI_DATA_WIDTH = 64,
     // Width of S_AXI address bus
-    parameter integer C_S_AXI_ADDR_WIDTH = 64
-    // Amount of counters
-    // parameter integer N_COUNTERS	= 23,
-    // Configuration registers
-    // parameter integer N_CONF_REGS	= 1
+    parameter integer C_S_AXI_ADDR_WIDTH = 64,
+    // Counter address width
+    parameter integer COUNTER_ADDRESS_WIDTH = 16,
+    // Counter address width
+    parameter integer COUNTER_DATA_WIDTH = 64
 ) (
     // Global Clock Signal
     input logic S_AXI_ACLK,
@@ -91,22 +91,18 @@ module axi_pmu #(
     // accept the read data and response information.
     input logic S_AXI_RREADY,
 
-    //TODO use parameters
     // Interface to counters
     // Read interface		
     output logic counter_read_enable,
     input logic counter_read_valid,
-    output logic [7:0] counter_read_address,
-    input logic [63:0] counter_read_data,
+    output logic [COUNTER_ADDRESS_WIDTH-1:0] counter_read_address,
+    input logic [COUNTER_DATA_WIDTH-1:0] counter_read_data,
     // Write interface
     output logic counter_write_enable,
     input logic counter_write_valid,
-    output logic [7:0] counter_write_address,
-    output logic [63:0] counter_write_data
+    output logic [COUNTER_ADDRESS_WIDTH-1:0] counter_write_address,
+    output logic [COUNTER_DATA_WIDTH-1:0] counter_write_data
 );
-
-
-  localparam integer ADDRESS_OFFSET = 'hfff5100000;
 
 
   // Writing logic
@@ -123,7 +119,7 @@ module axi_pmu #(
         // We are ready to receive the address
         S_AXI_AWREADY <= 1'b1;
         aw_available <= 1'b1;
-        counter_write_address <= (S_AXI_AWADDR - ADDRESS_OFFSET) >> 3;
+        counter_write_address <= S_AXI_AWADDR[COUNTER_ADDRESS_WIDTH-1:0];
       end else if (S_AXI_AWREADY) begin
         S_AXI_AWREADY <= 1'b0;
       end
@@ -195,7 +191,7 @@ module axi_pmu #(
         // We are ready to receive the address
         S_AXI_ARREADY <= 1'b1;
         ar_available <= 1'b1;
-        counter_read_address <= (S_AXI_ARADDR - ADDRESS_OFFSET) >> 3;
+        counter_read_address <= S_AXI_ARADDR[COUNTER_ADDRESS_WIDTH-1:0];
       end else if (S_AXI_ARREADY) begin
         S_AXI_ARREADY <= 1'b0;
       end

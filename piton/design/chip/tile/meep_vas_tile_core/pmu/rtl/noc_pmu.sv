@@ -23,45 +23,53 @@
 `include "define.tmp.h"
 
 module noc_pmu #(
-    parameter TILE_COUNT,
-    parameter int unsigned DataWidth = 64,
+    // Data width
+    parameter int unsigned DATA_WIDTH = 64,
+    // Address width
+    parameter int unsigned ADDRESS_WIDTH = 64,
 
-    localparam COUNTER_LENGTH = 64  // Use 64bit counters
+    // Number of CPU cores
+    parameter integer TILE_COUNT,
+    // Number of event signals
+    parameter integer EVENT_SIGNAL_COUNT = 23,
+    // Bit width for register addressing
+    parameter integer ADDR_REG_WIDTH = 6,
+    // Bit width for tile addressing
+    parameter integer ADDR_TILE_WIDTH = 7,
+    // Bit width for 64bit alignment
+    parameter integer ADDR_ALIGN_WIDTH = 3
 ) (
     input rst,
 
     input noc_clk,
-    input [DataWidth-1:0] buf_noc2_data_i,
+    input [DATA_WIDTH-1:0] buf_noc2_data_i,
     input buf_noc2_valid_i,
     output buf_noc2_ready_o,
-    output [DataWidth-1:0] buf_noc3_data_o,
+    output [DATA_WIDTH-1:0] buf_noc3_data_o,
     output buf_noc3_valid_o,
     input buf_noc3_ready_i,
 
     input counter_clk,
-    input [TILE_COUNT-1:0][22:0] pmu_sig_i
+    input [TILE_COUNT-1:0][EVENT_SIGNAL_COUNT-1:0] pmu_sig_i
 );
 
 
-  localparam int unsigned AxiIdWidth = 1;
-  localparam int unsigned AxiAddrWidth = 64;
-  localparam int unsigned AxiDataWidth = 64;
-  localparam int unsigned AxiUserWidth = 1;
-  localparam SwapEndianess = 1;
+  // localparam int unsigned AxiIdWidth = 1;
+  // localparam int unsigned AxiAddrWidth = 64;
+  // localparam int unsigned AxiDataWidth = 64;
+  // localparam int unsigned AxiUserWidth = 1;
+  // localparam SwapEndianess = 1;
 
   AXI_BUS #(
-      .AXI_ID_WIDTH  (AxiIdWidth),
-      .AXI_ADDR_WIDTH(AxiAddrWidth),
-      .AXI_DATA_WIDTH(AxiDataWidth),
-      .AXI_USER_WIDTH(AxiUserWidth)
+      .AXI_ID_WIDTH  (1),
+      .AXI_ADDR_WIDTH(ADDRESS_WIDTH),
+      .AXI_DATA_WIDTH(DATA_WIDTH),
+      .AXI_USER_WIDTH(1)
   ) plic_master ();
 
   noc_axilite_bridge #(
-      // this enables variable width accesses
-      // note that the accesses are still 64bit, but the
-      // write-enables are generated according to the access size
       .SLAVE_RESP_BYTEWIDTH(0),
-      .SWAP_ENDIANESS      (SwapEndianess),
+      .SWAP_ENDIANESS      (1),
       // this disables shifting of unaligned read data
       .ALIGN_RDATA         (0)
   ) i_plic_axilite_bridge (
@@ -103,11 +111,15 @@ module noc_pmu #(
   );
 
 
-  logic [63:0] counter_read_data, counter_write_data;
-  logic [7:0] counter_read_address, counter_write_address;  //TODO use parameters
+  logic [DATA_WIDTH-1:0] counter_read_data, counter_write_data;
+  logic [ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1:0]
+      counter_read_address, counter_write_address;
   logic counter_read_enable, counter_read_valid, counter_write_enable, counter_write_valid;
   logic counter_read_enable_syn, counter_write_enable_syn;  // Synchronized signals
-  axi_pmu axi_pmu (
+  axi_pmu #(
+      .COUNTER_DATA_WIDTH(DATA_WIDTH),
+      .COUNTER_ADDRESS_WIDTH(ADDR_TILE_WIDTH + ADDR_REG_WIDTH + ADDR_ALIGN_WIDTH)
+  ) axi_pmu (
       .S_AXI_ACLK(noc_clk),
       .S_AXI_ARESETN(rst),
       .S_AXI_AWADDR(plic_master.aw_addr),
@@ -143,7 +155,7 @@ module noc_pmu #(
       .counter_write_data(counter_write_data)
   );
 
-  logic [TILE_COUNT-1:0][23:0][COUNTER_LENGTH-1:0] counters;  //23 counters + 1 config register
+  logic [TILE_COUNT-1:0][EVENT_SIGNAL_COUNT:0][DATA_WIDTH-1:0] registers;  // Data registers (as many as input signals + 1 config)
 
   // Read logic
   synchronizer_2_stage read_syn (
@@ -151,9 +163,23 @@ module noc_pmu #(
       .out(counter_read_enable_syn),
       .clk(counter_clk)
   );
+  // Decode read address
+  logic [ADDR_TILE_WIDTH-1:0] read_tile;
+  logic [ ADDR_REG_WIDTH-1:0] read_register;
+  assign read_tile = counter_read_address[ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH];
+  assign read_register = counter_read_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_ALIGN_WIDTH];
+
   always_ff @(counter_clk) begin
     if (counter_read_enable_syn && ~counter_read_valid) begin
-      counter_read_data  <= counters[0][counter_read_address];
+      // Check address is in bounds
+      if (read_tile < TILE_COUNT && read_register < EVENT_SIGNAL_COUNT + 1) begin
+        counter_read_data <= registers[read_tile][read_register];
+      end else begin
+        counter_read_data <= {DATA_WIDTH{1'b1}};
+        /* synopsys translate_off */
+        $display("An attempt was made to access a PMU register out of bounds");
+        /* synopsys translate_on */
+      end
       counter_read_valid <= 1'b1;
     end else if (~counter_read_enable_syn) begin
       counter_read_data  <= 0;
@@ -167,9 +193,15 @@ module noc_pmu #(
       .out(counter_write_enable_syn),
       .clk(counter_clk)
   );
-  logic [7:0] write_address;
-  logic [63:0] write_data;
+  logic [ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1:0] write_address;
+  logic [DATA_WIDTH-1:0] write_data;
   logic write_enable;
+  // Decode write address
+  logic [ADDR_TILE_WIDTH-1:0] write_tile;
+  logic [ADDR_REG_WIDTH-1:0] write_register;
+  assign write_tile = write_address[ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH];
+  assign write_register = write_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_ALIGN_WIDTH];
+
   always_ff @(counter_clk) begin
     if (counter_write_enable_syn) begin
       write_enable <= 1'b1;
@@ -183,25 +215,27 @@ module noc_pmu #(
     end
   end
 
+  // Counter logic
   always_ff @(posedge counter_clk) begin
     for (int tile = 0; tile < TILE_COUNT; tile++) begin
+      // Fetch counter status from config register (last one for the tile)
       logic counter_enable, counter_reset;
-      counter_enable = counters[tile][23][0];
-      counter_reset  = counters[tile][23][1];
+      counter_enable = registers[tile][EVENT_SIGNAL_COUNT][0];
+      counter_reset  = registers[tile][EVENT_SIGNAL_COUNT][1];
 
       // Logic for counters
-      for (int signal = 0; signal < 23; signal++) begin
-        if (rst == 1'b0 || counter_reset == 1'b1) counters[tile][signal] <= 0;  // Reset logic
-        else if (write_enable && write_address == signal) begin
-          counters[tile][signal] <= write_data;  // Write incoming data to register
-        end else if (counter_enable == 1'b1 && pmu_sig_i[tile][signal] == 1'b1)
-          counters[tile][signal] <= counters[tile][signal]+1; // Increment counters when required
+      for (int register = 0; register < EVENT_SIGNAL_COUNT; register++) begin
+        if (rst == 1'b0 || counter_reset == 1'b1) registers[tile][register] <= 0;  // Reset logic
+        else if (write_enable && write_tile == tile && write_register == register) begin
+          registers[tile][register] <= write_data;  // Write incoming data to register
+        end else if (counter_enable == 1'b1 && pmu_sig_i[tile][register] == 1'b1)
+          registers[tile][register] <= registers[tile][register]+1; // Increment counters when required
       end
 
       // Logic for config register
-      if (rst == 1'b0) counters[tile][23] <= 2'b01;  // Reset config
-      else if (write_enable && write_address == 23) begin
-        counters[tile][23] <= write_data;  // Write incoming data to register
+      if (rst == 1'b0) registers[tile][EVENT_SIGNAL_COUNT] <= 2'b01;  // Reset config
+      else if (write_enable && write_tile == tile && write_register == EVENT_SIGNAL_COUNT) begin
+        registers[tile][EVENT_SIGNAL_COUNT] <= write_data;  // Write incoming data to register
       end
 
     end
