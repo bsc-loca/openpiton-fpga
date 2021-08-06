@@ -505,6 +505,9 @@ datapath datapath_inst(
     .ovi_item_i(ovi_item_int),
     .debug_i(debug_in),
     .csr_priv_lvl_i(csr_priv_lvl_i),
+`ifdef PITON_LAGARTO
+    .en_ld_st_translation_i (en_ld_st_translation_i),
+`endif
     // Output datapath
     .req_cpu_dcache_o(req_datapath_dcache_interface),
     .req_cpu_icache_o(req_datapath_icache_interface),
