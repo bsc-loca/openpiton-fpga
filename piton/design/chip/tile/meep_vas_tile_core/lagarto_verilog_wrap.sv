@@ -195,9 +195,8 @@ csr_regfile i_csr_regfile (
 
 
 logic[22:0] pmu_sig;
+// First signal is set to 1 to count clock cycles
 assign pmu_sig[0] = 1'b1;
-// assign pmu_sig = {s0,s1,s2,{20{1'b0}}};
-
 assign pmu_sig_o = pmu_sig;
 
 lagarto_openpiton_top #(
@@ -268,27 +267,27 @@ lagarto_openpiton_top #(
     .io_dc_addrbit_i     (2'b0                   ),
 
     // PMU signals
+    .io_core_pmu_new_instruction(pmu_sig[1]),
+    .io_core_pmu_is_branch(pmu_sig[2]),
+    .io_core_pmu_branch_taken(pmu_sig[3]),
+    .io_core_pmu_branch_miss(pmu_sig[4]),
+    .io_core_pmu_stall_if(pmu_sig[5]),
+    .io_core_pmu_stall_id(pmu_sig[6]),
+    .io_core_pmu_stall_rr(pmu_sig[7]),
+    .io_core_pmu_stall_exe(pmu_sig[8]),
+    .io_core_pmu_stall_wb(pmu_sig[9]),
+    .io_core_pmu_EXE_STORE(pmu_sig[10]),
+    .io_core_pmu_EXE_LOAD(pmu_sig[11]),
     // TODO icache_miss
     // TODO itlb_miss
     // TODO dache_miss
     // TODO dtlb_miss
-    .io_core_pmu_EXE_STORE(pmu_sig[5]),
-    .io_core_pmu_EXE_LOAD(pmu_sig[6]),
-    .io_core_pmu_branch_miss(pmu_sig[7]),
-    .io_core_pmu_new_instruction(pmu_sig[8]),
-    .io_core_pmu_icache_req(pmu_sig[9]),
-    .io_core_pmu_icache_kill(pmu_sig[10]),
-    .io_core_pmu_stall_if(pmu_sig[11]),
-    .io_core_pmu_stall_id(pmu_sig[12]),
-    .io_core_pmu_stall_rr(pmu_sig[13]),
-    .io_core_pmu_stall_exe(pmu_sig[14]),
-    .io_core_pmu_stall_wb(pmu_sig[15]),
+    // .io_core_pmu_icache_req(pmu_sig[9]),
+    // .io_core_pmu_icache_kill(pmu_sig[10]),
     .io_core_pmu_buffer_miss(pmu_sig[16]),
     .io_core_pmu_imiss_time(pmu_sig[17]),
     .io_core_pmu_icache_bussy(pmu_sig[18]),
     .io_core_pmu_imiss_kill(pmu_sig[19]),
-    .io_core_pmu_is_branch(pmu_sig[20]),
-    .io_core_pmu_branch_taken(pmu_sig[21]),
     .io_core_pmu_dmiss_l2hit(pmu_sig[22])
 );
 

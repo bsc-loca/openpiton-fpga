@@ -198,22 +198,24 @@ module lagarto_openpiton_top #(
 //-----------------------------------------------------------------------------
 // PMU INTERFACE
 //-----------------------------------------------------------------------------
-    input  logic                io_core_pmu_l2_hit_i        ,
-    input  logic                io_dc_gvalid_i     ,
-    input  [1:0]                io_dc_addrbit_i    ,
-    output logic                io_core_pmu_branch_miss     ,
+    output logic                io_core_pmu_new_instruction ,
     output logic                io_core_pmu_is_branch       ,
     output logic                io_core_pmu_branch_taken    , 
-    output logic                io_core_pmu_EXE_STORE       ,
-    output logic                io_core_pmu_EXE_LOAD        ,
-    output logic                io_core_pmu_new_instruction ,
-    output logic                io_core_pmu_icache_req      ,
-    output logic                io_core_pmu_icache_kill     ,
+    output logic                io_core_pmu_branch_miss     ,
     output logic                io_core_pmu_stall_if        ,
     output logic                io_core_pmu_stall_id        ,
     output logic                io_core_pmu_stall_rr        ,
     output logic                io_core_pmu_stall_exe       ,
-    output logic                io_core_pmu_stall_wb        ,           
+    output logic                io_core_pmu_stall_wb        ,   
+    output logic                io_core_pmu_EXE_LOAD        ,
+    output logic                io_core_pmu_EXE_STORE       ,
+
+    input  logic                io_core_pmu_l2_hit_i        ,
+    input  logic                io_dc_gvalid_i     ,
+    input  [1:0]                io_dc_addrbit_i    ,
+
+    output logic                io_core_pmu_icache_req      ,
+    output logic                io_core_pmu_icache_kill     ,        
     output logic                io_core_pmu_buffer_miss     ,           
     output logic                io_core_pmu_imiss_kill      ,           
     output logic                io_core_pmu_dmiss_l2hit     ,           
@@ -728,7 +730,11 @@ datapath datapath_inst(
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     .dmem_resp_gnt_ld_i         (dcache_ld_data_gnt             ),
     // Response towards Lagarto
-    .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
+    .resp_dcache_cpu_o          (resp_dcache_interface_datapath ),
+    
+    // PMU
+    .pmu_exe_store_o ( io_core_pmu_EXE_STORE ),
+    .pmu_exe_load_o  ( io_core_pmu_EXE_LOAD  )
 );
 
 assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store & lsu_req;

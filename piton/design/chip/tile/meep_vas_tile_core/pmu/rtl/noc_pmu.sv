@@ -53,13 +53,6 @@ module noc_pmu #(
     input [TILE_COUNT-1:0][EVENT_SIGNAL_COUNT-1:0] pmu_sig_i
 );
 
-
-  // localparam int unsigned AxiIdWidth = 1;
-  // localparam int unsigned AxiAddrWidth = 64;
-  // localparam int unsigned AxiDataWidth = 64;
-  // localparam int unsigned AxiUserWidth = 1;
-  // localparam SwapEndianess = 1;
-
   AXI_BUS #(
       .AXI_ID_WIDTH  (1),
       .AXI_ADDR_WIDTH(ADDRESS_WIDTH),
@@ -166,8 +159,8 @@ module noc_pmu #(
   // Decode read address
   logic [ADDR_TILE_WIDTH-1:0] read_tile;
   logic [ ADDR_REG_WIDTH-1:0] read_register;
-  assign read_tile = counter_read_address[ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH];
-  assign read_register = counter_read_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_ALIGN_WIDTH];
+  assign read_tile = counter_read_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH+:ADDR_TILE_WIDTH];
+  assign read_register = counter_read_address[ADDR_ALIGN_WIDTH+:ADDR_REG_WIDTH];
 
   always_ff @(counter_clk) begin
     if (counter_read_enable_syn && ~counter_read_valid) begin
@@ -199,8 +192,8 @@ module noc_pmu #(
   // Decode write address
   logic [ADDR_TILE_WIDTH-1:0] write_tile;
   logic [ADDR_REG_WIDTH-1:0] write_register;
-  assign write_tile = write_address[ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH];
-  assign write_register = write_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1 : ADDR_ALIGN_WIDTH];
+  assign write_tile = write_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH+:ADDR_TILE_WIDTH];
+  assign write_register = write_address[ADDR_ALIGN_WIDTH+:ADDR_REG_WIDTH];
 
   always_ff @(counter_clk) begin
     if (counter_write_enable_syn) begin
@@ -220,22 +213,22 @@ module noc_pmu #(
     for (int tile = 0; tile < TILE_COUNT; tile++) begin
       // Fetch counter status from config register (last one for the tile)
       logic counter_enable, counter_reset;
-      counter_enable = registers[tile][EVENT_SIGNAL_COUNT][0];
-      counter_reset  = registers[tile][EVENT_SIGNAL_COUNT][1];
+      counter_enable = registers[tile][0][0];
+      counter_reset  = registers[tile][0][1];
 
       // Logic for counters
-      for (int register = 0; register < EVENT_SIGNAL_COUNT; register++) begin
+      for (int register = 1; register < EVENT_SIGNAL_COUNT + 1; register++) begin
         if (rst == 1'b0 || counter_reset == 1'b1) registers[tile][register] <= 0;  // Reset logic
         else if (write_enable && write_tile == tile && write_register == register) begin
           registers[tile][register] <= write_data;  // Write incoming data to register
-        end else if (counter_enable == 1'b1 && pmu_sig_i[tile][register] == 1'b1)
+        end else if (counter_enable == 1'b1 && pmu_sig_i[tile][register-1] == 1'b1)
           registers[tile][register] <= registers[tile][register]+1; // Increment counters when required
       end
 
       // Logic for config register
-      if (rst == 1'b0) registers[tile][EVENT_SIGNAL_COUNT] <= 2'b01;  // Reset config
-      else if (write_enable && write_tile == tile && write_register == EVENT_SIGNAL_COUNT) begin
-        registers[tile][EVENT_SIGNAL_COUNT] <= write_data;  // Write incoming data to register
+      if (rst == 1'b0) registers[tile][0] <= 2'b00;  // Reset config
+      else if (write_enable && write_tile == tile && write_register == 0) begin
+        registers[tile][0] <= write_data;  // Write incoming data to register
       end
 
     end
