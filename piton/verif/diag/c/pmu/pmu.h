@@ -26,6 +26,7 @@
 #include <stdint.h>
 
 #define BASE_ADDRESS 0xfff5100000
+// Number of registers, excluding config one
 #define REG_COUNT 20
 #define REG_LENGTH REG_COUNT*8
 
