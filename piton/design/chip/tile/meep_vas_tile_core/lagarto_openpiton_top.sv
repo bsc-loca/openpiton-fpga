@@ -209,18 +209,26 @@ module lagarto_openpiton_top #(
     output logic                io_core_pmu_stall_wb        ,   
     output logic                io_core_pmu_EXE_LOAD        ,
     output logic                io_core_pmu_EXE_STORE       ,
+    output logic                io_core_pmu_dcache_request  ,
+    output logic                io_core_pmu_dcache_miss     ,
+    output logic                io_core_pmu_dmiss_l2hit     ,
+    output logic                io_core_pmu_icache_request  ,
+    output logic                io_core_pmu_icache_miss     ,
+    output logic                io_core_pmu_imiss_l2hit     ,
+    output logic                io_core_pmu_dtlb_miss       ,
+    output logic                io_core_pmu_itlb_miss       ,
 
     input  logic                io_core_pmu_l2_hit_i        ,
     input  logic                io_dc_gvalid_i     ,
-    input  [1:0]                io_dc_addrbit_i    ,
+    input  [1:0]                io_dc_addrbit_i    
 
-    output logic                io_core_pmu_icache_req      ,
-    output logic                io_core_pmu_icache_kill     ,        
-    output logic                io_core_pmu_buffer_miss     ,           
-    output logic                io_core_pmu_imiss_kill      ,           
-    output logic                io_core_pmu_dmiss_l2hit     ,           
-    output logic                io_core_pmu_icache_bussy    ,
-    output logic                io_core_pmu_imiss_time      
+    // output logic                io_core_pmu_icache_req      ,
+    // output logic                io_core_pmu_icache_kill     ,        
+    // output logic                io_core_pmu_buffer_miss     ,           
+    // output logic                io_core_pmu_imiss_kill      ,           
+    // output logic                io_core_pmu_dmiss_l2hit     ,           
+    // output logic                io_core_pmu_icache_bussy    ,
+    // output logic                io_core_pmu_imiss_time      
 
 );
 
@@ -333,6 +341,8 @@ wire            dcache_ld_data_rvalid;
 wire [63:0]     dcache_ld_data_rdata; 
 
 wire            dcache_st_data_gnt; 
+
+assign io_core_pmu_dcache_request = lagarto_ld_req_valid||lagarto_st_req_valid;
 
     //TLB
 wire        lsu_dtlb_hit;
@@ -489,6 +499,7 @@ logic dtlb_miss;
 logic dtlb_miss_st;
 logic dtlb_miss_ld;
 
+assign io_core_pmu_dtlb_miss = dtlb_miss;
 
 datapath datapath_inst(
     .clk_i(clk_i),
@@ -571,6 +582,8 @@ datapath datapath_inst(
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = icache_dreq_o.valid && icache_dreq_o.ex.valid;
+
+  assign io_core_pmu_icache_request = icache_dreq_i.req;
   
   // D$ request
                                                                                            
@@ -612,7 +625,7 @@ datapath datapath_inst(
     //.icache_en_i       (!dcache_resp_lock),
     .icache_en_i       (csr_icache_enable_i),
     .icache_flush_i    (iflush         ),
-    .icache_miss_o     (               ),
+    .icache_miss_o     (io_core_pmu_icache_miss),
     // I$ address translation requests
     .icache_areq_i     (mmu_icache_areq),
     .icache_areq_o     (icache_mmu_areq),
@@ -629,7 +642,7 @@ datapath datapath_inst(
     .dcache_amo_resp_o (dcache_amo_resp),
 
     // from PTW, Load Unit  and Store Unit
-    .dcache_miss_o     (               ),
+    .dcache_miss_o     (io_core_pmu_dcache_miss),
     .dcache_req_ports_i(dcache_lsu_req ),
     .dcache_req_ports_o(dcache_lsu_resp),
     // write buffer status
@@ -678,7 +691,7 @@ datapath datapath_inst(
     .satp_ppn_i            (satp_ppn_i          ),
     .asid_i                (asid_i              ),
     .flush_tlb_i           (                    ),
-    .itlb_miss_o           (                    ),
+    .itlb_miss_o           (io_core_pmu_itlb_miss),
     .dtlb_miss_o           (dtlb_miss           ),
     .req_port_i            (dcache_lsu_resp[0]  ),
     .req_port_o            (dcache_lsu_req[0]   )

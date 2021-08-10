@@ -278,17 +278,25 @@ lagarto_openpiton_top #(
     .io_core_pmu_stall_wb(pmu_sig[9]),
     .io_core_pmu_EXE_STORE(pmu_sig[10]),
     .io_core_pmu_EXE_LOAD(pmu_sig[11]),
+    .io_core_pmu_dcache_request(pmu_sig[12]),
+    .io_core_pmu_dcache_miss(pmu_sig[13]),
+    .io_core_pmu_dmiss_l2hit(pmu_sig[14]),
+    .io_core_pmu_icache_request(pmu_sig[15]),
+    .io_core_pmu_icache_miss(pmu_sig[16]),
+    .io_core_pmu_imiss_l2hit(pmu_sig[17]),
+    .io_core_pmu_dtlb_miss(pmu_sig[18]),
+    .io_core_pmu_itlb_miss(pmu_sig[19])
     // TODO icache_miss
     // TODO itlb_miss
     // TODO dache_miss
     // TODO dtlb_miss
     // .io_core_pmu_icache_req(pmu_sig[9]),
     // .io_core_pmu_icache_kill(pmu_sig[10]),
-    .io_core_pmu_buffer_miss(pmu_sig[16]),
-    .io_core_pmu_imiss_time(pmu_sig[17]),
-    .io_core_pmu_icache_bussy(pmu_sig[18]),
-    .io_core_pmu_imiss_kill(pmu_sig[19]),
-    .io_core_pmu_dmiss_l2hit(pmu_sig[22])
+    // .io_core_pmu_buffer_miss(pmu_sig[16]),
+    // .io_core_pmu_imiss_time(pmu_sig[17]),
+    // .io_core_pmu_icache_bussy(pmu_sig[18]),
+    // .io_core_pmu_imiss_kill(pmu_sig[19])
+    //.io_core_pmu_dmiss_l2hit(pmu_sig[22])
 );
 
 // always_ff @(posedge clk_i ) begin : test
