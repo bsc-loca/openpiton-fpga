@@ -34,7 +34,7 @@ int main(int argc, char **argv)
     if (cid == 0)
         printf("PMU multicore demo\n");
 
-    // Initialize profiling
+    // Initialize profiling, note that it includes time waiting for previous cores to finish
     init_profiling(cid);
 
     // synchronization variable
