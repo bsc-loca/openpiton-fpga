@@ -305,7 +305,7 @@ module chipset_impl(
     // PLIC
     output [`NUM_TILES*2-1:0]                   irq_o,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    input [`NUM_TILES-1:0][22:0]                pmu_sig_i,
+    input [23*(`NUM_TILES)-1:0]                 pmu_sig_i,
     input                                       pmu_clk
 `endif
 );

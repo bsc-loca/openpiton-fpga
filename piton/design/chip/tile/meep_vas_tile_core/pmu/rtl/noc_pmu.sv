@@ -103,7 +103,7 @@ module noc_pmu #(
       .r_reqbuf_size       (plic_master.ar_size)
   );
 
-
+  // Basic interface the axi module uses to access registers for read/write operations
   logic [DATA_WIDTH-1:0] counter_read_data, counter_write_data;
   logic [ADDR_TILE_WIDTH+ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH-1:0]
       counter_read_address, counter_write_address;
@@ -162,6 +162,7 @@ module noc_pmu #(
   assign read_tile = counter_read_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH+:ADDR_TILE_WIDTH];
   assign read_register = counter_read_address[ADDR_ALIGN_WIDTH+:ADDR_REG_WIDTH];
 
+  // Check for incoming read requests
   always_ff @(counter_clk) begin
     if (counter_read_enable_syn && ~counter_read_valid) begin
       // Check address is in bounds
@@ -195,7 +196,14 @@ module noc_pmu #(
   assign write_tile = write_address[ADDR_REG_WIDTH+ADDR_ALIGN_WIDTH+:ADDR_TILE_WIDTH];
   assign write_register = write_address[ADDR_ALIGN_WIDTH+:ADDR_REG_WIDTH];
 
+  // Check for incoming write requests
   always_ff @(counter_clk) begin
+    if (rst == 1'b0) begin
+      write_enable <= 1'b0;
+      counter_write_valid <= 1'b0;
+      write_address <= 0;
+      write_data <= 0;
+    end
     if (counter_write_enable_syn) begin
       write_enable <= 1'b1;
       write_data <= counter_write_data;
@@ -211,7 +219,7 @@ module noc_pmu #(
   // Counter logic
   always_ff @(posedge counter_clk) begin
     for (int tile = 0; tile < TILE_COUNT; tile++) begin
-      // Fetch counter status from config register (last one for the tile)
+      // Fetch counter status from config register (first one for each tile)
       logic counter_enable, counter_reset;
       counter_enable = registers[tile][0][0];
       counter_reset  = registers[tile][0][1];

@@ -1,8 +1,8 @@
-// Title      : axi_pmu
+// Title      : axi_pmu_bridge
 // Project    : MEEP
 // License    : <License type>
 /*****************************************************************************/
-// File        : axi_pmu.sv
+// File        : axi_pmu_bridge.sv
 // Author      : Pablo Criado Albillos; pablo.criado@bsc.es
 // Company     : Barcelona Supercomputing Center (BSC)
 // Created     : 28/07/2021
@@ -93,13 +93,13 @@ module axi_pmu #(
 
     // Interface to counters
     // Read interface		
-    output logic counter_read_enable,
-    input logic counter_read_valid,
+    output logic counter_read_enable, // Tells registers to read data
+    input logic counter_read_valid, // Input from registers when data is available
     output logic [COUNTER_ADDRESS_WIDTH-1:0] counter_read_address,
     input logic [COUNTER_DATA_WIDTH-1:0] counter_read_data,
     // Write interface
-    output logic counter_write_enable,
-    input logic counter_write_valid,
+    output logic counter_write_enable, // Tells registers to write data
+    input logic counter_write_valid, // Input from registers when data is written
     output logic [COUNTER_ADDRESS_WIDTH-1:0] counter_write_address,
     output logic [COUNTER_DATA_WIDTH-1:0] counter_write_data
 );
@@ -107,7 +107,7 @@ module axi_pmu #(
 
   // Writing logic
 
-  // Signaling for writing address input
+  // Receives and stores write address
   logic aw_available;  // Signal to indicate writing address is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
     if (S_AXI_ARESETN == 1'b0) begin
@@ -126,7 +126,7 @@ module axi_pmu #(
     end
   end
 
-  // Signaling for writing data input
+  // Receives and stores write data
   logic w_available;  // Signal to indicate writing data is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
     if (S_AXI_ARESETN == 1'b0) begin
@@ -145,7 +145,9 @@ module axi_pmu #(
     end
   end
 
-  // Handle writing
+  // Send write request to the register bank
+
+  // Synchronizer for the write valid input signal
   logic counter_write_valid_syn;
   synchronizer_2_stage write_syn (
       .in (counter_write_valid),
@@ -179,7 +181,7 @@ module axi_pmu #(
 
   // Read logic
 
-  // Signaling for reading address input
+  // Receives and stores read address
   logic ar_available;  // Signal to indicate reading address is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
     if (S_AXI_ARESETN == 1'b0) begin

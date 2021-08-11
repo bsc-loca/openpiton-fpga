@@ -2,7 +2,7 @@
 // Project    : MEEP
 // License    : <License type>
 /*****************************************************************************/
-// File        : pmu.c
+// File        : pmu_csv_export.c
 // Author      : Pablo Criado Albillos; pablo.criado@bsc.es
 // Company     : Barcelona Supercomputing Center (BSC)
 // Created     : 10/08/2021
