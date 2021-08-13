@@ -490,7 +490,7 @@ assign unsync_net_int = net_cmac_intc_comb;
   end
   assign core_axi_rvalid = core_axi_rvalid_reg;
   assign core_axi_rid    = core_axi_rid_reg;
-  assign core_axi_rdata  = {`AXI4_DATA_WIDTH{64'hDEADBEEFFEEDC0DE}};
+  assign core_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
   assign core_axi_rresp  = 2'h0;
   assign core_axi_rlast  = 1'b1;
   assign core_axi_ruser  = `AXI4_USER_WIDTH'h0;

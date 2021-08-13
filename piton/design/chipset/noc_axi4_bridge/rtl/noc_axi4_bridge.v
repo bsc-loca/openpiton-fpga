@@ -178,12 +178,15 @@ noc_axi4_bridge_deser noc_axi4_bridge_deser(
     .out_rdy(deser_rdy)
 );
 
+localparam SWP_BYTE = 8;
+localparam SWP_GRNLTY = 32/SWP_BYTE;
+localparam SWP_WORD = 64;
 reg [`AXI4_DATA_WIDTH-1:0] m_axi_rdata_swp;
 integer idxr;
 always @(*) begin
   if (SWAP_ENDIANESS)
-    for (idxr = 0; idxr < (`AXI4_DATA_WIDTH/8); idxr = idxr+1)
-       m_axi_rdata_swp[idxr*8 +: 8] = m_axi_rdata[((idxr/4)*4 + 3 - (idxr%4))*8 +: 8];
+    for (idxr = 0; idxr < (`AXI4_DATA_WIDTH/SWP_BYTE); idxr = idxr+1)
+       m_axi_rdata_swp[idxr*SWP_BYTE +: SWP_BYTE] = m_axi_rdata[((idxr/SWP_GRNLTY)*SWP_GRNLTY + SWP_GRNLTY-1 - (idxr%SWP_GRNLTY))*SWP_BYTE +: SWP_BYTE];
   else m_axi_rdata_swp = m_axi_rdata;
 end
 noc_axi4_bridge_read noc_axi4_bridge_read (
@@ -227,11 +230,15 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
 );
 
 wire [`AXI4_DATA_WIDTH-1:0] m_axi_wdata_swp;
+reg  [`AXI4_DATA_WIDTH-1:0] m_axi_wdata_tmp;
 integer idxw;
 always @(*) begin
-  if (SWAP_ENDIANESS)
-    for (idxw = 0; idxw < (`AXI4_DATA_WIDTH/8); idxw = idxw+1)
-       m_axi_wdata[idxw*8 +: 8] = m_axi_wdata_swp[((idxw/4)*4 + 3 - (idxw%4))*8 +: 8];
+  if (SWAP_ENDIANESS) begin
+    for (idxw = 0; idxw < (`AXI4_DATA_WIDTH/SWP_BYTE); idxw = idxw+1)
+       m_axi_wdata_tmp[idxw*SWP_BYTE +: SWP_BYTE] = m_axi_wdata_swp[((idxw/SWP_GRNLTY)*SWP_GRNLTY + SWP_GRNLTY-1 - (idxw%SWP_GRNLTY))*SWP_BYTE +: SWP_BYTE];
+    for (idxw = 0; idxw < (`AXI4_DATA_WIDTH/SWP_WORD); idxw = idxw+1)
+       m_axi_wdata[idxw*SWP_WORD +: SWP_WORD] = m_axi_wdata_tmp[(`AXI4_DATA_WIDTH/SWP_WORD - 1 -idxw)*SWP_WORD +: SWP_WORD];
+  end
   else m_axi_wdata = m_axi_wdata_swp;
 end
 noc_axi4_bridge_write noc_axi4_bridge_write (
