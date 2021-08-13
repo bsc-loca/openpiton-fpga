@@ -151,6 +151,6 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   cd $TMP
   puts "INFO: done"
 }
-  set ::env(PYTHONPATH) $tmp_PYTHONPATH                                                                           
-  set ::env(PYTHONHOME) $tmp_PYTHONHOME 
+set ::env(PYTHONPATH) $tmp_PYTHONPATH
+set ::env(PYTHONHOME) $tmp_PYTHONHOME
 
