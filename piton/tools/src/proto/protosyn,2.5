@@ -304,7 +304,7 @@ def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
     return jid
 
 
-def runImplFlow(board, design_data, work_dir, log_dir, def_list, slurm, dep_list):
+def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep_list):
     prev_dir = os.getcwd()
 
     os.chdir(work_dir)
@@ -344,6 +344,10 @@ def runImplFlow(board, design_data, work_dir, log_dir, def_list, slurm, dep_list
     elif (tool == "ise"):
         jid = run_ise(impl_log, impl_flow, design_data["PATH"], board, \
                       slurm, 8, 64000, "6:00:00", jname, dep_list)
+
+    # Copy sw defines for Ethernet core to proper place
+    if board == "alveou280" and eth:
+      os.system('cp $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
 
     os.chdir(prev_dir)
 
@@ -940,7 +944,7 @@ def main():
         if int(options.jobs)>1:
             print_info("Using %d jobs in Vivado" % int(options.jobs))
         os.environ['NUM_VIVADO_JOBS']   = str(int(options.jobs))
-        jid = runImplFlow(options.board, design_data, rc_dir.work, rc_dir.log, defines, options.slurm, dep_list)
+        jid = runImplFlow(options.board, options.eth, design_data, rc_dir.work, rc_dir.log, defines, options.slurm, dep_list)
         if jid != None:
             dep_list.append(jid)
 
@@ -963,10 +967,6 @@ def main():
             waitSlurmJobs(dep_list)
         else:
             print_info("Run 'protocheck -b %s -d %s' after jobs are finished to check results" % (options.board, options.design))
-
-    # Copy sw defines for Ethernet core to proper place
-    if options.board == "alveou280" and options.eth:
-      os.system('cp $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
 
     # Check  implementation results
     if (options.slurm and options.swait) or (not options.slurm):
