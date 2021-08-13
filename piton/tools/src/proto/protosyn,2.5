@@ -964,6 +964,10 @@ def main():
         else:
             print_info("Run 'protocheck -b %s -d %s' after jobs are finished to check results" % (options.board, options.design))
 
+    # Copy sw defines for Ethernet core to proper place
+    if options.board == "alveou280" and options.eth:
+      os.system('cp $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
+
     # Check  implementation results
     if (options.slurm and options.swait) or (not options.slurm):
         if run_make_project:

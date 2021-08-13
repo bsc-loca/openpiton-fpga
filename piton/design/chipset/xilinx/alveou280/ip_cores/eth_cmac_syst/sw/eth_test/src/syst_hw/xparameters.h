@@ -29,15 +29,15 @@ enum {
    XPAR_AXI_DMA_0_S2MM_BURST_SIZE = 64 ,
    XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM = 0 ,
    XPAR_AXIDMA_0_SG_LENGTH_WIDTH = 22 ,
-     XPAR_TMRCTR_0_BASEADDR = 0x00000400 , AXI_TIMER_0_ADRRANGE = 0x00000080 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs axi_timer_0/S_AXI/Reg] -force
-  ,  ETH100GB_BASEADDR = 0x00010000 , ETH100GB_ADRRANGE = 0x00010000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs eth100gb/s_axi/Reg] -force
-  ,  XPAR_AXIDMA_0_BASEADDR = 0x00000C00 , ETH_DMA_ADRRANGE = 0x00000400 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs eth_dma/S_AXI_LITE/Reg] -force
-  ,  GT_CTL_BASEADDR = 0x00000800 , GT_CTL_ADRRANGE = 0x00000200 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs gt_ctl/S_AXI/Reg] -force
-  ,  RX_AXIS_SWITCH_BASEADDR = 0x00000600 , RX_AXIS_SWITCH_ADRRANGE = 0x00000080 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs rx_axis_switch/S_AXI_CTRL/Reg] -force
-  ,  RX_MEM_CPU_BASEADDR = 0x00200000 , RX_MEM_CPU_ADRRANGE = 0x00100000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs rx_mem_cpu/S_AXI/Mem0] -force
-  ,  SG_MEM_CPU_BASEADDR = 0x00300000 , SG_MEM_CPU_ADRRANGE = 0x00100000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs sg_mem_cpu/S_AXI/Mem0] -force
-  ,  TX_AXIS_SWITCH_BASEADDR = 0x00000500 , TX_AXIS_SWITCH_ADRRANGE = 0x00000080 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_axis_switch/S_AXI_CTRL/Reg] -force
-  ,  TX_MEM_CPU_BASEADDR = 0x00100000 , TX_MEM_CPU_ADRRANGE = 0x00100000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_mem_cpu/S_AXI/Mem0] -force
-  ,  TX_RX_CTL_STAT_BASEADDR = 0x00000A00 , TX_RX_CTL_STAT_ADRRANGE = 0x00000200 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_rx_ctl_stat/S_AXI/Reg] -force
+     XPAR_TMRCTR_0_BASEADDR = 0x00015000 , AXI_TIMER_0_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs axi_timer_0/S_AXI/Reg] -force
+  ,  ETH100GB_BASEADDR = 0x00000000 , ETH100GB_ADRRANGE = 0x00010000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs eth100gb/s_axi/Reg] -force
+  ,  XPAR_AXIDMA_0_BASEADDR = 0x00010000 , ETH_DMA_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs eth_dma/S_AXI_LITE/Reg] -force
+  ,  GT_CTL_BASEADDR = 0x00013000 , GT_CTL_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs gt_ctl/S_AXI/Reg] -force
+  ,  RX_AXIS_SWITCH_BASEADDR = 0x00012000 , RX_AXIS_SWITCH_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs rx_axis_switch/S_AXI_CTRL/Reg] -force
+  ,  RX_MEM_CPU_BASEADDR = 0x00200000 , RX_MEM_CPU_ADRRANGE = 0x00080000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs rx_mem_cpu/S_AXI/Mem0] -force
+  ,  SG_MEM_CPU_BASEADDR = 0x00300000 , SG_MEM_CPU_ADRRANGE = 0x00080000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs sg_mem_cpu/S_AXI/Mem0] -force
+  ,  TX_AXIS_SWITCH_BASEADDR = 0x00011000 , TX_AXIS_SWITCH_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_axis_switch/S_AXI_CTRL/Reg] -force
+  ,  TX_MEM_CPU_BASEADDR = 0x00100000 , TX_MEM_CPU_ADRRANGE = 0x00080000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_mem_cpu/S_AXI/Mem0] -force
+  ,  TX_RX_CTL_STAT_BASEADDR = 0x00014000 , TX_RX_CTL_STAT_ADRRANGE = 0x00001000 // [get_bd_addr_spaces s_axi] [get_bd_addr_segs tx_rx_ctl_stat/S_AXI/Reg] -force
 };
 #endif // end of protection macro
