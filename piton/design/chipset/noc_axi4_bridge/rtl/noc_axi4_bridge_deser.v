@@ -30,7 +30,10 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_deser (
+module noc_axi4_bridge_deser #(
+    // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    parameter SWAP_ENDIANESS = 0
+) (
   input clk, 
   input rst_n, 
 
@@ -178,6 +181,8 @@ endgenerate
 
 
 assign header_out = {pkt_w3, pkt_w2, pkt_w1};
-assign data_out = {in_data_buf[0], in_data_buf[1], in_data_buf[2], in_data_buf[3], in_data_buf[4], in_data_buf[5], in_data_buf[6], in_data_buf[7]};
+// Alex Kropotov: workaround to ovecome probably incorrect assignment
+assign data_out = SWAP_ENDIANESS ? {in_data_buf[7], in_data_buf[6], in_data_buf[5], in_data_buf[4], in_data_buf[3], in_data_buf[2], in_data_buf[1], in_data_buf[0]} :
+                                   {in_data_buf[0], in_data_buf[1], in_data_buf[2], in_data_buf[3], in_data_buf[4], in_data_buf[5], in_data_buf[6], in_data_buf[7]};
 
 endmodule
