@@ -27,7 +27,7 @@
 # This script performs general actions
 # for creating a Vivado project
 #
-#start_gui
+
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
@@ -77,14 +77,16 @@ foreach prj_file ${ALL_FILES} {
 }
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
-#Insert block design when needed
-if {[info exists USE_BLOCK_DESIGN] && $USE_BLOCK_DESIGN==1} {
-	#add_files -norecurse ${DV_ROOT}/design/chipset/meep/meep_shell.bd 
-	add_files -norecurse ${ALL_BD_FILES}
-}
-
-#Generate Ethernet subsystem for Alveo280 board
+#Generating IP cores for Alveo280 board
 if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
+  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell_xxx.tcl)
+  # with DDR SDRAM
+  source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
+  # with HBM SDRAM
+  #source $DV_ROOT/design/chipset/meep/meep_shell_bd.tcl
+	add_files -norecurse ${DV_ROOT}/design/chipset/meep/meep_shell.bd 
+
+  # Generating Ethernet system
   source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
   cr_bd_Eth_CMAC_syst ""
   make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
