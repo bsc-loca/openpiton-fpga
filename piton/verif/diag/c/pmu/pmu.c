@@ -81,13 +81,13 @@ void print_summary(uint8_t tile_id)
     printf("= *Executed instructions: %ld (%ld cycles per instruction)\n", instructions, clock_cycles / instructions);
     printf("=\n");
 
-    uint64_t branches = read_register(tile_id, REG_IS_BRANCH);
+    uint64_t is_branch = read_register(tile_id, REG_IS_BRANCH);
     uint64_t taken_branches = read_register(tile_id, REG_BRANCH_TAKEN);
     uint64_t missed_branches = read_register(tile_id, REG_BRANCH_MISS);
     printf("= Branches:\n");
-    printf("= *Total branches: %ld\n", branches);
+    printf("= *Total branch instructions: %ld\n", is_branch);
     printf("= *Taken branches: %ld\n", taken_branches);
-    printf("= *Missed branches: %ld\n", missed_branches);
+    printf("= *Missed branch predictions: %ld\n", missed_branches);
     printf("=\n");
 
     uint64_t stall_if = read_register(tile_id, REG_STALL_IF);
@@ -103,13 +103,6 @@ void print_summary(uint8_t tile_id)
     printf("= *Write back / commit: %ld\n", stall_wb);
     printf("=\n");
 
-    uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
-    uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
-    printf("= Memory accesses:\n");
-    printf("= *Load executions: %ld\n", exe_load);
-    printf("= *Store executions: %ld\n", exe_store);
-    printf("=\n");
-
     uint64_t dcache_access = read_register(tile_id, REG_DCACHE_ACCESS);
     uint16_t dcache_access_permil = 1000 * dcache_access / dcache_access;
     uint64_t dcache_miss = read_register(tile_id, REG_DCACHE_MISS);
@@ -118,6 +111,13 @@ void print_summary(uint8_t tile_id)
     uint16_t dcache_l2_miss_permil = 1000 * dcache_l2_miss / dcache_access;
     printf("= Cache accesses:\n");
     printf("= *Data: Core ---%ld(%d‰)--> DCache ---%ld(%d‰)--> L2 ---%ld(%d‰)--> Memory / IO\n", dcache_access, dcache_access_permil, dcache_miss, dcache_miss_permil, dcache_l2_miss, dcache_l2_miss_permil);
+
+    uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
+    uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
+    printf("= Memory accesses:\n");
+    printf("= *Load executions: %ld\n", exe_load);
+    printf("= *Store executions: %ld\n", exe_store);
+    printf("=\n");
 
     uint64_t icache_access = read_register(tile_id, REG_ICACHE_ACCESS);
     uint16_t icache_access_permil = 1000 * icache_access / icache_access;
@@ -135,7 +135,7 @@ void print_summary(uint8_t tile_id)
     printf("= *Instructions: %ld\n", itlb_miss);
     printf("=\n");
 
-    printf("==================== End of execution stats ====================\n");
+    printf("====================== End of execution stats =======================\n");
 }
 
 void dump_registers(uint8_t tile_id, uint64_t *dest)
