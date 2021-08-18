@@ -837,6 +837,14 @@ credit_to_valrdy noc3_xbar_to_%s(
 	  .pcie_perstn(pcie_perstn),
 	  .pcie_refclk_n(pcie_refclk_n),
 	  .pcie_refclk_p(pcie_refclk_p),
+
+      .sram_flit_in_data(buf_sram_noc2_data),
+      .sram_flit_in_val(buf_sram_noc2_valid),
+      .sram_flit_in_rdy(sram_buf_noc2_ready),
+
+      .sram_flit_out_data(sram_buf_noc3_data),
+      .sram_flit_out_val(sram_buf_noc3_valid),
+      .sram_flit_out_rdy(buf_sram_noc3_ready),
 	 `endif
         `else // PITONSYS_DDR4
             .sys_clk(mc_clk),
