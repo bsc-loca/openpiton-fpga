@@ -200,8 +200,13 @@ module lagarto_openpiton_top #(
 //-----------------------------------------------------------------------------
     output logic                io_core_pmu_new_instruction ,
     output logic                io_core_pmu_is_branch       ,
-    output logic                io_core_pmu_branch_taken    , 
-    output logic                io_core_pmu_branch_miss     ,
+    output logic                io_core_pmu_is_branch_hit   ,
+    output logic                io_core_pmu_is_branch_false_positive,
+    output logic                io_core_pmu_branch_taken    ,
+    output logic                io_core_pmu_branch_taken_hit,
+    output logic                io_core_pmu_branch_taken_b_not_detected,
+    output logic                io_core_pmu_branch_taken_addr_miss,
+    output logic                io_core_pmu_branch_not_taken_hit,
     output logic                io_core_pmu_stall_if        ,
     output logic                io_core_pmu_stall_id        ,
     output logic                io_core_pmu_stall_rr        ,
@@ -219,7 +224,7 @@ module lagarto_openpiton_top #(
     output logic                io_core_pmu_itlb_miss       ,
 
     input  logic                io_core_pmu_l2_hit_i        ,
-    input  logic                io_dc_gvalid_i     ,
+    input  logic                io_dc_gvalid_i              ,
     input  [1:0]                io_dc_addrbit_i    
 
     // output logic                io_core_pmu_icache_req      ,
@@ -459,9 +464,14 @@ assign io_core_pmu_stall_id         = pmu_flags.stall_id                    ;
 assign io_core_pmu_stall_rr         = pmu_flags.stall_rr                    ; 
 assign io_core_pmu_stall_exe        = pmu_flags.stall_exe                   ; 
 assign io_core_pmu_stall_wb         = pmu_flags.stall_wb                    ; 
-assign io_core_pmu_branch_miss      = pmu_flags.branch_miss                 ; 
 assign io_core_pmu_is_branch        = pmu_flags.is_branch                   ; 
+assign io_core_pmu_is_branch_hit    = pmu_flags.is_branch_hit               ; 
+assign io_core_pmu_is_branch_false_positive = pmu_flags.is_branch_false_positive; 
 assign io_core_pmu_branch_taken     = pmu_flags.branch_taken                ; 
+assign io_core_pmu_branch_taken_hit = pmu_flags.branch_taken_hit            ; 
+assign io_core_pmu_branch_taken_b_not_detected = pmu_flags.branch_taken_b_not_detected; 
+assign io_core_pmu_branch_taken_addr_miss = pmu_flags.branch_taken_addr_miss; 
+assign io_core_pmu_branch_not_taken_hit = pmu_flags.branch_not_taken_hit    ; 
 assign io_core_pmu_new_instruction  = req_datapath_csr_interface.csr_retire ;
 assign io_core_pmu_imiss_l2hit      = imiss_l2_hit                          ;
 assign io_core_pmu_dmiss_l2hit      = dmiss_l2_hit                          ;

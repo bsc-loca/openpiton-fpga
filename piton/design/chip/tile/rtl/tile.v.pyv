@@ -225,7 +225,7 @@ print s
     // PLIC
     input   [1:0]                       irq_i,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    output  [22:0]                      pmu_sig_o
+    output  [24:0]                      pmu_sig_o
 `endif
 );
     // clock gating

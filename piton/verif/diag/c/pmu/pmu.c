@@ -82,12 +82,21 @@ void print_summary(uint8_t tile_id)
     printf("=\n");
 
     uint64_t is_branch = read_register(tile_id, REG_IS_BRANCH);
+    uint64_t is_branch_hit = read_register(tile_id, REG_IS_BRANCH_HIT);
+    uint64_t is_branch_false_positive = read_register(tile_id, REG_IS_BRANCH_FALSE_POSITIVE);
     uint64_t taken_branches = read_register(tile_id, REG_BRANCH_TAKEN);
-    uint64_t missed_branches = read_register(tile_id, REG_BRANCH_MISS);
+    uint64_t taken_branches_hit = read_register(tile_id, REG_BRANCH_TAKEN_HIT);
+    uint64_t taken_branches_b_not_detected = read_register(tile_id, REG_BRANCH_TAKEN_B_NOT_DETECTED);
+    uint64_t taken_branches_addr_miss = read_register(tile_id, REG_BRANCH_TAKEN_ADDR_MISS);
+    uint64_t not_taken_branches_hit = read_register(tile_id, REG_BRANCH_NOT_TAKEN_HIT);
+    uint64_t taken_branches_miss = taken_branches - taken_branches_hit;
+    uint64_t not_taken_branches = is_branch - taken_branches;
+
     printf("= Branches:\n");
-    printf("= *Total branch instructions: %ld\n", is_branch);
-    printf("= *Taken branches: %ld\n", taken_branches);
-    printf("= *Missed branch predictions: %ld\n", missed_branches);
+    printf("= *Branch instructions: %ld (%ld hits, %ld misses, %ld false-positives)\n", is_branch, is_branch_hit, is_branch - is_branch_hit, is_branch_false_positive);
+    printf("=   *Taken branches: %ld (%ld hits, %ld misses)\n", taken_branches, taken_branches_hit, taken_branches - taken_branches_hit);
+    printf("=     *Missed: %ld (%ld branch not detected, %ld wrong decision, %ld wrong address)\n", taken_branches_miss, taken_branches_b_not_detected, taken_branches_miss - (taken_branches_b_not_detected + taken_branches_addr_miss), taken_branches_addr_miss);
+    printf("=   *Not taken branches: %ld (%ld hits, %ld misses)\n", not_taken_branches, not_taken_branches_hit, not_taken_branches - not_taken_branches_hit);
     printf("=\n");
 
     uint64_t stall_if = read_register(tile_id, REG_STALL_IF);
@@ -112,13 +121,6 @@ void print_summary(uint8_t tile_id)
     printf("= Cache accesses:\n");
     printf("= *Data: Core ---%ld(%d‰)--> DCache ---%ld(%d‰)--> L2 ---%ld(%d‰)--> Memory / IO\n", dcache_access, dcache_access_permil, dcache_miss, dcache_miss_permil, dcache_l2_miss, dcache_l2_miss_permil);
 
-    uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
-    uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
-    printf("= Memory accesses:\n");
-    printf("= *Load executions: %ld\n", exe_load);
-    printf("= *Store executions: %ld\n", exe_store);
-    printf("=\n");
-
     uint64_t icache_access = read_register(tile_id, REG_ICACHE_ACCESS);
     uint16_t icache_access_permil = 1000 * icache_access / icache_access;
     uint64_t icache_miss = read_register(tile_id, REG_ICACHE_MISS);
@@ -126,6 +128,13 @@ void print_summary(uint8_t tile_id)
     uint64_t icache_l2_miss = icache_miss - read_register(tile_id, REG_ICACHE_MISS_L2_HIT);
     uint16_t icache_l2_miss_permil = 1000 * icache_l2_miss / icache_access;
     printf("= *Instructions: Core ---%ld(%d‰)--> ICache ---%ld(%d‰)--> L2 ---%ld(%d‰)--> Memory / IO\n", icache_access, icache_access_permil, icache_miss, icache_miss_permil, icache_l2_miss, icache_l2_miss_permil);
+    printf("=\n");
+
+    uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
+    uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
+    printf("= Memory accesses:\n");
+    printf("= *Load executions: %ld\n", exe_load);
+    printf("= *Store executions: %ld\n", exe_store);
     printf("=\n");
 
     uint64_t dtlb_miss = read_register(tile_id, REG_DTLB_MISS);

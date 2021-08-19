@@ -164,7 +164,7 @@ module chip(
     // PLIC
     input   [`NUM_TILES*2-1:0]                  irq_i,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    output  [23*(`NUM_TILES)-1:0]               pmu_sig_o
+    output  [25*(`NUM_TILES)-1:0]               pmu_sig_o
 `endif
 );
 

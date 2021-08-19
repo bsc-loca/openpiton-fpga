@@ -31,7 +31,7 @@ module noc_pmu #(
     // Number of CPU cores
     parameter integer TILE_COUNT,
     // Number of event signals
-    parameter integer EVENT_SIGNAL_COUNT = 23,
+    parameter integer EVENT_SIGNAL_COUNT = 25,
     // Bit width for register addressing
     parameter integer ADDR_REG_WIDTH = 6,
     // Bit width for tile addressing

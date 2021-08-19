@@ -27,32 +27,37 @@
 
 #define BASE_ADDRESS 0xfff5100000
 // Number of registers, excluding config one
-#define REG_COUNT 20
+#define REG_COUNT 25
 #define REG_LENGTH REG_COUNT*8
 
 #define REG_CONFIG 0x00
 #define REG_CLOCK 0x08
 #define REG_NEW_INST 0x10
 #define REG_IS_BRANCH 0x18
-#define REG_BRANCH_TAKEN 0x20
-#define REG_BRANCH_MISS 0x28
-#define REG_STALL_IF 0x30
-#define REG_STALL_ID 0x38
-#define REG_STALL_RR 0x40
-#define REG_STALL_EXE 0x48
-#define REG_STALL_WB 0x50
-#define REG_EXE_STORE 0x58
-#define REG_EXE_LOAD 0x60
-#define REG_DCACHE_ACCESS 0x68
-#define REG_DCACHE_MISS 0x70
-#define REG_DCACHE_MISS_L2_HIT 0x78
-#define REG_ICACHE_ACCESS 0x80
-#define REG_ICACHE_MISS 0x88
-#define REG_ICACHE_MISS_L2_HIT 0x90
-#define REG_DTLB_MISS 0x98
-#define REG_ITLB_MISS 0xA0
+#define REG_IS_BRANCH_HIT 0x20
+#define REG_IS_BRANCH_FALSE_POSITIVE 0x28
+#define REG_BRANCH_TAKEN 0x30
+#define REG_BRANCH_TAKEN_HIT 0x38
+#define REG_BRANCH_TAKEN_B_NOT_DETECTED 0x40
+#define REG_BRANCH_TAKEN_ADDR_MISS 0x48
+#define REG_BRANCH_NOT_TAKEN_HIT 0x50
+#define REG_STALL_IF 0x58
+#define REG_STALL_ID 0x60
+#define REG_STALL_RR 0x68
+#define REG_STALL_EXE 0x70
+#define REG_STALL_WB 0x78
+#define REG_EXE_STORE 0x80
+#define REG_EXE_LOAD 0x88
+#define REG_DCACHE_ACCESS 0x90
+#define REG_DCACHE_MISS 0x98
+#define REG_DCACHE_MISS_L2_HIT 0xA0
+#define REG_ICACHE_ACCESS 0xA8
+#define REG_ICACHE_MISS 0xB0
+#define REG_ICACHE_MISS_L2_HIT 0xB8
+#define REG_DTLB_MISS 0xC0
+#define REG_ITLB_MISS 0xC8
 
-#define REG_NAMES "clk,new_ins,is_br,br_taken,br_miss,stall_if,stall_id,stall_rr,stall_exe,stall_wb,ex_store,ex_load,dc_access,dc_miss,dc_l2hit,ic_access,ic_miss,ic_l2hit,dtlb_miss,itlb_miss"
+#define REG_NAMES "clk,new_ins,is_br,is_br_hit,is_br_false_pos,br_taken,br_taken_hit,br_taken_b_not_detected,br_taken_addr_miss,br_not_taken_hit,stall_if,stall_id,stall_rr,stall_exe,stall_wb,ex_store,ex_load,dc_access,dc_miss,dc_l2hit,ic_access,ic_miss,ic_l2hit,dtlb_miss,itlb_miss"
 
 void start_counters(uint8_t tile_id);
 void stop_counters(uint8_t tile_id);
