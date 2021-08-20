@@ -479,6 +479,9 @@ assign io_core_pmu_imiss_time       = imiss_time_pmu                        ;
 assign io_core_pmu_imiss_kill       = imiss_kill_pmu                        ;
 assign io_core_pmu_icache_bussy     = !icache_resp.ready                    ;
 
+assign io_core_pmu_EXE_LOAD         = lsu_load                              ;
+assign io_core_pmu_EXE_STORE        = lsu_store                             ;
+
 // OVI CSR fields
 logic [EPI_pkg::CSR_VSTART_WIDTH-1:0] ovi_csr_vstart;
 logic [EPI_pkg::CSR_VLEN_WIDTH-1:0] ovi_csr_vl;
@@ -753,11 +756,7 @@ datapath datapath_inst(
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     .dmem_resp_gnt_ld_i         (dcache_ld_data_gnt             ),
     // Response towards Lagarto
-    .resp_dcache_cpu_o          (resp_dcache_interface_datapath ),
-    
-    // PMU
-    .pmu_exe_store_o ( io_core_pmu_EXE_STORE ),
-    .pmu_exe_load_o  ( io_core_pmu_EXE_LOAD  )
+    .resp_dcache_cpu_o          (resp_dcache_interface_datapath )
 );
 
 assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store & lsu_req;

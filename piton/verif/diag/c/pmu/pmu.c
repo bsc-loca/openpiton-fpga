@@ -94,9 +94,9 @@ void print_summary(uint8_t tile_id)
 
     printf("= Branches:\n");
     printf("= *Branch instructions: %ld (%ld hits, %ld misses, %ld false-positives)\n", is_branch, is_branch_hit, is_branch - is_branch_hit, is_branch_false_positive);
-    printf("=   *Taken branches: %ld (%ld hits, %ld misses)\n", taken_branches, taken_branches_hit, taken_branches - taken_branches_hit);
+    printf("=   *Taken: %ld (%ld hits, %ld misses)\n", taken_branches, taken_branches_hit, taken_branches - taken_branches_hit);
     printf("=     *Missed: %ld (%ld branch not detected, %ld wrong decision, %ld wrong address)\n", taken_branches_miss, taken_branches_b_not_detected, taken_branches_miss - (taken_branches_b_not_detected + taken_branches_addr_miss), taken_branches_addr_miss);
-    printf("=   *Not taken branches: %ld (%ld hits, %ld misses)\n", not_taken_branches, not_taken_branches_hit, not_taken_branches - not_taken_branches_hit);
+    printf("=   *Not taken: %ld (%ld hits, %ld misses)\n", not_taken_branches, not_taken_branches_hit, not_taken_branches - not_taken_branches_hit);
     printf("=\n");
 
     uint64_t stall_if = read_register(tile_id, REG_STALL_IF);
@@ -104,7 +104,7 @@ void print_summary(uint8_t tile_id)
     uint64_t stall_rr = read_register(tile_id, REG_STALL_RR);
     uint64_t stall_exe = read_register(tile_id, REG_STALL_EXE);
     uint64_t stall_wb = read_register(tile_id, REG_STALL_WB);
-    printf("= Pipeline stalls produced by each stage:\n");
+    printf("= Pipeline stalls per stage:\n");
     printf("= *Instruction fetch: %ld\n", stall_if);
     printf("= *Instruction decode: %ld\n", stall_id);
     printf("= *Read registers: %ld\n", stall_rr);
@@ -132,9 +132,9 @@ void print_summary(uint8_t tile_id)
 
     uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
     uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
-    printf("= Memory accesses:\n");
-    printf("= *Load executions: %ld\n", exe_load);
-    printf("= *Store executions: %ld\n", exe_store);
+    printf("= Memory access cycles:\n");
+    printf("= *Load: %ld\n", exe_load);
+    printf("= *Store: %ld\n", exe_store);
     printf("=\n");
 
     uint64_t dtlb_miss = read_register(tile_id, REG_DTLB_MISS);

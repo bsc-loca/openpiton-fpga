@@ -75,11 +75,7 @@ module lagarto_dcache_interface (
     input  logic        dmem_resp_gnt_st_i,   
     input  logic        dmem_resp_gnt_ld_i, 
     // Response towards Lagarto
-    output resp_dcache_cpu_t resp_dcache_cpu_o,
-
-    // PMU output
-    output logic        pmu_exe_load_o,
-    output logic        pmu_exe_store_o
+    output resp_dcache_cpu_t resp_dcache_cpu_o
 );
 
 
