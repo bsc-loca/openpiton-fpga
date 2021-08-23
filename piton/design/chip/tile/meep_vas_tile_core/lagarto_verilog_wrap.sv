@@ -260,11 +260,6 @@ lagarto_openpiton_top #(
     .dbg_we_i            (1'b0                   ),
     .dbg_address_i       ({DBG_ADDR_WIDTH{1'b0}} ),
     .dbg_write_data_i    ({DBG_ADDR_WIDTH{1'b0}} ),
-    
-    // debugging module signal
-    .io_core_pmu_l2_hit_i(1'b0                   ),
-    .io_dc_gvalid_i      (1'b0                   ),
-    .io_dc_addrbit_i     (2'b0                   ),
 
     // PMU signals
     .io_core_pmu_new_instruction(pmu_sig[1]),
@@ -285,16 +280,12 @@ lagarto_openpiton_top #(
     .io_core_pmu_EXE_LOAD(pmu_sig[16]),
     .io_core_pmu_dcache_request(pmu_sig[17]),
     .io_core_pmu_dcache_miss(pmu_sig[18]),
-    .io_core_pmu_dmiss_l2hit(pmu_sig[19]),
+    .io_core_pmu_dmiss_l2miss(pmu_sig[19]),
     .io_core_pmu_icache_request(pmu_sig[20]),
     .io_core_pmu_icache_miss(pmu_sig[21]),
-    .io_core_pmu_imiss_l2hit(pmu_sig[22]),
+    .io_core_pmu_imiss_l2miss(pmu_sig[22]),
     .io_core_pmu_dtlb_miss(pmu_sig[23]),
     .io_core_pmu_itlb_miss(pmu_sig[24])
 );
-
-// always_ff @(posedge clk_i ) begin : test
-//   $display("PMU Test @ lagarto_verilog_wrap %b",pmu_sig);
-// end
 
 endmodule

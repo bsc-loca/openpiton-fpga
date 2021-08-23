@@ -77,8 +77,8 @@ void print_summary(uint8_t tile_id)
     uint64_t clock_cycles = read_register(tile_id, REG_CLOCK);
     uint64_t instructions = read_register(tile_id, REG_NEW_INST);
     printf("= Summary:\n");
-    printf("= *Clock cycles: %ld\n", clock_cycles);
-    printf("= *Executed instructions: %ld (%ld cycles per instruction)\n", instructions, clock_cycles / instructions);
+    printf("=   *Clock cycles: %ld\n", clock_cycles);
+    printf("=   *Executed instructions: %ld (%ld cycles per instruction)\n", instructions, clock_cycles / instructions);
     printf("=\n");
 
     uint64_t is_branch = read_register(tile_id, REG_IS_BRANCH);
@@ -93,10 +93,10 @@ void print_summary(uint8_t tile_id)
     uint64_t not_taken_branches = is_branch - taken_branches;
 
     printf("= Branches:\n");
-    printf("= *Branch instructions: %ld (%ld hits, %ld misses, %ld false-positives)\n", is_branch, is_branch_hit, is_branch - is_branch_hit, is_branch_false_positive);
-    printf("=   *Taken: %ld (%ld hits, %ld misses)\n", taken_branches, taken_branches_hit, taken_branches - taken_branches_hit);
-    printf("=     *Missed: %ld (%ld branch not detected, %ld wrong decision, %ld wrong address)\n", taken_branches_miss, taken_branches_b_not_detected, taken_branches_miss - (taken_branches_b_not_detected + taken_branches_addr_miss), taken_branches_addr_miss);
-    printf("=   *Not taken: %ld (%ld hits, %ld misses)\n", not_taken_branches, not_taken_branches_hit, not_taken_branches - not_taken_branches_hit);
+    printf("=   *Branch instructions: %ld (%ld hits - %d%%, %ld misses, %ld false-positives)\n", is_branch, is_branch_hit, 100 * is_branch_hit / is_branch, is_branch - is_branch_hit, is_branch_false_positive);
+    printf("=     *Taken: %ld (%ld hits - %d%%, %ld misses)\n", taken_branches, taken_branches_hit, 100 * taken_branches_hit / taken_branches, taken_branches - taken_branches_hit);
+    printf("=       *Missed: %ld (%ld branch not detected, %ld wrong decision, %ld wrong address)\n", taken_branches_miss, taken_branches_b_not_detected, taken_branches_miss - (taken_branches_b_not_detected + taken_branches_addr_miss), taken_branches_addr_miss);
+    printf("=     *Not taken: %ld (%ld hits - %d%%, %ld misses)\n", not_taken_branches, not_taken_branches_hit, 100 * not_taken_branches_hit / not_taken_branches, not_taken_branches - not_taken_branches_hit);
     printf("=\n");
 
     uint64_t stall_if = read_register(tile_id, REG_STALL_IF);
@@ -105,43 +105,41 @@ void print_summary(uint8_t tile_id)
     uint64_t stall_exe = read_register(tile_id, REG_STALL_EXE);
     uint64_t stall_wb = read_register(tile_id, REG_STALL_WB);
     printf("= Pipeline stalls per stage:\n");
-    printf("= *Instruction fetch: %ld\n", stall_if);
-    printf("= *Instruction decode: %ld\n", stall_id);
-    printf("= *Read registers: %ld\n", stall_rr);
-    printf("= *Execution: %ld\n", stall_exe);
-    printf("= *Write back / commit: %ld\n", stall_wb);
+    printf("=   *Instruction fetch: %ld\n", stall_if);
+    printf("=   *Instruction decode: %ld\n", stall_id);
+    printf("=   *Read registers: %ld\n", stall_rr);
+    printf("=   *Execution: %ld\n", stall_exe);
+    printf("=   *Write back / commit: %ld\n", stall_wb);
     printf("=\n");
 
     uint64_t dcache_access = read_register(tile_id, REG_DCACHE_ACCESS);
-    uint16_t dcache_access_permil = 1000 * dcache_access / dcache_access;
     uint64_t dcache_miss = read_register(tile_id, REG_DCACHE_MISS);
-    uint16_t dcache_miss_permil = 1000 * dcache_miss / dcache_access;
-    uint64_t dcache_l2_miss = dcache_miss - read_register(tile_id, REG_DCACHE_MISS_L2_HIT);
-    uint16_t dcache_l2_miss_permil = 1000 * dcache_l2_miss / dcache_access;
+    uint16_t dcache_miss_percent = 10000 * dcache_miss / dcache_access;
+    uint64_t dcache_l2_miss = read_register(tile_id, REG_DCACHE_MISS_L2_MISS);
+    uint16_t dcache_l2_miss_percent = 10000 * dcache_l2_miss / dcache_access;
     printf("= Cache accesses:\n");
-    printf("= *Data: Core ---%ld(%d‰)--> DCache ---%ld(%d‰)--> L2 ---%ld(%d‰)--> Memory / IO\n", dcache_access, dcache_access_permil, dcache_miss, dcache_miss_permil, dcache_l2_miss, dcache_l2_miss_permil);
+    printf("=   *Data: Core ----%ld---> DCache ---%ld(%d.%02d%%)--> L2 ---%ld(%d.%02d%%)--> Memory / IO\n", dcache_access, dcache_miss, dcache_miss_percent / 100, dcache_miss_percent % 100, dcache_l2_miss, dcache_l2_miss_percent / 100, dcache_l2_miss_percent % 100);
 
     uint64_t icache_access = read_register(tile_id, REG_ICACHE_ACCESS);
-    uint16_t icache_access_permil = 1000 * icache_access / icache_access;
     uint64_t icache_miss = read_register(tile_id, REG_ICACHE_MISS);
-    uint16_t icache_miss_permil = 1000 * icache_miss / icache_access;
-    uint64_t icache_l2_miss = icache_miss - read_register(tile_id, REG_ICACHE_MISS_L2_HIT);
-    uint16_t icache_l2_miss_permil = 1000 * icache_l2_miss / icache_access;
-    printf("= *Instructions: Core ---%ld(%d‰)--> ICache ---%ld(%d‰)--> L2 ---%ld(%d‰)--> Memory / IO\n", icache_access, icache_access_permil, icache_miss, icache_miss_permil, icache_l2_miss, icache_l2_miss_permil);
+    uint16_t icache_miss_percent = 10000 * icache_miss / icache_access;
+    uint64_t icache_l2_miss = read_register(tile_id, REG_ICACHE_MISS_L2_MISS);
+    uint16_t icache_l2_miss_percent = 10000 * icache_l2_miss / icache_access;
+    printf("=   *Instructions: Core ----%ld---> ICache ---%ld(%d.%02d%%)--> L2 ---%ld(%d.%02d%%)--> Memory / IO\n", icache_access, icache_miss, icache_miss_percent / 100, icache_miss_percent % 100, icache_l2_miss, icache_l2_miss_percent / 100, icache_l2_miss_percent % 100);
     printf("=\n");
 
     uint64_t exe_load = read_register(tile_id, REG_EXE_LOAD);
     uint64_t exe_store = read_register(tile_id, REG_EXE_STORE);
     printf("= Memory access cycles:\n");
-    printf("= *Load: %ld\n", exe_load);
-    printf("= *Store: %ld\n", exe_store);
+    printf("=   *Load: %ld\n", exe_load);
+    printf("=   *Store: %ld\n", exe_store);
     printf("=\n");
 
     uint64_t dtlb_miss = read_register(tile_id, REG_DTLB_MISS);
     uint64_t itlb_miss = read_register(tile_id, REG_ITLB_MISS);
     printf("= TLB misses:\n");
-    printf("= *Data: %ld\n", dtlb_miss);
-    printf("= *Instructions: %ld\n", itlb_miss);
+    printf("=   *Data: %ld\n", dtlb_miss);
+    printf("=   *Instructions: %ld\n", itlb_miss);
     printf("=\n");
 
     printf("====================== End of execution stats =======================\n");

@@ -552,10 +552,6 @@ wire  [`NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & sip (as
 // PMU
 wire  [25*(`NUM_TILES)-1:0] pmu_sig;
 
-// always @(posedge core_ref_clk) begin
-//     $display("PMU Test @system %b",pmu_sig);
-// end
-
 `endif
 
 //////////////////////
