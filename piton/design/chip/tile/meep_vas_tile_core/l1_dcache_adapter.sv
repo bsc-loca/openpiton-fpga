@@ -85,7 +85,7 @@ module l1_dcache_adapter(
         if ( !rst ) 
 
                                         st_vaddr_bf <= 64'b0 ;
-        else if ( is_store_i || is_load_i  ||  is_op_atm_i) 
+        else if ( is_store_i || is_load_i) 
                                         st_vaddr_bf <= vaddr_i;
         else                            st_vaddr_bf <= st_vaddr_bf;
     end
@@ -107,7 +107,7 @@ module l1_dcache_adapter(
     //- Sincroniza los datos para la solicitud a dcache 
     //- de un store con la maquina de estados 
     always @ ( posedge clk ) begin
-        if ( is_store_i || is_load_i || is_op_atm_i) begin
+        if ( is_store_i || is_load_i) begin
             st_data_bf         <= data_i           ;
             st_op_bits_type_bf <= op_bits_type_i   ; 
             st_addr20_bf       <= vaddr_i[2:0]     ; 
@@ -185,7 +185,7 @@ module l1_dcache_adapter(
     assign is_store_o        = is_store_bf;
     assign is_load_o         = is_load_bf;
     assign vaddr_o           = ( is_store_o || is_load_o ||  is_op_atm_i) ? st_vaddr_bf : 64'b0;
-    assign translation_req_o = ( is_store_o || is_load_o ) ? st_translation_req_i : ( is_op_atm_i ) ? st_translation_req_amt_i :1'b0;
+    assign translation_req_o = ( (is_store_o & (!is_op_atm_i)) || is_load_o ) ? st_translation_req_i : ( is_op_atm_i ) ? st_translation_req_amt_i :1'b0;
 
     //-------------------------------------------------------------------- 
     //----------------------------------------------interfaz con la dcache

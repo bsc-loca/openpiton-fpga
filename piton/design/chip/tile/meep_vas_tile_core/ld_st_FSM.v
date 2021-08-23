@@ -107,7 +107,7 @@ module ld_st_FSM(
                     trns_ena             <= 1'b0;          
                 end
                 else begin
-                    if (ld_resp_gnt_i)begin
+                    if (ld_resp_gnt_i || st_resp_gnt_i)begin
                         mem_req_valid_o      <= 1'b0;
                     end
                     st_translation_req_o <= 1'b0;

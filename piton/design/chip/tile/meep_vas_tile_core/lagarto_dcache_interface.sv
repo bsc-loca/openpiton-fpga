@@ -82,6 +82,7 @@ module lagarto_dcache_interface (
 
 logic is_load_instr ;
 logic is_store_instr;
+logic is_store_mmu;
 logic is_atm_instr  ;
 logic kill_mem_ope  ;
 logic mem_xcpt      ;
@@ -146,7 +147,7 @@ assign dmem_req_addr_64 = (type_of_op == MEM_AMO) ? req_cpu_dcache_i.data_rs1 : 
 
 always @ (posedge clk_i) begin
     if (!rstn_i) dmem_req_addr_reg <= 64'b0;
-    else if ( is_store_instr | is_load_instr ) dmem_req_addr_reg <=  dmem_req_addr_64;
+    else if ( is_store_mmu | is_load_instr ) dmem_req_addr_reg <=  dmem_req_addr_64;
     else dmem_req_addr_reg <= dmem_req_addr_reg;
 end
 
@@ -167,7 +168,7 @@ end
 l1_dcache_adapter l1_dcache_adapter(
     .clk                      (clk_i                        ),
     .rst                      (rstn_i                       ),
-    .is_store_i               (is_store_instr               ),
+    .is_store_i               (is_store_mmu                 ),
     .is_load_i                (is_load_instr                ),
     .is_op_atm_i              (is_atm_instr                 ),
     .vaddr_i                  (dmem_req_addr_64             ),   
@@ -289,6 +290,7 @@ end
 assign is_store_instr = !req_cpu_dcache_i.kill & (type_of_op == MEM_STORE) & req_cpu_dcache_i.valid;
 assign is_load_instr  = !req_cpu_dcache_i.kill & (type_of_op == MEM_LOAD)  & req_cpu_dcache_i.valid;
 assign is_atm_instr   = !req_cpu_dcache_i.kill & (type_of_op == MEM_AMO)   & req_cpu_dcache_i.valid;
+assign is_store_mmu   = is_store_instr | is_atm_instr;
 //ATOMIC
 always @ (posedge clk_i) begin
     case(state_atm)
@@ -307,16 +309,16 @@ always @ (posedge clk_i) begin
         end
 
         Transaction: begin
-            if ( dtlb_valid_i ) begin
+            if ( dtlb_hit_i ) begin
                 atm_trans_req_valid = 1'b0;
                 atm_mem_req_valid   = (!kill_mem_ope)  ? 1'b1 : 1'b0;
                 state_atm           = (!kill_mem_ope)  ? WaitResponse : ResetState;
 
             end
             else begin
-                atm_trans_req_valid = 1'b0;
+                atm_trans_req_valid = is_atm_instr;
                 atm_mem_req_valid   = 1'b0;
-                state_atm           = Transaction;
+                state_atm           = (!kill_mem_ope)  ? Transaction : ResetState;
             end
         end
         // IN MAKE REQUEST STATE
@@ -332,7 +334,7 @@ always @ (posedge clk_i) begin
                 state_atm           = Idle;
             end else begin
                 atm_mem_req_valid   = (!kill_mem_ope)  ? 1'b1 : 1'b0;
-                state_atm           = kill_mem_ope? ResetState : WaitResponse;
+                state_atm           = (!kill_mem_ope)  ? WaitResponse : ResetState;
             end
         end
     endcase
