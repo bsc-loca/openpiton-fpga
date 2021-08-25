@@ -43,4 +43,7 @@ tools:build:
     - ./configure --prefix=$PITON_ROOT/riscv
     - protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 
+   artifacts:
+       when: always
+       paths: $PITON_ROOT/build/alveou280/system/protosyn_logs/make_project.log
 
