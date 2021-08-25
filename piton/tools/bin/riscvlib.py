@@ -161,7 +161,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%d>;
             status = "okay";
             compatible = "eth, ariane", "riscv";
-            riscv,isa = "rv64imafdc";
+            riscv,isa = "rv64ima";
             mmu-type = "riscv,sv39";
             tlb-split;
             // HLIC - hart local interrupt controller
@@ -211,7 +211,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     ioDeviceNr=1
     for i in range(len(devices)):
         # CLINT
-        if devices[i]["name"] == "ariane_clint":
+        if devices[i]["name"] == "ariane_clint" or devices[i]["name"] == "lagarto_clint" :
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
@@ -226,7 +226,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         };
             ''' % (_reg_fmt(addrBase, addrLen, 2, 2))
         # PLIC
-        if devices[i]["name"] == "ariane_plic":
+        if devices[i]["name"] == "ariane_plic" or devices[i]["name"] == "lagarto_plic":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
@@ -245,7 +245,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         };
             ''' % (_reg_fmt(addrBase, addrLen, 2, 2), numIrqs)
         # DTM
-        if devices[i]["name"] == "ariane_debug":
+        if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''

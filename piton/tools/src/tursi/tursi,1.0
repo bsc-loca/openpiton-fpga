@@ -457,6 +457,17 @@ def main():
             args.config_rtl.append('RTL_ARIANE' + str(i))
             print_info('defining RTL_ARIANE' + str(i))
 
+    #elif args.core == 'lagarto':
+    #    args.config_rtl.append('PITON_LAGARTO')
+
+    #    ## Temporary until we create a solution for SystemVerilog code
+    #    print_error('Due to lack of support for "pickling" of SystemVerilog code, the Lagarto core configuration option is not supported')
+    #    sys.exit(1)
+
+    #    for i in range(int(args.num_tiles)):
+    #        args.config_rtl.append('RTL_LAGARTO' + str(i))
+    #        print_info('defining RTL_LAGARTO' + str(i))
+
     elif args.core == 'sparc':
         # this is the default
         args.config_rtl.append('PITON_OST1')

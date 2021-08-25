@@ -191,7 +191,23 @@ module system(
 `endif //NEXYSVIDEO_BOARD
 `endif //VCU118_BOARD
 `endif  //VC707_BOARD
-`endif //PITON_ARIANE
+`elsif PITON_LAGARTO //PITON_ARIANE
+`ifndef VC707_BOARD
+`ifndef VCU118_BOARD
+`ifndef NEXYSVIDEO_BOARD
+`ifndef XUPP3R_BOARD
+`ifndef F1_BOARD
+  input                                         tck_i,
+  input                                         tms_i,
+  input                                         trst_ni,
+  input                                         td_i,
+  output                                        td_o,
+`endif//F1_BOARD
+`endif//XUPP3R_BOARD
+`endif //NEXYSVIDEO_BOARD
+`endif //VCU118_BOARD
+`endif  //VC707_BOARD
+`endif
 `endif //PITON_FPGA_SYNTH
 
     // Asynchronous FIFOs enable
@@ -521,11 +537,42 @@ wire  [`PITON_NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & s
 
 `endif
 
+`ifdef PITON_LAGARTO
+// Debug
+wire                     ndmreset;    // non-debug module reset
+wire                     dmactive;    // debug module is active
+wire  [`NUM_TILES-1:0]   debug_req;   // async debug request
+wire  [`NUM_TILES-1:0]   unavailable; // communicate whether the hart is unavailable (e.g.: power down)
+// CLINT
+wire                     rtc;         // Real-time clock in (usually 32.768 kHz)
+wire  [`NUM_TILES-1:0]   timer_irq;   // Timer interrupts
+wire  [`NUM_TILES-1:0]   ipi;         // software interrupt (a.k.a inter-process-interrupt)
+// PLIC
+wire  [`NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & sip (async)
+
+`endif
+
 //////////////////////
 // Sequential Logic //
 //////////////////////
 
 `ifdef PITON_ARIANE
+
+ // no RTC at the moment, have to derive it from the system clock
+ // divide by 128
+reg [6:0] rtc_div;
+
+always @(posedge core_ref_clk or negedge chip_rst_n) begin : p_rtc_div
+  if(~chip_rst_n) begin
+    rtc_div <= 7'h0;
+  end else begin
+    rtc_div <= rtc_div + 7'h1;
+  end
+end
+
+assign rtc = rtc_div[6];
+
+`elsif PITON_LAGARTO
 
  // no RTC at the moment, have to derive it from the system clock
  // divide by 128
@@ -614,7 +661,7 @@ assign passthru_pll_rst_n = 1'b1;
     assign tms_i   = 1'b0;
     assign trst_ni = 1'b0;
     assign td_i    = 1'b0;
-`endif
+`endif //PITON_FPGA_SYNTH
 
 // `ifdef VCU118_BOARD
 //     wire tck_i, tms_i, trst_ni, td_i, td_o;
@@ -657,7 +704,7 @@ assign passthru_pll_rst_n = 1'b1;
         .UPDATE(), // 1-bit output: UPDATE output from TAP controller
         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
     );
-`endif
+`endif //VC707_BOARD
 `ifdef NEXYSVIDEO_BOARD
     wire tck_i, tms_i, trst_ni, td_i, td_o;
 
@@ -678,9 +725,82 @@ assign passthru_pll_rst_n = 1'b1;
         .UPDATE(), // 1-bit output: UPDATE output from TAP controller
         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
     );
-`endif
-`endif
+`endif //NEXYSVIDEO_BOARD
+`endif //PITON_ARIANE
 
+`ifdef PITON_LAGARTO
+`ifndef PITON_FPGA_SYNTH
+    wire tck_i, tms_i, trst_ni, td_i, td_o;
+    assign tck_i   = 1'b0;
+    assign tms_i   = 1'b0;
+    assign trst_ni = 1'b0;
+    assign td_i    = 1'b0;
+`endif //PITON_FPGA_SYNTH
+
+// `ifdef VCU118_BOARD
+//     wire tck_i, tms_i, trst_ni, td_i, td_o;
+
+//     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
+//     BSCANE2 #(
+//     .JTAG_CHAIN(1) // Value for USER command. Possible values: 1-4.
+//     ) BSCANE2_inst (
+//         .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
+//         .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
+//         // SHIFT are asserted.
+//         .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
+//         .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
+//         .SEL(), // 1-bit output: USER instruction active output.
+//         .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
+//         .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+//         .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
+//         .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
+//         .UPDATE(), // 1-bit output: UPDATE output from TAP controller
+//         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+//     );
+// `endif
+`ifdef VC707_BOARD
+    wire tck_i, tms_i, trst_ni, td_i, td_o;
+
+    // hook the RISC-V JTAG TAP into the FPGA JTAG chain
+    BSCANE2 #(
+    .JTAG_CHAIN(1) // Value for USER command. Possible values: 1-4.
+    ) BSCANE2_inst (
+        .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
+        .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
+        // SHIFT are asserted.
+        .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
+        .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
+        .SEL(), // 1-bit output: USER instruction active output.
+        .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
+        .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+        .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
+        .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
+        .UPDATE(), // 1-bit output: UPDATE output from TAP controller
+        .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+    );
+`endif //VC707_BOARD
+`ifdef NEXYSVIDEO_BOARD
+    wire tck_i, tms_i, trst_ni, td_i, td_o;
+
+    // hook the RISC-V JTAG TAP into the FPGA JTAG chain
+    BSCANE2 #(
+    .JTAG_CHAIN(1) // Value for USER command. Possible values: 1-4.
+    ) BSCANE2_inst (
+        .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
+        .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
+        // SHIFT are asserted.
+        .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
+        .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
+        .SEL(), // 1-bit output: USER instruction active output.
+        .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
+        .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+        .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
+        .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
+        .UPDATE(), // 1-bit output: UPDATE output from TAP controller
+        .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+    );
+`endif //NEXYSVIDEO_BOARD
+`endif //PITON_LAGARTO
 
 
 //////////////////////////
@@ -815,6 +935,20 @@ chip chip(
     // PLIC
     .irq_i                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
 `endif
+
+`ifdef PITON_LAGARTO
+    ,
+    // Debug
+    .ndmreset_i                     ( ndmreset                   ), // non-debug module reset
+    .debug_req_i                    ( debug_req                  ), // async debug request
+    .unavailable_o                  ( unavailable                ), // communicate whether the hart is unavailable (e.g.: power down)
+    //CLINT
+    .timer_irq_i                    ( timer_irq                  ), // Timer interrupts
+    .ipi_i                          ( ipi                        ), // software interrupt (a.k.a inter-process-interrupt)
+    // PLIC
+    .irq_i                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
+`endif
+
 );
 
 
@@ -1195,6 +1329,28 @@ chipset chipset(
     .leds(leds)
 
 `ifdef PITON_ARIANE
+    ,
+    // Debug
+    .ndmreset_o                     ( ndmreset                   ), // non-debug module reset
+    .dmactive_o                     ( dmactive                   ), // debug module is active
+    .debug_req_o                    ( debug_req                  ), // async debug request
+    .unavailable_i                  ( unavailable                ), // communicate whether the hart is unavailable (e.g.: power down)
+    // JTAG
+    .tck_i                          ( tck_i                      ),
+    .tms_i                          ( tms_i                      ),
+    .trst_ni                        ( trst_ni                    ),
+    .td_i                           ( td_i                       ),
+    .td_o                           ( td_o                       ),
+    .tdo_oe_o                       (                            ),
+    //CLINT
+    .rtc_i                          ( rtc                        ), // Real-time clock in (usually 32.768 kHz)
+    .timer_irq_o                    ( timer_irq                  ), // Timer interrupts
+    .ipi_o                          ( ipi                        ), // software interrupt (a.k.a inter-process-interrupt)
+    // PLIC
+    .irq_o                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
+`endif
+
+`ifdef PITON_LAGARTO
     ,
     // Debug
     .ndmreset_o                     ( ndmreset                   ), // non-debug module reset
