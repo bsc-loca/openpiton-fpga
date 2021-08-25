@@ -86,6 +86,240 @@ pico-amoxor     amoxor_w.S
 </cmp_default>
 </pico_tile1>
 
+<lagarto_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG> 
+<cmp_default name=default>
+    // note: these asm tests assume that the RISCV tests have been precompiled with the
+    // correct environment
+    <lagarto_tile1_asm_tests_p>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled>
+        lagarto-rv64ui-p-add       rv64ui-p-add.S
+        lagarto-rv64ui-p-addi      rv64ui-p-addi.S
+        lagarto-rv64ui-p-slli      rv64ui-p-slli.S
+        lagarto-rv64ui-p-addiw     rv64ui-p-addiw.S
+        lagarto-rv64ui-p-addw      rv64ui-p-addw.S
+        lagarto-rv64ui-p-and       rv64ui-p-and.S
+        lagarto-rv64ui-p-auipc     rv64ui-p-auipc.S
+        lagarto-rv64ui-p-beq       rv64ui-p-beq.S
+        lagarto-rv64ui-p-bge       rv64ui-p-bge.S
+        lagarto-rv64ui-p-bgeu      rv64ui-p-bgeu.S
+        lagarto-rv64ui-p-andi      rv64ui-p-andi.S
+        lagarto-rv64ui-p-blt       rv64ui-p-blt.S
+        lagarto-rv64ui-p-bltu      rv64ui-p-bltu.S
+        lagarto-rv64ui-p-bne       rv64ui-p-bne.S
+        lagarto-rv64ui-p-jal       rv64ui-p-jal.S
+        lagarto-rv64ui-p-jalr      rv64ui-p-jalr.S
+        lagarto-rv64ui-p-or        rv64ui-p-or.S
+        lagarto-rv64ui-p-ori       rv64ui-p-ori.S
+        lagarto-rv64ui-p-sub       rv64ui-p-sub.S
+        lagarto-rv64ui-p-subw      rv64ui-p-subw.S
+        lagarto-rv64ui-p-xor       rv64ui-p-xor.S
+        lagarto-rv64ui-p-xori      rv64ui-p-xori.S
+        lagarto-rv64ui-p-slliw     rv64ui-p-slliw.S
+        lagarto-rv64ui-p-sll       rv64ui-p-sll.S
+        lagarto-rv64ui-p-sllw      rv64ui-p-sllw.S
+        lagarto-rv64ui-p-slt       rv64ui-p-slt.S
+        lagarto-rv64ui-p-slti      rv64ui-p-slti.S
+        lagarto-rv64ui-p-sltiu     rv64ui-p-sltiu.S
+        lagarto-rv64ui-p-sltu      rv64ui-p-sltu.S
+        lagarto-rv64ui-p-sra       rv64ui-p-sra.S
+        lagarto-rv64ui-p-srai      rv64ui-p-srai.S
+        lagarto-rv64ui-p-sraiw     rv64ui-p-sraiw.S
+        lagarto-rv64ui-p-sraw      rv64ui-p-sraw.S
+        lagarto-rv64ui-p-srl       rv64ui-p-srl.S
+        lagarto-rv64ui-p-srli      rv64ui-p-srli.S
+        lagarto-rv64ui-p-srliw     rv64ui-p-srliw.S
+        lagarto-rv64ui-p-srlw      rv64ui-p-srlw.S
+        lagarto-rv64ui-p-sb        rv64ui-p-sb.S
+        lagarto-rv64ui-p-sd        rv64ui-p-sd.S
+        lagarto-rv64ui-p-sh        rv64ui-p-sh.S
+        lagarto-rv64ui-p-sw        rv64ui-p-sw.S
+        lagarto-rv64ui-p-lb        rv64ui-p-lb.S
+        lagarto-rv64ui-p-lbu       rv64ui-p-lbu.S
+        lagarto-rv64ui-p-ld        rv64ui-p-ld.S
+        lagarto-rv64ui-p-lh        rv64ui-p-lh.S
+        lagarto-rv64ui-p-lhu       rv64ui-p-lhu.S
+        lagarto-rv64ui-p-lui       rv64ui-p-lui.S
+        lagarto-rv64ui-p-lw        rv64ui-p-lw.S
+        lagarto-rv64ui-p-lwu       rv64ui-p-lwu.S
+        lagarto-rv64ui-p-fence_i   rv64ui-p-fence_i.S
+        </runargs>
+    </lagarto_tile1_asm_tests_p>
+    // note: these asm tests assume that the RISCV tests have been precompiled with the
+    // correct environment
+    <lagarto_tile1_amo_tests_p>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=1000000>
+        lagarto-rv64ua-p-amoadd_d  rv64ua-p-amoadd_d.S
+        lagarto-rv64ua-p-amoadd_w  rv64ua-p-amoadd_w.S
+        lagarto-rv64ua-p-amoor_d   rv64ua-p-amoor_d.S
+        lagarto-rv64ua-p-amoor_w   rv64ua-p-amoor_w.S
+        lagarto-rv64ua-p-amoand_d  rv64ua-p-amoand_d.S
+        lagarto-rv64ua-p-amoand_w  rv64ua-p-amoand_w.S
+        lagarto-rv64ua-p-amoswap_d rv64ua-p-amoswap_d.S
+        lagarto-rv64ua-p-amoswap_w rv64ua-p-amoswap_w.S
+        lagarto-rv64ua-p-amoxor_d  rv64ua-p-amoxor_d.S
+        lagarto-rv64ua-p-amoxor_w  rv64ua-p-amoxor_w.S
+        lagarto-rv64ua-p-amomax_d  rv64ua-p-amomax_d.S
+        lagarto-rv64ua-p-amomaxu_d rv64ua-p-amomaxu_d.S
+        lagarto-rv64ua-p-amomaxu_w rv64ua-p-amomaxu_w.S
+        lagarto-rv64ua-p-amomax_w  rv64ua-p-amomax_w.S
+        lagarto-rv64ua-p-amomin_d  rv64ua-p-amomin_d.S
+        lagarto-rv64ua-p-amomin_w  rv64ua-p-amomin_w.S
+        lagarto-rv64ua-p-amominu_d rv64ua-p-amominu_d.S
+        lagarto-rv64ua-p-amominu_w rv64ua-p-amominu_w.S
+        lagarto-rv64ua-p-lrsc      rv64ua-p-lrsc.S
+        </runargs>
+    </lagarto_tile1_amo_tests_p>
+    // note: these asm tests assume that the RISCV tests have been precompiled with the
+    // correct environment
+    <lagarto_tile1_asm_tests_v>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
+        lagarto-rv64ui-v-add       rv64ui-v-add.S
+        lagarto-rv64ui-v-addi      rv64ui-v-addi.S
+        lagarto-rv64ui-v-slli      rv64ui-v-slli.S
+        lagarto-rv64ui-v-addiw     rv64ui-v-addiw.S
+        lagarto-rv64ui-v-addw      rv64ui-v-addw.S
+        lagarto-rv64ui-v-and       rv64ui-v-and.S
+        lagarto-rv64ui-v-auipc     rv64ui-v-auipc.S
+        lagarto-rv64ui-v-beq       rv64ui-v-beq.S
+        lagarto-rv64ui-v-bge       rv64ui-v-bge.S
+        lagarto-rv64ui-v-bgeu      rv64ui-v-bgeu.S
+        lagarto-rv64ui-v-andi      rv64ui-v-andi.S
+        lagarto-rv64ui-v-blt       rv64ui-v-blt.S
+        lagarto-rv64ui-v-bltu      rv64ui-v-bltu.S
+        lagarto-rv64ui-v-bne       rv64ui-v-bne.S
+        lagarto-rv64ui-v-jal       rv64ui-v-jal.S
+        lagarto-rv64ui-v-jalr      rv64ui-v-jalr.S
+        lagarto-rv64ui-v-or        rv64ui-v-or.S
+        lagarto-rv64ui-v-ori       rv64ui-v-ori.S
+        lagarto-rv64ui-v-sub       rv64ui-v-sub.S
+        lagarto-rv64ui-v-subw      rv64ui-v-subw.S
+        lagarto-rv64ui-v-xor       rv64ui-v-xor.S
+        lagarto-rv64ui-v-xori      rv64ui-v-xori.S
+        lagarto-rv64ui-v-slliw     rv64ui-v-slliw.S
+        lagarto-rv64ui-v-sll       rv64ui-v-sll.S
+        lagarto-rv64ui-v-sllw      rv64ui-v-sllw.S
+        lagarto-rv64ui-v-slt       rv64ui-v-slt.S
+        lagarto-rv64ui-v-slti      rv64ui-v-slti.S
+        lagarto-rv64ui-v-sltiu     rv64ui-v-sltiu.S
+        lagarto-rv64ui-v-sltu      rv64ui-v-sltu.S
+        lagarto-rv64ui-v-sra       rv64ui-v-sra.S
+        lagarto-rv64ui-v-srai      rv64ui-v-srai.S
+        lagarto-rv64ui-v-sraiw     rv64ui-v-sraiw.S
+        lagarto-rv64ui-v-sraw      rv64ui-v-sraw.S
+        lagarto-rv64ui-v-srl       rv64ui-v-srl.S
+        lagarto-rv64ui-v-srli      rv64ui-v-srli.S
+        lagarto-rv64ui-v-srliw     rv64ui-v-srliw.S
+        lagarto-rv64ui-v-srlw      rv64ui-v-srlw.S
+        lagarto-rv64ui-v-sb        rv64ui-v-sb.S
+        lagarto-rv64ui-v-sd        rv64ui-v-sd.S
+        lagarto-rv64ui-v-sh        rv64ui-v-sh.S
+        lagarto-rv64ui-v-sw        rv64ui-v-sw.S
+        lagarto-rv64ui-v-lb        rv64ui-v-lb.S
+        lagarto-rv64ui-v-lbu       rv64ui-v-lbu.S
+        lagarto-rv64ui-v-ld        rv64ui-v-ld.S
+        lagarto-rv64ui-v-lh        rv64ui-v-lh.S
+        lagarto-rv64ui-v-lhu       rv64ui-v-lhu.S
+        lagarto-rv64ui-v-lui       rv64ui-v-lui.S
+        lagarto-rv64ui-v-lw        rv64ui-v-lw.S
+        lagarto-rv64ui-v-lwu       rv64ui-v-lwu.S
+        lagarto-rv64ui-v-fence_i   rv64ui-v-fence_i.S
+        </runargs>
+    </lagarto_tile1_asm_tests_v>
+    // note: these asm tests assume that the RISCV tests have been precompiled with the
+    // correct environment
+    <lagarto_tile1_amo_tests_v>
+        // note: we have to offset the trap here since the core operates in VM
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
+        lagarto-rv64ua-v-amoadd_d  rv64ua-v-amoadd_d.S
+        lagarto-rv64ua-v-amoadd_w  rv64ua-v-amoadd_w.S
+        lagarto-rv64ua-v-amoor_d   rv64ua-v-amoor_d.S
+        lagarto-rv64ua-v-amoor_w   rv64ua-v-amoor_w.S
+        lagarto-rv64ua-v-amoand_d  rv64ua-v-amoand_d.S
+        lagarto-rv64ua-v-amoand_w  rv64ua-v-amoand_w.S
+        lagarto-rv64ua-v-amoswap_d rv64ua-v-amoswap_d.S
+        lagarto-rv64ua-v-amoswap_w rv64ua-v-amoswap_w.S
+        lagarto-rv64ua-v-amoxor_d  rv64ua-v-amoxor_d.S
+        lagarto-rv64ua-v-amoxor_w  rv64ua-v-amoxor_w.S
+        lagarto-rv64ua-v-amomax_d  rv64ua-v-amomax_d.S
+        lagarto-rv64ua-v-amomaxu_d rv64ua-v-amomaxu_d.S
+        lagarto-rv64ua-v-amomaxu_w rv64ua-v-amomaxu_w.S
+        lagarto-rv64ua-v-amomax_w  rv64ua-v-amomax_w.S
+        lagarto-rv64ua-v-amomin_d  rv64ua-v-amomin_d.S
+        lagarto-rv64ua-v-amomin_w  rv64ua-v-amomin_w.S
+        lagarto-rv64ua-v-amominu_d rv64ua-v-amominu_d.S
+        lagarto-rv64ua-v-amominu_w rv64ua-v-amominu_w.S
+        lagarto-rv64ua-v-lrsc      rv64ua-v-lrsc.S
+        </runargs>
+    </lagarto_tile1_amo_tests_v>
+
+    <lagarto_tile1_machine_lvl_tests_p>
+        // note: we have to offset the trap here since the core operates in VM
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=10000>
+        lagarto-rv64mi-p-mcsr       rv64mi-p-mcsr.S
+        lagarto-rv64mi-p-csr        rv64mi-p-csr.S
+        lagarto-rv64mi-p-illegal    rv64mi-p-illegal.S
+        lagarto-rv64mi-p-ma_addr    rv64mi-p-ma_addr.S
+        lagarto-rv64mi-p-ma_fetch   rv64mi-p-ma_fetch.S
+        lagarto-rv64mi-p-sbreak     rv64mi-p-sbreak.S
+        lagarto-rv64mi-p-scall      rv64mi-p-scall.S
+        lagarto-rv64mi-p-breakpoint rv64mi-p-breakpoint.S
+        lagarto-rv64mi-p-access     rv64mi-p-access.S
+        </runargs>
+    </lagarto_tile1_machine_lvl_tests_p>
+
+    <lagarto_tile1_supervisor_lvl_tests_p>
+        // note: we have to offset the trap here since the core operates in VM
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=10000>
+        lagarto-rv64si-p-csr        rv64si-p-csr.S       
+        lagarto-rv64si-p-illegal    rv64si-p-illegal.S
+        lagarto-rv64si-p-ltag       rv64si-p-ltag.S
+        lagarto-rv64si-p-ma_addr    rv64si-p-ma_addr.S
+        lagarto-rv64si-p-ma_fetch   rv64si-p-ma_fetch.S
+        lagarto-rv64si-p-sbreak     rv64si-p-sbreak.S
+        lagarto-rv64si-p-scall      rv64si-p-scall.S
+        lagarto-rv64si-p-wfi        rv64si-p-wfi.S
+        </runargs>
+    </lagarto_tile1_supervisor_lvl_tests_p>
+
+    <lagarto_tile1_mul_div_tests_p>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=1000000>
+        lagarto-rv64um-p-div    rv64um-p-div.S
+        lagarto-rv64um-p-divu   rv64um-p-divu.S
+        lagarto-rv64um-p-divuw  rv64um-p-divuw.S
+        lagarto-rv64um-p-divw   rv64um-p-divw.S
+        lagarto-rv64um-p-mul    rv64um-p-mul.S
+        lagarto-rv64um-p-mulh   rv64um-p-mulh.S
+        lagarto-rv64um-p-mulhsu rv64um-p-mulhsu.S
+        lagarto-rv64um-p-mulhu  rv64um-p-mulhu.S
+        lagarto-rv64um-p-mulw   rv64um-p-mulw.S
+        lagarto-rv64um-p-rem    rv64um-p-rem.S
+        lagarto-rv64um-p-remu   rv64um-p-remu.S
+        lagarto-rv64um-p-remuw  rv64um-p-remuw.S
+        lagarto-rv64um-p-remw   rv64um-p-remw.S
+        </runargs>
+    </lagarto_tile1_mul_div_tests_p>
+
+    <lagarto_tile1_mul_div_tests_v>
+        // note: we have to offset the trap here since the core operates in VM
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
+        lagarto-rv64ui-v-div    rv64ui-v-div.S
+        lagarto-rv64ui-v-divu   rv64ui-v-divu.S
+        lagarto-rv64ui-v-divuw  rv64ui-v-divuw.S
+        lagarto-rv64ui-v-divw   rv64ui-v-divw.S
+        lagarto-rv64ui-v-mul    rv64ui-v-mul.S
+        lagarto-rv64ui-v-mulh   rv64ui-v-mulh.S
+        lagarto-rv64ui-v-mulhsu rv64ui-v-mulhsu.S
+        lagarto-rv64ui-v-mulhu  rv64ui-v-mulhu.S
+        lagarto-rv64ui-v-mulw   rv64ui-v-mulw.S
+        lagarto-rv64ui-v-rem    rv64ui-v-rem.S
+        lagarto-rv64ui-v-remu   rv64ui-v-remu.S
+        lagarto-rv64ui-v-remuw  rv64ui-v-remuw.S
+        lagarto-rv64ui-v-remw   rv64ui-v-remw.S
+        </runargs>
+    </lagarto_tile1_mul_div_tests_v>
+
+</cmp_default>
+</lagarto_tile1>
 
 <ariane_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -ariane>
 <cmp_default name=default>
