@@ -354,17 +354,19 @@ GetOptions (\%opt,
            ) ;
 
 die ("DIE. -ariane and -pico/-pico_het cannot be set simultaneously") if ($opt{ariane} && ($opt{pico} || $opt{pico_het})) ;
+die ("DIE. -lagarto and -pico/-pico_het cannot be set simultaneously") if ($opt{lagarto} && ($opt{pico} || $opt{pico_het})) ;
 die ("DIE. -pico and -pico_het cannot both be set") if ($opt{pico} && $opt{pico_het}) ;
 
 # Setting ost1 by default. This works better than default to 1
 # for heterogeneous-ISA stuff
-if (!$opt{pico} && !$opt{ariane}) {
+if (!$opt{pico} && !$opt{ariane} && !$opt{lagarto} ) {
   $opt{ost1} = 1 ;
 }
 
 push (@{$opt{config_cpp_args}}, "-DFLIST_OST1")     if ($opt{ost1} || $opt{pico_het}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_PICO")     if ($opt{pico} || $opt{pico_het}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_LAGARTO")  if ($opt{lagarto}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
 
 ################################################################################
@@ -2346,7 +2348,7 @@ sub assemble_diag
         $ENV{RV64_MARCH} = $opt{rv64_march} ;
       }
       if (!$opt{rv64_mabi}) {
-        if ($opt{ariane}) {
+        if ($opt{ariane} | $opt{lagarto}) {
           $ENV{RV64_MABI} = "lp64d" ;
         }
       } else {
