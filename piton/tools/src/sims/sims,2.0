@@ -2348,8 +2348,11 @@ sub assemble_diag
         $ENV{RV64_MARCH} = $opt{rv64_march} ;
       }
       if (!$opt{rv64_mabi}) {
-        if ($opt{ariane} | $opt{lagarto}) {
+        if ($opt{ariane} ) {
           $ENV{RV64_MABI} = "lp64d" ;
+        }
+        if ($opt{lagarto}) {
+          $ENV{RV64_MABI} = "lp64" ;
         }
       } else {
         $ENV{RV64_MABI} = $opt{rv64_mabi} ;
