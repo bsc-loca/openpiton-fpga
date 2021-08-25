@@ -147,7 +147,7 @@ pico-amoxor     amoxor_w.S
     // note: these asm tests assume that the RISCV tests have been precompiled with the
     // correct environment
     <lagarto_tile1_amo_tests_p>
-        <runargs -x_tiles=1 -y_tiles=1 -ariane -precompiled -rtl_timeout=1000000>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=1000000>
         lagarto-rv64ua-p-amoadd_d  rv64ua-p-amoadd_d.S
         lagarto-rv64ua-p-amoadd_w  rv64ua-p-amoadd_w.S
         lagarto-rv64ua-p-amoor_d   rv64ua-p-amoor_d.S
@@ -222,14 +222,14 @@ pico-amoxor     amoxor_w.S
         lagarto-rv64ui-v-lui       rv64ui-v-lui.S
         lagarto-rv64ui-v-lw        rv64ui-v-lw.S
         lagarto-rv64ui-v-lwu       rv64ui-v-lwu.S
-        //lagarto-rv64ui-v-fence_i   rv64ui-v-fence_i.S
+        lagarto-rv64ui-v-fence_i   rv64ui-v-fence_i.S
         </runargs>
     </lagarto_tile1_asm_tests_v>
     // note: these asm tests assume that the RISCV tests have been precompiled with the
     // correct environment
     <lagarto_tile1_amo_tests_v>
         // note: we have to offset the trap here since the core operates in VM
-        <runargs -x_tiles=1 -y_tiles=1 -ariane -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
         lagarto-rv64ua-v-amoadd_d  rv64ua-v-amoadd_d.S
         lagarto-rv64ua-v-amoadd_w  rv64ua-v-amoadd_w.S
         lagarto-rv64ua-v-amoor_d   rv64ua-v-amoor_d.S
