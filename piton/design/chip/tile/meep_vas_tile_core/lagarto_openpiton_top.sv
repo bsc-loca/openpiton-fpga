@@ -198,28 +198,30 @@ module lagarto_openpiton_top #(
 //-----------------------------------------------------------------------------
 // PMU INTERFACE
 //-----------------------------------------------------------------------------
-    input  logic                io_core_pmu_l2_hit_i        ,
-    input  logic                io_dc_gvalid_i     ,
-    input  [1:0]                io_dc_addrbit_i    ,
-    output logic                io_core_pmu_branch_miss     ,
-    output logic                io_core_pmu_is_branch       ,
-    output logic                io_core_pmu_branch_taken    , 
-    output logic                io_core_pmu_EXE_STORE       ,
-    output logic                io_core_pmu_EXE_LOAD        ,
     output logic                io_core_pmu_new_instruction ,
-    output logic                io_core_pmu_icache_req      ,
-    output logic                io_core_pmu_icache_kill     ,
+    output logic                io_core_pmu_is_branch       ,
+    output logic                io_core_pmu_is_branch_hit   ,
+    output logic                io_core_pmu_is_branch_false_positive,
+    output logic                io_core_pmu_branch_taken    ,
+    output logic                io_core_pmu_branch_taken_hit,
+    output logic                io_core_pmu_branch_taken_b_not_detected,
+    output logic                io_core_pmu_branch_taken_addr_miss,
+    output logic                io_core_pmu_branch_not_taken_hit,
     output logic                io_core_pmu_stall_if        ,
     output logic                io_core_pmu_stall_id        ,
     output logic                io_core_pmu_stall_rr        ,
     output logic                io_core_pmu_stall_exe       ,
-    output logic                io_core_pmu_stall_wb        ,           
-    output logic                io_core_pmu_buffer_miss     ,           
-    output logic                io_core_pmu_imiss_kill      ,           
-    output logic                io_core_pmu_dmiss_l2hit     ,           
-    output logic                io_core_pmu_icache_bussy    ,
-    output logic                io_core_pmu_imiss_time      
-
+    output logic                io_core_pmu_stall_wb        ,   
+    output logic                io_core_pmu_EXE_LOAD        ,
+    output logic                io_core_pmu_EXE_STORE       ,
+    output logic                io_core_pmu_dcache_request  ,
+    output logic                io_core_pmu_dcache_miss     ,
+    output logic                io_core_pmu_dmiss_l2miss    ,
+    output logic                io_core_pmu_icache_request  ,
+    output logic                io_core_pmu_icache_miss     ,
+    output logic                io_core_pmu_imiss_l2miss    ,
+    output logic                io_core_pmu_dtlb_miss       ,
+    output logic                io_core_pmu_itlb_miss       
 );
 
 
@@ -332,6 +334,8 @@ wire [63:0]     dcache_ld_data_rdata;
 
 wire            dcache_st_data_gnt; 
 
+assign io_core_pmu_dcache_request = lagarto_ld_req_valid||lagarto_st_req_valid;
+
     //TLB
 wire        lsu_dtlb_hit;
 wire        lsu_dtlb_valid;
@@ -348,8 +352,6 @@ to_PMU_t       pmu_flags    ;
 logic          buffer_miss  ;
 logic imiss_time_pmu  ;
 logic imiss_kill_pmu ;
-logic imiss_l2_hit ;
-logic dmiss_l2_hit ;
 logic dcache_resp_lock;
 
 assign debug_in.halt_valid=debug_halt_i;
@@ -447,15 +449,21 @@ assign io_core_pmu_stall_id         = pmu_flags.stall_id                    ;
 assign io_core_pmu_stall_rr         = pmu_flags.stall_rr                    ; 
 assign io_core_pmu_stall_exe        = pmu_flags.stall_exe                   ; 
 assign io_core_pmu_stall_wb         = pmu_flags.stall_wb                    ; 
-assign io_core_pmu_branch_miss      = pmu_flags.branch_miss                 ; 
 assign io_core_pmu_is_branch        = pmu_flags.is_branch                   ; 
+assign io_core_pmu_is_branch_hit    = pmu_flags.is_branch_hit               ; 
+assign io_core_pmu_is_branch_false_positive = pmu_flags.is_branch_false_positive; 
 assign io_core_pmu_branch_taken     = pmu_flags.branch_taken                ; 
+assign io_core_pmu_branch_taken_hit = pmu_flags.branch_taken_hit            ; 
+assign io_core_pmu_branch_taken_b_not_detected = pmu_flags.branch_taken_b_not_detected; 
+assign io_core_pmu_branch_taken_addr_miss = pmu_flags.branch_taken_addr_miss; 
+assign io_core_pmu_branch_not_taken_hit = pmu_flags.branch_not_taken_hit    ; 
 assign io_core_pmu_new_instruction  = req_datapath_csr_interface.csr_retire ;
-assign io_core_pmu_buffer_miss      = imiss_l2_hit                          ;
-assign io_core_pmu_dmiss_l2hit      = dmiss_l2_hit                          ;
 assign io_core_pmu_imiss_time       = imiss_time_pmu                        ;
 assign io_core_pmu_imiss_kill       = imiss_kill_pmu                        ;
 assign io_core_pmu_icache_bussy     = !icache_resp.ready                    ;
+
+assign io_core_pmu_EXE_LOAD         = lsu_load                              ;
+assign io_core_pmu_EXE_STORE        = lsu_store                             ;
 
 // OVI CSR fields
 logic [EPI_pkg::CSR_VSTART_WIDTH-1:0] ovi_csr_vstart;
@@ -487,6 +495,7 @@ logic dtlb_miss;
 logic dtlb_miss_st;
 logic dtlb_miss_ld;
 
+assign io_core_pmu_dtlb_miss = dtlb_miss;
 
 datapath datapath_inst(
     .clk_i(clk_i),
@@ -569,6 +578,8 @@ datapath datapath_inst(
   assign icache_resp.valid = icache_dreq_o.valid;
   assign icache_resp.ready = icache_dreq_o.ready;
   assign icache_resp.xcpt  = icache_dreq_o.valid && icache_dreq_o.ex.valid;
+
+  assign io_core_pmu_icache_request = icache_dreq_i.req;
   
   // D$ request
                                                                                            
@@ -610,7 +621,7 @@ datapath datapath_inst(
     //.icache_en_i       (!dcache_resp_lock),
     .icache_en_i       (csr_icache_enable_i),
     .icache_flush_i    (iflush         ),
-    .icache_miss_o     (               ),
+    .icache_miss_o     (io_core_pmu_icache_miss),
     // I$ address translation requests
     .icache_areq_i     (mmu_icache_areq),
     .icache_areq_o     (icache_mmu_areq),
@@ -627,7 +638,7 @@ datapath datapath_inst(
     .dcache_amo_resp_o (dcache_amo_resp),
 
     // from PTW, Load Unit  and Store Unit
-    .dcache_miss_o     (               ),
+    .dcache_miss_o     (io_core_pmu_dcache_miss),
     .dcache_req_ports_i(dcache_lsu_req ),
     .dcache_req_ports_o(dcache_lsu_resp),
     // write buffer status
@@ -676,7 +687,7 @@ datapath datapath_inst(
     .satp_ppn_i            (satp_ppn_i          ),
     .asid_i                (asid_i              ),
     .flush_tlb_i           (                    ),
-    .itlb_miss_o           (                    ),
+    .itlb_miss_o           (io_core_pmu_itlb_miss),
     .dtlb_miss_o           (dtlb_miss           ),
     .req_port_i            (dcache_lsu_resp[0]  ),
     .req_port_o            (dcache_lsu_req[0]   )
@@ -728,12 +739,42 @@ datapath datapath_inst(
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
     .dmem_resp_gnt_ld_i         (dcache_ld_data_gnt             ),
     // Response towards Lagarto
-    .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
+    .resp_dcache_cpu_o          (resp_dcache_interface_datapath )
 );
 
 assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store & lsu_req;
 assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store) & lsu_req;
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
+
+// Handle cache miss, L2 hit/miss PMU signals
+logic last_miss_was_data;       // Needed to register whether last miss was data or instruction
+logic last_miss_was_instruction;
+always_ff @(posedge clk_i or negedge rstn_i) begin
+    if(rstn_i == 0)begin
+        last_miss_was_data <= 0;
+        last_miss_was_instruction <= 0;
+        io_core_pmu_dmiss_l2miss <= 0;
+        io_core_pmu_imiss_l2miss <= 0;
+    end else begin
+        if(io_core_pmu_dcache_miss) begin
+            last_miss_was_data <= 1;
+            last_miss_was_instruction <= 0;
+        end else if(io_core_pmu_icache_miss) begin
+            last_miss_was_data <= 0;
+            last_miss_was_instruction <= 1;
+        end else if(l15_rtrn_i.l15_l2miss && !l15_rtrn_i.l15_noncacheable) begin
+            if (last_miss_was_data) io_core_pmu_dmiss_l2miss <= 1;
+            else if(last_miss_was_instruction) io_core_pmu_imiss_l2miss <= 1;
+            last_miss_was_data <= 0;
+            last_miss_was_instruction <= 0;
+        end else begin
+            // Only keep signals for one cycle
+            if(io_core_pmu_dmiss_l2miss) io_core_pmu_dmiss_l2miss <= 0;
+            if(io_core_pmu_imiss_l2miss) io_core_pmu_imiss_l2miss <= 0;
+        end
+    end
+end
+
 `else // Original lowrisc-lagarto
   
 icache_interface icache_interface_inst(
@@ -815,9 +856,9 @@ top_icache icache (
 
 
 //PMU  
-assign imiss_l2_hit = ifill_resp.ack & io_core_pmu_l2_hit_i & ifill_resp.valid ; 
-assign dmiss_l2_hit = io_dc_gvalid_i & ( io_dc_addrbit_i[0] & io_dc_addrbit_i[1] ) & 
-                                                                io_core_pmu_l2_hit_i;
+assign io_core_pmu_imiss_l2miss = ifill_resp.ack & !io_core_pmu_l2_hit_i & ifill_resp.valid ; 
+assign io_core_pmu_dmiss_l2miss = io_dc_gvalid_i & ( io_dc_addrbit_i[0] & io_dc_addrbit_i[1] ) & 
+                                                                !io_core_pmu_l2_hit_i;
 `endif 
 
 

@@ -549,6 +549,8 @@ wire  [`PITON_NUM_TILES-1:0]   timer_irq;   // Timer interrupts
 wire  [`PITON_NUM_TILES-1:0]   ipi;         // software interrupt (a.k.a inter-process-interrupt)
 // PLIC
 wire  [`PITON_NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & sip (async)
+// PMU
+wire  [25*(`PITON_NUM_TILES)-1:0] pmu_sig;
 
 `endif
 
@@ -946,7 +948,9 @@ chip chip(
     .timer_irq_i                    ( timer_irq                  ), // Timer interrupts
     .ipi_i                          ( ipi                        ), // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    .irq_i                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
+    .irq_i                          ( irq                        ), // level sensitive IR lines, mip & sip (async)
+    // PMU
+    .pmu_sig_o                      ( pmu_sig                    )
 `endif
 
 );
@@ -1369,7 +1373,10 @@ chipset chipset(
     .timer_irq_o                    ( timer_irq                  ), // Timer interrupts
     .ipi_o                          ( ipi                        ), // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    .irq_o                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
+    .irq_o                          ( irq                        ), // level sensitive IR lines, mip & sip (async)
+    // PMU
+    .pmu_sig_i                      ( pmu_sig                    ),
+    .pmu_clk                        ( core_ref_clk               )
 `endif
 
 );

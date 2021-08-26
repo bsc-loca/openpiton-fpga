@@ -162,7 +162,9 @@ module chip(
     input   [`PITON_NUM_TILES-1:0]                    timer_irq_i,   // Timer interrupts
     input   [`PITON_NUM_TILES-1:0]                    ipi_i,         // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    input   [`PITON_NUM_TILES*2-1:0]                  irq_i          // level sensitive IR lines, mip & sip (async)
+    input   [`PITON_NUM_TILES*2-1:0]                  irq_i,         // level sensitive IR lines, mip & sip (async)
+    // PMU
+    output  [25*(`PITON_NUM_TILES)-1:0]               pmu_sig_o
 `endif
 );
 
@@ -1064,6 +1066,7 @@ module chip(
         .timer_irq_i         ( timer_irq_i[_FLAT_ID_]   ),
         .ipi_i               ( ipi_i[_FLAT_ID_]         ),
         .irq_i               ( irq_i[_FLAT_ID_*2 +: 2]  ),
+        .pmu_sig_o           ( pmu_sig_o[23*_FLAT_ID_+:23]),
     `endif
         // ucb from tiles to jtag
         .tile_jtag_ucb_val   ( tile0_jtag_ucb_val      ),

@@ -517,7 +517,10 @@ module chipset(
     output  [`PITON_NUM_TILES-1:0]                    timer_irq_o,   // Timer interrupts
     output  [`PITON_NUM_TILES-1:0]                    ipi_o,         // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    output  [`PITON_NUM_TILES*2-1:0]                  irq_o          // level sensitive IR lines, mip & sip (async)
+    output  [`PITON_NUM_TILES*2-1:0]                  irq_o,         // level sensitive IR lines, mip & sip (async)
+    // PMU
+    input   [25*(`PITON_NUM_TILES)-1:0]               pmu_sig_i,
+    input                                       pmu_clk
 `endif
 );
 
@@ -1453,7 +1456,7 @@ chipset_impl_noc_power_test  chipset_impl (
         .irq_o                  ( irq_o         )
     `endif
     
-    `ifdef PITONLAGARTO
+    `ifdef PITON_LAGARTO
         ,
         .ndmreset_o             ( ndmreset_o    ),
         .dmactive_o             ( dmactive_o    ),
@@ -1468,7 +1471,9 @@ chipset_impl_noc_power_test  chipset_impl (
         .rtc_i                  ( rtc_i         ),
         .timer_irq_o            ( timer_irq_o   ),
         .ipi_o                  ( ipi_o         ),
-        .irq_o                  ( irq_o         )
+        .irq_o                  ( irq_o         ),
+        .pmu_sig_i              ( pmu_sig_i     ),
+        .pmu_clk                ( pmu_clk       )
     `endif
 );
 

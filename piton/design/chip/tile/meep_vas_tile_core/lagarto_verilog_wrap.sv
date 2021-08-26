@@ -54,7 +54,10 @@ module lagarto_verilog_wrap #(
 
     // L15 (memory side)
     output wt_cache_pkg::l15_req_t       l15_req_o,
-    input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i
+    input  wt_cache_pkg::l15_rtrn_t      l15_rtrn_i,
+
+    // PMU
+    output logic[24:0]          pmu_sig_o
 );
 
     localparam ariane_pkg::ariane_cfg_t ArianeOpenPitonCfg = '{
@@ -191,6 +194,11 @@ csr_regfile i_csr_regfile (
 );
 
 
+logic[24:0] pmu_sig;
+// First signal is set to 1 to count clock cycles
+assign pmu_sig[0] = 1'b1;
+assign pmu_sig_o = pmu_sig;
+
 lagarto_openpiton_top #(
   .ArianeCfg(ArianeOpenPitonCfg)
 ) lagarto_m20 (
@@ -252,11 +260,32 @@ lagarto_openpiton_top #(
     .dbg_we_i            (1'b0                   ),
     .dbg_address_i       ({DBG_ADDR_WIDTH{1'b0}} ),
     .dbg_write_data_i    ({DBG_ADDR_WIDTH{1'b0}} ),
-    
-    // debugging module signal
-    .io_core_pmu_l2_hit_i(1'b0                   ),
-    .io_dc_gvalid_i      (1'b0                   ),
-    .io_dc_addrbit_i     (2'b0                   )
+
+    // PMU signals
+    .io_core_pmu_new_instruction(pmu_sig[1]),
+    .io_core_pmu_is_branch(pmu_sig[2]),
+    .io_core_pmu_is_branch_hit(pmu_sig[3]),
+    .io_core_pmu_is_branch_false_positive(pmu_sig[4]),
+    .io_core_pmu_branch_taken(pmu_sig[5]),
+    .io_core_pmu_branch_taken_hit(pmu_sig[6]),
+    .io_core_pmu_branch_taken_b_not_detected(pmu_sig[7]),
+    .io_core_pmu_branch_taken_addr_miss(pmu_sig[8]),
+    .io_core_pmu_branch_not_taken_hit(pmu_sig[9]),
+    .io_core_pmu_stall_if(pmu_sig[10]),
+    .io_core_pmu_stall_id(pmu_sig[11]),
+    .io_core_pmu_stall_rr(pmu_sig[12]),
+    .io_core_pmu_stall_exe(pmu_sig[13]),
+    .io_core_pmu_stall_wb(pmu_sig[14]),
+    .io_core_pmu_EXE_STORE(pmu_sig[15]),
+    .io_core_pmu_EXE_LOAD(pmu_sig[16]),
+    .io_core_pmu_dcache_request(pmu_sig[17]),
+    .io_core_pmu_dcache_miss(pmu_sig[18]),
+    .io_core_pmu_dmiss_l2miss(pmu_sig[19]),
+    .io_core_pmu_icache_request(pmu_sig[20]),
+    .io_core_pmu_icache_miss(pmu_sig[21]),
+    .io_core_pmu_imiss_l2miss(pmu_sig[22]),
+    .io_core_pmu_dtlb_miss(pmu_sig[23]),
+    .io_core_pmu_itlb_miss(pmu_sig[24])
 );
 
 endmodule
