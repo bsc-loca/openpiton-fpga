@@ -1254,7 +1254,7 @@ print(str)
 
     // PMU
     noc_pmu #(
-        .TILE_COUNT(`NUM_TILES)
+        .TILE_COUNT(`PITON_NUM_TILES)
     ) pmu (
         .noc_clk(chipset_clk),
         .buf_noc2_data_i     ( buf_lagarto_pmu_noc2_data     ),
