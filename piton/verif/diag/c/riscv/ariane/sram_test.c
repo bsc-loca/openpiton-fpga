@@ -43,17 +43,36 @@ int main(int argc, char ** argv) {
     }
   }
 
-  printf(" Checking byte Endianess of the memory \n");
+  printf(" Confirming reverse read byte Endianess of the memory \n");
   uint32_t volatile  wordRef = 0x12345678;
   uint8_t  volatile* byteRef = (uint8_t*)(&wordRef);
-  for (size_t addr = 0; addr < memWords; ++addr) memPtr[addr] = 0x12345678;
+  for (size_t addr = 0; addr < memWords; ++addr) memPtr[addr] = 0x78563412;
   for (size_t addr = 0; addr < memWords; ++addr)
   for (size_t byteIdx = 0; byteIdx < sizeof(uint32_t); ++byteIdx) {
     uint8_t volatile* bytePtr = (uint8_t*)(&memPtr[addr]);
     if (bytePtr[byteIdx] != byteRef[byteIdx]) {
-      printf("\nERROR: Incorrect Endianess of word at addr %x from Mem: %x vs reference word %x \n", addr, memPtr[addr], wordRef);
+      printf("\nERROR: Read Endianess is not reverse of word at addr %x from Mem: %x vs reference word %x \n", addr, memPtr[addr], wordRef);
       for (size_t byteIdx = 0; byteIdx < sizeof(uint32_t); ++byteIdx)
         printf("Idx: %x, Read byte: %x, Ref byte: %x \n", byteIdx, bytePtr[byteIdx], byteRef[byteIdx]);
+      exit(1);
+    }
+  }
+
+  printf(" Confirming reverse write byte Endianess of the memory \n");
+  byteRef[0] = 0x12;
+  byteRef[1] = 0x34;
+  byteRef[2] = 0x56;
+  byteRef[3] = 0x78;
+  for (size_t addr = 0; addr < memWords; ++addr) {
+    uint8_t volatile* bytePtr = (uint8_t*)(&memPtr[addr]);
+    bytePtr[3] = 0x12;
+    bytePtr[2] = 0x34;
+    bytePtr[1] = 0x56;
+    bytePtr[0] = 0x78;
+  }
+  for (size_t addr = 0; addr < memWords; ++addr) {
+    if (memPtr[addr] != wordRef) {
+      printf("\nERROR: Write Endianess is not reverse of word at addr %x from Mem: %x vs reference word %x \n", addr, memPtr[addr], wordRef);
       exit(1);
     }
   }
