@@ -12,13 +12,6 @@
 # Date: 26.11.2018
 # Description: GitLab CI configuration script.
 
-before_script:
-        #- git submodule update --init --recursive
-  - export PITON_ROOT=`pwd`
-  - export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
-  - export PATH=$RISCV/bin:$PATH
-  - source /opt/Xilinx/Vivado/2020.1/settings64.sh
-
   
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -34,16 +27,22 @@ stages:
 tools:build:
   tags: 
     - MEEP_FPGA 
+  timeout: 5h
   stage: tools
+  before_script:
+    - source /opt/Xilinx/Vivado/2020.1/settings64.sh
+    - git submodule update --init --recursive
+    - export PITON_ROOT=`pwd`
   script:
+    - echo "ROOT= $PITON_ROOT"
     - source piton/ariane_setup.sh
-      #    - source ariane_build_tools.sh
-    - git clone https://github.com/riscv/riscv-gnu-toolchain riscv_toolchain
-    - cd riscv_toolchain
-    - ./configure --prefix=$PITON_ROOT/riscv
+    - source piton/ariane_build_tools.sh
+    - echo "RISCV = $RISCV"
+    - ls piton/design/chip/tile/ariane
     - protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 
-   artifacts:
+  artifacts:
        when: always
-       paths: $PITON_ROOT/build/alveou280/system/protosyn_logs/make_project.log
+       paths: 
+         - build/alveou280/system/protosyn_logs/make_project.log
 
