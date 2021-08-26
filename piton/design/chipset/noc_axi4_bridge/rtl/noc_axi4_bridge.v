@@ -29,7 +29,10 @@
 `include "define.tmp.h"
 `include "noc_axi4_bridge_define.vh"
 
-module noc_axi4_bridge (
+module noc_axi4_bridge #(
+    // NOC words to AXI word deserialization order
+    parameter NOC2AXI_DESER_ORDER = 0
+) (
     // Clock + Reset
     input  wire                                   clk,
     input  wire                                   rst_n,
@@ -160,7 +163,9 @@ noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
     .ser_rdy(ser_rdy)
 );
 
-noc_axi4_bridge_deser noc_axi4_bridge_deser(
+noc_axi4_bridge_deser #(
+    .NOC2AXI_DESER_ORDER (NOC2AXI_DESER_ORDER)
+) noc_axi4_bridge_deser (
     .clk(clk), 
     .rst_n(rst_n), 
 

@@ -259,7 +259,7 @@ proc create_root_design { parentCell } {
 
   set axi4_sram [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 axi4_sram ]
   set_property -dict [ list \
-   CONFIG.ADDR_WIDTH {18} \
+   CONFIG.ADDR_WIDTH {17} \
    CONFIG.ARUSER_WIDTH {11} \
    CONFIG.AWUSER_WIDTH {11} \
    CONFIG.BUSER_WIDTH {11} \
@@ -506,10 +506,10 @@ connect_bd_intf_net -intf_net [get_bd_intf_nets axi_interconnect_0_M00_AXI] [get
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x000800000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x000800000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
   assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x00000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces axi4_sram] [get_bd_addr_segs ext_axi_sram_ctrl/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x000800000000 -range 0x00040000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces axi4_sram] [get_bd_addr_segs ext_axi_sram_ctrl/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x000800000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
 
   # Exclude Address Segments
   exclude_bd_addr_seg -offset 0x80000000 -range 0x00100000 -target_address_space [get_bd_addr_spaces C0_DDR4_S_AXI_CTRL_0] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP_CTRL/C0_REG]
