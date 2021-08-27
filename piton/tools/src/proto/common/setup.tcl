@@ -164,24 +164,27 @@ set ::env(PYTHONHOME) $tmp_PYTHONHOME
 
 
 if  {[info exists ::env(PITON_LAGARTO)]} {
-  puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PTON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
+  puts "INFO: compiling DTS and bootroms for Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   set TMP [pwd]
-  cd $::env(LAGARTO_ROOT)/../ariane/openpiton/bootrom/baremetal
+  cd $::env(LAGARTO_ROOT)/bootrom/baremetal
   # Note: dd dumps info to stderr that we do not want to interpret
   # otherwise this command fails...
   exec make clean 2> /dev/null
-  exec make all 2> /dev/null
-  cd $::env(LAGARTO_ROOT)/../ariane/openpiton/bootrom/linux
+  #exec make all 2> /dev/null
+  exec make all
+  puts "INFO: Baremetal compilation succeeded"
+  puts "INFO: Compiling bootrom for Linux"
+  cd $::env(LAGARTO_ROOT)/bootrom/linux
   # Note: dd dumps info to stderr that we do not want to interpret
   # otherwise this command fails...
   exec make clean 2> /dev/null
-  exec make all MAX_HARTS=$::env(PTON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
+  exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
   puts "INFO: done"
   # two targets per hart (M,S) and two interrupt sources (UART, Ethernet)
-  set NUM_TARGETS [expr 2*$::env(PTON_NUM_TILES)]
+  set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 2
-  puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
-  cd $::env(LAGARTO_ROOT)/../ariane/src/rv_plic/rtl
+  puts "INFO: generating PLIC for Lagarto ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
+  cd $::env(LAGARTO_ROOT)/openpiton/src/rv_plic/rtl
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
 
   cd $TMP
