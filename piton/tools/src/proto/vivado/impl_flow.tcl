@@ -29,6 +29,7 @@
 #
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
+set g_number_of_jobs $::env(NUM_VIVADO_JOBS)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
 
 # Get additional protosyn runtime defines
@@ -40,8 +41,6 @@ puts "INFO: Using the following Verilog defines: ${ALL_VERILOG_MACROS}"
 # Open the project
 open_project ${VIVADO_PROJECT_FILE}
 
-
-puts "HOLAAAAAAAAAA, PRIMER OPEN PROJECT"
 
 # Update Verilog MACROs property
 set_property verilog_define ${ALL_VERILOG_MACROS} [get_fileset sources_1]
@@ -58,9 +57,28 @@ upgrade_ip [get_ips -all]
 # not only for synthesis
 close_project
 
-puts "CIERRO PROJECT"
 
 open_project ${VIVADO_PROJECT_FILE}
+
+proc synthesis { g_root_dir g_number_of_jobs } {
+
+        set number_of_jobs $g_number_of_jobs
+        reset_run synth_1
+        launch_runs synth_1 -jobs ${g_number_of_jobs}
+        puts "Waiting for the Out Of Context IPs to be synthesized..."
+        wait_on_run synth_1
+        open_run synth_1
+        write_checkpoint -force $g_root_dir/dcp/synthesis.dcp
+}
+
+
+if { $env::(VIVADO_NON_PROJECT_MODE) eq "1" } {
+
+	puts "Project will be implemented in non-project mode. Do make implementation, make bitstream"
+        #TODO: Need to use the right directory to place the dcp file.	
+        synthesis $DV_ROOT $g_number_of_jobs
+
+} else { 
 
 # Launch implementation
 launch_run impl_1 -to_step write_bitstream -jobs $::env(NUM_VIVADO_JOBS)
@@ -73,4 +91,6 @@ if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
     puts "ERROR: Implementation failed."
 } else {
     puts "INFO: Implementation passed!"
+}
+
 }

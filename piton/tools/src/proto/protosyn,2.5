@@ -135,6 +135,8 @@ def usage():
     print("              Run FPGA flow to a specified step (including). Available options are:", file=sys.stderr)
     print("                  project", file=sys.stderr)
     print("                  impl", file=sys.stderr)
+    print("\n       --vnpm", file=sys.stderr)
+    print("\n            Run implementation and bitstrean via GNU Make", file=sys.stderr)
     print("\n       --oled <string>", file=sys.stderr)
     print("\n            String to be displayed on OLED display.", file=sys.stderr)
     print("\n            (Genesys2 and nexysVideo boards only", file=sys.stderr)
@@ -332,7 +334,10 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
 
     #dname = board + "_piton"
     #os.chdir(dname)
-    print_info("Running FPGA implementation down to bitstream generation")
+    if os.environ["VIVADO_NON_PROJECT_MODE"] != "1":
+        print_info("Running FPGA implementation down to bitstream generation")
+    else:
+        print_info("Running FPGA synthesis and create a design check point")
     design_board_dir = os.path.join(design_data["PATH"], board)
     impl_log = os.path.join(log_dir, PROJECT_IMPL_LOG)
     impl_flow = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/impl_flow.tcl")
@@ -347,7 +352,7 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
 
     # Copy sw defines for Ethernet core to proper place
     if board == "alveou280" and eth:
-      os.system('cp $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
+      os.system('cp -rf $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
 
     os.chdir(prev_dir)
 
@@ -467,6 +472,7 @@ def setParserOptions(parser):
     parser.add_option("--bram-test", dest="test_name", action="store")
     parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
+    parser.add_option("--vnpm", dest="vivado_non_project_mode", action="store", default=None)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
@@ -684,6 +690,7 @@ def main():
     run_fpga_impl           = True
     run_gen_test_bram       = False
     run_f1_impl             = False
+    run_non_project_mode    = False
 
     if options.test_name != None:
         run_sim             = True
@@ -694,6 +701,9 @@ def main():
 
     if options.to_step == 'project':
         run_fpga_impl       = False
+
+    if options.vivado_non_project_mode != None:
+        run_non_project_mode = True
 
     if options.gen_test_bram == True:
         run_make_project    = False
@@ -930,6 +940,10 @@ def main():
         jid = makeProject(options.board, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
         if jid != None:
             dep_list.append(jid)
+
+    if run_non_project_mode:
+        os.environ['VIVADO_NON_PROJECT_MODE'] = "1"
+        print_info("Vivado implementation needs to be performed via non-project mode env= $VIVADO_NON_PROJECT_MODE")
 
 
     ## TODO: update this options for simulations from VCS
