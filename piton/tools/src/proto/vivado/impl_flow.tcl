@@ -72,11 +72,11 @@ proc synthesis { g_root_dir g_number_of_jobs } {
 }
 
 
-if { $env::(VIVADO_NON_PROJECT_MODE) eq "1" } {
+if { $env(VIVADO_NON_PROJECT_MODE) eq "1" } {
 
 	puts "Project will be implemented in non-project mode. Do make implementation, make bitstream"
         #TODO: Need to use the right directory to place the dcp file.	
-        synthesis $DV_ROOT $g_number_of_jobs
+        synthesis $env(PITON_ROOT) $g_number_of_jobs
 
 } else { 
 
