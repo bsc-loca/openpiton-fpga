@@ -44,5 +44,5 @@ tools:build:
   artifacts:
        when: always
        paths: 
-         - build/alveou280/system/protosyn_logs/make_project.log
+         - build/alveou280/system/protosyn_logs
 
