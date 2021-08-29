@@ -5,7 +5,7 @@ DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
 IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp 
 BIT_FILE    =  $(ROOT_DIR)/bitstream/system.bit
-TCL_DIR     =  $(ROOT_DIR)/tools/src/proto/common
+TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
 VIVADO_VER  := "2020.1"
 VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/vivado
 VIVADO_OPT  = -mode batch -nolog -nojournal -notrace -source
@@ -29,10 +29,10 @@ $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
 
 $(IMPL_DCP): $(SYNTH_DCP)
-	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl
+	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
 	
 $(BIT_FILE): $(IMPL_DCP)
-	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl
+	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 	
 clean: 
 	rm -rf $(PROJECT_DIR) dcp bitstream reports

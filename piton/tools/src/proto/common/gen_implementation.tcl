@@ -1,7 +1,10 @@
 
 if { $::argc > 0 } {
- set g_project_dir $::argv
- puts "project directory is $g_project_dir"
+ set g_root_dir $::argv
+ puts "Root directory is $g_root_dir"
+} else { 
+ puts "Bad usage: this script needs an argument"
+ exit -1
 }
 
 proc implementation { g_root_dir } {
