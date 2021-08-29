@@ -336,6 +336,7 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
     #os.chdir(dname)
     if (vivado_mode == False):
         print_info("Running FPGA implementation down to bitstream generation")
+        os.environ["VIVADO_NON_PROJECT_MODE"] = "0"
     else:
         os.environ["VIVADO_NON_PROJECT_MODE"] = "1"
         print_info("Running FPGA synthesis")
