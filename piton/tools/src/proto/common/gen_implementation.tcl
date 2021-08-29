@@ -1,4 +1,3 @@
-source [pwd]/tcl/environment.tcl
 
 if { $::argc > 0 } {
  set g_project_dir $::argv
