@@ -194,7 +194,10 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     # Variables passed to TCL scripts
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
+    #dmazure: Patch for using protosyn inside Makefile
+    os.environ['VIVADO_BIN'] = VIVADO_PATH + "/vivado"
 
+    print_info("The Vivado Path is %s" % VIVADO_PATH)
 
     # use custom vivado version if provided
     if(os.environ.get('VIVADO_BIN')) is not None:
@@ -348,7 +351,6 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
     jname = "protosyn_impl_%s_%s" % (board, design_data["ID"])
     jid = None
     if (tool == "vivado"):
-        os.path.join(design_data["PATH"], VIVADO_PATH)
         jid = run_vivado(impl_log, impl_flow, design_data["PATH"], board, \
                          slurm, 8, 64000, "6:00:00", jname, dep_list)
     elif (tool == "ise"):
