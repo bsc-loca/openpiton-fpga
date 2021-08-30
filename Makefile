@@ -23,6 +23,7 @@ implementation: $(IMPL_DCP)
 bitstream: $(BIT_FILE)
 
 initialize: clean
+	source $(VIVADO_PATH)/settings64.sh ;\
 	protosyn --board $(FPGA_TARGET) --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
 
 $(SYNTH_DCP): $(PROJECT_FILE)
