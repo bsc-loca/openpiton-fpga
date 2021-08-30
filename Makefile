@@ -9,7 +9,6 @@ TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
 VIVADO_VER  := "2020.1"
 VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/vivado
 VIVADO_OPT  = -mode batch -nolog -nojournal -notrace -source
-SHELL      := /bin/bash
 
 .PHONY: clean clean_synthesis clean_implementation
 
@@ -23,7 +22,6 @@ implementation: $(IMPL_DCP)
 bitstream: $(BIT_FILE)
 
 initialize: clean
-	source $(VIVADO_PATH)/settings64.sh ;\
 	protosyn --board $(FPGA_TARGET) --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
 
 $(SYNTH_DCP): $(PROJECT_FILE)
