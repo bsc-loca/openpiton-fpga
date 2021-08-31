@@ -71,35 +71,22 @@ fi
 
 # set root directory
 export PITON_ROOT=`pwd`
-export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/meep_vas_tile_core/
+export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas-tile-core/
 export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 
 ## GCC and RISCV GCC setup
 export CXX=g++ CC=gcc
 # customize this to a fast local disk
-export RISCV=/scratch/`whoami`/riscv_install
-export VERILATOR_ROOT=$ARIANE_ROOT/tmp/verilator-4.014/
 
-# setup paths
-export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
-export LIBRARY_PATH=$RISCV/lib
-export LD_LIBRARY_PATH=$RISCV/lib
-export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-
-# source OpenPiton setup script
 # note: customize this script to reflect your tool setup
 source ./piton/piton_settings.bash
 
 # These setting is for SATU server.
-git submodule update --init --recursive piton/design/chip/tile/ariane && \
-	ln -s /home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp ./piton/design/chip/tile/ariane/tmp
 
-git submodule update --init --recursive piton/design/chip/tile/meep_vas_tile_core
+git submodule update --init --recursive piton/design/chip/tile/vas-tile-core
 
 export RISCV=/home/tools/openpiton/riscv_install
-export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
-export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
+export PATH=$RISCV/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
