@@ -100,7 +100,7 @@ fpga-test:
             - export PATH=$PATH:$QDMA_DRIVERS
             - $TOOLS_DIR/givememyuart
         script:
-            - $TOOLS_DIR/load_bitstream.sh qdma bitstream/$BITSTREAM
+            - $TOOLS_DIR/load-bitstream.sh qdma bitstream/$BITSTREAM
             - cat /dev/ttyUSB2 115200 > $FPGA_LOG_FILE &
             - source $BOOT_SCRIPT $BBL
             - sleep 60
