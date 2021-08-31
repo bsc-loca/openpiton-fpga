@@ -167,6 +167,7 @@ wire                               sram_axi_bvalid;
 wire                               sram_axi_bready;
 
 noc_axi4_bridge #(
+    .SWAP_ENDIANESS (1),
     .NOC2AXI_DESER_ORDER (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
