@@ -195,9 +195,9 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
     #dmazure: Patch for using protosyn inside Makefile
-    os.environ['VIVADO_BIN'] = VIVADO_PATH + "/vivado"
+    #os.environ['VIVADO_BIN'] = VIVADO_PATH + "/vivado"
 
-    print_info("The Vivado Path is %s" % VIVADO_PATH)
+    print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
 
     # use custom vivado version if provided
     if(os.environ.get('VIVADO_BIN')) is not None:

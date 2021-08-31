@@ -7,8 +7,11 @@ IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp
 BIT_FILE    =  $(ROOT_DIR)/bitstream/system.bit
 TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
 VIVADO_VER  := "2020.1"
-VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/vivado
+VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/
+VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  = -mode batch -nolog -nojournal -notrace -source
+
+export PATH := $(VIVADO_PATH):$(PATH)
 
 .PHONY: clean clean_synthesis clean_implementation
 
@@ -25,13 +28,13 @@ initialize: clean
 	protosyn --board $(FPGA_TARGET) --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
 
 $(SYNTH_DCP): $(PROJECT_FILE)
-	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
+	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
 
 $(IMPL_DCP): $(SYNTH_DCP)
-	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
 	
 $(BIT_FILE): $(IMPL_DCP)
-	$(VIVADO_PATH) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 	
 clean: 
 	rm -rf $(PROJECT_DIR) dcp bitstream reports

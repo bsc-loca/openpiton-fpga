@@ -48,7 +48,7 @@ synthesis:
     - echo "VIVADO = $VIVADO_BIN"
     - make initialize
       #- protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
-    - cp -r build/alveo280/system/protosyn_logs .
+    - cp -r build/alveou280/system/protosyn_logs .
 
   artifacts:
        when: always
