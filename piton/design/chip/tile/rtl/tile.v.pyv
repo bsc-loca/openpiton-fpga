@@ -1238,8 +1238,8 @@ str = '''
         .DmBaseAddress          ( 64'h%s ),
         .SwapEndianess          ( 1'b1 ),
         .NrExecuteRegionRules   ( %d   ),
-        .ExecuteRegionAddrBase  ( %s   ),
-        .ExecuteRegionLength    ( %s   ),
+        .ExecuteRegionAddrBase  (    ),
+        .ExecuteRegionLength    (    ),
         .NrCachedRegionRules    (  1   ),
         .CachedRegionAddrBase   ( {64'h%s} ),
         .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, cacheBase, cacheLength)
