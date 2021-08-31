@@ -2,6 +2,6 @@
 	path = piton/design/chip/tile/ariane
 	url = https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/meep_ariane
 	branch = alveoU280_integration
-[submodule "vas-tile-core"]
-	path = vas-tile-core
+[submodule "piton/design/chip/tile/vas-tile-core"]
+	path = piton/design/chip/tile/vas-tile-core
 	url = https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/vas-tile-core.git
