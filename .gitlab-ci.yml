@@ -78,6 +78,7 @@ bitstream:
         after_script:
             - mv bitstream/*.bit bitstream/$BITSTREAM
         dependencies:
+            - synthesis
             - implementation
         artifacts:
             when: always
