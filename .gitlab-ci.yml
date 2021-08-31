@@ -17,9 +17,9 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   FPGA_LOG_FILE: fpga.log
   BITSTREAM: system_${CI_PIPELINE_ID}.bit
-  BOOT_SCRIPT: /home/dmazure/pcie/linux_images/boot_ariane.sh 
-  BBL: /home/dmazure/pcie/linux_images/bbl8.bin
-  TOOLS_DIR: /home/tools/scripts
+  BOOT_SCRIPT: boot_ariane.sh 
+  BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
+  TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
@@ -101,8 +101,8 @@ fpga-test:
             - $TOOLS_DIR/givememyuart
         script:
             - $TOOLS_DIR/load-bitstream.sh qdma bitstream/$BITSTREAM
-            - cat /dev/ttyUSB2 115200 > $FPGA_LOG_FILE &
-            - source $BOOT_SCRIPT $BBL
+            - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
+            - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
             - sleep 60
             - sudo pkill cat
             - echo "Checking FPGA log ..."
