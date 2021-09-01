@@ -30,7 +30,10 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_write (
+module noc_axi4_bridge_write #(
+    // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    parameter SWAP_ENDIANESS = 0
+) (
     // Clock + Reset
     input  wire                                                    clk,
     input  wire                                                    rst_n,
@@ -113,9 +116,31 @@ reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] req_id_f;
 reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
 
+wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
+wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
+                || (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+
 assign req_rdy = (req_state == IDLE);
 assign m_axi_awvalid = (req_state == PREP_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid = (req_state == PREP_REQ) || (req_state == SENT_AW);
+
+
+wire [5:0] swap_grnlty = uncacheable ? (
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_1B  ? 6'd0  :
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_2B  ? 6'd1  :
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_4B  ? 6'd3  :
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_8B  ? 6'd7  :
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_16B ? 6'd15 :
+                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_32B ? 6'd31 :
+                                                                                6'd63 ) :
+                                                                                6'd63;
+reg [`AXI4_DATA_WIDTH-1:0] req_data_swp;
+reg [6:0] idxw;
+always @(*) begin
+  req_data_swp = {`AXI4_DATA_WIDTH{1'b0}};
+  for (idxw = 0; idxw <= swap_grnlty; idxw = idxw+1)
+    req_data_swp[idxw*8 +: 8] = req_data[(swap_grnlty - idxw)*8 +: 8];
+end
 
 always  @(posedge clk) begin
     if(~rst_n) begin
@@ -135,7 +160,7 @@ always  @(posedge clk) begin
                 req_state <= PREP_REQ;
                 req_header_f <= req_header_f;
                 req_id_f <= req_id_f;
-                req_data_f <= req_data; // get data one cycle later because of bram in buffer
+                req_data_f <= SWAP_ENDIANESS ? req_data_swp : req_data; // get data one cycle later because of bram in buffer
             end
             PREP_REQ: begin
                 req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE : m_axi_awgo ? SENT_AW : m_axi_wgo ? SENT_W : req_state;
@@ -170,11 +195,7 @@ end
 assign m_axi_awid = {{`AXI4_ID_WIDTH-`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE{1'b0}}, req_id_f};
 assign m_axi_wid = {{`AXI4_ID_WIDTH-`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE{1'b0}}, req_id_f};
 
-
-wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
-wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
-                || (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
 
 // If running uart tests - we need to do address translation
 `ifdef PITONSYS_UART_BOOT

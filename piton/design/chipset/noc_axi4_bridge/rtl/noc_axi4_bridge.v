@@ -29,7 +29,12 @@
 `include "define.tmp.h"
 `include "noc_axi4_bridge_define.vh"
 
-module noc_axi4_bridge (
+module noc_axi4_bridge #(
+    // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    parameter SWAP_ENDIANESS = 0,
+    // NOC words to AXI word deserialization order
+    parameter NOC2AXI_DESER_ORDER = 0
+) (
     // Clock + Reset
     input  wire                                   clk,
     input  wire                                   rst_n,
@@ -160,7 +165,9 @@ noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
     .ser_rdy(ser_rdy)
 );
 
-noc_axi4_bridge_deser noc_axi4_bridge_deser(
+noc_axi4_bridge_deser #(
+    .NOC2AXI_DESER_ORDER (NOC2AXI_DESER_ORDER)
+) noc_axi4_bridge_deser (
     .clk(clk), 
     .rst_n(rst_n), 
 
@@ -175,7 +182,9 @@ noc_axi4_bridge_deser noc_axi4_bridge_deser(
     .out_rdy(deser_rdy)
 );
 
-noc_axi4_bridge_read noc_axi4_bridge_read (
+noc_axi4_bridge_read #(
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+) noc_axi4_bridge_read (
     .clk(clk), 
     .rst_n(rst_n), 
     .uart_boot_en(uart_boot_en), 
@@ -215,7 +224,9 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_rready(m_axi_rready)
 );
 
-noc_axi4_bridge_write noc_axi4_bridge_write (
+noc_axi4_bridge_write #(
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+) noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),
     .rst_n(rst_n),

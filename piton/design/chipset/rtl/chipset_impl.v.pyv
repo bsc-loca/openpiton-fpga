@@ -829,21 +829,31 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_act_n(ddr_act_n),
             .ddr_bg(ddr_bg),
         `ifdef PITONSYS_PCIE
-	  .pci_express_x16_rxn(pci_express_x16_rxn),
-	  .pci_express_x16_rxp(pci_express_x16_rxp),
-	  .pci_express_x16_txn(pci_express_x16_txn),
-	  .pci_express_x16_txp(pci_express_x16_txp),        
-	  .pcie_gpio(pcie_gpio),
-	  .pcie_perstn(pcie_perstn),
-	  .pcie_refclk_n(pcie_refclk_n),
-	  .pcie_refclk_p(pcie_refclk_p),
-	 `endif
+            .pci_express_x16_rxn(pci_express_x16_rxn),
+            .pci_express_x16_rxp(pci_express_x16_rxp),
+            .pci_express_x16_txn(pci_express_x16_txn),
+            .pci_express_x16_txp(pci_express_x16_txp),
+            .pcie_gpio(pcie_gpio),
+            .pcie_perstn(pcie_perstn),
+            .pcie_refclk_n(pcie_refclk_n),
+            .pcie_refclk_p(pcie_refclk_p),
+        `endif
         `else // PITONSYS_DDR4
             .sys_clk(mc_clk),
             .ddr_cas_n(ddr_cas_n),
             .ddr_ras_n(ddr_ras_n),
             .ddr_we_n(ddr_we_n),
         `endif // PITONSYS_DDR4
+
+        `ifdef PITONSYS_MC_SRAM
+           .sram_flit_in_data(buf_sram_noc2_data),
+           .sram_flit_in_val(buf_sram_noc2_valid),
+           .sram_flit_in_rdy(sram_buf_noc2_ready),
+
+           .sram_flit_out_data(sram_buf_noc3_data),
+           .sram_flit_out_val(sram_buf_noc3_valid),
+           .sram_flit_out_rdy(buf_sram_noc3_ready),
+        `endif // PITONSYS_MC_SRAM
 
             .ddr_addr(ddr_addr),
             .ddr_ba(ddr_ba),
@@ -889,6 +899,22 @@ fake_mem_ctrl fake_mem_ctrl(
     .noc_data_out       ( mem_buf_noc3_data  ),
     .noc_ready_out      ( buf_mem_noc3_ready )
 );
+
+// Just instantiating SRAM part of whole MC
+`ifdef PITONSYS_MC_SRAM
+    mc_top mc_top(
+      .core_ref_clk(chipset_clk),
+      .sys_rst_n(chipset_rst_n),
+
+      .sram_flit_in_data(buf_sram_noc2_data),
+      .sram_flit_in_val(buf_sram_noc2_valid),
+      .sram_flit_in_rdy(sram_buf_noc2_ready),
+
+      .sram_flit_out_data(sram_buf_noc3_data),
+      .sram_flit_out_val(sram_buf_noc3_valid),
+      .sram_flit_out_rdy(buf_sram_noc3_ready)
+    );
+`endif // endif PITONSYS_MC_SRAM
 
 `endif // endif PITON_FPGA_MC_DDR3
 
