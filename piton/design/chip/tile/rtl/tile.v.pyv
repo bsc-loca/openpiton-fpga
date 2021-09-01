@@ -1240,8 +1240,8 @@ str = '''
         .DmBaseAddress          ( 64'h%s ),
         .SwapEndianess          ( 1'b1 ),
         .NrExecuteRegionRules   ( %d   ),
-        .ExecuteRegionAddrBase  (    ),
-        .ExecuteRegionLength    (    ),
+        .ExecuteRegionAddrBase  ( %s   ),
+        .ExecuteRegionLength    ( %s   ),
         .NrCachedRegionRules    (  1   ),
         .CachedRegionAddrBase   ( {64'h%s} ),
         .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, cacheBase, cacheLength)

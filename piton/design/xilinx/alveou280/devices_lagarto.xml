@@ -11,7 +11,8 @@ specific language governing permissions and limitations under the License.
 
 Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 Date: 26.11.2018
-Description: Peripheral address map for OpenPiton+Ariane configurations.
+Modified: 01/09/2021 daniel.jimenez2@bsc.es, BSC
+Description: Peripheral address map for OpenPiton+Lagarto configurations.
 -->
 <devices>
     <!--The first entry should always be the filter/chip to xbar connection-->
@@ -74,6 +75,6 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <length>0x4000000</length>
         <stream_accessible/>
     </port>
-    <!-- end ariane specific periphs -->
+    <!-- end lagarto specific periphs -->
 </devices>
 
