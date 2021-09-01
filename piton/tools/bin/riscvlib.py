@@ -12,6 +12,9 @@
 # Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 # Date: 04.02.2019
 # Description: Device tree generation script for OpenPiton+Ariane.
+# Modification:
+# Date: 01/09/2021
+# Accept Lagarto as CPU
 
 
 import pyhplib
@@ -20,11 +23,12 @@ import subprocess
 from pyhplib import *
 
 # this prints some system information, to be printed by the bootrom at power-on
-def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp):
+# dts path needs to be chosen in the caller process
+def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp, core):
 
     gitver_cmd = "git log | grep commit -m1 | LD_LIBRARY_PATH= awk -e '{print $2;}'"
     piton_ver  = subprocess.check_output([gitver_cmd], shell=True)
-    ariane_ver = subprocess.check_output(["cd %s && %s" % (dtsPath, gitver_cmd)], shell=True)
+    core_ver = subprocess.check_output(["cd %s && %s" % (dtsPath, gitver_cmd)], shell=True)
 
     # get length of memory
     memLen  = 0
@@ -46,16 +50,16 @@ def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath,
         sysFreq = "Unknown"
 
     tmpStr = '''// Info string generated with get_bootrom_info(...)
-// OpenPiton + Ariane framework
+// OpenPiton + %s framework
 // Date: %s
 
 const char info[] = {
 "\\r\\n\\r\\n"
 "----------------------------------------\\r\\n"
-"--     OpenPiton+Ariane Platform      --\\r\\n"
+"--     OpenPiton+%s Platform          --\\r\\n"
 "----------------------------------------\\r\\n"
 "OpenPiton Version: %s                   \\r\\n"
-"Ariane Version:    %s                   \\r\\n"
+"%s Version:    %s                       \\r\\n"
 "                                        \\r\\n"
 "FPGA Board:        %s                   \\r\\n"
 "Build Date:        %s                   \\r\\n"
@@ -74,9 +78,12 @@ const char info[] = {
 "----------------------------------------\\r\\n\\r\\n\\r\\n"
 };
 
-''' % (timeStamp,
+''' % (core,
+       timeStamp,
+       core,
        piton_ver[0:8],
-       ariane_ver[0:8],
+       core,
+       core_ver[0:8],
        boardName,
        timeStamp,
        int(os.environ['PITON_X_TILES']),
@@ -120,7 +127,7 @@ def _reg_fmt(addrBase, addrLen, addrCells, sizeCells):
 
     return tmpStr
 
-def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp):
+def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp, core):
 
     assert nCpus >= 1
 
@@ -132,7 +139,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
-// OpenPiton + Ariane framework
+// OpenPiton + %s framework
 // Date: %s
 
 /dts-v1/;
@@ -140,8 +147,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 / {
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "eth,ariane-bare-dev";
-    model = "eth,ariane-bare";
+    compatible = "eth,%s-bare-dev";
+    model = "eth,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
     // chosen {
@@ -151,7 +158,12 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         #address-cells = <1>;
         #size-cells = <0>;
         timebase-frequency = <%d>;
-    ''' % (timeStamp, uartBase, timeBaseFreq)
+    ''' % (core, timeStamp, core, core, uartBase, timeBaseFreq)
+
+    if core == "Lagarto":
+        riscv_isa = "rv64ima"
+    elif core == "Ariane":
+        riscv_isa = "rv64imafdc"
 
     for k in range(nCpus):
         tmpStr += '''
@@ -160,8 +172,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "cpu";
             reg = <%d>;
             status = "okay";
-            compatible = "eth, ariane", "riscv";
-            riscv,isa = "rv64imafdc";
+            compatible = "eth, %s", "riscv";
+            riscv,isa = "%s";
             mmu-type = "riscv,sv39";
             tlb-split;
             // HLIC - hart local interrupt controller
@@ -171,7 +183,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
                 compatible = "riscv,cpu-intc";
             };
         };
-        ''' % (k,k,cpuFreq,k,k)
+        ''' % (k,k,cpuFreq,k,core,riscv_isa,k)
 
     tmpStr += '''
     };
@@ -194,9 +206,9 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     soc {
         #address-cells = <2>;
         #size-cells = <2>;
-        compatible = "eth,ariane-bare-soc", "simple-bus";
+        compatible = "eth,%s-bare-soc", "simple-bus";
         ranges;
-    '''
+    ''' % (core)
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
@@ -327,7 +339,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     # this needs to match
     assert ioDeviceNr-1 == numIrqs
 
-    with open(dtsPath + '/ariane.dts','w') as file:
+    with open(dtsPath + '/' + core + '.dts','w') as file:
         file.write(tmpStr)
 
 

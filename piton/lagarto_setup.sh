@@ -43,7 +43,7 @@
 
 echo
 echo "----------------------------------------------------------------------"
-echo "openpiton/ariane path setup"
+echo "openpiton/lagarto path setup"
 echo "----------------------------------------------------------------------"
 echo
 
@@ -72,7 +72,6 @@ fi
 # set root directory
 export PITON_ROOT=`pwd`
 export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas-tile-core/
-export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 
 ## GCC and RISCV GCC setup
 export CXX=g++ CC=gcc
@@ -99,7 +98,6 @@ then
     echo
     echo "----------------------------------------------------------------------"
     echo "setup complete. do not forget to run the following script             "
-    echo "if you run the setup for the first time: ./piton/ariane_build_tools.sh"
     echo "----------------------------------------------------------------------"
     echo
 else
