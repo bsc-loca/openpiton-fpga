@@ -253,9 +253,9 @@ set_property "verilog_uppercase" "0" $fileset_obj
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs -quiet synth_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
-    create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2015} -strategy "Flow_PerfOptimized_high" -constrset constrs_1
+    create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Flow_PerfOptimized_high" -constrset constrs_1
   } else {
-    create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2015} -strategy "Vivado Synthesis Defaults" -constrset constrs_1
+    create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Vivado Synthesis Defaults" -constrset constrs_1
   }
 } else {
   if {$VIVADO_FLOW_PERF_OPT} {
@@ -263,7 +263,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
   } else {
     set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
   }
-  set_property flow "Vivado Synthesis 2015" [get_runs synth_1]
+  set_property flow "Vivado Synthesis 2020" [get_runs synth_1]
 }
 set fileset_obj [get_runs synth_1]
 set_property "constrset" "constrs_1" $fileset_obj
@@ -272,7 +272,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Synthesis Defaults" $fileset_obj
 }
-set_property "flow" "Vivado Synthesis 2015" $fileset_obj
+set_property "flow" "Vivado Synthesis 2020" $fileset_obj
 set_property "name" "synth_1" $fileset_obj
 set_property "needs_refresh" "0" $fileset_obj
 set_property "part" "${FPGA_PART}" $fileset_obj
@@ -289,11 +289,13 @@ set_property "steps.synth_design.tcl.post" "" $fileset_obj
 set_property "steps.synth_design.args.flatten_hierarchy" "rebuilt" $fileset_obj
 set_property "steps.synth_design.args.gated_clock_conversion" "off" $fileset_obj
 set_property "steps.synth_design.args.bufg" "12" $fileset_obj
-if {$VIVADO_FLOW_PERF_OPT} {
-  set_property "steps.synth_design.args.fanout_limit" "400" $fileset_obj
-} else {
-  set_property "steps.synth_design.args.fanout_limit" "10000" $fileset_obj
-}
+
+## This is not supported in Vivado 2020, need to check what is the alternative
+#if {$VIVADO_FLOW_PERF_OPT} {
+#  set_property "steps.synth_design.args.fanout_limit" "400" $fileset_obj
+#} else {
+#  set_property "steps.synth_design.args.fanout_limit" "10000" $fileset_obj
+#}
 set_property "steps.synth_design.args.directive" "Default" $fileset_obj
 if {$VIVADO_FLOW_PERF_OPT} {
   set_property "steps.synth_design.args.fsm_extraction" "one_hot" $fileset_obj
@@ -323,9 +325,9 @@ current_run -synthesis $fileset_obj
 # Create 'impl_1' run (if not found)
 if {[string equal [get_runs -quiet impl_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
-    create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2015} -strategy "Performance_Explore" -constrset constrs_1 -parent_run synth_1
+    create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Performance_Explore" -constrset constrs_1 -parent_run synth_1
   } else {
-    create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2015} -strategy "Vivado Implementation Defaults" -constrset constrs_1 -parent_run synth_1
+    create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Vivado Implementation Defaults" -constrset constrs_1 -parent_run synth_1
   }
 } else {
   if {$VIVADO_FLOW_PERF_OPT} {
@@ -333,7 +335,7 @@ if {[string equal [get_runs -quiet impl_1] ""]} {
   } else {
     set_property strategy "Vivado Implementation Defaults" [get_runs impl_1]
   }
-  set_property flow "Vivado Implementation 2015" [get_runs impl_1]
+  set_property flow "Vivado Implementation 2020" [get_runs impl_1]
 }
 set fileset_obj [get_runs impl_1]
 set_property "constrset" "constrs_1" $fileset_obj
@@ -342,7 +344,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Implementation Defaults" $fileset_obj
 }
-set_property "flow" "Vivado Implementation 2015" $fileset_obj
+set_property "flow" "Vivado Implementation 2020" $fileset_obj
 set_property "name" "impl_1" $fileset_obj
 set_property "needs_refresh" "0" $fileset_obj
 if {[string equal ${BOARD_PART} ""] != 0} {
