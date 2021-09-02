@@ -28,10 +28,10 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include 
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include 
+        ${DV_ROOT}/design/chipset/include 
 	${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include 
 	${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include 
-	${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes 
 	${DV_ROOT}/design/chip/tile/vas-tile-core/include"
 
 # RTL include files
@@ -49,7 +49,8 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/EPI_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
@@ -260,8 +261,14 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header_ctu.v" \
+    ]
+
+set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/pico/rtl/picorv32.v" \
     "${DV_ROOT}/design/chip/tile/pico/rtl/pico_reset.v" \
+    ]
+
+set SPARC_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/sparc/rtl/sparc.v" \
     "${DV_ROOT}/design/chip/tile/sparc/rtl/sparc_core.v" \
     "${DV_ROOT}/design/chip/tile/sparc/rtl/cpx_spc_rpt.v" \
@@ -408,6 +415,8 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1d_tag.v" \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1i_data.v" \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1i_tag.v" \
+]
+set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/tb/ariane_soc_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi/src/axi_pkg.sv"                               \
     "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_pkg.sv"                          \
@@ -784,7 +793,7 @@ set CHIPSET_PRJ_IP_FILES [list \
 ]
 
 
-set LAGARTO_FILES [ list \
+set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/branch_predictor.sv" \
