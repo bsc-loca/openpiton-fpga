@@ -503,6 +503,7 @@ def makeDefList(options):
         defines.append("NO_RTL_CSM")
     if options.core == 'lagarto':
         defines.append("NO_RTL_CSM")
+        defines.append("BSC_RTL_SRAMS")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
 

@@ -28,11 +28,11 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include \ 
-											${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include \
-											${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include \
-											${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes \
-											${DV_ROOT}/design/chip/tile/vas-tile-core/include"
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include 
+	${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include 
+	${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include 
+	${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes 
+	${DV_ROOT}/design/chip/tile/vas-tile-core/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -46,12 +46,17 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/include/ifu.h" \
     "${DV_ROOT}/design/include/lsu.h" \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/EPI_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
 
 ]
 
+#"${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
 
 set GLOBAL_DEFAULT_VERILOG_MACROS "NO_SCAN FPGA_SYN PITON_FPGA_SYNTH PITON_PROTO"
 
@@ -784,7 +789,6 @@ set LAGARTO_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/branch_predictor.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/branch_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/control_unit/rtl/control_unit.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/interface_csr/rtl/csr_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/datapath.sv" \
@@ -799,14 +803,12 @@ set LAGARTO_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/mul_unit.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/rr_stage/rtl/regfile.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/register.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_gating.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_mux2.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/tb/ariane_soc_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/axi_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/clint/clint.sv" \
