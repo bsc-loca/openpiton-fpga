@@ -136,12 +136,13 @@ logic mxr;
 logic [43:0] satp_ppn;
 logic asid;
 ariane_pkg::exception_t csr_ex_o;
+logic flush;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
   .rst_ni                ( spc_grst_l ),
   .time_irq_i            ( 0 ),
-  .flush_o               ( ),
+  .flush_o               ( flush    ),
   .halt_csr_o            ( CSR_STALL),
   //.commit_instr_i        ( ),
   .commit_ack_i          ( 0 ),
@@ -222,6 +223,7 @@ lagarto_openpiton_top #(
     .CSR_EVEC            (CSR_EPC                ),
     .CSR_INTERRUPT       (1'b0                   ),
     .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000),
+    .csr_flush_i         (flush                  ),
     .io_csr_csr_replay   (1'b0                   ),
     .csr_priv_lvl_i      (priv_lvl_csr_o         ),
     .csr_vpu_data_i      (0                      ),

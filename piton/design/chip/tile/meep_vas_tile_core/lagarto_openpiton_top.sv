@@ -62,6 +62,7 @@ module lagarto_openpiton_top #(
     input addr_t                CSR_EVEC,
     input logic                 CSR_INTERRUPT,
     input bus64_t               CSR_INTERRUPT_CAUSE,
+    input logic                 csr_flush_i,
     input logic                 io_csr_csr_replay,
     input [1:0]                 csr_priv_lvl_i,
     input ovi_csr_data_t        csr_vpu_data_i,
@@ -290,6 +291,7 @@ treq_o_t       itlb_treq    ;
 ifill_resp_i_t ifill_resp   ;
 ifill_req_o_t  ifill_req    ;
 logic          iflush       ;
+logic          flush_ctrl;
 
 //dCache
     // AMO Interface
@@ -337,6 +339,8 @@ wire        lsu_dtlb_hit;
 wire        lsu_dtlb_valid;
 wire [63:0] lsu_paddr   ;
 wire        lsu_req     ;
+logic       lsu_req_dly ;
+logic       lsu_req_raising_e;
 wire [63:0] lsu_vaddr   ;
 wire        lsu_store   ;
 wire        lsu_load    ;
@@ -486,7 +490,12 @@ logic [31:0] velem_cnt;
 logic dtlb_miss;
 logic dtlb_miss_st;
 logic dtlb_miss_ld;
-
+logic dtlb_miss_ma_st;
+logic dtlb_miss_ma_ld;
+// data is misaligned
+logic data_misaligned;
+logic data_misaligned_dly;
+logic overflow;
 
 datapath datapath_inst(
     .clk_i(clk_i),
@@ -643,9 +652,107 @@ datapath datapath_inst(
 
     assign dcache_st_data_gnt    = dcache_lsu_resp[2].data_gnt    ;               
 
-  ariane_pkg::exception_t misaligned_ex;
-  assign misaligned_ex = '0;
+    ariane_pkg::exception_t misaligned_exception;
+    assign overflow = !((&lsu_vaddr[63:riscv::VLEN-1]) == 1'b1 || (|lsu_vaddr[63:riscv::VLEN-1]) == 1'b0);
 
+
+// ------------------------
+    // Misaligned Exception
+    // ------------------------
+    // we can detect a misaligned exception immediately
+    // the misaligned exception is passed to the functional unit via the MMU, which in case
+    // can augment the exception if other memory related exceptions like a page fault or access errors
+    always_comb begin : data_misaligned_detection
+
+        misaligned_exception = {
+            64'b0,
+            64'b0,
+            1'b0
+        };
+
+        data_misaligned = 1'b0;
+
+        if (lsu_req_raising_e) begin
+            case (req_datapath_dcache_interface.instr_type)
+                // double word
+                LD, SD,
+                AMO_LRD, AMO_SCD,
+                AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD,
+                AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND,
+                AMO_MINDU: begin
+                    if (lsu_vaddr[2:0] != 3'b000) begin
+                        data_misaligned = 1'b1;
+                    end
+                end
+                // word
+                LW, LWU, SW, 
+                AMO_LRW, AMO_SCW,
+                AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW,
+                AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW,
+                AMO_MINWU: begin
+                    if (lsu_vaddr[1:0] != 2'b00) begin
+                        data_misaligned = 1'b1;
+                    end
+                end
+                // half word
+                LH, LHU, SH: begin
+                    if (lsu_vaddr[0] != 1'b0) begin
+                        data_misaligned = 1'b1;
+                    end
+                end
+                // byte -> is always aligned
+                default:;
+            endcase
+        end
+
+        if (data_misaligned) begin
+
+            if (!lsu_store) begin
+                misaligned_exception = {
+                    riscv::LD_ADDR_MISALIGNED,
+                    {{64-riscv::VLEN{1'b0}},lsu_vaddr},
+                    1'b1
+                };
+
+            end else if (lsu_store) begin
+                misaligned_exception = {
+                    riscv::ST_ADDR_MISALIGNED,
+                    {{64-riscv::VLEN{1'b0}},lsu_vaddr},
+                    1'b1
+                };
+            end
+        end
+
+        if (en_ld_st_translation_i && overflow) begin
+
+            if (!lsu_store) begin
+                misaligned_exception = {
+                    riscv::LD_ACCESS_FAULT,
+                    {{64-riscv::VLEN{1'b0}},lsu_vaddr},
+                    1'b1
+                };
+
+            end else if (lsu_store) begin
+                misaligned_exception = {
+                    riscv::ST_ACCESS_FAULT,
+                    {{64-riscv::VLEN{1'b0}},lsu_vaddr},
+                    1'b1
+                };
+            end
+        end
+    end
+
+always_ff @(posedge clk_i or negedge rstn_i) begin
+    if(~rstn_i) begin
+        lsu_req_dly         <= 0;
+        data_misaligned_dly <= 0;
+    end else begin
+        lsu_req_dly         <= lsu_req;
+        data_misaligned_dly <= data_misaligned;
+    end
+end
+
+assign lsu_req_raising_e = lsu_req & !lsu_req_dly;
   mmu #(
         .INSTR_TLB_ENTRIES(16),
         .DATA_TLB_ENTRIES (16),
@@ -661,7 +768,7 @@ datapath datapath_inst(
     .icache_areq_i         (icache_mmu_areq ),
     .icache_areq_o         (mmu_icache_areq ),
     
-    .misaligned_ex_i       (misaligned_ex       ),
+    .misaligned_ex_i       (misaligned_exception),
     .lsu_req_i             (lsu_req             ),
     .lsu_vaddr_i           (lsu_vaddr           ),
     .lsu_is_store_i        (lsu_store           ),
@@ -721,8 +828,8 @@ datapath datapath_inst(
     .dmem_resp_data_i           (dcache_ld_data_rdata           ),    
     .dmem_resp_valid_i          (dcache_ld_data_rvalid          ),
     .dmem_resp_nack_i           (0                              ), //TODO !
-    .dmem_xcpt_ma_st_i          (0                              ), //TODO !
-    .dmem_xcpt_ma_ld_i          (0                              ), //TODO !
+    .dmem_xcpt_ma_st_i          (dtlb_miss_ma_st                ), 
+    .dmem_xcpt_ma_ld_i          (dtlb_miss_ma_ld                ),
     .dmem_xcpt_pf_st_i          (dtlb_miss_st                   ), 
     .dmem_xcpt_pf_ld_i          (dtlb_miss_ld                   ), 
     .dmem_resp_gnt_st_i         (dcache_st_data_gnt             ),
@@ -731,8 +838,10 @@ datapath datapath_inst(
     .resp_dcache_cpu_o          (resp_dcache_interface_datapath)    
 );
 
-assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store & lsu_req;
-assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store) & lsu_req;
+assign dtlb_miss_st = lsu_dtlb_exception.valid & lsu_store      & lsu_req & (!data_misaligned_dly);
+assign dtlb_miss_ld = lsu_dtlb_exception.valid & (!lsu_store)   & lsu_req & (!data_misaligned_dly);
+assign dtlb_miss_ma_st = lsu_dtlb_exception.valid & lsu_store      & lsu_req & data_misaligned_dly;
+assign dtlb_miss_ma_ld = lsu_dtlb_exception.valid & (!lsu_store)   & lsu_req & data_misaligned_dly;
 assign dcache_resp_lock = resp_dcache_interface_datapath.lock;
 `else // Original lowrisc-lagarto
   
