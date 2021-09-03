@@ -43,10 +43,10 @@ synthesis:
   script:
     - echo "ROOT= $PITON_ROOT"
     - source piton/ariane_setup.sh
-    - source piton/ariane_build_tools.sh
+    - make initialize
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
-    - make initialize
+    - make protosyn CORE=ariane
       #- protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
     - cp -r build/alveou280/system/protosyn_logs .
 
