@@ -81,23 +81,24 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
     ${BOARD_DEFAULT_VERILOG_MACROS}    \
 ]
 
-if {[info exists ::env(PITON_OST1)]} {
+
+if  {$::env(PITON_OST1) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_OST1"
 }
 
-if {[info exists ::env(PITON_PICO)]} {
+if  {$::env(PITON_PICO) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PICO"
 }
 
-if {[info exists ::env(PITON_PICO_HET)]} {
+if  {$::env(PITON_PICO_HET) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PICO PITON_PICO_HET"
 }
 
-if {[info exists ::env(PITON_ARIANE)]} {
+if  {$::env(PITON_ARIANE) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE WT_DCACHE"
 }
 
-if {[info exists ::env(PITON_LAGARTO)]} {
+if  {$::env(PITON_LAGARTO) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO WT_DCACHE"
 
 }
@@ -135,7 +136,7 @@ set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
 set ALL_INCLUDE_FILES [pyhp_preprocess ${ALL_INCLUDE_FILES}]
 
 
-if  {[info exists ::env(PITON_ARIANE)]} {
+if  {$::env(PITON_ARIANE) != "0"} {
   puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   set TMP [pwd]
   cd $::env(ARIANE_ROOT)/openpiton/bootrom/baremetal
@@ -161,7 +162,7 @@ if  {[info exists ::env(PITON_ARIANE)]} {
 }
 
 
-if  {[info exists ::env(PITON_LAGARTO)]} {
+if  { $::env(PITON_LAGARTO) != "0"} {
   puts "INFO: compiling DTS and bootroms for Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   set TMP [pwd]
   cd $::env(LAGARTO_ROOT)/openpiton/bootrom/baremetal

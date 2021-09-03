@@ -253,7 +253,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_2buf.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/dbl_buf.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \    
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header_ctu.v" \
 ]
@@ -686,7 +686,7 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/uart/rtl/UATransmitter.v" \
     ]
 
-if { $::env(ALVEO_HBM) } {
+if { $env(ALVEO_HBM) } {
     set BLOCK_DESIGN_INCLUDE_FILES [list \
         "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
     ]

@@ -520,6 +520,8 @@ def makeDefList(options):
             os.environ['ALVEO_HBM'] = "1"
         else:
             print_warning("hbm option is ignored without board != alveou280" )
+    else:
+        os.environ['ALVEO_HBM'] = "0"
      
     # --axi4_mem option
     if (options.axi4_mem == True):
