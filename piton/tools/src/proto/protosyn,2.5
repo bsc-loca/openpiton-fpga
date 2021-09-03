@@ -103,7 +103,7 @@ def usage():
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
-    print("              Implement design with HBM memory (meep entity)", file=sys.stderr)
+    print("              Implement design with HBM memory (only Alveo boards)", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
@@ -514,8 +514,12 @@ def makeDefList(options):
         defines.append("PITON_FPGA_MC_DDR3")
 
     # --hbm option
-    if (options.hbm == True) :
-        defines.append("PITONSYS_HBM2")
+    if (options.hbm == True):
+        if options.board == "alveou280":
+            defines.append("PITONSYS_HBM2")
+            os.environ['ALVEO_HBM'] = "1"
+        else:
+            print_warning("hbm option is ignored without board != alveou280" )
      
     # --axi4_mem option
     if (options.axi4_mem == True):
@@ -607,6 +611,7 @@ def makeDefList(options):
           if options.eth:
             defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETH_CMAC")
+            os.environ['ALVEO_ETH'] = "1"
         else:
             print_info("--eth option is ignored for %s" % options.board)
 
@@ -750,6 +755,13 @@ def main():
     os.environ['PITON_X_TILES']   = str(options.x_tiles)
     os.environ['PITON_Y_TILES']   = str(options.y_tiles)
     os.environ['PITON_NUM_TILES'] = str(options.num_tiles)
+
+    # Supported cores, initialize env variables.
+    os.environ['PITON_PICO']     = "0"
+    os.environ['PITON_ARIANE']   = "0"
+    os.environ['PITON_LAGARTO']  = "0"
+    os.environ['PITON_OST1']     = "0"
+    os.environ['PITON_PICO_HET'] = "0"
 
     # core variant
     print_info("core      = " + str(options.core))

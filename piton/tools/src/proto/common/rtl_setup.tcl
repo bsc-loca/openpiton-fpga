@@ -238,8 +238,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/rtap/rtl/rtap_ucb_receiver.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/swrvr_clib.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/swrvr_dlib.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/u1.beh.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/m1.beh.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/mul64.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_out.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_in.v" \
@@ -255,18 +253,23 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_2buf.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/dbl_buf.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_spi.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/test_stub_bist.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_jbi.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \    
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header_ctu.v" \
-    ]
+]
 
-set ARIANE_RTL_FILES [list \
+set OTHER_RTL_FILES [list \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_jbi.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_spi.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/u1.beh.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/m1.beh.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/test_stub_scan.v" \
+]
+
+set PICO_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/pico/rtl/picorv32.v" \
     "${DV_ROOT}/design/chip/tile/pico/rtl/pico_reset.v" \
-    ]
+]
 
 set SPARC_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/sparc/rtl/sparc.v" \
@@ -416,6 +419,8 @@ set SPARC_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1i_data.v" \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1i_tag.v" \
 ]
+
+
 set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/tb/ariane_soc_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi/src/axi_pkg.sv"                               \
@@ -659,19 +664,57 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/fake_boot_ctrl.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/eth_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/mc_top.v" \
-    "${DV_ROOT}/design/chipset/mc/rtl/f1_mc_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/noc_mig_bridge.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/memory_zeroer.v" \
     "${DV_ROOT}/design/chipset/noc_axilite_bridge/rtl/noc_axilite_bridge.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_ser.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_deser.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_read.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_write.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_buffer.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_sram_data.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_sram_req.v" \
-    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/axi4_zeroer.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/valrdy_to_credit.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/credit_to_valrdy.v" \
+    "${DV_ROOT}/design/chip/tile/dynamic_node/common/rtl/network_input_blk_multi_out.v" \
+    "${DV_ROOT}/design/chip/tile/l2/rtl/l2_decoder.v" \
+    "${DV_ROOT}/design/chip/tile/l2/rtl/l2_encoder.v" \
+    "${DV_ROOT}/design/common/rtl/chip_rst_seq.v" \
+    "${DV_ROOT}/design/common/rtl/alarm_counter.v" \
+    "${DV_ROOT}/design/common/uart/rtl/Const.v" \
+    "${DV_ROOT}/design/common/uart/rtl/Counter.v" \
+    "${DV_ROOT}/design/common/uart/rtl/ParityGen.v" \
+    "${DV_ROOT}/design/common/uart/rtl/Register.v" \
+    "${DV_ROOT}/design/common/uart/rtl/Reverse.v" \
+    "${DV_ROOT}/design/common/uart/rtl/ShiftRegister.v" \
+    "${DV_ROOT}/design/common/uart/rtl/IORegister.v" \
+    "${DV_ROOT}/design/common/uart/rtl/UART.v" \
+    "${DV_ROOT}/design/common/uart/rtl/UAReceiver.v" \
+    "${DV_ROOT}/design/common/uart/rtl/UATransmitter.v" \
+    ]
+
+if { $::env(ALVEO_HBM) } {
+    set BLOCK_DESIGN_INCLUDE_FILES [list \
+        "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
+    ]
+} else {
+    set BLOCK_DESIGN_INCLUDE_FILES [list \
+        "${DV_ROOT}/design/chipset/meep/meep_shell_ddr.bd" \
+    ]
+}
+
+
+set F1_FILES [list \
+    "${DV_ROOT}/design/chipset/mc/rtl/f1_mc_top.v" \
+    ]
+
+
+set OLED_FILES [list \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_delay.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_transform.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_wrapper.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_ctrl.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_init.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_spi.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
+
+    ]
+
+
+set SD_BRIDGE_FILES [list \
     "${DV_ROOT}/design/chipset/axi_sd_bridge/rtl/axi_sd_bridge.v" \
     "${DV_ROOT}/design/chipset/axi_sd_bridge/rtl/spi_master.v" \
     "${DV_ROOT}/design/chipset/axi_sd_bridge/rtl/init_sd.v" \
@@ -715,37 +758,9 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sd_defines.h" \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sd_fifo_filler.v" \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sd_wb_sel_ctrl.v" \
-    "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sdc_controller.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/valrdy_to_credit.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/credit_to_valrdy.v" \
-    "${DV_ROOT}/design/chip/tile/dynamic_node/common/rtl/network_input_blk_multi_out.v" \
-    "${DV_ROOT}/design/chip/tile/l2/rtl/l2_decoder.v" \
-    "${DV_ROOT}/design/chip/tile/l2/rtl/l2_encoder.v" \
-    "${DV_ROOT}/design/common/rtl/chip_rst_seq.v" \
-    "${DV_ROOT}/design/common/rtl/alarm_counter.v" \
-    "${DV_ROOT}/design/common/uart/rtl/Const.v" \
-    "${DV_ROOT}/design/common/uart/rtl/Counter.v" \
-    "${DV_ROOT}/design/common/uart/rtl/ParityGen.v" \
-    "${DV_ROOT}/design/common/uart/rtl/Register.v" \
-    "${DV_ROOT}/design/common/uart/rtl/Reverse.v" \
-    "${DV_ROOT}/design/common/uart/rtl/ShiftRegister.v" \
-    "${DV_ROOT}/design/common/uart/rtl/IORegister.v" \
-    "${DV_ROOT}/design/common/uart/rtl/UART.v" \
-    "${DV_ROOT}/design/common/uart/rtl/UAReceiver.v" \
-    "${DV_ROOT}/design/common/uart/rtl/UATransmitter.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_delay.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_transform.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_wrapper.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_ctrl.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_init.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_spi.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
-]
+    "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sdc_controller.v" \	
+    ]
 
-set BLOCK_DESIGN_INCLUDE_FILES [list \
-    "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
-    "${DV_ROOT}/design/chipset/meep/meep_shell_ddr.bd" \
-]
 
 set CHIPSET_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/mc_define.h" \
