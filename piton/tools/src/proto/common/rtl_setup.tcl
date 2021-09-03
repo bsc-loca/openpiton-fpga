@@ -105,7 +105,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/rtl/config_regs.v" \
     "${DV_ROOT}/design/chip/tile/rtl/cpx_arbitrator.v" \
     "${DV_ROOT}/design/chip/tile/rtl/ccx_l15_transducer.v" \
-    "${DV_ROOT}/design/chip/tile/rtl/pico_l15_transducer.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2_priority_encoder.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2_data_pgen.v" \
@@ -151,7 +150,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/l15/rtl/l15_pipeline.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/l15_mshr.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/l15_csm.v" \
-    "${DV_ROOT}/design/chip/tile/l15/rtl/l15_picoencoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/l15_cpxencoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/noc3encoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/noc3buffer.v" \
@@ -159,7 +157,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/l15/rtl/noc1encoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/noc1buffer.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/simplenocbuffer.v" \
-    "${DV_ROOT}/design/chip/tile/l15/rtl/pico_decoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/pcx_decoder.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/pcx_buffer.v" \
     "${DV_ROOT}/design/chip/tile/l15/rtl/l15_priority_encoder.v" \
@@ -239,8 +236,6 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/swrvr_clib.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/swrvr_dlib.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/mul64.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_out.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_in.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/valrdy_to_credit.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/credit_to_valrdy.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/flat_id_to_xy.v" \
@@ -250,12 +245,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr_dup.v" \
     "${DV_ROOT}/design/chip/tile/common/srams/rtl/bw_r_rf16x160.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_2buf.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/dbl_buf.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header_ctu.v" \
 ]
 
 set OTHER_RTL_FILES [list \
@@ -264,11 +254,30 @@ set OTHER_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/u1.beh.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/m1.beh.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/test_stub_scan.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_out.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_in.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_noflow.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_flow_2buf.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/cluster_header_ctu.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/dbl_buf.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/uart_pkttrace_dump.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/uart_serializer.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/noc2string.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/side2string.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/bits2hex.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/demux_process_pkt.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/process_pkt_complete.v" \
+    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/mux_process_pkt.v" \
+    "${DV_ROOT}/design/chipset/rtl/blinker.v" \
 ]
 
 set PICO_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/pico/rtl/picorv32.v" \
     "${DV_ROOT}/design/chip/tile/pico/rtl/pico_reset.v" \
+    "${DV_ROOT}/design/chip/tile/rtl/pico_l15_transducer.v" \
+    "${DV_ROOT}/design/chip/tile/l15/rtl/pico_decoder.v" \
+    "${DV_ROOT}/design/chip/tile/l15/rtl/l15_picoencoder.v" \
 ]
 
 set SPARC_RTL_FILES [list \
@@ -580,14 +589,6 @@ set PASSTHRU_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_net_chooser_32.v" \
     "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_bridge_send_32.v" \
     "${DV_ROOT}/design/common/fpga_bridge/fpga_rcv/rtl/fpga_bridge_rcv_32.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/uart_pkttrace_dump.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/uart_serializer.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/noc2string.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/side2string.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/bits2hex.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/demux_process_pkt.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/process_pkt_complete.v" \
-    "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/mux_process_pkt.v" \
     "${DV_ROOT}/design/common/uart/rtl/Const.v" \
     "${DV_ROOT}/design/common/uart/rtl/Counter.v" \
     "${DV_ROOT}/design/common/uart/rtl/IORegister.v" \
@@ -625,7 +626,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/rtl/chipset.v" \
     "${DV_ROOT}/design/chipset/rtl/chipset_impl.v" \
     "${DV_ROOT}/design/chipset/rtl/chipset_impl_noc_power_test.v" \
-    "${DV_ROOT}/design/chipset/rtl/blinker.v" \
     "${DV_ROOT}/design/chipset/rtl/packet_filter.v" \
     "${DV_ROOT}/design/chipset/rtl/storage_addr_trans.v" \
     "${DV_ROOT}/design/chipset/rtl/storage_addr_trans_unified.v" \
@@ -667,6 +667,15 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/mc/rtl/noc_mig_bridge.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/memory_zeroer.v" \
     "${DV_ROOT}/design/chipset/noc_axilite_bridge/rtl/noc_axilite_bridge.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_ser.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_deser.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_read.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_write.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_buffer.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_sram_data.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_sram_req.v" \
+    "${DV_ROOT}/design/chipset/noc_axi4_bridge/rtl/axi4_zeroer.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/valrdy_to_credit.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/credit_to_valrdy.v" \
     "${DV_ROOT}/design/chip/tile/dynamic_node/common/rtl/network_input_blk_multi_out.v" \
@@ -827,7 +836,6 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/mul_unit.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/rr_stage/rtl/regfile.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/register.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_gating.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_mux2.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/tb/ariane_soc_pkg.sv" \

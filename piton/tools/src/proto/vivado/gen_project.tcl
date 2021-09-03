@@ -212,6 +212,16 @@ set_property "used_in" "synthesis implementation" $file_obj
 set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
+if { $env(ALVEO_HBM) eq "1"}{	
+    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
+} else {
+    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
+}
+
+if { $env(ALVEO_ETH) eq "1"}{
+    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
+}
+
 
 # Set 'constrs_1' fileset properties
 set_property "name" "constrs_1" $fileset_obj
@@ -421,5 +431,8 @@ set_property -name {steps.write_bitstream.args.more options} -value {} -objects 
 
 # set the current impl run
 current_run -implementation $fileset_obj
+
+#TODO: remove this patch 03/09/2021 dmazure
+set_property top system [current_fileset]
 
 puts "INFO: Project created:${PROJECT_NAME}"

@@ -616,6 +616,7 @@ def makeDefList(options):
             os.environ['ALVEO_ETH'] = "1"
         else:
             print_info("--eth option is ignored for %s" % options.board)
+            os.environ['ALVEO_ETH'] = "0"
 
     # --oled option for String on a display
     if options.oled != None:
