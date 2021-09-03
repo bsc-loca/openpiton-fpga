@@ -818,6 +818,7 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/tb/ariane_soc_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_axi_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/axi_intf.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/clint/clint.sv" \
