@@ -79,7 +79,6 @@ set SYSTEM_PRJ_IP_FILES [list \
 ]
 
 set CHIP_RTL_IMPL_FILES [list \
-    "${DV_ROOT}/design/common/rtl/bram_sdp_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/bram_1rw_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/bram_1r1w_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/synchronizer.v" \
@@ -241,10 +240,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/xy_to_flat_id.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/clk_gating_latch.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/test_stub_scan.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr_dup.v" \
     "${DV_ROOT}/design/chip/tile/common/srams/rtl/bw_r_rf16x160.v" \
-    "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_out.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_in.v" \
 
@@ -272,6 +268,15 @@ set OTHER_RTL_FILES [list \
     "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/process_pkt_complete.v" \
     "${DV_ROOT}/design/common/uart_pkttrace_dump/rtl/mux_process_pkt.v" \
     "${DV_ROOT}/design/chipset/rtl/blinker.v" \
+    "${DV_ROOT}/design/chipset/io_ctrl/rtl/fake_boot_ctrl.v" \
+    "${DV_ROOT}/design/common/rtl/bram_sdp_wrapper.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
+    "${DV_ROOT}/design/common/fpga_bridge/rtl/fpga_bridge.v" \
+    "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_net_chooser_32.v" \
+    "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_bridge_send_32.v" \
+    "${DV_ROOT}/design/common/fpga_bridge/fpga_rcv/rtl/fpga_bridge_rcv_32.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr_dup.v" \
 ]
 
 set PICO_RTL_FILES [list \
@@ -624,7 +629,6 @@ set PASSTHRU_PRJ_IP_FILES [list \
 ]
 
 set CHIPSET_RTL_IMPL_FILES [list \
-    "${DV_ROOT}/design/common/rtl/bram_sdp_wrapper.v" \
     "${DV_ROOT}/design/chipset/rtl/chipset.v" \
     "${DV_ROOT}/design/chipset/rtl/chipset_impl.v" \
     "${DV_ROOT}/design/chipset/rtl/chipset_impl_noc_power_test.v" \
@@ -633,10 +637,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/rtl/storage_addr_trans_unified.v" \
     "${DV_ROOT}/design/chipset/rtl/test_end_checker.v" \
     "${DV_ROOT}/design/chipset/common/rtl/noc_bidir_afifo.v" \
-    "${DV_ROOT}/design/common/fpga_bridge/rtl/fpga_bridge.v" \
-    "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_net_chooser_32.v" \
-    "${DV_ROOT}/design/common/fpga_bridge/fpga_send/rtl/fpga_bridge_send_32.v" \
-    "${DV_ROOT}/design/common/fpga_bridge/fpga_rcv/rtl/fpga_bridge_rcv_32.v" \
     "${DV_ROOT}/design/chipset/mem_io_splitter/rtl/mem_io_splitter.v" \
     "${DV_ROOT}/design/chipset/mem_io_splitter/rtl/iob_splitter.v" \
     "${DV_ROOT}/design/chipset/mem_io_splitter/rtl/uart_boot_splitter.v" \
@@ -663,7 +663,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/uart_reader.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/uart_mux.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/uart_reseter.v" \
-    "${DV_ROOT}/design/chipset/io_ctrl/rtl/fake_boot_ctrl.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/eth_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/mc_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/noc_mig_bridge.v" \
