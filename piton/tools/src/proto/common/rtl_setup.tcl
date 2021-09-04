@@ -53,7 +53,6 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
 
 ]
 
@@ -246,6 +245,9 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr_dup.v" \
     "${DV_ROOT}/design/chip/tile/common/srams/rtl/bw_r_rf16x160.v" \
     "${DV_ROOT}/design/chip/tile/common/rtl/sync_pulse_synchronizer.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_out.v" \
+    "${DV_ROOT}/design/chip/tile/common/rtl/ucb_bus_in.v" \
+
 ]
 
 set OTHER_RTL_FILES [list \
@@ -818,6 +820,7 @@ set CHIPSET_PRJ_IP_FILES [list \
 
 
 set LAGARTO_RTL_FILES [ list \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/branch_predictor.sv" \
@@ -838,7 +841,7 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/register.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_mux2.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/tb/ariane_soc_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_soc_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/include/axi_intf.sv" \

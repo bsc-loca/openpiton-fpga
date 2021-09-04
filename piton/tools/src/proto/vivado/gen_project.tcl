@@ -85,7 +85,7 @@ if {[info exists USE_BLOCK_DESIGN] && $USE_BLOCK_DESIGN==1} {
 
 #Generate Ethernet subsystem for Alveo280 board
 if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
-  if { $::env(ALVEO_ETH) } {
+  if { $env(ALVEO_ETH) } {
     source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
     cr_bd_Eth_CMAC_syst ""
     make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
@@ -212,13 +212,13 @@ set_property "used_in" "synthesis implementation" $file_obj
 set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
-if { $env(ALVEO_HBM) eq "1"}{	
+if { $env(ALVEO_HBM) eq "1" } {	
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
 } else {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
 }
 
-if { $env(ALVEO_ETH) eq "1"}{
+if { $env(ALVEO_ETH) eq "1"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
 }
 

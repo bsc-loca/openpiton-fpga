@@ -603,6 +603,8 @@ def makeDefList(options):
         defines.append("PITON_UART16550")
 
     # --eth CL options is default for chipset
+    os.environ['ALVEO_ETH'] = "0"
+
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo
         if options.board == "genesys2" or options.board == "nexysVideo":
@@ -616,7 +618,6 @@ def makeDefList(options):
             os.environ['ALVEO_ETH'] = "1"
         else:
             print_info("--eth option is ignored for %s" % options.board)
-            os.environ['ALVEO_ETH'] = "0"
 
     # --oled option for String on a display
     if options.oled != None:
