@@ -205,23 +205,7 @@ module system(
 `endif //NEXYSVIDEO_BOARD
 `endif //VCU118_BOARD
 `endif  //VC707_BOARD
-`elsif PITON_LAGARTO //PITON_ARIANE
-`ifndef VC707_BOARD
-`ifndef VCU118_BOARD
-`ifndef NEXYSVIDEO_BOARD
-`ifndef XUPP3R_BOARD
-`ifndef F1_BOARD
-  input                                         tck_i,
-  input                                         tms_i,
-  input                                         trst_ni,
-  input                                         td_i,
-  output                                        td_o,
-`endif//F1_BOARD
-`endif//XUPP3R_BOARD
-`endif //NEXYSVIDEO_BOARD
-`endif //VCU118_BOARD
-`endif  //VC707_BOARD
-`endif
+`endif //PITON_ARIANE
 `endif //PITON_FPGA_SYNTH
 
     // Asynchronous FIFOs enable
@@ -848,6 +832,28 @@ assign passthru_pll_rst_n = 1'b1;
     assign trst_ni = 1'b0;
     assign td_i    = 1'b0;
 `endif //PITON_FPGA_SYNTH
+
+ `ifdef ALVEOU280_BOARD
+     wire tck_i, tms_i, trst_ni, td_i, td_o;
+
+     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
+     BSCANE2 #(
+     .JTAG_CHAIN(2) // Value for USER command. Possible values: 1-4.
+     ) BSCANE2_inst (
+         .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
+         .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
+         // SHIFT are asserted.
+         .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
+         .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
+         .SEL(), // 1-bit output: USER instruction active output.
+         .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
+         .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+         .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
+         .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
+         .UPDATE(), // 1-bit output: UPDATE output from TAP controller
+         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+     );
+`endif
 
 // `ifdef VCU118_BOARD
 //     wire tck_i, tms_i, trst_ni, td_i, td_o;
