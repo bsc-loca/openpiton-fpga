@@ -1,4 +1,4 @@
-FPGA_TARGET = alveou280
+FPGA_TARGET ?= alveou280
 PROJECT_DIR = build/$(FPGA_TARGET)/system/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 ROOT_DIR    =  $(PWD)
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
@@ -13,6 +13,7 @@ VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= ariane
 # This needs to match the path set in <core>_setup.sh
 RISCV_DIR   := $(ROOT_DIR)/riscv
+#SHELL := /bin/bash
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -23,7 +24,8 @@ all: initialize synthesis implementation bitstream
 
 
 test:
-	echo "Your core is $(CORE)"
+	@echo "Your core is $(CORE)"
+	@echo "FPGA TARGET: $(FPGA_TARGET)"
 
 initialize: $(RISCV_DIR)
 
@@ -34,8 +36,7 @@ implementation: $(IMPL_DCP)
 bitstream: $(BIT_FILE)
 
 $(RISCV_DIR):
-	source piton/$(CORE)_setup.sh; \
-	source piton/$(CORE)_build_tools.sh	
+	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean initialize
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
