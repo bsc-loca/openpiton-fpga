@@ -137,6 +137,8 @@ logic [43:0] satp_ppn;
 logic asid;
 ariane_pkg::exception_t csr_ex_o;
 logic flush;
+logic interrupt;
+logic [63:0] interrupt_cause;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
@@ -167,6 +169,10 @@ csr_regfile i_csr_regfile (
   .frm_o                 ( ),
   .fprec_o               ( ),
   .irq_ctrl_o            ( ),
+  .interrupt_o           ( interrupt ),
+  .interrupt_cause_o     ( interrupt_cause ),
+
+
   .en_translation_o      ( en_translation),
   .en_ld_st_translation_o( en_ld_st_translation),
   .ld_st_priv_lvl_o      ( ),
@@ -221,8 +227,8 @@ lagarto_openpiton_top #(
     //.CSR_TVAL            (64'h0000_0000_0000_0000),
     .CSR_ERET            (CSR_ERET               ),
     .CSR_EVEC            (CSR_EPC                ),
-    .CSR_INTERRUPT       (1'b0                   ),
-    .CSR_INTERRUPT_CAUSE (64'h0000_0000_0000_0000),
+    .CSR_INTERRUPT       (interrupt              ),
+    .CSR_INTERRUPT_CAUSE (interrupt_cause        ),
     .csr_flush_i         (flush                  ),
     .io_csr_csr_replay   (1'b0                   ),
     .csr_priv_lvl_i      (priv_lvl_csr_o         ),
