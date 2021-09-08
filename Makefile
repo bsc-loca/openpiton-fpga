@@ -1,5 +1,6 @@
 FPGA_TARGET ?= alveou280
-PROJECT_DIR = build/$(FPGA_TARGET)/system/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
+PROJECT_SUBDIR =  build/$(FPGA_TARGET)/system/
+PROJECT_DIR = $(PROJECT_SUBDIR)_system/$(FPGA_TARGET)_system.xpr
 ROOT_DIR    =  $(PWD)
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
@@ -39,7 +40,7 @@ $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean initialize
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --eth --vnpm
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -51,7 +52,7 @@ $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 	
 clean: 
-	rm -rf $(PROJECT_DIR) dcp bitstream reports
+	rm -rf $(PROJECT_SUBDIR) dcp bitstream reports
 	
 clean_synthesis:	
 	rm -rf dcp/*
