@@ -77,12 +77,15 @@ foreach prj_file ${ALL_FILES} {
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
 #Generating IP cores for Alveo280 board
-if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
   # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell_xxx.tcl)
   # with DDR SDRAM
-  source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
-  # with HBM SDRAM
-  source $DV_ROOT/design/chipset/meep/meep_shell_bd.tcl
+  if { $env(ALVEO_HBM) != "1" } {
+      source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
+  } else {
+      # with HBM SDRAM
+      source $DV_ROOT/design/chipset/meep/meep_shell_hbm.tcl
+  }
 
   # Generating Ethernet system
   source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
@@ -94,7 +97,7 @@ if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
 
   # extracting hw definitions from BD tcl script to create C-header file
   source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_syst_xparams.tcl
-  }
+  
 }
 
 # Set 'sources_1' fileset file properties for local files

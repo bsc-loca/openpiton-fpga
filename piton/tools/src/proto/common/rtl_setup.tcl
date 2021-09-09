@@ -696,16 +696,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/uart/rtl/UATransmitter.v" \
     ]
 
-if { $env(ALVEO_HBM) } {
-    set BLOCK_DESIGN_INCLUDE_FILES [list \
-        "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
-    ]
-} else {
-    set BLOCK_DESIGN_INCLUDE_FILES [list \
-        "${DV_ROOT}/design/chipset/meep/meep_shell_ddr.bd" \
-    ]
-}
-
 
 set F1_FILES [list \
     "${DV_ROOT}/design/chipset/mc/rtl/f1_mc_top.v" \

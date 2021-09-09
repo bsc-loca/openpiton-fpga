@@ -11,13 +11,12 @@ TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
 VIVADO_VER  := "2020.1"
 VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/
 VIVADO_XLNX := $(VIVADO_PATH)/vivado
-
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
 RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
-VIVADO_MODE ?=
+PROTO_OPTIONS ?=
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -43,8 +42,9 @@ bitstream: $(BIT_FILE)
 
 $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
+
 protosyn: clean
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --eth $(VIVADO_MODE)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --eth $(PROTO_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)

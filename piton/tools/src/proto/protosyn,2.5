@@ -196,10 +196,6 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     # Variables passed to TCL scripts
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
-    #dmazure: Patch for using protosyn inside Makefile
-    #os.environ['VIVADO_BIN'] = VIVADO_PATH + "/vivado"
-
-    print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
 
     # use custom vivado version if provided
     if(os.environ.get('VIVADO_BIN')) is not None:
@@ -301,6 +297,7 @@ def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
     jid = None
     if (tool == "vivado"):
+        print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
         jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
                          slurm, 1, 4096, "1:00:00", jname, dep_list)
     elif (tool == "ise") :
@@ -349,8 +346,9 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
         print_info("Running FPGA synthesis")
         print_info("A synthesis design check point will be generated in $PITON_ROOT/dcp")
 
-    file_time = dt.datetime.fromtimestamp(os.path.getmtime(__file__)).strftime("%H:%M, %d %m %Y")
-    print_info("Synthesis started at %s" % file_time)
+    now_time = dt.datetime.now()
+    timeStampStr = now_time.strftime("%d-%b-%Y %H:%M")
+    print_info("Synthesis started at %s" % timeStampStr)
 
     design_board_dir = os.path.join(design_data["PATH"], board)
     impl_log = os.path.join(log_dir, PROJECT_IMPL_LOG)
