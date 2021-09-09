@@ -38,6 +38,7 @@
 
 import os, sys, re, make_mem_map, subprocess, stat, time
 import image2stream as i2s
+import datetime as dt
 from optparse import OptionParser
 from fpga_lib import *
 from dbg import *
@@ -339,6 +340,7 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
 
     #dname = board + "_piton"
     #os.chdir(dname)
+
     if (vivado_mode == False):
         print_info("Running FPGA implementation down to bitstream generation")
         os.environ["VIVADO_NON_PROJECT_MODE"] = "0"
@@ -346,6 +348,10 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
         os.environ["VIVADO_NON_PROJECT_MODE"] = "1"
         print_info("Running FPGA synthesis")
         print_info("A synthesis design check point will be generated in $PITON_ROOT/dcp")
+
+    file_time = dt.datetime.fromtimestamp(os.path.getmtime(__file__)).strftime("%H:%M, %d %m %Y")
+    print_info("Synthesis started at %s" % file_time)
+
     design_board_dir = os.path.join(design_data["PATH"], board)
     impl_log = os.path.join(log_dir, PROJECT_IMPL_LOG)
     impl_flow = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/impl_flow.tcl")
