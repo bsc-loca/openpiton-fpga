@@ -27,7 +27,6 @@
 # This script performs general actions
 # for creating a Vivado project
 #
-#start_gui
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
@@ -77,6 +76,16 @@ foreach prj_file ${ALL_FILES} {
 }
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
+#Generating IP cores for Alveo280 board
+if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
+  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell_xxx.tcl)
+  # with DDR SDRAM
+  source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
+  # with HBM SDRAM
+  source $DV_ROOT/design/chipset/meep/meep_shell_bd.tcl
+
+  # Generating Ethernet system
+  source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
 #Insert block design when needed
 if {[info exists USE_BLOCK_DESIGN] && $USE_BLOCK_DESIGN==1} {
 	#add_files -norecurse ${DV_ROOT}/design/chipset/meep/meep_shell.bd 
@@ -267,6 +276,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
     create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Flow_PerfOptimized_high" -constrset constrs_1
   } else {
+
     create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Vivado Synthesis Defaults" -constrset constrs_1
   }
 } else {
@@ -275,6 +285,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
   } else {
     set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
   }
+
   set_property flow "Vivado Synthesis 2020" [get_runs synth_1]
 }
 set fileset_obj [get_runs synth_1]
@@ -284,6 +295,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Synthesis Defaults" $fileset_obj
 }
+
 set_property "flow" "Vivado Synthesis 2020" $fileset_obj
 set_property "name" "synth_1" $fileset_obj
 set_property "needs_refresh" "0" $fileset_obj
@@ -301,6 +313,7 @@ set_property "steps.synth_design.tcl.post" "" $fileset_obj
 set_property "steps.synth_design.args.flatten_hierarchy" "rebuilt" $fileset_obj
 set_property "steps.synth_design.args.gated_clock_conversion" "off" $fileset_obj
 set_property "steps.synth_design.args.bufg" "12" $fileset_obj
+
 
 ## This is not supported in Vivado 2020, need to check what is the alternative
 #if {$VIVADO_FLOW_PERF_OPT} {
@@ -337,8 +350,10 @@ current_run -synthesis $fileset_obj
 # Create 'impl_1' run (if not found)
 if {[string equal [get_runs -quiet impl_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
+
     create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Performance_Explore" -constrset constrs_1 -parent_run synth_1
   } else {
+
     create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Vivado Implementation Defaults" -constrset constrs_1 -parent_run synth_1
   }
 } else {
@@ -347,6 +362,7 @@ if {[string equal [get_runs -quiet impl_1] ""]} {
   } else {
     set_property strategy "Vivado Implementation Defaults" [get_runs impl_1]
   }
+
   set_property flow "Vivado Implementation 2020" [get_runs impl_1]
 }
 set fileset_obj [get_runs impl_1]
@@ -356,6 +372,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Implementation Defaults" $fileset_obj
 }
+
 set_property "flow" "Vivado Implementation 2020" $fileset_obj
 set_property "name" "impl_1" $fileset_obj
 set_property "needs_refresh" "0" $fileset_obj

@@ -30,8 +30,9 @@
 `include "noc_axi4_bridge_define.vh"
 
 module mc_top (
-    output                          mc_ui_clk_sync_rst,
     input                           core_ref_clk,
+`ifdef PITON_FPGA_MC_DDR3
+    output                          mc_ui_clk_sync_rst,
 
     input   [`NOC_DATA_WIDTH-1:0]   mc_flit_in_data,
     input                           mc_flit_in_val,
@@ -80,7 +81,7 @@ module mc_top (
     input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
- `endif
+`endif // PITONSYS_PCIE
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD	
@@ -99,8 +100,190 @@ module mc_top (
 `endif
 
     output                          init_calib_complete_out,
+`endif // endif PITON_FPGA_MC_DDR3
+
+`ifdef PITONSYS_MC_SRAM
+    input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
+    input                           sram_flit_in_val,
+    output                          sram_flit_in_rdy,
+
+    output  [`NOC_DATA_WIDTH-1:0]   sram_flit_out_data,
+    output                          sram_flit_out_val,
+    input                           sram_flit_out_rdy,
+`endif // PITONSYS_MC_SRAM
+
     input                           sys_rst_n
 );
+
+`ifdef PITONSYS_MC_SRAM
+wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
+wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
+wire [`AXI4_LEN_WIDTH    -1:0]     sram_axi_awlen;
+wire [`AXI4_SIZE_WIDTH   -1:0]     sram_axi_awsize;
+wire [`AXI4_BURST_WIDTH  -1:0]     sram_axi_awburst;
+wire                               sram_axi_awlock;
+wire [`AXI4_CACHE_WIDTH  -1:0]     sram_axi_awcache;
+wire [`AXI4_PROT_WIDTH   -1:0]     sram_axi_awprot;
+wire [`AXI4_QOS_WIDTH    -1:0]     sram_axi_awqos;
+wire [`AXI4_REGION_WIDTH -1:0]     sram_axi_awregion;
+wire [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser;
+wire                               sram_axi_awvalid;
+wire                               sram_axi_awready;
+
+wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid;
+wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata;
+wire  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb;
+wire                               sram_axi_wlast;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser;
+wire                               sram_axi_wvalid;
+wire                               sram_axi_wready;
+
+wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid;
+wire  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr;
+wire  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen;
+wire  [`AXI4_SIZE_WIDTH   -1:0]    sram_axi_arsize;
+wire  [`AXI4_BURST_WIDTH  -1:0]    sram_axi_arburst;
+wire                               sram_axi_arlock;
+wire  [`AXI4_CACHE_WIDTH  -1:0]    sram_axi_arcache;
+wire  [`AXI4_PROT_WIDTH   -1:0]    sram_axi_arprot;
+wire  [`AXI4_QOS_WIDTH    -1:0]    sram_axi_arqos;
+wire  [`AXI4_REGION_WIDTH -1:0]    sram_axi_arregion;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser;
+wire                               sram_axi_arvalid;
+wire                               sram_axi_arready;
+
+wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
+wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
+wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
+wire                               sram_axi_rlast;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+wire                               sram_axi_rvalid;
+wire                               sram_axi_rready;
+
+wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
+wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser = `AXI4_USER_WIDTH'h0;
+wire                               sram_axi_bvalid;
+wire                               sram_axi_bready;
+
+noc_axi4_bridge #(
+    .SWAP_ENDIANESS (1),
+    .NOC2AXI_DESER_ORDER (1)
+) sram_noc_axi4_bridge (
+    .clk                (core_ref_clk),  
+    .rst_n              (sys_rst_n), 
+    .uart_boot_en       (1'b0),
+    .phy_init_done      (1'b1),
+
+    .src_bridge_vr_noc2_val(sram_flit_in_val),
+    .src_bridge_vr_noc2_dat(sram_flit_in_data),
+    .src_bridge_vr_noc2_rdy(sram_flit_in_rdy),
+
+    .bridge_dst_vr_noc3_val(sram_flit_out_val),
+    .bridge_dst_vr_noc3_dat(sram_flit_out_data),
+    .bridge_dst_vr_noc3_rdy(sram_flit_out_rdy),
+
+    .m_axi_awid(sram_axi_awid),
+    .m_axi_awaddr(sram_axi_awaddr),
+    .m_axi_awlen(sram_axi_awlen),
+    .m_axi_awsize(sram_axi_awsize),
+    .m_axi_awburst(sram_axi_awburst),
+    .m_axi_awlock(sram_axi_awlock),
+    .m_axi_awcache(sram_axi_awcache),
+    .m_axi_awprot(sram_axi_awprot),
+    .m_axi_awqos(sram_axi_awqos),
+    .m_axi_awregion(sram_axi_awregion),
+    .m_axi_awuser(sram_axi_awuser),
+    .m_axi_awvalid(sram_axi_awvalid),
+    .m_axi_awready(sram_axi_awready),
+
+    .m_axi_wid(sram_axi_wid),
+    .m_axi_wdata(sram_axi_wdata),
+    .m_axi_wstrb(sram_axi_wstrb),
+    .m_axi_wlast(sram_axi_wlast),
+    .m_axi_wuser(sram_axi_wuser),
+    .m_axi_wvalid(sram_axi_wvalid),
+    .m_axi_wready(sram_axi_wready),
+
+    .m_axi_bid(sram_axi_bid),
+    .m_axi_bresp(sram_axi_bresp),
+    .m_axi_buser(sram_axi_buser),
+    .m_axi_bvalid(sram_axi_bvalid),
+    .m_axi_bready(sram_axi_bready),
+
+    .m_axi_arid(sram_axi_arid),
+    .m_axi_araddr(sram_axi_araddr),
+    .m_axi_arlen(sram_axi_arlen),
+    .m_axi_arsize(sram_axi_arsize),
+    .m_axi_arburst(sram_axi_arburst),
+    .m_axi_arlock(sram_axi_arlock),
+    .m_axi_arcache(sram_axi_arcache),
+    .m_axi_arprot(sram_axi_arprot),
+    .m_axi_arqos(sram_axi_arqos),
+    .m_axi_arregion(sram_axi_arregion),
+    .m_axi_aruser(sram_axi_aruser),
+    .m_axi_arvalid(sram_axi_arvalid),
+    .m_axi_arready(sram_axi_arready),
+
+    .m_axi_rid(sram_axi_rid),
+    .m_axi_rdata(sram_axi_rdata),
+    .m_axi_rresp(sram_axi_rresp),
+    .m_axi_rlast(sram_axi_rlast),
+    .m_axi_ruser(sram_axi_ruser),
+    .m_axi_rvalid(sram_axi_rvalid),
+    .m_axi_rready(sram_axi_rready)
+);
+
+`ifndef PITON_FPGA_MC_DDR3
+  // SRAM AXI stub for simulation
+  assign sram_axi_awready = 1'b1;
+  assign sram_axi_wready  = 1'b1;
+  assign sram_axi_arready = 1'b1;
+
+  reg sram_axi_rvalid_reg;
+  reg [`AXI4_ID_WIDTH-1:0] sram_axi_rid_reg;
+  always @(posedge core_ref_clk) begin
+    if (~sys_rst_n) begin
+      sram_axi_rvalid_reg <= 1'b0;
+      sram_axi_rid_reg <= `AXI4_ID_WIDTH'h0;
+    end
+    else if (sram_axi_arvalid) begin 
+      sram_axi_rvalid_reg <= 1'b1;
+      sram_axi_rid_reg <= sram_axi_arid;
+    end
+    else if (sram_axi_rready) sram_axi_rvalid_reg <= 1'b0;
+  end
+  assign sram_axi_rvalid = sram_axi_rvalid_reg;
+  assign sram_axi_rid    = sram_axi_rid_reg;
+  assign sram_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
+  assign sram_axi_rresp  = 2'h0;
+  assign sram_axi_rlast  = 1'b1;
+  assign sram_axi_ruser  = `AXI4_USER_WIDTH'h0;
+
+  reg sram_axi_bvalid_reg;
+  reg [`AXI4_ID_WIDTH-1:0] sram_axi_bid_reg;
+  always @(posedge core_ref_clk) begin
+    if (~sys_rst_n) begin 
+      sram_axi_bvalid_reg <= 1'b0;
+      sram_axi_bid_reg <= `AXI4_ID_WIDTH'h0;
+    end
+    else if (sram_axi_wvalid) begin
+      sram_axi_bvalid_reg <= 1'b1;
+      sram_axi_bid_reg <= sram_axi_wid;
+    end
+    else if (sram_axi_bready) sram_axi_bvalid_reg <= 1'b0;
+  end
+  assign sram_axi_bvalid  = sram_axi_bvalid_reg;
+  assign sram_axi_bid     = sram_axi_bid_reg;
+  assign sram_axi_bresp   = 2'h0;
+  assign sram_axi_buser   = `AXI4_USER_WIDTH'h0;
+
+`endif // `ifndef PITON_FPGA_MC_DDR3
+`endif // `ifdef  PITONSYS_MC_SRAM
+
+
+`ifdef PITON_FPGA_MC_DDR3
+
 reg     [31:0]                      delay_cnt;
 reg                                 ui_clk_syn_rst_delayed;
 wire                                init_calib_complete;
@@ -961,6 +1144,10 @@ axi4_zeroer axi4_zeroer(
 //wire init_calib_complete_c;
 //(* ASYNC_REG = "TRUE" *) reg [2:1] init_calib_complete_r;
 
+assign sram_flit_in_rdy  = 1'b1;
+assign sram_flit_out_val = 1'b0;
+assign sram_flit_out_data = `NOC_DATA_WIDTH'h0;
+
 meep_shell meep_shell_i
        (        
         .HBM_REF_CLK(hbm_ref_clk),
@@ -1071,7 +1258,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_arqos(m_axi_arqos),
         .axi4_mm_arready(m_axi_arready),
         .axi4_mm_arsize(m_axi_arsize),
-       // .axi4_mm_aruser(axi4_mm_aruser),
+        .axi4_mm_aruser(axi4_mm_aruser),
         .axi4_mm_arvalid(m_axi_arvalid),
         
         .axi4_mm_awaddr(m_axi_awaddr),
@@ -1084,12 +1271,13 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
-     //   .axi4_mm_awuser(m_axi_awuser),
+        .axi4_mm_awuser(m_axi_awuser),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
         .axi4_mm_bready(m_axi_bready),
         .axi4_mm_bresp(m_axi_bresp),
+        .axi4_mm_buser(m_axi_buser),
         .axi4_mm_bvalid(m_axi_bvalid),
         
         .axi4_mm_rdata(m_axi_rdata),
@@ -1097,15 +1285,65 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_rlast(m_axi_rlast),
         .axi4_mm_rready(m_axi_rready),
         .axi4_mm_rresp(m_axi_rresp),
+        .axi4_mm_ruser(m_axi_ruser),
         .axi4_mm_rvalid(m_axi_rvalid),
         
         .axi4_mm_wdata(m_axi_wdata),
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-   //     .axi4_mm_wuser(m_axi_wuser),
+        .axi4_mm_wuser(m_axi_wuser),
         .axi4_mm_wvalid(m_axi_wvalid),
-        
+
+
+        .axi4_sram_araddr(sram_axi_araddr),
+        .axi4_sram_arburst(sram_axi_arburst),
+        .axi4_sram_arcache(sram_axi_arcache),
+        .axi4_sram_arid(sram_axi_arid),
+        .axi4_sram_arlen(sram_axi_arlen),
+        .axi4_sram_arlock(sram_axi_arlock),
+        .axi4_sram_arprot(sram_axi_arprot),
+        // .axi4_sram_arqos(sram_axi_arqos),
+        .axi4_sram_arready(sram_axi_arready),
+        .axi4_sram_arsize(sram_axi_arsize),
+        // .axi4_sram_aruser(axi4_mm_aruser),
+        .axi4_sram_arvalid(sram_axi_arvalid),
+
+        .axi4_sram_awaddr(sram_axi_awaddr),
+        .axi4_sram_awburst(sram_axi_awburst),
+        .axi4_sram_awcache(sram_axi_awcache),
+        .axi4_sram_awid(sram_axi_awid),
+        .axi4_sram_awlen(sram_axi_awlen),
+        .axi4_sram_awlock(sram_axi_awlock),
+        .axi4_sram_awprot(sram_axi_awprot),
+        // .axi4_sram_awqos(sram_axi_awqos),
+        .axi4_sram_awready(sram_axi_awready),
+        .axi4_sram_awsize(sram_axi_awsize),
+        // .axi4_sram_awuser(sram_axi_awuser),
+        .axi4_sram_awvalid(sram_axi_awvalid),
+
+        .axi4_sram_bid(sram_axi_bid),
+        .axi4_sram_bready(sram_axi_bready),
+        .axi4_sram_bresp(sram_axi_bresp),
+        // .axi4_sram_buser(sram_axi_buser),
+        .axi4_sram_bvalid(sram_axi_bvalid),
+
+        .axi4_sram_rdata(sram_axi_rdata),
+        .axi4_sram_rid(sram_axi_rid),
+        .axi4_sram_rlast(sram_axi_rlast),
+        .axi4_sram_rready(sram_axi_rready),
+        .axi4_sram_rresp(sram_axi_rresp),
+        // .axi4_sram_ruser(sram_axi_ruser),
+        .axi4_sram_rvalid(sram_axi_rvalid),
+
+        .axi4_sram_wdata(sram_axi_wdata),
+        .axi4_sram_wlast(sram_axi_wlast),
+        .axi4_sram_wready(sram_axi_wready),
+        .axi4_sram_wstrb(sram_axi_wstrb),
+        // .axi4_sram_wuser(sram_axi_wuser),
+        .axi4_sram_wvalid(sram_axi_wvalid),
+
+
         .c0_init_calib_complete_0(init_calib_complete),
         
         .ddr4_sdram_c0_act_n(ddr_act_n),
@@ -1128,6 +1366,7 @@ meep_shell_ddr meep_shell_ddr_i
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
         .sys_rst(~sys_rst_n),
+        .sys_clk(core_ref_clk),
         
         .pci_express_x16_rxn(pci_express_x16_rxn),
         .pci_express_x16_rxp(pci_express_x16_rxp),
@@ -1346,5 +1585,6 @@ mig_7series_axi4 u_mig_7series_axi4 (
 `endif  // PITONSYS_AXI4_MEM
 `endif  // PITON_PROTO_NO_MON
 `endif  // PITON_PROTO
+`endif  // PITON_FPGA_MC_DDR3
 
 endmodule 

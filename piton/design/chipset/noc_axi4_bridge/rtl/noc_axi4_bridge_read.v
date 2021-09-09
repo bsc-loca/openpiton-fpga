@@ -30,7 +30,10 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_read (
+module noc_axi4_bridge_read #(
+    // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    parameter SWAP_ENDIANESS = 0
+) (
     // Clock + Reset
     input  wire                                          clk,
     input  wire                                          rst_n,
@@ -278,6 +281,23 @@ always @(posedge clk) begin
     end
 end
 
+// wire [5:0] swap_grnlty = size[resp_id_f] - 7'h1;
+// following code produces less LUTs
+wire [5:0] swap_grnlty = size[resp_id_f][0] ? 6'd0  :
+                         size[resp_id_f][1] ? 6'd1  :
+                         size[resp_id_f][2] ? 6'd3  :
+                         size[resp_id_f][3] ? 6'd7  :
+                         size[resp_id_f][4] ? 6'd15 :
+                         size[resp_id_f][5] ? 6'd31 :
+                                              6'd63;
+reg [`AXI4_DATA_WIDTH-1:0] data_offseted_swp;
+reg [6:0] idxr;
+always @(*) begin
+  data_offseted_swp = {`AXI4_DATA_WIDTH{1'b0}};
+  for (idxr = 0; idxr <= swap_grnlty; idxr = idxr+1)
+    data_offseted_swp[idxr*8 +: 8] = data_offseted[(swap_grnlty - idxr)*8 +: 8];
+end
+
 always @(posedge clk) begin
     if (~rst_n) begin
         resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
@@ -293,22 +313,28 @@ always @(posedge clk) begin
                         resp_data <= {`AXI4_DATA_WIDTH/8{data_offseted[7:0]}};
                     end
                     7'd2: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/16{data_offseted[15:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/16{ SWAP_ENDIANESS ? data_offseted_swp[15:0] :
+                                                                            data_offseted    [15:0]}};
                     end
                     7'd4: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/32{data_offseted[31:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/32{ SWAP_ENDIANESS ? data_offseted_swp[31:0] :
+                                                                            data_offseted    [31:0]}};
                     end
                     7'd8: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/64{data_offseted[63:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/64{ SWAP_ENDIANESS ? data_offseted_swp[63:0] :
+                                                                            data_offseted    [63:0]}};
                     end
                     7'd16: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/128{data_offseted[127:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/128{ SWAP_ENDIANESS ? data_offseted_swp[127:0] :
+                                                                             data_offseted    [127:0]}};
                     end
                     7'd32: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/256{data_offseted[255:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/256{ SWAP_ENDIANESS ? data_offseted_swp[255:0] :
+                                                                             data_offseted    [255:0]}};
                     end
                     default: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/512{data_offseted[511:0]}};
+                        resp_data <= {`AXI4_DATA_WIDTH/512{ SWAP_ENDIANESS ? data_offseted_swp[511:0] :
+                                                                             data_offseted    [511:0]}};
                     end
                 endcase
             end
