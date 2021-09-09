@@ -361,7 +361,7 @@ def buildProjectSuccess(log_dir):
         dbg.print_error("Check: %s" % fpath)
         return False
 
-    dbg.print_info("Project was build successfully!")
+    dbg.print_info("Project was built successfully!")
     return True
 
 

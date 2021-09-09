@@ -31,7 +31,9 @@
 
 module noc_axi4_bridge #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS = 0
+    parameter SWAP_ENDIANESS = 0,
+    // NOC words to AXI word deserialization order
+    parameter NOC2AXI_DESER_ORDER = 0
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -63,7 +65,7 @@ module noc_axi4_bridge #(
     input  wire                              m_axi_awready,
 
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
-    output reg   [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
     output wire                               m_axi_wlast,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
@@ -164,7 +166,7 @@ noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
 );
 
 noc_axi4_bridge_deser #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+    .NOC2AXI_DESER_ORDER (NOC2AXI_DESER_ORDER)
 ) noc_axi4_bridge_deser (
     .clk(clk), 
     .rst_n(rst_n), 
@@ -180,17 +182,9 @@ noc_axi4_bridge_deser #(
     .out_rdy(deser_rdy)
 );
 
-localparam SWP_BYTE = 8;
-localparam SWP_GRNLTY = 32/SWP_BYTE;
-reg [`AXI4_DATA_WIDTH-1:0] m_axi_rdata_swp;
-integer idxr;
-always @(*) begin
-  if (SWAP_ENDIANESS)
-    for (idxr = 0; idxr < (`AXI4_DATA_WIDTH/SWP_BYTE); idxr = idxr+1)
-       m_axi_rdata_swp[idxr*SWP_BYTE +: SWP_BYTE] = m_axi_rdata[((idxr/SWP_GRNLTY)*SWP_GRNLTY + SWP_GRNLTY-1 - (idxr%SWP_GRNLTY))*SWP_BYTE +: SWP_BYTE];
-  else m_axi_rdata_swp = m_axi_rdata;
-end
-noc_axi4_bridge_read noc_axi4_bridge_read (
+noc_axi4_bridge_read #(
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+) noc_axi4_bridge_read (
     .clk(clk), 
     .rst_n(rst_n), 
     .uart_boot_en(uart_boot_en), 
@@ -222,7 +216,7 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_arready(m_axi_arready),
 
     .m_axi_rid(m_axi_rid),
-    .m_axi_rdata(m_axi_rdata_swp),
+    .m_axi_rdata(m_axi_rdata),
     .m_axi_rresp(m_axi_rresp),
     .m_axi_rlast(m_axi_rlast), 
     .m_axi_ruser(m_axi_ruser),
@@ -230,15 +224,9 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_rready(m_axi_rready)
 );
 
-wire [`AXI4_DATA_WIDTH-1:0] m_axi_wdata_swp;
-integer idxw;
-always @(*) begin
-  if (SWAP_ENDIANESS)
-    for (idxw = 0; idxw < (`AXI4_DATA_WIDTH/SWP_BYTE); idxw = idxw+1)
-       m_axi_wdata[idxw*SWP_BYTE +: SWP_BYTE] = m_axi_wdata_swp[((idxw/SWP_GRNLTY)*SWP_GRNLTY + SWP_GRNLTY-1 - (idxw%SWP_GRNLTY))*SWP_BYTE +: SWP_BYTE];
-  else m_axi_wdata = m_axi_wdata_swp;
-end
-noc_axi4_bridge_write noc_axi4_bridge_write (
+noc_axi4_bridge_write #(
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+) noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),
     .rst_n(rst_n),
@@ -271,7 +259,7 @@ noc_axi4_bridge_write noc_axi4_bridge_write (
     .m_axi_awready(m_axi_awready),
 
     .m_axi_wid(m_axi_wid),
-    .m_axi_wdata(m_axi_wdata_swp),
+    .m_axi_wdata(m_axi_wdata),
     .m_axi_wstrb(m_axi_wstrb),
     .m_axi_wlast(m_axi_wlast),
     .m_axi_wuser(m_axi_wuser),

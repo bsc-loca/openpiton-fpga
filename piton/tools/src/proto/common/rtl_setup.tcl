@@ -719,11 +719,6 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
 ]
 
-set BLOCK_DESIGN_INCLUDE_FILES [list \
-    "${DV_ROOT}/design/chipset/meep/meep_shell.bd" \
-    "${DV_ROOT}/design/chipset/meep/meep_shell_ddr.bd" \
-]
-
 set CHIPSET_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/mc_define.h" \
     "${DV_ROOT}/design/chipset/include/uart16550_define.vh" \
