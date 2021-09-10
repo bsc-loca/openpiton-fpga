@@ -16,6 +16,8 @@ CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
 RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
+XTILES ?= 1
+YTILES ?= 1
 PROTO_OPTIONS ?=
 
 #Don't rely on this to call the subprograms
@@ -44,7 +46,7 @@ $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --eth $(PROTO_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --uart-dmw ddr --zeroer_off --eth $(PROTO_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
