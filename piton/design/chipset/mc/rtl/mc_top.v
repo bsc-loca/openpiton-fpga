@@ -116,6 +116,7 @@ module mc_top (
 );
 
 `ifdef PITONSYS_MC_SRAM
+`ifndef PITONSYS_HBM2
 wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
 wire [`AXI4_LEN_WIDTH    -1:0]     sram_axi_awlen;
@@ -279,6 +280,7 @@ noc_axi4_bridge #(
   assign sram_axi_buser   = `AXI4_USER_WIDTH'h0;
 
 `endif // `ifndef PITON_FPGA_MC_DDR3
+`endif // `ifndef PITONSYS_HBM2
 `endif // `ifdef  PITONSYS_MC_SRAM
 
 
