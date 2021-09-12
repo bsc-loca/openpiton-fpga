@@ -37,7 +37,7 @@ stages:
 synthesis:
   tags: 
     - MEEP_FPGA 
-  timeout: 4h
+  timeout: 6h
   stage: protosyn
   before_script:
     - git submodule update --init --recursive
@@ -60,7 +60,7 @@ synthesis:
 
 implementation:
         stage: implementation
-        timeout: 4h
+        timeout: 6h
         tags:
             - MEEP_FPGA
         before_script:
