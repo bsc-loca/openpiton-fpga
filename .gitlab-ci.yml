@@ -22,7 +22,7 @@ variables:
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
   CORE: "lagarto"
-  DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2"
+  DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2 PROTO_OPTIONS=--vnpm"
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
 stages:
