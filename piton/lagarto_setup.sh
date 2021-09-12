@@ -52,7 +52,7 @@ echo "make sure that you source this script in a bash shell in the root folder o
 if [ "$0" !=  "bash" ] && [ "$0" != "-bash" ]
 then
   echo "not in bash ($0), aborting"
-  return
+  #return
 
 fi
 
@@ -62,7 +62,7 @@ TEST=`pwd`/piton/
 if [[ $(readlink -e "${TEST}/${SCRIPTNAME}") == "" ]]
 then
   echo "aborting"
-  return
+  #return
 fi
 
 ################################
@@ -78,8 +78,9 @@ export CXX=g++ CC=gcc
 # customize this to a fast local disk
 
 # note: customize this script to reflect your tool setup
+echo "Call the bash configuration script"
 source ./piton/piton_settings.bash
-
+echo "Piton settings applied"
 # These setting is for SATU server.
 
 #git submodule update --init --recursive piton/design/chip/tile/vas-tile-core
@@ -94,8 +95,10 @@ export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
 
 
 ### MEEP WORKSTATIONS SPECIFICS
+echo "Apply Lagarto riscv toolchain environment"
 source /home/tools/riscv_vector_toolchain/set_env.sh
-source /eda/env.sh
+#source /eda/env.sh
+echo "MEEP environment applied successfully"
 
 
 if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]

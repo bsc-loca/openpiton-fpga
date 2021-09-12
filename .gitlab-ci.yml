@@ -21,6 +21,8 @@ variables:
   BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
+  CORE: "lagarto"
+  DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2"
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
 stages:
@@ -42,11 +44,11 @@ synthesis:
     - export PITON_ROOT=`pwd`
   script:
     - echo "ROOT= $PITON_ROOT"
-    - source piton/ariane_setup.sh
+    - source piton/${CORE}_setup.sh
     - make initialize
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
-    - make protosyn CORE=ariane
+    - make protosyn $DESIGN_OPTIONS
       #- protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
     - cp -r build/alveou280/system/protosyn_logs .
 
