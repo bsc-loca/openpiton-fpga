@@ -445,11 +445,11 @@ Eth_CMAC_syst eth_cmac_syst (
   .s_axi_awid       (core_axi_awid),
   .s_axi_rid        (core_axi_rid),
   .s_axi_bid        (core_axi_bid),
-  .s_axi_awuser     (core_axi_awuser),
-  .s_axi_aruser     (core_axi_aruser),
-  .s_axi_buser      (core_axi_buser),
-  .s_axi_ruser      (core_axi_ruser),
-  .s_axi_wuser      (core_axi_wuser),
+  // .s_axi_awuser     (core_axi_awuser),
+  // .s_axi_aruser     (core_axi_aruser),
+  // .s_axi_buser      (core_axi_buser),
+  // .s_axi_ruser      (core_axi_ruser),
+  // .s_axi_wuser      (core_axi_wuser),
 
   .intc             (net_cmac_intc),     
 
@@ -462,6 +462,8 @@ Eth_CMAC_syst eth_cmac_syst (
   .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
   .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
+assign core_axi_ruser  = `AXI4_USER_WIDTH'h0;
+assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
 
 reg net_cmac_intc_comb;
 always @(posedge net_axi_clk) begin
