@@ -228,9 +228,9 @@ proc create_root_design { parentCell } {
   set axi4_mm [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 axi4_mm ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {36} \
-   CONFIG.ARUSER_WIDTH {11} \
-   CONFIG.AWUSER_WIDTH {11} \
-   CONFIG.BUSER_WIDTH {11} \
+   CONFIG.ARUSER_WIDTH {0} \
+   CONFIG.AWUSER_WIDTH {0} \
+   CONFIG.BUSER_WIDTH {0} \
    CONFIG.DATA_WIDTH {512} \
    CONFIG.FREQ_HZ {300000000} \
    CONFIG.HAS_BRESP {1} \
@@ -251,18 +251,18 @@ proc create_root_design { parentCell } {
    CONFIG.PROTOCOL {AXI4} \
    CONFIG.READ_WRITE_MODE {READ_WRITE} \
    CONFIG.RUSER_BITS_PER_BYTE {0} \
-   CONFIG.RUSER_WIDTH {11} \
+   CONFIG.RUSER_WIDTH {0} \
    CONFIG.SUPPORTS_NARROW_BURST {1} \
    CONFIG.WUSER_BITS_PER_BYTE {0} \
-   CONFIG.WUSER_WIDTH {11} \
+   CONFIG.WUSER_WIDTH {0} \
    ] $axi4_mm
 
   set axi4_sram [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 axi4_sram ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {17} \
-   CONFIG.ARUSER_WIDTH {11} \
-   CONFIG.AWUSER_WIDTH {11} \
-   CONFIG.BUSER_WIDTH {11} \
+   CONFIG.ARUSER_WIDTH {0} \
+   CONFIG.AWUSER_WIDTH {0} \
+   CONFIG.BUSER_WIDTH {0} \
    CONFIG.DATA_WIDTH {512} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {1} \
@@ -282,10 +282,10 @@ proc create_root_design { parentCell } {
    CONFIG.PROTOCOL {AXI4} \
    CONFIG.READ_WRITE_MODE {READ_WRITE} \
    CONFIG.RUSER_BITS_PER_BYTE {0} \
-   CONFIG.RUSER_WIDTH {11} \
+   CONFIG.RUSER_WIDTH {0} \
    CONFIG.SUPPORTS_NARROW_BURST {1} \
    CONFIG.WUSER_BITS_PER_BYTE {0} \
-   CONFIG.WUSER_WIDTH {11} \
+   CONFIG.WUSER_WIDTH {0} \
    ] $axi4_sram
 
   set ddr4_sdram_c0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c0 ]

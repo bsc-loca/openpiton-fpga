@@ -157,13 +157,13 @@ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
 wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
 wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
 wire                               sram_axi_rlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
 wire                               sram_axi_rvalid;
 wire                               sram_axi_rready;
 
 wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
 wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser = `AXI4_USER_WIDTH'h0;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
 wire                               sram_axi_bvalid;
 wire                               sram_axi_bready;
 
@@ -1169,8 +1169,9 @@ meep_shell meep_shell_i
         .axi4_mm_arprot(m_axi_arprot),
         .axi4_mm_arqos(m_axi_arqos),
         .axi4_mm_arready(m_axi_arready),
+        .axi4_mm_arregion(m_axi_arregion),
         .axi4_mm_arsize(m_axi_arsize),
-       // .axi4_mm_aruser(axi4_mm_aruser),
+        // .axi4_mm_aruser(m_axi_aruser),
         .axi4_mm_arvalid(m_axi_arvalid),
         
         .axi4_mm_awaddr(m_axi_awaddr),
@@ -1182,13 +1183,15 @@ meep_shell meep_shell_i
         .axi4_mm_awprot(m_axi_awprot),
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
+        .axi4_mm_awregion(m_axi_awregion),
         .axi4_mm_awsize(m_axi_awsize),
-     //   .axi4_mm_awuser(m_axi_awuser),
+        // .axi4_mm_awuser(m_axi_awuser),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
         .axi4_mm_bready(m_axi_bready),
         .axi4_mm_bresp(m_axi_bresp),
+        //.axi4_mm_buser(m_axi_buser),
         .axi4_mm_bvalid(m_axi_bvalid),
         
         .axi4_mm_rdata(m_axi_rdata),
@@ -1196,13 +1199,14 @@ meep_shell meep_shell_i
         .axi4_mm_rlast(m_axi_rlast),
         .axi4_mm_rready(m_axi_rready),
         .axi4_mm_rresp(m_axi_rresp),
+        //.axi4_mm_ruser(m_axi_ruser),
         .axi4_mm_rvalid(m_axi_rvalid),
         
         .axi4_mm_wdata(m_axi_wdata),
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-   //     .axi4_mm_wuser(m_axi_wuser),
+        // .axi4_mm_wuser(m_axi_wuser),
         .axi4_mm_wvalid(m_axi_wvalid),
         
         .c0_init_calib_complete_0(init_calib_complete),
@@ -1220,6 +1224,8 @@ meep_shell meep_shell_i
 		.ui_clk_sync_rst( ui_clk_sync_rst           ),
         .ui_clk(ui_clk)
         );
+assign m_axi_ruser = `AXI4_USER_WIDTH'h0;
+assign m_axi_buser = `AXI4_USER_WIDTH'h0;
         
 //       always @ (posedge ui_clk) begin
 //        init_calib_complete_r <= {init_calib_complete_r[1], init_calib_complete_c};
@@ -1233,6 +1239,10 @@ assign hbm_cattrip = 0;
 
 `ifdef PITONSYS_DDR4 
 `ifdef PITONSYS_PCIE
+
+wire [28:0] m_axi_aruser_meep = 29'h0;
+wire [28:0] m_axi_awuser_meep = 29'h0;
+wire [63:0] m_axi_wuser_meep  = 64'h0;
 
 meep_shell_ddr meep_shell_ddr_i
        (.C0_DDR4_S_AXI_CTRL_0_araddr(32'b0),
@@ -1262,7 +1272,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_arqos(m_axi_arqos),
         .axi4_mm_arready(m_axi_arready),
         .axi4_mm_arsize(m_axi_arsize),
-        .axi4_mm_aruser(axi4_mm_aruser),
+        .axi4_mm_aruser(m_axi_aruser_meep),
         .axi4_mm_arvalid(m_axi_arvalid),
         
         .axi4_mm_awaddr(m_axi_awaddr),
@@ -1275,13 +1285,13 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
-        .axi4_mm_awuser(m_axi_awuser),
+        .axi4_mm_awuser(m_axi_awuser_meep),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
         .axi4_mm_bready(m_axi_bready),
         .axi4_mm_bresp(m_axi_bresp),
-        .axi4_mm_buser(m_axi_buser),
+        //.axi4_mm_buser(m_axi_buser),
         .axi4_mm_bvalid(m_axi_bvalid),
         
         .axi4_mm_rdata(m_axi_rdata),
@@ -1289,14 +1299,14 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_rlast(m_axi_rlast),
         .axi4_mm_rready(m_axi_rready),
         .axi4_mm_rresp(m_axi_rresp),
-        .axi4_mm_ruser(m_axi_ruser),
+        //.axi4_mm_ruser(m_axi_ruser),
         .axi4_mm_rvalid(m_axi_rvalid),
         
         .axi4_mm_wdata(m_axi_wdata),
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-        .axi4_mm_wuser(m_axi_wuser),
+        .axi4_mm_wuser(m_axi_wuser_meep),
         .axi4_mm_wvalid(m_axi_wvalid),
 
 
@@ -1310,7 +1320,7 @@ meep_shell_ddr meep_shell_ddr_i
         // .axi4_sram_arqos(sram_axi_arqos),
         .axi4_sram_arready(sram_axi_arready),
         .axi4_sram_arsize(sram_axi_arsize),
-        // .axi4_sram_aruser(axi4_mm_aruser),
+        // .axi4_sram_aruser(sram_axi_aruser),
         .axi4_sram_arvalid(sram_axi_arvalid),
 
         .axi4_sram_awaddr(sram_axi_awaddr),
@@ -1383,7 +1393,10 @@ meep_shell_ddr meep_shell_ddr_i
 		.ui_clk_sync_rst( ui_clk_sync_rst           ),
         .ui_clk(ui_clk)
         );
-
+assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
+assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
+assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
   
 `else // PITONSYS_PCIE
  
