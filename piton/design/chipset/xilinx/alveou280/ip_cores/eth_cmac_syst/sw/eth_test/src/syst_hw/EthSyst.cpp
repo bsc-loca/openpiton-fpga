@@ -628,8 +628,8 @@ void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
 //***************** Initialization of Full Ethernet System *****************
 void EthSyst::ethSystInit() {
   timerCntInit();
-  //resetting BD memory to flush its cashe before BD ring initialization
-  for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
+  //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
+  // for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
   axiDmaInit();
   switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
   switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB

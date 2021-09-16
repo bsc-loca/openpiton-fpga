@@ -388,8 +388,8 @@ int main(int argc, char *argv[])
         if (confirm != 'y') break;
 
         ethSyst.ethCoreInit(false);
-        //resetting BD memory to flush its cashe before BD ring initialization
-        for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMem[addr] = 0;
+        //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
+        // for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMem[addr] = 0;
         ethSyst.axiDmaInit();
 
         printf("------- Async DMA 2-boards communication test -------\n");
