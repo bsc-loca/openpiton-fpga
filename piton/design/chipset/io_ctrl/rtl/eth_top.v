@@ -74,8 +74,6 @@ module eth_top #(
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
     input          net_axi_clk,
-    output         qsfp_fs,
-    output         qsfp_oeb,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -453,8 +451,6 @@ Eth_CMAC_syst eth_cmac_syst (
 
   .intc             (net_cmac_intc),     
 
-  .qsfp_fs            (qsfp_fs),
-  .qsfp_oeb           (qsfp_oeb),
   .qsfp_refck_clk_n   (qsfp_ref_clk_n),
   .qsfp_refck_clk_p   (qsfp_ref_clk_p),
   .qsfp_4x_grx_n      (qsfp_4x_grx_n),

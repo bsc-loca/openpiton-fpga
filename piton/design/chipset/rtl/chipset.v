@@ -376,9 +376,7 @@ module chipset(
         output                                          net_phy_mdc,
 
     `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
-        // GTY quads connected to QSFP0 unit on Alveo board
-        output         qsfp_fs,
-        output         qsfp_oeb,
+        // GTY quads connected to QSFP unit on Alveo board
         input          qsfp_ref_clk_n,
         input          qsfp_ref_clk_p,
         input   [3:0]  qsfp_4x_grx_n,
@@ -1493,8 +1491,6 @@ chipset_impl_noc_power_test  chipset_impl (
             `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                 ,
                 .net_axi_clk         (net_axi_clk           ),
-                .qsfp_fs             (qsfp_fs),
-                .qsfp_oeb            (qsfp_oeb),
                 .qsfp_ref_clk_n      (qsfp_ref_clk_n),
                 .qsfp_ref_clk_p      (qsfp_ref_clk_p),
                 .qsfp_4x_grx_n       (qsfp_4x_grx_n),

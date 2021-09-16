@@ -183,8 +183,6 @@ current_bd_design $design_name
 
   # Create ports
   set intc [ create_bd_port -dir O -from 1 -to 0 intc ]
-  set qsfp_fs [ create_bd_port -dir O -from 0 -to 0 qsfp_fs ]
-  set qsfp_oeb [ create_bd_port -dir O -from 0 -to 0 qsfp_oeb ]
   set s_axi_clk [ create_bd_port -dir I -type clk s_axi_clk ]
   set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {s_axi} \
@@ -260,12 +258,6 @@ current_bd_design $design_name
    CONFIG.CONST_WIDTH {56} \
  ] $const_gndx56
 
-  # Create instance: const_vcc, and set properties
-  set const_vcc [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 const_vcc ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {1} \
- ] $const_vcc
-
   # Create instance: ctl_rx_enable, and set properties
   set ctl_rx_enable [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlslice:1.0 ctl_rx_enable ]
 
@@ -331,16 +323,30 @@ current_bd_design $design_name
   set eth100gb [ create_bd_cell -type ip -vlnv xilinx.com:ip:cmac_usplus:3.1 eth100gb ]
   set_property -dict [ list \
    CONFIG.ADD_GT_CNRL_STS_PORTS {0} \
-   CONFIG.DIFFCLK_BOARD_INTERFACE {qsfp0_156mhz} \
+   CONFIG.CMAC_CAUI4_MODE {1} \
+   CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} \
+   CONFIG.DIFFCLK_BOARD_INTERFACE {Custom} \
    CONFIG.ENABLE_AXI_INTERFACE {1} \
    CONFIG.ENABLE_PIPELINE_REG {0} \
    CONFIG.ENABLE_TIME_STAMPING {0} \
-   CONFIG.ETHERNET_BOARD_INTERFACE {qsfp0_4x} \
+   CONFIG.ETHERNET_BOARD_INTERFACE {Custom} \
+   CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} \
    CONFIG.GT_REF_CLK_FREQ {156.25} \
    CONFIG.GT_RX_BUFFER_BYPASS {0} \
    CONFIG.INCLUDE_AUTO_NEG_LT_LOGIC {0} \
    CONFIG.INCLUDE_RS_FEC {1} \
    CONFIG.INCLUDE_STATISTICS_COUNTERS {1} \
+   CONFIG.LANE10_GT_LOC {NA} \
+   CONFIG.LANE1_GT_LOC {X0Y44} \
+   CONFIG.LANE2_GT_LOC {X0Y45} \
+   CONFIG.LANE3_GT_LOC {X0Y46} \
+   CONFIG.LANE4_GT_LOC {X0Y47} \
+   CONFIG.LANE5_GT_LOC {NA} \
+   CONFIG.LANE6_GT_LOC {NA} \
+   CONFIG.LANE7_GT_LOC {NA} \
+   CONFIG.LANE8_GT_LOC {NA} \
+   CONFIG.LANE9_GT_LOC {NA} \
+   CONFIG.NUM_LANES {4x25} \
    CONFIG.PLL_TYPE {QPLL0} \
    CONFIG.RX_CHECK_ACK {1} \
    CONFIG.RX_EQ_MODE {AUTO} \
@@ -517,7 +523,7 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   # Create instance: rx_rst_gen, and set properties
   set rx_rst_gen [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rx_rst_gen ]
   set_property -dict [ list \
-   CONFIG.RESET_BOARD_INTERFACE {resetn} \
+   CONFIG.RESET_BOARD_INTERFACE {Custom} \
    CONFIG.USE_BOARD_FLOW {true} \
  ] $rx_rst_gen
 
@@ -574,7 +580,7 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   # Create instance: tx_rst_gen, and set properties
   set tx_rst_gen [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 tx_rst_gen ]
   set_property -dict [ list \
-   CONFIG.RESET_BOARD_INTERFACE {resetn} \
+   CONFIG.RESET_BOARD_INTERFACE {Custom} \
    CONFIG.USE_BOARD_FLOW {true} \
  ] $tx_rst_gen
 
@@ -643,12 +649,11 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   connect_bd_net -net cmac_usplus_0_stat_rx_test_pattern_mismatch [get_bd_pins STAT_RX_STATUS_REG/In9] [get_bd_pins eth100gb/stat_rx_test_pattern_mismatch]
   connect_bd_net -net cmac_usplus_0_stat_tx_local_fault [get_bd_pins STAT_TX_STATUS_REG/In0] [get_bd_pins eth100gb/stat_tx_local_fault]
   connect_bd_net -net concat_intc_dout [get_bd_ports intc] [get_bd_pins concat_intc/dout]
-  connect_bd_net -net const_gnd_dout [get_bd_ports qsfp_oeb] [get_bd_pins axi_timer_0/capturetrig0] [get_bd_pins axi_timer_0/capturetrig1] [get_bd_pins axi_timer_0/freeze] [get_bd_pins const_gnd/dout] [get_bd_pins eth100gb/drp_en] [get_bd_pins eth100gb/drp_we] [get_bd_pins eth100gb/pm_tick] [get_bd_pins eth100gb/tx_axis_tuser]
+  connect_bd_net -net const_gnd_dout [get_bd_pins axi_timer_0/capturetrig0] [get_bd_pins axi_timer_0/capturetrig1] [get_bd_pins axi_timer_0/freeze] [get_bd_pins const_gnd/dout] [get_bd_pins eth100gb/drp_en] [get_bd_pins eth100gb/drp_we] [get_bd_pins eth100gb/pm_tick] [get_bd_pins eth100gb/tx_axis_tuser]
   connect_bd_net -net const_gndx17_dout [get_bd_pins STAT_RX_STATUS_REG/In13] [get_bd_pins const_gndx17/dout]
   connect_bd_net -net const_gndx18_dout [get_bd_pins STAT_TX_STATUS_REG/In1] [get_bd_pins const_gndx31/dout]
   connect_bd_net -net const_gndx28_dout [get_bd_pins GT_STATUS/In1] [get_bd_pins const_gndx28/dout]
   connect_bd_net -net const_gndx56_dout [get_bd_pins const_gndx56/dout] [get_bd_pins eth100gb/tx_preamblein]
-  connect_bd_net -net const_vcc_dout [get_bd_ports qsfp_fs] [get_bd_pins const_vcc/dout]
   connect_bd_net -net ctl_tx_send_idle_Dout [get_bd_pins ctl_tx_send_idle/Dout] [get_bd_pins eth100gb/ctl_tx_send_idle]
   connect_bd_net -net ctl_tx_send_lfi_Dout [get_bd_pins ctl_tx_send_lfi/Dout] [get_bd_pins eth100gb/ctl_tx_send_lfi]
   connect_bd_net -net ctl_tx_send_rfi_Dout [get_bd_pins ctl_tx_send_rfi/Dout] [get_bd_pins eth100gb/ctl_tx_send_rfi]
