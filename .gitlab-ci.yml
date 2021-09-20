@@ -49,7 +49,7 @@ synthesis:
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
     - make protosyn $DESIGN_OPTIONS
-      #- protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off --vnpm
+  after_script:
     - cp -r build/alveou280/system/protosyn_logs .
 
   artifacts:
