@@ -38,6 +38,11 @@ set_property -dict {PACKAGE_PIN F31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_
 set_property -dict {PACKAGE_PIN G31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 
 
+set_property PACKAGE_PIN BH26             [get_ports pcie_perstn]                          ;# Bank  67 VCCO - VCC1V8   - IO_L13P_T2L_N0_GC_QBC_67
+set_property IOSTANDARD  LVCMOS18         [get_ports pcie_perstn]                          ;# Bank  67 VCCO - VCC1V8   - IO_L13P_T2L_N0_GC_QBC_67
+
+
+
 # ref clock for MIG
 
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clkin1_ibufds/O]
