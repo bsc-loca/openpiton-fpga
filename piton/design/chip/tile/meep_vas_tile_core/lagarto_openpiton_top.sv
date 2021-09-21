@@ -65,6 +65,7 @@ module lagarto_openpiton_top #(
     input logic                 csr_flush_i,
     input logic                 io_csr_csr_replay,
     input [1:0]                 csr_priv_lvl_i,
+    input [1:0]                 csr_ld_st_priv_lvl_i,
     input ovi_csr_data_t        csr_vpu_data_i,
     input logic                 csr_dcache_enable_i,
     input logic                 csr_icache_enable_i,
@@ -261,6 +262,7 @@ logic mask_idx_credit_cpu_vpu;
 
 ovi_item_t ovi_item_int;
 
+logic sfence_vma;
 
 // Response Interface icache to datapath
 resp_icache_cpu_t resp_icache_interface_datapath;
@@ -753,6 +755,19 @@ always_ff @(posedge clk_i or negedge rstn_i) begin
 end
 
 assign lsu_req_raising_e = lsu_req & !lsu_req_dly;
+//Flush MMU tlb
+always_ff @(posedge clk_i or negedge rstn_i) begin
+    if(~rstn_i) begin
+        sfence_vma          <= 0;
+    end else begin
+        sfence_vma          <= 0;
+
+        if (req_datapath_dcache_interface.instr_type == SFENCE_VMA) begin
+            // no store pending so we can flush the TLBs and pipeline
+            sfence_vma      <= 1;
+        end
+    end
+end
   mmu #(
         .INSTR_TLB_ENTRIES(16),
         .DATA_TLB_ENTRIES (16),
@@ -777,12 +792,12 @@ assign lsu_req_raising_e = lsu_req & !lsu_req_dly;
     .lsu_paddr_o           (lsu_paddr           ),
     .lsu_exception_o       (lsu_dtlb_exception  ),
     .priv_lvl_i            (riscv::priv_lvl_t'(csr_priv_lvl_i) ),
-    .ld_st_priv_lvl_i      (riscv::priv_lvl_t'(csr_priv_lvl_i) ),
+    .ld_st_priv_lvl_i      (riscv::priv_lvl_t'(csr_ld_st_priv_lvl_i) ),
     .sum_i                 (sum_i               ),
     .mxr_i                 (mxr                 ),
     .satp_ppn_i            (satp_ppn_i          ),
     .asid_i                (asid_i              ),
-    .flush_tlb_i           (                    ),
+    .flush_tlb_i           (sfence_vma          ),
     .itlb_miss_o           (                    ),
     .dtlb_miss_o           (dtlb_miss           ),
     .req_port_i            (dcache_lsu_resp[0]  ),

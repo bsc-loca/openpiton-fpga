@@ -131,6 +131,7 @@ assign ex_i.cause  = CSR_CAUSE;
 assign ex_i.tval   = CSR_PC;
 assign ex_i.valid  = CSR_EXCEPTION;
 riscv::priv_lvl_t   priv_lvl_csr_o;
+riscv::priv_lvl_t   ld_st_priv_lvl_csr_o;
 logic sum;
 logic mxr;
 logic [43:0] satp_ppn;
@@ -175,7 +176,7 @@ csr_regfile i_csr_regfile (
 
   .en_translation_o      ( en_translation),
   .en_ld_st_translation_o( en_ld_st_translation),
-  .ld_st_priv_lvl_o      ( ),
+  .ld_st_priv_lvl_o      ( ld_st_priv_lvl_csr_o),
   .sum_o                 (sum ),
   .mxr_o                 (mxr ),
   .satp_ppn_o            (satp_ppn ),
@@ -232,6 +233,7 @@ lagarto_openpiton_top #(
     .csr_flush_i         (flush                  ),
     .io_csr_csr_replay   (1'b0                   ),
     .csr_priv_lvl_i      (priv_lvl_csr_o         ),
+    .csr_ld_st_priv_lvl_i(ld_st_priv_lvl_csr_o   ),
     .csr_vpu_data_i      (0                      ),
     .csr_dcache_enable_i (dcache_en_csr          ), 
     .csr_icache_enable_i (icache_en_csr          ), 
