@@ -76,6 +76,8 @@ module lagarto_openpiton_top #(
     input logic                 mxr_i,
     input [43:0]                satp_ppn_i,
     input logic                 asid_i,
+    input logic                 tvm_i,
+    input logic                 tsr_i,
 `endif
 //-----------------------------------------------------------------------------------
 // CSR OUTPUT INTERFACE
@@ -518,6 +520,8 @@ datapath datapath_inst(
     .csr_priv_lvl_i(csr_priv_lvl_i),
 `ifdef PITON_LAGARTO
     .en_ld_st_translation_i (en_ld_st_translation_i),
+    .tvm_i (tvm_i),
+    .tsr_i (tsr_i),
 `endif
     // Output datapath
     .req_cpu_dcache_o(req_datapath_dcache_interface),

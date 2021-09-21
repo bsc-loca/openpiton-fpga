@@ -130,7 +130,7 @@ csr_cmd_t csr_op;
 assign ex_i.cause  = CSR_CAUSE;
 assign ex_i.tval   = CSR_PC;
 assign ex_i.valid  = CSR_EXCEPTION;
-riscv::priv_lvl_t   priv_lvl_csr_o;
+riscv::priv_lvl_t   priv_lvl;
 riscv::priv_lvl_t   ld_st_priv_lvl_csr_o;
 logic sum;
 logic mxr;
@@ -140,6 +140,8 @@ ariane_pkg::exception_t csr_ex_o;
 logic flush;
 logic interrupt;
 logic [63:0] interrupt_cause;
+logic tvm;
+logic tsr;
 
 csr_regfile i_csr_regfile (
   .clk_i                 ( clk_i ),
@@ -164,7 +166,7 @@ csr_regfile i_csr_regfile (
   .epc_o                 ( CSR_EPC),
   .eret_o                ( CSR_ERET),
   .trap_vector_base_o    ( CSR_TRAP_VECTOR_BASE),
-  .priv_lvl_o            ( priv_lvl_csr_o ),
+  .priv_lvl_o            ( priv_lvl ),
   .fs_o                  ( ),
   .fflags_o              ( ),
   .frm_o                 ( ),
@@ -185,9 +187,9 @@ csr_regfile i_csr_regfile (
   .ipi_i                 ( 0 ),
   .debug_req_i           ( 0 ),
   .set_debug_pc_o        ( ),
-  .tvm_o                 ( ),
+  .tvm_o                 ( tvm ),
   .tw_o                  ( ),
-  .tsr_o                 ( ),
+  .tsr_o                 ( tsr),
   .debug_mode_o          ( ),
   .single_step_o         ( ),
   .icache_en_o           (icache_en_csr),
@@ -219,22 +221,25 @@ lagarto_openpiton_top #(
     // CSR Input
     .CSR_RW_RDATA        (CSR_RW_RDATA           ),
     .CSR_CSR_STALL       (CSR_STALL              ),
-    .CSR_XCPT            (csr_ex_o.valid  ),
-    .CSR_XCPT_CAUSE      (csr_ex_o.cause  ),
-    .CSR_TVAL            (csr_ex_o.tval   ),
-    //.CSR_TVAL            (CSR_TRAP_VECTOR_BASE),
-    //.CSR_XCPT            (1'b0            ),
-    //.CSR_XCPT_CAUSE      (64'h0000_0000_0000_0000),
-    //.CSR_TVAL            (64'h0000_0000_0000_0000),
+    .CSR_XCPT            (csr_ex_o.valid         ),
+    .CSR_XCPT_CAUSE      (csr_ex_o.cause         ),
+    .CSR_TVAL            (csr_ex_o.tval          ),
+    //.CSR_TVAL          (CSR_TRAP_VECTOR_BASE),
+    //.CSR_XCPT          (1'b0            ),
+    //.CSR_XCPT_CAUSE    (64'h0000_0000_0000_0000),
+    //.CSR_TVAL          (64'h0000_0000_0000_0000),
     .CSR_ERET            (CSR_ERET               ),
     .CSR_EVEC            (CSR_EPC                ),
     .CSR_INTERRUPT       (interrupt              ),
     .CSR_INTERRUPT_CAUSE (interrupt_cause        ),
     .csr_flush_i         (flush                  ),
     .io_csr_csr_replay   (1'b0                   ),
-    .csr_priv_lvl_i      (priv_lvl_csr_o         ),
+    .csr_priv_lvl_i      (priv_lvl               ),
     .csr_ld_st_priv_lvl_i(ld_st_priv_lvl_csr_o   ),
     .csr_vpu_data_i      (0                      ),
+    .tvm_i               (tvm                    ),
+    .tsr_i               (tsr                    ),
+
     .csr_dcache_enable_i (dcache_en_csr          ), 
     .csr_icache_enable_i (icache_en_csr          ), 
     .en_translation_i    (en_translation         ),
