@@ -60,7 +60,7 @@ synthesis:
 
 implementation:
         stage: implementation
-        timeout: 6h
+        timeout: 12h
         tags:
             - MEEP_FPGA
         before_script:
