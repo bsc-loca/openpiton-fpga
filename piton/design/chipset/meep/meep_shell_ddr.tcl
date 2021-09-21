@@ -126,11 +126,13 @@ xilinx.com:ip:axi_gpio:2.0\
 xilinx.com:ip:ddr4:2.2\
 xilinx.com:ip:util_vector_logic:2.0\
 xilinx.com:ip:axi_bram_ctrl:4.1\
+xilinx.com:ip:xlconstant:1.1\
+xilinx.com:ip:hbm:1.0\
+xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:qdma:4.0\
 xilinx.com:ip:system_ila:1.1\
 xilinx.com:ip:util_ds_buf:2.1\
 xilinx.com:ip:blk_mem_gen:8.4\
-xilinx.com:ip:xlconstant:1.1\
 "
 
    set list_ips_missing ""
@@ -201,6 +203,7 @@ proc create_root_design { parentCell } {
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
    CONFIG.DATA_WIDTH {32} \
+   CONFIG.FREQ_HZ {300000000} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {0} \
    CONFIG.HAS_CACHE {0} \
@@ -232,7 +235,6 @@ proc create_root_design { parentCell } {
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
    CONFIG.DATA_WIDTH {512} \
-   CONFIG.FREQ_HZ {300000000} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {1} \
    CONFIG.HAS_CACHE {1} \
@@ -291,9 +293,6 @@ proc create_root_design { parentCell } {
   set ddr4_sdram_c0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c0 ]
 
   set ddr_clk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 ddr_clk ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {100000000} \
-   ] $ddr_clk
 
   set pci_express_x16 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pci_express_x16 ]
 
@@ -304,7 +303,13 @@ proc create_root_design { parentCell } {
 
 
   # Create ports
-  set c0_init_calib_complete_0 [ create_bd_port -dir O c0_init_calib_complete_0 ]
+  set C0_DDR4_S_AXI_CLK [ create_bd_port -dir O -type clk C0_DDR4_S_AXI_CLK ]
+  set_property -dict [ list \
+   CONFIG.ASSOCIATED_BUSIF {C0_DDR4_S_AXI_CTRL_0} \
+   CONFIG.FREQ_HZ {300000000} \
+ ] $C0_DDR4_S_AXI_CLK
+  set hbm_cattrip [ create_bd_port -dir O -from 0 -to 0 hbm_cattrip ]
+  set mem_calib_complete [ create_bd_port -dir O -from 0 -to 0 -type rst mem_calib_complete ]
   set pcie_gpio [ create_bd_port -dir O -from 4 -to 0 pcie_gpio ]
   set pcie_perstn [ create_bd_port -dir I -type rst pcie_perstn ]
   set_property -dict [ list \
@@ -315,8 +320,6 @@ proc create_root_design { parentCell } {
   set_property -dict [ list \
    CONFIG.POLARITY {ACTIVE_HIGH} \
  ] $sys_rst
-  set ui_clk [ create_bd_port -dir O -type clk ui_clk ]
-  set ui_clk_sync_rst [ create_bd_port -dir O -type rst ui_clk_sync_rst ]
 
   # Create instance: axi_gpio_0, and set properties
   set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
@@ -329,8 +332,8 @@ proc create_root_design { parentCell } {
   set axi_interconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_0 ]
   set_property -dict [ list \
    CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
-   CONFIG.ENABLE_PROTOCOL_CHECKERS {1} \
-   CONFIG.NUM_MI {2} \
+   CONFIG.ENABLE_PROTOCOL_CHECKERS {0} \
+   CONFIG.NUM_MI {3} \
    CONFIG.NUM_SI {2} \
    CONFIG.SYNCHRONIZATION_STAGES {7} \
    CONFIG.XBAR_DATA_WIDTH {512} \
@@ -339,6 +342,7 @@ proc create_root_design { parentCell } {
   # Create instance: ddr4_0, and set properties
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
+   CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
    CONFIG.C0_CLOCK_BOARD_INTERFACE {sysclk0} \
    CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c0} \
    CONFIG.RESET_BOARD_INTERFACE {Custom} \
@@ -360,6 +364,97 @@ proc create_root_design { parentCell } {
    CONFIG.SINGLE_PORT_BRAM {1} \
  ] $ext_axi_sram_ctrl
 
+  # Create instance: gndx32, and set properties
+  set gndx32 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx32 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+   CONFIG.CONST_WIDTH {32} \
+ ] $gndx32
+
+  # Create instance: hbm_0, and set properties
+  set hbm_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:hbm:1.0 hbm_0 ]
+  set_property -dict [ list \
+   CONFIG.USER_APB_EN {false} \
+   CONFIG.USER_CLK_SEL_LIST0 {AXI_00_ACLK} \
+   CONFIG.USER_CLK_SEL_LIST1 {AXI_16_ACLK} \
+   CONFIG.USER_HBM_CP_1 {6} \
+   CONFIG.USER_HBM_DENSITY {8GB} \
+   CONFIG.USER_HBM_FBDIV_1 {36} \
+   CONFIG.USER_HBM_HEX_CP_RES_1 {0x0000A600} \
+   CONFIG.USER_HBM_HEX_FBDIV_CLKOUTDIV_1 {0x00000902} \
+   CONFIG.USER_HBM_HEX_LOCK_FB_REF_DLY_1 {0x00001f1f} \
+   CONFIG.USER_HBM_LOCK_FB_DLY_1 {31} \
+   CONFIG.USER_HBM_LOCK_REF_DLY_1 {31} \
+   CONFIG.USER_HBM_RES_1 {10} \
+   CONFIG.USER_HBM_STACK {2} \
+   CONFIG.USER_MC_ENABLE_08 {TRUE} \
+   CONFIG.USER_MC_ENABLE_09 {TRUE} \
+   CONFIG.USER_MC_ENABLE_10 {TRUE} \
+   CONFIG.USER_MC_ENABLE_11 {TRUE} \
+   CONFIG.USER_MC_ENABLE_12 {TRUE} \
+   CONFIG.USER_MC_ENABLE_13 {TRUE} \
+   CONFIG.USER_MC_ENABLE_14 {TRUE} \
+   CONFIG.USER_MC_ENABLE_15 {TRUE} \
+   CONFIG.USER_MC_ENABLE_APB_01 {TRUE} \
+   CONFIG.USER_MEMORY_DISPLAY {8192} \
+   CONFIG.USER_PHY_ENABLE_08 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_09 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_10 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_11 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_12 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_13 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_14 {TRUE} \
+   CONFIG.USER_PHY_ENABLE_15 {TRUE} \
+   CONFIG.USER_SAXI_01 {false} \
+   CONFIG.USER_SAXI_02 {false} \
+   CONFIG.USER_SAXI_03 {false} \
+   CONFIG.USER_SAXI_04 {false} \
+   CONFIG.USER_SAXI_05 {false} \
+   CONFIG.USER_SAXI_06 {false} \
+   CONFIG.USER_SAXI_07 {false} \
+   CONFIG.USER_SAXI_08 {false} \
+   CONFIG.USER_SAXI_09 {false} \
+   CONFIG.USER_SAXI_10 {false} \
+   CONFIG.USER_SAXI_11 {false} \
+   CONFIG.USER_SAXI_12 {false} \
+   CONFIG.USER_SAXI_13 {false} \
+   CONFIG.USER_SAXI_14 {false} \
+   CONFIG.USER_SAXI_15 {false} \
+   CONFIG.USER_SAXI_16 {false} \
+   CONFIG.USER_SAXI_17 {false} \
+   CONFIG.USER_SAXI_18 {false} \
+   CONFIG.USER_SAXI_19 {false} \
+   CONFIG.USER_SAXI_20 {false} \
+   CONFIG.USER_SAXI_21 {false} \
+   CONFIG.USER_SAXI_22 {false} \
+   CONFIG.USER_SAXI_23 {false} \
+   CONFIG.USER_SAXI_24 {false} \
+   CONFIG.USER_SAXI_25 {false} \
+   CONFIG.USER_SAXI_26 {false} \
+   CONFIG.USER_SAXI_27 {false} \
+   CONFIG.USER_SAXI_28 {false} \
+   CONFIG.USER_SAXI_29 {false} \
+   CONFIG.USER_SAXI_30 {false} \
+   CONFIG.USER_SAXI_31 {false} \
+   CONFIG.USER_SWITCH_ENABLE_01 {TRUE} \
+ ] $hbm_0
+
+  # Create instance: hbm_calib_comb, and set properties
+  set hbm_calib_comb [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 hbm_calib_comb ]
+  set_property -dict [ list \
+   CONFIG.C_OPERATION {and} \
+   CONFIG.C_SIZE {1} \
+   CONFIG.LOGO_FILE {data/sym_andgate.png} \
+ ] $hbm_calib_comb
+
+  # Create instance: hbm_cattrip_comb, and set properties
+  set hbm_cattrip_comb [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 hbm_cattrip_comb ]
+  set_property -dict [ list \
+   CONFIG.C_OPERATION {or} \
+   CONFIG.C_SIZE {1} \
+   CONFIG.LOGO_FILE {data/sym_orgate.png} \
+ ] $hbm_cattrip_comb
+
   # Create instance: int_axi_sram_ctrl, and set properties
   set int_axi_sram_ctrl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 int_axi_sram_ctrl ]
   set_property -dict [ list \
@@ -367,6 +462,12 @@ proc create_root_design { parentCell } {
    CONFIG.ECC_TYPE {0} \
    CONFIG.SINGLE_PORT_BRAM {1} \
  ] $int_axi_sram_ctrl
+
+  # Create instance: mem_calib_sync, and set properties
+  set mem_calib_sync [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 mem_calib_sync ]
+  set_property -dict [ list \
+   CONFIG.C_AUX_RESET_HIGH {0} \
+ ] $mem_calib_sync
 
   # Create instance: qdma_0, and set properties
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:4.0 qdma_0 ]
@@ -398,40 +499,6 @@ proc create_root_design { parentCell } {
    CONFIG.LOGO_FILE {data/sym_notgate.png} \
  ] $sys_rst_inv
 
-  # Create instance: system_ila_0, and set properties
-  set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
-  set_property -dict [ list \
-   CONFIG.C_MON_TYPE {MIX} \
-   CONFIG.C_NUM_MONITOR_SLOTS {2} \
-   CONFIG.C_NUM_OF_PROBES {2} \
-   CONFIG.C_PROBE0_TYPE {0} \
-   CONFIG.C_PROBE1_TYPE {0} \
-   CONFIG.C_SLOT_0_APC_EN {1} \
-   CONFIG.C_SLOT_0_AXI_AR_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_AR_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_AW_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_AW_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_B_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_B_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_R_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_R_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_W_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_W_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
-   CONFIG.C_SLOT_1_APC_EN {0} \
-   CONFIG.C_SLOT_1_AXI_AR_SEL_DATA {1} \
-   CONFIG.C_SLOT_1_AXI_AR_SEL_TRIG {1} \
-   CONFIG.C_SLOT_1_AXI_AW_SEL_DATA {1} \
-   CONFIG.C_SLOT_1_AXI_AW_SEL_TRIG {1} \
-   CONFIG.C_SLOT_1_AXI_B_SEL_DATA {1} \
-   CONFIG.C_SLOT_1_AXI_B_SEL_TRIG {1} \
-   CONFIG.C_SLOT_1_AXI_R_SEL_DATA {1} \
-   CONFIG.C_SLOT_1_AXI_R_SEL_TRIG {1} \
-   CONFIG.C_SLOT_1_AXI_W_SEL_DATA {1} \
-   CONFIG.C_SLOT_1_AXI_W_SEL_TRIG {1} \
-   CONFIG.C_SLOT_1_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
- ] $system_ila_0
-
   # Create instance: system_ila_1, and set properties
   set system_ila_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_1 ]
   set_property -dict [ list \
@@ -450,13 +517,13 @@ proc create_root_design { parentCell } {
   # Create instance: xchng_sram, and set properties
   set xchng_sram [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 xchng_sram ]
   set_property -dict [ list \
-   CONFIG.Assume_Synchronous_Clk {false} \
-   CONFIG.EN_SAFETY_CKT {true} \
+   CONFIG.Assume_Synchronous_Clk {true} \
+   CONFIG.EN_SAFETY_CKT {false} \
    CONFIG.Enable_B {Use_ENB_Pin} \
    CONFIG.Memory_Type {True_Dual_Port_RAM} \
-   CONFIG.Operating_Mode_A {WRITE_FIRST} \
-   CONFIG.Operating_Mode_B {WRITE_FIRST} \
-   CONFIG.PRIM_type_to_Implement {BRAM} \
+   CONFIG.Operating_Mode_A {NO_CHANGE} \
+   CONFIG.Operating_Mode_B {NO_CHANGE} \
+   CONFIG.PRIM_type_to_Implement {URAM} \
    CONFIG.Port_B_Clock {100} \
    CONFIG.Port_B_Enable_Rate {100} \
    CONFIG.Port_B_Write_Rate {50} \
@@ -468,47 +535,116 @@ proc create_root_design { parentCell } {
 
   # Create interface connections
   connect_bd_intf_net -intf_net C0_DDR4_S_AXI_CTRL_0_1 [get_bd_intf_ports C0_DDR4_S_AXI_CTRL_0] [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI_CTRL]
+  connect_bd_intf_net -intf_net C0_SYS_CLK_0_1 [get_bd_intf_ports ddr_clk] [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
   connect_bd_intf_net -intf_net S_AXI_0_1 [get_bd_intf_ports axi4_sram] [get_bd_intf_pins ext_axi_sram_ctrl/S_AXI]
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports axi4_mm] [get_bd_intf_pins axi_interconnect_0/S00_AXI]
-connect_bd_intf_net -intf_net [get_bd_intf_nets axi4_mm_1] [get_bd_intf_ports axi4_mm] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets axi4_mm_1]
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins ext_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_bram_ctrl_1_BRAM_PORTA [get_bd_intf_pins int_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTB]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins axi_interconnect_0/M00_AXI] [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI]
-connect_bd_intf_net -intf_net [get_bd_intf_nets axi_interconnect_0_M00_AXI] [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins system_ila_0/SLOT_1_AXI]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets axi_interconnect_0_M00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins axi_interconnect_0/M01_AXI] [get_bd_intf_pins int_axi_sram_ctrl/S_AXI]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M02_AXI [get_bd_intf_pins axi_interconnect_0/M02_AXI] [get_bd_intf_pins hbm_0/SAXI_00]
   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c0] [get_bd_intf_pins ddr4_0/C0_DDR4]
   connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
   connect_bd_intf_net -intf_net qdma_0_M_AXI [get_bd_intf_pins axi_interconnect_0/S01_AXI] [get_bd_intf_pins qdma_0/M_AXI]
   connect_bd_intf_net -intf_net qdma_0_M_AXI_LITE [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins qdma_0/M_AXI_LITE]
   connect_bd_intf_net -intf_net qdma_0_pcie_mgt [get_bd_intf_ports pci_express_x16] [get_bd_intf_pins qdma_0/pcie_mgt]
-  connect_bd_intf_net -intf_net sysclk0_1 [get_bd_intf_ports ddr_clk] [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
 
   # Create port connections
   connect_bd_net -net axi_gpio_0_gpio_io_o [get_bd_ports pcie_gpio] [get_bd_pins axi_gpio_0/gpio_io_o] [get_bd_pins system_ila_1/probe0]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets axi_gpio_0_gpio_io_o]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_ports ui_clk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins int_axi_sram_ctrl/s_axi_aclk] [get_bd_pins system_ila_0/clk]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_ports ui_clk_sync_rst] [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins ddr_axi_rst_inv/Op1]
-  connect_bd_net -net ddr4_0_c0_init_calib_complete [get_bd_ports c0_init_calib_complete_0] [get_bd_pins ddr4_0/c0_init_calib_complete]
+  connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins ddr4_0/addn_ui_clkout1] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_ports C0_DDR4_S_AXI_CLK] [get_bd_pins axi_interconnect_0/M00_ACLK] [get_bd_pins ddr4_0/c0_ddr4_ui_clk]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins ddr_axi_rst_inv/Op1]
+  connect_bd_net -net ddr4_0_c0_init_calib_complete [get_bd_pins ddr4_0/c0_init_calib_complete] [get_bd_pins mem_calib_sync/ext_reset_in]
+  connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res]
+  connect_bd_net -net ddr_calib_comb_Res [get_bd_pins hbm_calib_comb/Res] [get_bd_pins mem_calib_sync/aux_reset_in]
+  connect_bd_net -net gndx32_dout [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY]
+  connect_bd_net -net hbm_0_DRAM_0_STAT_CATTRIP [get_bd_pins hbm_0/DRAM_0_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op1]
+  connect_bd_net -net hbm_0_DRAM_1_STAT_CATTRIP [get_bd_pins hbm_0/DRAM_1_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op2]
+  connect_bd_net -net hbm_0_apb_complete_0 [get_bd_pins hbm_0/apb_complete_0] [get_bd_pins hbm_calib_comb/Op1]
+  connect_bd_net -net hbm_0_apb_complete_1 [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins hbm_calib_comb/Op2]
+  connect_bd_net -net hbm_cattrip_comb_Res [get_bd_ports hbm_cattrip] [get_bd_pins hbm_cattrip_comb/Res]
+  connect_bd_net -net mem_calib_sync_peripheral_aresetn [get_bd_ports mem_calib_complete] [get_bd_pins mem_calib_sync/peripheral_aresetn]
   connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins qdma_0/soft_reset_n] [get_bd_pins qdma_0/sys_rst_n]
   connect_bd_net -net qdma_0_axi_aclk [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins axi_interconnect_0/S01_ACLK] [get_bd_pins qdma_0/axi_aclk] [get_bd_pins system_ila_1/clk]
   connect_bd_net -net qdma_0_axi_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins axi_interconnect_0/S01_ARESETN] [get_bd_pins qdma_0/axi_aresetn]
-  connect_bd_net -net rst_ddr4_0_300M_peripheral_aresetn [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M00_ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins system_ila_0/probe0] [get_bd_pins system_ila_0/probe1] [get_bd_pins system_ila_0/resetn]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets rst_ddr4_0_300M_peripheral_aresetn]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk]
-  connect_bd_net -net sys_rst_0_1 [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins sys_rst_inv/Op1]
-  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins sys_rst_inv/Res]
+  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins axi_interconnect_0/ACLK] [get_bd_pins axi_interconnect_0/M01_ACLK] [get_bd_pins axi_interconnect_0/M02_ACLK] [get_bd_pins axi_interconnect_0/S00_ACLK] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins int_axi_sram_ctrl/s_axi_aclk] [get_bd_pins mem_calib_sync/slowest_sync_clk]
+  connect_bd_net -net sys_rst_0_1 [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
+  connect_bd_net -net sys_rst_inv_Res [get_bd_pins axi_interconnect_0/ARESETN] [get_bd_pins axi_interconnect_0/M01_ARESETN] [get_bd_pins axi_interconnect_0/M02_ARESETN] [get_bd_pins axi_interconnect_0/S00_ARESETN] [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins sys_rst_inv/Res]
   connect_bd_net -net util_ds_buf_IBUF_DS_ODIV2 [get_bd_pins qdma_0/sys_clk] [get_bd_pins util_ds_buf/IBUF_DS_ODIV2]
   connect_bd_net -net util_ds_buf_IBUF_OUT [get_bd_pins qdma_0/sys_clk_gt] [get_bd_pins util_ds_buf/IBUF_OUT]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins qdma_0/qsts_out_rdy] [get_bd_pins qdma_0/tm_dsc_sts_rdy] [get_bd_pins xlconstant_0/dout]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
-  assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x000200000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
+  assign_bd_address -offset 0x000210000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM01] -force
+  assign_bd_address -offset 0x000220000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM02] -force
+  assign_bd_address -offset 0x000230000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM03] -force
+  assign_bd_address -offset 0x000240000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM04] -force
+  assign_bd_address -offset 0x000250000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM05] -force
+  assign_bd_address -offset 0x000260000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM06] -force
+  assign_bd_address -offset 0x000270000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM07] -force
+  assign_bd_address -offset 0x000280000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM08] -force
+  assign_bd_address -offset 0x000290000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM09] -force
+  assign_bd_address -offset 0x0002A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM10] -force
+  assign_bd_address -offset 0x0002B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM11] -force
+  assign_bd_address -offset 0x0002C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM12] -force
+  assign_bd_address -offset 0x0002D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM13] -force
+  assign_bd_address -offset 0x0002E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM14] -force
+  assign_bd_address -offset 0x0002F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM15] -force
+  assign_bd_address -offset 0x000300000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM16] -force
+  assign_bd_address -offset 0x000310000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM17] -force
+  assign_bd_address -offset 0x000320000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM18] -force
+  assign_bd_address -offset 0x000330000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM19] -force
+  assign_bd_address -offset 0x000340000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM20] -force
+  assign_bd_address -offset 0x000350000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM21] -force
+  assign_bd_address -offset 0x000360000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM22] -force
+  assign_bd_address -offset 0x000370000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM23] -force
+  assign_bd_address -offset 0x000380000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM24] -force
+  assign_bd_address -offset 0x000390000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM25] -force
+  assign_bd_address -offset 0x0003A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM26] -force
+  assign_bd_address -offset 0x0003B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM27] -force
+  assign_bd_address -offset 0x0003C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM28] -force
+  assign_bd_address -offset 0x0003D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM29] -force
+  assign_bd_address -offset 0x0003E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM30] -force
+  assign_bd_address -offset 0x0003F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM31] -force
   assign_bd_address -offset 0x000800000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
   assign_bd_address -offset 0x00000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces axi4_sram] [get_bd_addr_segs ext_axi_sram_ctrl/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x000200000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
+  assign_bd_address -offset 0x000210000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM01] -force
+  assign_bd_address -offset 0x000220000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM02] -force
+  assign_bd_address -offset 0x000230000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM03] -force
+  assign_bd_address -offset 0x000240000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM04] -force
+  assign_bd_address -offset 0x000250000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM05] -force
+  assign_bd_address -offset 0x000260000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM06] -force
+  assign_bd_address -offset 0x000270000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM07] -force
+  assign_bd_address -offset 0x000280000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM08] -force
+  assign_bd_address -offset 0x000290000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM09] -force
+  assign_bd_address -offset 0x0002A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM10] -force
+  assign_bd_address -offset 0x0002B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM11] -force
+  assign_bd_address -offset 0x0002C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM12] -force
+  assign_bd_address -offset 0x0002D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM13] -force
+  assign_bd_address -offset 0x0002E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM14] -force
+  assign_bd_address -offset 0x0002F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM15] -force
+  assign_bd_address -offset 0x000300000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM16] -force
+  assign_bd_address -offset 0x000310000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM17] -force
+  assign_bd_address -offset 0x000320000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM18] -force
+  assign_bd_address -offset 0x000330000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM19] -force
+  assign_bd_address -offset 0x000340000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM20] -force
+  assign_bd_address -offset 0x000350000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM21] -force
+  assign_bd_address -offset 0x000360000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM22] -force
+  assign_bd_address -offset 0x000370000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM23] -force
+  assign_bd_address -offset 0x000380000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM24] -force
+  assign_bd_address -offset 0x000390000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM25] -force
+  assign_bd_address -offset 0x0003A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM26] -force
+  assign_bd_address -offset 0x0003B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM27] -force
+  assign_bd_address -offset 0x0003C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM28] -force
+  assign_bd_address -offset 0x0003D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM29] -force
+  assign_bd_address -offset 0x0003E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM30] -force
+  assign_bd_address -offset 0x0003F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM31] -force
   assign_bd_address -offset 0x000800000000 -range 0x00020000 -target_address_space [get_bd_addr_spaces axi4_mm] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
 
   # Exclude Address Segments

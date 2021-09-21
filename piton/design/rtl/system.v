@@ -1185,6 +1185,7 @@ chipset chipset(
 	.ddr_dqs_n(ddr_dqs_c),
     .ddr_dqs_p(ddr_dqs_t),
 	.ddr_parity(ddr_parity),
+.hbm_cattrip(hbm_cattrip),
 `endif
 
 `else

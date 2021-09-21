@@ -34,11 +34,11 @@
 #set_property CONFIG_VOLTAGE 1.8 [current_design]
 
 # Clock signals
-set_property -dict {PACKAGE_PIN F31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
-set_property -dict {PACKAGE_PIN G31 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
+set_property -dict {PACKAGE_PIN BJ6 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
+set_property -dict {PACKAGE_PIN BH6 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 
-set_property -dict {PACKAGE_PIN BJ44 IOSTANDARD LVDS} [get_ports hbm_ref_clk_n]
-set_property -dict {PACKAGE_PIN BJ43 IOSTANDARD LVDS} [get_ports hbm_ref_clk_p]
+# set_property -dict {PACKAGE_PIN BJ44 IOSTANDARD LVDS} [get_ports mc_clk_n]
+# set_property -dict {PACKAGE_PIN BJ43 IOSTANDARD LVDS} [get_ports mc_clk_p]
 
 # ref clock for MIG
 

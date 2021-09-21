@@ -260,6 +260,7 @@ module chipset(
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
     output                                      ddr_parity,
+    output hbm_cattrip,
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -1362,6 +1363,7 @@ chipset_impl_noc_power_test  chipset_impl (
                     .ddr_parity(ddr_parity),
 		        `elsif ALVEOU280_BOARD
                     .ddr_parity(ddr_parity),
+                    .hbm_cattrip(hbm_cattrip),
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD

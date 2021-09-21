@@ -86,6 +86,7 @@ module mc_top (
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD	
 	output                          ddr_parity,
+    output hbm_cattrip,
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -1235,7 +1236,7 @@ assign m_axi_buser = `AXI4_USER_WIDTH'h0;
 `endif//PITONSYS_PCIE      
 `else //PITONSYS_HBM2
 
-assign hbm_cattrip = 0;
+// assign hbm_cattrip = 0;
 
 `ifdef PITONSYS_DDR4 
 `ifdef PITONSYS_PCIE
@@ -1261,6 +1262,7 @@ meep_shell_ddr meep_shell_ddr_i
         .C0_DDR4_S_AXI_CTRL_0_wdata(32'b0),
         .C0_DDR4_S_AXI_CTRL_0_wready(),
         .C0_DDR4_S_AXI_CTRL_0_wvalid(1'b0),
+        .C0_DDR4_S_AXI_CLK(),
         
         .axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
@@ -1358,7 +1360,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_sram_wvalid(sram_axi_wvalid),
 
 
-        .c0_init_calib_complete_0(init_calib_complete),
+        .mem_calib_complete(init_calib_complete),
         
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),
@@ -1376,6 +1378,7 @@ meep_shell_ddr meep_shell_ddr_i
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
         
         //.c0_ddr4_aresetn(sys_rst_n),
+        .hbm_cattrip(hbm_cattrip),
         
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
@@ -1389,14 +1392,17 @@ meep_shell_ddr meep_shell_ddr_i
         .pcie_gpio(pcie_gpio),
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
-        .pcie_refclk_clk_p( pcie_refclk_p),
-		.ui_clk_sync_rst( ui_clk_sync_rst           ),
-        .ui_clk(ui_clk)
+        .pcie_refclk_clk_p( pcie_refclk_p)
+//		.ui_clk_sync_rst( ui_clk_sync_rst           ),
+//        .ui_clk(ui_clk)
         );
 assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
 assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
 assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
 assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
+
+assign ui_clk_sync_rst = ~sys_rst_n;
+assign ui_clk = core_ref_clk;
   
 `else // PITONSYS_PCIE
  
