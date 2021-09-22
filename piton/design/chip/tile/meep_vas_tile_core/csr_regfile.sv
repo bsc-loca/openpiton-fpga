@@ -823,10 +823,10 @@ module csr_regfile #(
             if (ex_i.valid && ex_i.cause inside {riscv::LD_ADDR_MISALIGNED, riscv::LD_ACCESS_FAULT, 
                                     riscv::ST_ADDR_MISALIGNED, riscv::ST_ACCESS_FAULT,
                                     riscv::LOAD_PAGE_FAULT, riscv::STORE_PAGE_FAULT,
-                                    riscv::INSTR_PAGE_FAULT}) begin
+                                    riscv::INSTR_PAGE_FAULT, riscv::INSTR_ADDR_MISALIGNED}) begin
                 ex_tval = csr_wdata_i;
-            end else if (ex_i.valid && ex_i.cause == riscv::INSTR_ADDR_MISALIGNED) begin
-                ex_tval = 64'b0; //TODO: mirar si es la seguent o la anterior
+            //end else if (ex_i.valid && ex_i.cause == riscv::INSTR_ADDR_MISALIGNED) begin
+                //ex_tval = 64'b0; //TODO: mirar si es la seguent o la anterior
             end else if ((ex_i.valid && ex_i.cause == riscv::ILLEGAL_INSTR) || (csr_xcpt && csr_xcpt_cause == riscv::ILLEGAL_INSTR)) begin
                 ex_tval = 64'b0; //TODO: propagar instrucció
         end else if (csr_xcpt && csr_xcpt_cause == riscv::BREAKPOINT) begin
