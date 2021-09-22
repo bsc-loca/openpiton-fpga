@@ -67,6 +67,9 @@ module csr_regfile #(
     output logic [6:0]            fprec_o,                    // Floating-Point Precision Control
     // Decoder
     output irq_ctrl_t             irq_ctrl_o,                 // interrupt management to id stage
+    output logic                  interrupt_o,                // Inerruption wire to the core
+    output logic [63:0]           interrupt_cause_o,          // Interruption cause
+
     // MMU
     output logic                  en_translation_o,           // enable VA translation
     output logic                  en_ld_st_translation_o,     // enable VA translation for load and stores
@@ -164,6 +167,15 @@ module csr_regfile #(
     logic        csr_xcpt;          // Internal csr exception bit.
     logic [63:0] csr_xcpt_cause;    // cause of the internal csr exception
     logic [63:0] ex_tval;
+
+
+    //interruption wires
+    logic interrupt_d, interrupt_q;
+    logic [63:0] interrupt_cause_q, interrupt_cause_d, interrupt_cause;
+
+
+
+
     //////////////////////////////////////////////
     // Vector Instructions Decode
     //////////////////////////////////////////////
@@ -811,10 +823,10 @@ module csr_regfile #(
             if (ex_i.valid && ex_i.cause inside {riscv::LD_ADDR_MISALIGNED, riscv::LD_ACCESS_FAULT, 
                                     riscv::ST_ADDR_MISALIGNED, riscv::ST_ACCESS_FAULT,
                                     riscv::LOAD_PAGE_FAULT, riscv::STORE_PAGE_FAULT,
-                                    riscv::INSTR_PAGE_FAULT}) begin
+                                    riscv::INSTR_PAGE_FAULT, riscv::INSTR_ADDR_MISALIGNED}) begin
                 ex_tval = csr_wdata_i;
-            end else if (ex_i.valid && ex_i.cause == riscv::INSTR_ADDR_MISALIGNED) begin
-                ex_tval = 64'b0; //TODO: mirar si es la seguent o la anterior
+            //end else if (ex_i.valid && ex_i.cause == riscv::INSTR_ADDR_MISALIGNED) begin
+                //ex_tval = 64'b0; //TODO: mirar si es la seguent o la anterior
             end else if ((ex_i.valid && ex_i.cause == riscv::ILLEGAL_INSTR) || (csr_xcpt && csr_xcpt_cause == riscv::ILLEGAL_INSTR)) begin
                 ex_tval = 64'b0; //TODO: propagar instrucció
         end else if (csr_xcpt && csr_xcpt_cause == riscv::BREAKPOINT) begin
@@ -1053,6 +1065,66 @@ module csr_regfile #(
                                     & (~dcsr_q.step | dcsr_q.stepie)
                                     & ((mstatus_q.mie & (priv_lvl_o == riscv::PRIV_LVL_M))
                                     | (priv_lvl_o != riscv::PRIV_LVL_M));
+
+
+    always_comb begin : interrup_lagarto
+        interrupt_cause       = '0;
+        interrupt_d = 1'b0;
+        
+        // -----------------
+        // Interrupt Control
+        // -----------------
+        // we decode an interrupt the same as an exception, hence it will be taken if the instruction did not
+        // throw any previous exception.
+        // we have three interrupt sources: external interrupts, software interrupts, timer interrupts (order of precedence)
+        // for two privilege levels: Supervisor and Machine Mode
+        // Supervisor Timer Interrupt
+        if (irq_ctrl_o.mie[riscv::S_TIMER_INTERRUPT[5:0]] && irq_ctrl_o.mip[riscv::S_TIMER_INTERRUPT[5:0]]) begin
+            interrupt_cause = riscv::S_TIMER_INTERRUPT;
+        end
+        // Supervisor Software Interrupt
+        if (irq_ctrl_o.mie[riscv::S_SW_INTERRUPT[5:0]] && irq_ctrl_o.mip[riscv::S_SW_INTERRUPT[5:0]]) begin
+            interrupt_cause = riscv::S_SW_INTERRUPT;
+        end
+        // Supervisor External Interrupt
+        // The logical-OR of the software-writable bit and the signal from the external interrupt controller is
+        // used to generate external interrupts to the supervisor
+        if (irq_ctrl_o.mie[riscv::S_EXT_INTERRUPT[5:0]] && (irq_ctrl_o.mip[riscv::S_EXT_INTERRUPT[5:0]] | irq_i[ariane_pkg::SupervisorIrq])) begin
+            interrupt_cause = riscv::S_EXT_INTERRUPT;
+        end
+        // Machine Timer Interrupt
+        if (irq_ctrl_o.mip[riscv::M_TIMER_INTERRUPT[5:0]] && irq_ctrl_o.mie[riscv::M_TIMER_INTERRUPT[5:0]]) begin
+            interrupt_cause = riscv::M_TIMER_INTERRUPT;
+        end
+        // Machine Mode Software Interrupt
+        if (irq_ctrl_o.mip[riscv::M_SW_INTERRUPT[5:0]] && irq_ctrl_o.mie[riscv::M_SW_INTERRUPT[5:0]]) begin
+            interrupt_cause = riscv::M_SW_INTERRUPT;
+        end
+        // Machine Mode External Interrupt
+        if (irq_ctrl_o.mip[riscv::M_EXT_INTERRUPT[5:0]] && irq_ctrl_o.mie[riscv::M_EXT_INTERRUPT[5:0]]) begin
+            interrupt_cause = riscv::M_EXT_INTERRUPT;
+        end
+
+        if (interrupt_cause[63] && irq_ctrl_o.global_enable) begin
+            // However, if bit i in mideleg is set, interrupts are considered to be globally enabled if the hart’s current privilege
+            // mode equals the delegated privilege mode (S or U) and that mode’s interrupt enable bit
+            // (SIE or UIE in mstatus) is set, or if the current privilege mode is less than the delegated privilege mode.
+            if (irq_ctrl_o.mideleg[interrupt_cause[5:0]]) begin
+                if ((irq_ctrl_o.sie && priv_lvl_o == riscv::PRIV_LVL_S) || priv_lvl_o == riscv::PRIV_LVL_U) begin
+                    interrupt_d = 1'b1;
+                    interrupt_cause_d = interrupt_cause; 
+                end
+            end else begin
+                interrupt_d = 1'b1;
+                interrupt_cause_d = interrupt_cause;
+            end
+        end
+
+        //Output connection
+        interrupt_o = interrupt_q;
+        interrupt_cause_o = interrupt_cause_q;
+    end // interrup_lagarto
+
 
     always_comb begin : privilege_check
         // -----------------
@@ -1349,6 +1421,11 @@ module csr_regfile #(
             en_ld_st_translation_q <= en_ld_st_translation_d;
             // wait for interrupt
             wfi_q                  <= wfi_d;
+
+            //Interrupt assigments
+            interrupt_q <= interrupt_d;
+            interrupt_cause_q <= interrupt_cause_d;
+
 
             // Vector extension
             vstart_q               <= vstart_d;

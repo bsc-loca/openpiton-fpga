@@ -213,7 +213,6 @@ package ariane_pkg;
     localparam logic [63:0] ARIANE_MARCHID = 64'd3;
 
     localparam logic [63:0] ISA_CODE = (RVA <<  0)  // A - Atomic Instructions extension
-                                     | (1   <<  2)  // C - Compressed extension
                                      | (RVD <<  3)  // D - Double precsision floating-point extension
                                      | (RVF <<  5)  // F - Single precsision floating-point extension
                                      | (1   <<  8)  // I - RV32I/64I/128I base ISA
