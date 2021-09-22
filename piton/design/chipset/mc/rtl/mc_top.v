@@ -1246,25 +1246,7 @@ wire [28:0] m_axi_awuser_meep = 29'h0;
 wire [63:0] m_axi_wuser_meep  = 64'h0;
 
 meep_shell_ddr meep_shell_ddr_i
-       (.C0_DDR4_S_AXI_CTRL_0_araddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_arready(),
-        .C0_DDR4_S_AXI_CTRL_0_arvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awaddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awready(),
-        .C0_DDR4_S_AXI_CTRL_0_awvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bresp(),
-        .C0_DDR4_S_AXI_CTRL_0_bvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_rdata(),
-        .C0_DDR4_S_AXI_CTRL_0_rready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_rresp(),
-        .C0_DDR4_S_AXI_CTRL_0_rvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_wdata(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_wready(),
-        .C0_DDR4_S_AXI_CTRL_0_wvalid(1'b0),
-        .C0_DDR4_S_AXI_CLK(),
-        
-        .axi4_mm_araddr(m_axi_araddr),
+       (.axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
         .axi4_mm_arcache(m_axi_arcache),
         .axi4_mm_arid(m_axi_arid),
@@ -1377,7 +1359,6 @@ meep_shell_ddr meep_shell_ddr_i
         .ddr4_sdram_c0_par(ddr_parity),
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
         
-        //.c0_ddr4_aresetn(sys_rst_n),
         .hbm_cattrip(hbm_cattrip),
         
         .ddr_clk_clk_n(sys_clk_n),
@@ -1393,8 +1374,6 @@ meep_shell_ddr meep_shell_ddr_i
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
         .pcie_refclk_clk_p( pcie_refclk_p)
-//		.ui_clk_sync_rst( ui_clk_sync_rst           ),
-//        .ui_clk(ui_clk)
         );
 assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
 assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
