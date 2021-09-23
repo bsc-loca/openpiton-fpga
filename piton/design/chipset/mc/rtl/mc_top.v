@@ -1241,10 +1241,6 @@ assign m_axi_buser = `AXI4_USER_WIDTH'h0;
 `ifdef PITONSYS_DDR4 
 `ifdef PITONSYS_PCIE
 
-wire [28:0] m_axi_aruser_meep = 29'h0;
-wire [28:0] m_axi_awuser_meep = 29'h0;
-wire [63:0] m_axi_wuser_meep  = 64'h0;
-
 meep_shell_ddr meep_shell_ddr_i
        (.axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
@@ -1256,7 +1252,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_arqos(m_axi_arqos),
         .axi4_mm_arready(m_axi_arready),
         .axi4_mm_arsize(m_axi_arsize),
-        .axi4_mm_aruser(m_axi_aruser_meep),
+        //.axi4_mm_aruser(m_axi_aruser),
         .axi4_mm_arvalid(m_axi_arvalid),
         
         .axi4_mm_awaddr(m_axi_awaddr),
@@ -1269,7 +1265,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
-        .axi4_mm_awuser(m_axi_awuser_meep),
+        //.axi4_mm_awuser(m_axi_awuser),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
@@ -1290,7 +1286,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-        .axi4_mm_wuser(m_axi_wuser_meep),
+        //.axi4_mm_wuser(m_axi_wuser),
         .axi4_mm_wvalid(m_axi_wvalid),
 
 

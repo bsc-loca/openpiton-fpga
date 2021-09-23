@@ -302,8 +302,13 @@ But finally we get ease of routing having less high-freq domains." [get_bd_cells
   set_property -dict [ list \
    CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
    CONFIG.ENABLE_PROTOCOL_CHECKERS {0} \
+   CONFIG.M00_HAS_DATA_FIFO {1} \
+   CONFIG.M01_HAS_DATA_FIFO {1} \
+   CONFIG.M02_HAS_DATA_FIFO {0} \
    CONFIG.NUM_MI {3} \
    CONFIG.NUM_SI {2} \
+   CONFIG.S00_HAS_DATA_FIFO {1} \
+   CONFIG.S01_HAS_DATA_FIFO {1} \
    CONFIG.SYNCHRONIZATION_STAGES {7} \
    CONFIG.XBAR_DATA_WIDTH {512} \
  ] $axi_interconnect_0
@@ -414,6 +419,8 @@ But finally we get ease of routing having less high-freq domains." [get_bd_cells
    CONFIG.USER_SAXI_31 {false} \
    CONFIG.USER_SWITCH_ENABLE_01 {TRUE} \
  ] $hbm_0
+set_property CONFIG.NUM_READ_THREADS  16 [get_bd_intf_pins /hbm_0/SAXI_00]
+set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_00]
 
   # Create instance: hbm_calib_comb, and set properties
   set hbm_calib_comb [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 hbm_calib_comb ]
