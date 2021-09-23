@@ -254,30 +254,28 @@ pico-amoxor     amoxor_w.S
 
     <lagarto_tile1_machine_lvl_tests_p>
         // note: we have to offset the trap here since the core operates in VM
-        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=10000>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled >
         lagarto-rv64mi-p-mcsr       rv64mi-p-mcsr.S
-        lagarto-rv64mi-p-csr        rv64mi-p-csr.S
+        //lagarto-rv64mi-p-csr        rv64mi-p-csr.S
         lagarto-rv64mi-p-illegal    rv64mi-p-illegal.S
         lagarto-rv64mi-p-ma_addr    rv64mi-p-ma_addr.S
         lagarto-rv64mi-p-ma_fetch   rv64mi-p-ma_fetch.S
         lagarto-rv64mi-p-sbreak     rv64mi-p-sbreak.S
-        lagarto-rv64mi-p-scall      rv64mi-p-scall.S
+        //lagarto-rv64mi-p-scall      rv64mi-p-scall.S
         lagarto-rv64mi-p-breakpoint rv64mi-p-breakpoint.S
-        lagarto-rv64mi-p-access     rv64mi-p-access.S
+        //lagarto-rv64mi-p-access     rv64mi-p-access.S
         </runargs>
     </lagarto_tile1_machine_lvl_tests_p>
 
     <lagarto_tile1_supervisor_lvl_tests_p>
         // note: we have to offset the trap here since the core operates in VM
-        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=10000>
-        lagarto-rv64si-p-csr        rv64si-p-csr.S       
-        lagarto-rv64si-p-illegal    rv64si-p-illegal.S
-        lagarto-rv64si-p-ltag       rv64si-p-ltag.S
-        lagarto-rv64si-p-ma_addr    rv64si-p-ma_addr.S
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled >
+        //lagarto-rv64si-p-csr        rv64si-p-csr.S  
+        lagarto-rv64si-p-dirty      rv64si-p-dirty.S  
         lagarto-rv64si-p-ma_fetch   rv64si-p-ma_fetch.S
         lagarto-rv64si-p-sbreak     rv64si-p-sbreak.S
         lagarto-rv64si-p-scall      rv64si-p-scall.S
-        lagarto-rv64si-p-wfi        rv64si-p-wfi.S
+        //lagarto-rv64si-p-wfi        rv64si-p-wfi.S
         </runargs>
     </lagarto_tile1_supervisor_lvl_tests_p>
 
