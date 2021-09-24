@@ -235,11 +235,6 @@ set_max_delay -datapath_only -from $rx_clk  -to $tx_clk  [expr [get_property -mi
 
 # we only use 64 bit out of the 80bit available
 
-
-
-
-
-
 # unused
 #set_property PACKAGE_PIN R17      [get_ports "ddr_addr[LERT_B"] ;# Bank  73 VCCO - VCC1V2_FPGA - IO_L1N_T0L_N1_DBC_73
 #set_property PACKAGE_PIN G10      [get_ports "DDR4_C1_PAR"] ;# Bank  71 VCCO - VCC1V2_FPGA - IO_L1N_T0L_N1_DBC_71
@@ -328,11 +323,7 @@ set_max_delay -datapath_only -from $rx_clk  -to $tx_clk  [expr [get_property -mi
 #set_clock_groups -logically_exclusive -group [get_clocks -include_generated_clocks {sd_fast_clk}] -group [get_clocks -include_generated_clocks {sd_slow_clk}]
 #set_clock_groups -asynchronous -group [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -group [get_clocks -filter { NAME =~  "*sd*" }]
 
-set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/axi_gpio_0/U0/gpio_core_1/Not_Dual.gpio_Data_Out_reg[*]/C}]
-set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_i/proc_sys_reset_1/U0/PR_OUT_DFF[0].FDRE_PER_replica/C}] -to [get_pins chipset/chipset_impl/mc_top/ui_clk_sync_rst_r_reg/D] 
-
-set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell_ddr_i/axi_gpio_0/U0/gpio_core_1/Not_Dual.gpio_Data_Out_reg[*]/C}]
-
+set_false_path -from [get_pins {chipset/chipset_impl/mc_top/meep_shell/axi_gpio_0/U0/gpio_core_1/Not_Dual.gpio_Data_Out_reg[*]/C}]
 
 #set_false_path -from [get_pins {vio_sw_i/inst/PROBE_OUT_ALL_INST/G_PROBE_OUT[0].PROBE_OUT0_INST/Probe_out_reg[0]/C}]
 # Bitstream Configuration

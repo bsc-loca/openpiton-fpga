@@ -243,7 +243,6 @@ module chipset(
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
-
 `ifdef PITONSYS_DDR4
 `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
@@ -260,14 +259,13 @@ module chipset(
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
     output                                      ddr_parity,
-    output hbm_cattrip,
+    output                                      hbm_cattrip,
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
 `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
 `endif // PITONSYS_DDR4
-
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
 `else // F1_BOARD
     input                                        mc_clk,
@@ -330,11 +328,6 @@ module chipset(
 `endif // ifndef F1_BOARD
 `endif //`ifdef PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
-
-`ifdef PITONSYS_HBM2
-    input  hbm_ref_clk,
-    output hbm_cattrip,
-`endif
 
 
 `ifdef PITONSYS_IOCTRL
@@ -485,8 +478,6 @@ module chipset(
         input                                               btnu,
         input                                               btnd,
         input                                               btnc,           
-	`elsif ALVEOU280_BOARD
-        output 												HBM_CATTRIP, 
     `endif
 
     // Switches
@@ -497,7 +488,7 @@ module chipset(
         // no switches :(
     `elsif ALVEOU280_BOARD
         input  [2:0]                                        sw,
-        // virtual switches :)		
+        // virtual switches :)
     `else         
         input  [7:0]                                        sw,
     `endif
@@ -789,8 +780,8 @@ end
                 assign uart_timeout_en = 1'b0;
             `elsif ALVEOU280_BOARD
                 assign uart_boot_en    = sw[0];
-                assign uart_timeout_en = sw[1];	
-                assign uart_bootrom_linux_en = sw[2];			
+                assign uart_timeout_en = sw[1]; 
+                assign uart_bootrom_linux_en = sw[2];
             `else 
                 assign uart_boot_en    = sw[7];
                 assign uart_timeout_en = sw[6];
@@ -803,8 +794,8 @@ end
     `ifdef VCU118_BOARD
         // only two switches available...
         assign noc_power_test_hop_count = {2'b0, sw[3:2]};
-	`elsif ALVEOU280_BOARD
-	    // only two switches available...
+    `elsif ALVEOU280_BOARD
+        // only two switches available...
         assign noc_power_test_hop_count = {2'b0, sw[3:2]};
     `elsif XUPP3R_BOARD
         // no switches :(
@@ -1338,13 +1329,12 @@ chipset_impl_noc_power_test  chipset_impl (
                      `endif
                     .ddr_act_n(ddr_act_n),                    
                     .ddr_bg(ddr_bg), 
-
                 `else // PITONSYS_DDR4
                     .ddr_cas_n(ddr_cas_n),
                     .ddr_ras_n(ddr_ras_n),
                     .ddr_we_n(ddr_we_n),
-
                 `endif // PITONSYS_DDR4
+
                 .ddr_addr(ddr_addr),
                 .ddr_ba(ddr_ba),
                 .ddr_ck_n(ddr_ck_n),
@@ -1354,25 +1344,20 @@ chipset_impl_noc_power_test  chipset_impl (
                 .ddr_dq(ddr_dq),
                 .ddr_dqs_n(ddr_dqs_n),
                 .ddr_dqs_p(ddr_dqs_p),
+
                 `ifndef NEXYSVIDEO_BOARD
                     .ddr_cs_n(ddr_cs_n),
                 `endif // endif NEXYSVIDEO_BOARD
-                `ifdef PITONSYS_DDR4
-         
+            
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
-		        `elsif ALVEOU280_BOARD
+                `elsif ALVEOU280_BOARD
                     .ddr_parity(ddr_parity),
                     .hbm_cattrip(hbm_cattrip),
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
-                `else // PITONSYS_DDR4
-                    .ddr_dm(ddr_dm),
-                `endif // PITONSYS_DDR4
-
                 .ddr_odt(ddr_odt)
-            
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),
                 // AXI Write Address Channel Signals
@@ -1434,13 +1419,6 @@ chipset_impl_noc_power_test  chipset_impl (
             `endif //ifndef F1_BOARD
         `endif // endif PITON_FPGA_MC_DDR3
     `endif // endif PITONSYS_NO_MC
-                
-    `ifdef PITONSYS_HBM2
-       ,
-       .hbm_ref_clk(hbm_ref_clk),
-       .hbm_cattrip(hbm_cattrip)
-     `endif
-
 
     `ifdef PITONSYS_IOCTRL
         `ifdef PITONSYS_UART

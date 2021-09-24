@@ -79,11 +79,8 @@ add_files -norecurse -fileset $fileset_obj $files_to_add
 
 #Generating IP cores for Alveo280 board
 if {$BOARD_DEFAULT_VERILOG_MACROS=="ALVEOU280_BOARD"} {
-  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell_xxx.tcl)
-  # with DDR SDRAM
-  source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
-  # with HBM SDRAM
-  source $DV_ROOT/design/chipset/meep/meep_shell_bd.tcl
+  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
+  source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
   # Generating Ethernet system
   source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
