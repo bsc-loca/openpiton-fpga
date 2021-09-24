@@ -225,7 +225,9 @@ print(s)
     input                               timer_irq_i,   // Timer interrupts
     input                               ipi_i,         // software interrupt (a.k.a inter-process-interrupt)
     // PLIC
-    input   [1:0]                       irq_i          // level sensitive IR lines, mip & sip (async)
+    input   [1:0]                       irq_i,         // level sensitive IR lines, mip & sip (async)
+    // PMU
+    output  [24:0]                      pmu_sig_o
 `endif
 );
     // clock gating
@@ -1257,7 +1259,10 @@ print(str)
         .hart_id_i           ({{64-`JTAG_FLATID_WIDTH{1'b0}}, flat_tileid} ),
 
         .l15_req_o           (l15_req                   ),
-        .l15_rtrn_i          (l15_rtrn                  )
+        .l15_rtrn_i          (l15_rtrn                  ),
+
+        // PMU
+        .pmu_sig_o               (pmu_sig_o)
     );
 
     assign unavailable_o = 1'b0;
