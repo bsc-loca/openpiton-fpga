@@ -884,6 +884,12 @@ set LAGARTO_RTL_FILES [ list \
 
 ]
 
+set LAGARTO_CHIPSET_IP_FILES [ list \
+    "${DV_ROOT}/design/chipset/xilinx/${BOARD}/ip_cores/clk_mmcm/clk_mmcm_lagarto" \
+    "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/uart_16550/uart_16550_lagarto" \
+]
+    	
+
 set MEEP_VPU_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include/config_control.svh" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include/bsc_custom_defines.svh" \

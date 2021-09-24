@@ -1,7 +1,7 @@
 
 FPGA_TARGET ?= alveou280
 PROJECT_SUBDIR =  build/$(FPGA_TARGET)/system/
-PROJECT_DIR = $(PROJECT_SUBDIR)_system/$(FPGA_TARGET)_system.xpr
+PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 ROOT_DIR    =  $(PWD)
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?=
+PROTO_OPTIONS ?= 
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -46,7 +46,7 @@ $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --uart-dmw ddr --zeroer_off --eth $(PROTO_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --uart-dmw ddr --zeroer_off $(PROTO_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
