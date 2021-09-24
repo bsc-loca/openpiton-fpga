@@ -142,6 +142,8 @@ if  {$::env(PITON_ARIANE) != "0"} {
   # otherwise this command fails...
   exec make clean 2> /dev/null
   exec make all 2> /dev/null
+  puts "INFO: Baremetal compilation succeeded"
+  puts "INFO: Compiling bootrom for Linux"
   cd $::env(ARIANE_ROOT)/openpiton/bootrom/linux
   # Note: dd dumps info to stderr that we do not want to interpret
   # otherwise this command fails...

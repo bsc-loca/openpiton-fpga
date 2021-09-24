@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= 
+PROTO_OPTIONS ?= --eth --vnpm
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -45,7 +45,7 @@ bitstream: $(BIT_FILE)
 $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
 
-protosyn: clean
+protosyn: clean $(RISCV_DIR)
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --uart-dmw ddr --zeroer_off $(PROTO_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)

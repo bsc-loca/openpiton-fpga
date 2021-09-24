@@ -942,11 +942,11 @@ end
 endgenerate
 generate
 if (TILE_TYPE == `ARIANE_RV64_TILE) begin : g_ariane_core
+`ifdef PITON_ARIANE
     //////////////////////
     // Ariane RV64 Core //
     //////////////////////
 
-`ifdef PITON_ARIANE
 
     // TODO: add debug module and CLINT
 
@@ -1109,10 +1109,10 @@ print(str)
 
 generate
 if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
+`ifdef PITON_LAGARTO
     ///////////////////////////
     // Lagarto M20 RV64 Core //
     ///////////////////////////
-
     // native L15 interface, used in case of ARIANE_RV64, otherwise tied to zero
     wire [ `L15_REQ_WIDTH-1:0] l15_req ;
     wire [`L15_RTRN_WIDTH-1:0] l15_rtrn;
@@ -1262,6 +1262,7 @@ print(str)
 
     assign unavailable_o = 1'b0;
 
+`endif // ifdef PITON_LAGARTO
 end
 endgenerate
 

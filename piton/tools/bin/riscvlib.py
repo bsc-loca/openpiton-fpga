@@ -162,8 +162,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
     if core == "Lagarto":
         riscv_isa = "rv64ima"
+        dts_core = "lagarto"
     elif core == "Ariane":
         riscv_isa = "rv64imafdc"
+        dts_core = "ariane"
 
     for k in range(nCpus):
         tmpStr += '''
@@ -339,7 +341,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     # this needs to match
     assert ioDeviceNr-1 == numIrqs
 
-    with open(dtsPath + '/' + core + '.dts','w') as file:
+    with open(dtsPath + '/' + dts_core + '.dts','w') as file:
         file.write(tmpStr)
 
 
