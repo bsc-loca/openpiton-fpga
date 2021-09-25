@@ -881,6 +881,9 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/lagarto_dcache_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ld_st_FSM.v" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/l1_dcache_adapter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/noc_pmu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/axi_pmu_bridge.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/synchronizer.sv" \
 
 ]
 
