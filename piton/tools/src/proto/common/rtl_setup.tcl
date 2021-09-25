@@ -28,11 +28,10 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include 
-        ${DV_ROOT}/design/chipset/include 
-	${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include 
-	${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include 
-	${DV_ROOT}/design/chip/tile/vas-tile-core/include"
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include
+        ${DV_ROOT}/design/chipset/include
+        ${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
+#        ${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -46,14 +45,6 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/include/ifu.h" \
     "${DV_ROOT}/design/include/lsu.h" \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/EPI_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
-
 ]
 
 #"${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
@@ -809,6 +800,13 @@ set CHIPSET_PRJ_IP_FILES [list \
 
 
 set LAGARTO_RTL_FILES [ list \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/EPI_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \

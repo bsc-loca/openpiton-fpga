@@ -37,8 +37,8 @@ set DESIGN_DEFAULT_VERILOG_MACROS "PITON_FULL_SYSTEM PITON_FPGA_NO_DMBR MERGE_L1
 
 if {$::env(PITON_ARIANE) != "0"} {	
     set CORE_RTL_FILES [concat \
-        ${ARIANE_RTL_FILES} \
-	${OTHER_RTL_FILES} \
+        ${OTHER_RTL_FILES} \
+	${ARIANE_RTL_FILES} \
     ]
     puts "Including Ariane RTL files"
 } 
