@@ -104,7 +104,7 @@ def usage():
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
-    print("              Implement design with HBM memory (meep entity)", file=sys.stderr)
+    print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
@@ -285,7 +285,7 @@ def runImplF1(board, design_data, src_dir, work_dir, log_dir, def_list, slurm, d
     return jid
 
 
-def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
+def makeProject(board, hbm, design_data, work_dir, log_dir, slurm, dep_list):
     prev_dir = os.getcwd()
 
     os.chdir(work_dir)
@@ -298,6 +298,8 @@ def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
     proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
     proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
+    # Passing parameter to TCL
+    if board == "alveou280" and hbm: os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
     jid = None
     if (tool == "vivado"):
         jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
@@ -529,10 +531,6 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
 
-    # --hbm option
-    if (options.hbm == True) :
-        defines.append("PITONSYS_HBM2")
-     
     # --axi4_mem option
     if (options.axi4_mem == True):
         if (options.board not in {"vc707", "xupp3r"}):
@@ -946,7 +944,7 @@ def main():
     dep_list = []
 
     if run_make_project:
-        jid = makeProject(options.board, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
+        jid = makeProject(options.board, options.hbm, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
         if jid != None:
             dep_list.append(jid)
 
