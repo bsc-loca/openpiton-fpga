@@ -21,7 +21,7 @@ variables:
   BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
-  CORE: "ariane"
+  CORE: "lagarto"
   DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2"
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
@@ -40,7 +40,6 @@ synthesis:
   timeout: 6h
   stage: protosyn
   before_script:
-    - git submodule update --init --recursive
     - export PITON_ROOT=`pwd`
   script:
     - echo "ROOT= $PITON_ROOT"
