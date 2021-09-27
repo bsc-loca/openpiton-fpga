@@ -77,15 +77,9 @@ foreach prj_file ${ALL_FILES} {
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
 #Generating IP cores for Alveo280 board
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
-  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell_xxx.tcl)
-  # with DDR SDRAM
-  if { $env(ALVEO_HBM) != "1" } {
-      source $DV_ROOT/design/chipset/meep/meep_shell_ddr.tcl
-  } else {
-      # with HBM SDRAM
-      source $DV_ROOT/design/chipset/meep/meep_shell_hbm.tcl
-  }
+
+  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
+  source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
   # Generating Ethernet system
   source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
@@ -214,11 +208,9 @@ set_property "used_in" "synthesis implementation" $file_obj
 set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
-if { $env(ALVEO_HBM) eq "1" } {	
-    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
-} else {
-    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
-}
+
+add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
+add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
 
 if { $env(ALVEO_ETH) eq "1"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
@@ -267,8 +259,10 @@ set_property "verilog_uppercase" "0" $fileset_obj
 # Create 'synth_1' run (if not found)
 if {[string equal [get_runs -quiet synth_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
+
     create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Flow_PerfOptimized_high" -constrset constrs_1
   } else {
+
 
     create_run -name synth_1 -part ${FPGA_PART} -flow {Vivado Synthesis 2020} -strategy "Vivado Synthesis Defaults" -constrset constrs_1
   }
@@ -279,6 +273,7 @@ if {[string equal [get_runs -quiet synth_1] ""]} {
     set_property strategy "Vivado Synthesis Defaults" [get_runs synth_1]
   }
 
+
   set_property flow "Vivado Synthesis 2020" [get_runs synth_1]
 }
 set fileset_obj [get_runs synth_1]
@@ -288,6 +283,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Synthesis Defaults" $fileset_obj
 }
+
 
 set_property "flow" "Vivado Synthesis 2020" $fileset_obj
 set_property "name" "synth_1" $fileset_obj
@@ -306,6 +302,7 @@ set_property "steps.synth_design.tcl.post" "" $fileset_obj
 set_property "steps.synth_design.args.flatten_hierarchy" "rebuilt" $fileset_obj
 set_property "steps.synth_design.args.gated_clock_conversion" "off" $fileset_obj
 set_property "steps.synth_design.args.bufg" "12" $fileset_obj
+
 
 
 ## This is not supported in Vivado 2020, need to check what is the alternative
@@ -344,8 +341,10 @@ current_run -synthesis $fileset_obj
 if {[string equal [get_runs -quiet impl_1] ""]} {
   if {$VIVADO_FLOW_PERF_OPT} {
 
+
     create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Performance_Explore" -constrset constrs_1 -parent_run synth_1
   } else {
+
 
     create_run -name impl_1 -part ${FPGA_PART} -flow {Vivado Implementation 2020} -strategy "Vivado Implementation Defaults" -constrset constrs_1 -parent_run synth_1
   }
@@ -356,6 +355,7 @@ if {[string equal [get_runs -quiet impl_1] ""]} {
     set_property strategy "Vivado Implementation Defaults" [get_runs impl_1]
   }
 
+
   set_property flow "Vivado Implementation 2020" [get_runs impl_1]
 }
 set fileset_obj [get_runs impl_1]
@@ -365,6 +365,7 @@ if {$VIVADO_FLOW_PERF_OPT} {
 } else {
   set_property "description" "Vivado Implementation Defaults" $fileset_obj
 }
+
 
 set_property "flow" "Vivado Implementation 2020" $fileset_obj
 set_property "name" "impl_1" $fileset_obj
@@ -442,7 +443,5 @@ set_property -name {steps.write_bitstream.args.more options} -value {} -objects 
 # set the current impl run
 current_run -implementation $fileset_obj
 
-#TODO: remove this patch 03/09/2021 dmazure
-set_property top system [current_fileset]
 
 puts "INFO: Project created:${PROJECT_NAME}"

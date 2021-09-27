@@ -19,23 +19,23 @@
 class PingReqstTest {
   // User Test run definitions
   enum {
-    NUM_OF_PING_REQ_PKTS   = 10,    // Number of ping req it generates, change this parameter to limit the number of ping requests sent by this program.
-    NUM_RX_PACK_CHECK_REQ  = 10,	  // Max num of Rx pack to be checked	before sending another request
+    NUM_OF_PING_REQ_PKTS   = 11,    // Number of ping req it generates, change this parameter to limit the number of ping requests sent by this program.
+    NUM_RX_PACK_CHECK_REQ  = 10,    // Max num of Rx pack to be checked before sending another request
     NUM_PACK_CHECK_RX_PACK = 100000 // Max number of pack to be checked before to identify a Rx packet
   };
 
   // Set up a local MAC address.
-  uint8_t  LocalMacAddr[MAC_ADDR_LEN * sizeof(uint16_t)] = {0x00, 0x0A, 0x35, 0x03, 0x02, 0x01};
+  uint8_t  LocalMacAddr[MAC_ADDR_LEN * sizeof(uint16_t)] = {0x00, 0x0A, 0x35, 0x00, 0x01, 0x02};
   uint16_t DestMacAddr [MAC_ADDR_LEN]; // Destination MAC Address
 
   // The IP addresses. User need to set a free IP address based on the network on which this example is to be run.
-  uint8_t LocalIpAddr[IP_ADDR_SIZE] = {172, 16, 63, 61 };
-  uint8_t DestIpAddr [IP_ADDR_SIZE] = {172, 16, 63, 121}; // Set up a Destination IP address.
+  uint8_t LocalIpAddr[IP_ADDR_SIZE] = {192, 168, 1, 10 };
+  uint8_t DestIpAddr [IP_ADDR_SIZE] = {192, 168, 1, 100}; // Set up a Destination IP address.
 
   // Known data transmitted in Echo request.
   uint16_t IcmpData[ICMP_KNOWN_DATA_LEN] = {
-    0x6162,	0x6364,	0x6566, 0x6768, 0x696A,	0x6B6C, 0x6D6E,	0x6F70,
-    0x7172, 0x7374, 0x7576, 0x7761, 0x6263,	0x6465, 0x6667,	0x6869
+    0x6162, 0x6364, 0x6566, 0x6768, 0x696A, 0x6B6C, 0x6D6E, 0x6F70,
+    0x7172, 0x7374, 0x7576, 0x7761, 0x6263, 0x6465, 0x6667, 0x6869
   };
 
   // IP header information -- each field has its own significance.
@@ -69,10 +69,10 @@ class PingReplyTest {
   };
 
   // Set up a local MAC address.
-  uint8_t LocalMacAddr[MAC_ADDR_LEN * sizeof(uint16_t)] = {0x00, 0x0A, 0x35, 0x02, 0x22, 0x5E};
+  uint8_t LocalMacAddr[MAC_ADDR_LEN * sizeof(uint16_t)] = {0x00, 0x0A, 0x35, 0x03, 0x02, 0x01};
 
   // The IP address. User need to set a free IP address based on the network on which this example is to be run.
-  uint8_t LocalIpAddr[IP_ADDR_SIZE] = {172, 16, 63, 121};
+  uint8_t LocalIpAddr[IP_ADDR_SIZE] = {192, 168, 1, 100};
 
   // Buffers used for Transmission and Reception of Packets.
   uint8_t RxFrame[XAE_MAX_FRAME_SIZE];

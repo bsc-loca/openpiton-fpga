@@ -11,7 +11,7 @@
 int main(int argc, char ** argv) {
   enum {
     SRAM_BASEADDR = 0xfff0400000, // + 0x00100000,
-    SRAM_ADRRANGE = 0x00020000
+    SRAM_ADRRANGE = 0x00080000
   };
 
   uint8_t volatile* memPtr8 = (uint8_t*)SRAM_BASEADDR;

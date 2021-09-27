@@ -84,8 +84,9 @@ module mc_top (
 `endif // PITONSYS_PCIE
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
-`elsif ALVEOU280_BOARD	
-	output                          ddr_parity,
+`elsif ALVEOU280_BOARD
+    output                          ddr_parity,
+    output                          hbm_cattrip,
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -94,13 +95,8 @@ module mc_top (
 `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]    ddr_odt,
 
-`ifdef PITONSYS_HBM2
-    input  hbm_ref_clk,
-    output hbm_cattrip,
-`endif
-
     output                          init_calib_complete_out,
-`endif // endif PITON_FPGA_MC_DDR3
+`endif // ifdef PITON_FPGA_MC_DDR3
 
 `ifdef PITONSYS_MC_SRAM
     input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
@@ -156,18 +152,20 @@ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
 wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
 wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
 wire                               sram_axi_rlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
 wire                               sram_axi_rvalid;
 wire                               sram_axi_rready;
 
 wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
 wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser = `AXI4_USER_WIDTH'h0;
+wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
 wire                               sram_axi_bvalid;
 wire                               sram_axi_bready;
 
 noc_axi4_bridge #(
-    .SWAP_ENDIANESS (1),
+    `ifdef PITON_ARIANE
+      .SWAP_ENDIANESS (1),
+    `endif
     .NOC2AXI_DESER_ORDER (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
@@ -594,6 +592,7 @@ assign noc_mig_bridge_init_done = init_calib_complete;
 assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif
 
+// `ifndef ALVEOU280_BOARD
 noc_bidir_afifo  mig_afifo  (
     .clk_1           (core_ref_clk      ),
     .rst_1           (afifo_rst_1       ),
@@ -619,6 +618,17 @@ noc_bidir_afifo  mig_afifo  (
     .flit_out_data_1 (mc_flit_out_data  ),
     .flit_out_rdy_1  (mc_flit_out_rdy   )
 );
+
+// above resync FIFO could be eliminated since noc_axi4_bridge works at system freq for meep_shell
+// `else //`ifndef ALVEOU280_BOARD
+//   assign  fifo_trans_val  = mc_flit_in_val;
+//   assign  fifo_trans_data = mc_flit_in_data;
+//   assign  mc_flit_in_rdy  = fifo_trans_rdy;
+
+//   assign  mc_flit_out_val  = trans_fifo_val;
+//   assign  mc_flit_out_data = trans_fifo_data;
+//   assign  trans_fifo_rdy   = mc_flit_out_rdy;
+// `endif
 
 
 `ifndef PITONSYS_AXI4_MEM
@@ -740,14 +750,9 @@ ddr4_0 i_ddr4_0 (
   .c0_ddr4_cs_n              ( ddr_cs_n                  ),
   .c0_ddr4_ck_t              ( ddr_ck_p                  ),
   .c0_ddr4_ck_c              ( ddr_ck_n                  ),
-  .c0_ddr4_reset_n           ( ddr_reset_n               ),  
+  .c0_ddr4_reset_n           ( ddr_reset_n               ),
 `ifndef XUPP3R_BOARD
-`ifndef ALVEOU280_BOARD
-  .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm  
-`else 
-  .c0_ddr4_parity            ( ddr_parity                ),
-  .c0_ddr4_app_correct_en_i  ( 1'b1                      ),     // input wire c0_ddr4_app_correct_en_i
-`endif  
+  .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm
 `endif
   .c0_ddr4_dq                ( ddr_dq                    ), 
   .c0_ddr4_dqs_c             ( ddr_dqs_n                 ), 
@@ -901,9 +906,8 @@ assign zeroer_axi_bvalid = m_axi_bvalid;
 assign m_axi_bready = zeroer_axi_bready;
 
 assign noc_axi4_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
-
 assign noc_axi4_bridge_init_done = init_calib_complete_zero;
-//assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
+assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
 `else // PITONSYS_MEM_ZEROER
 
 assign m_axi_awid = core_axi_awid;
@@ -1138,25 +1142,12 @@ axi4_zeroer axi4_zeroer(
 );
 `endif // PITONSYS_MEM_ZEROER
 
-`ifdef PITONSYS_HBM2
+`ifdef PITONSYS_DDR4
+
 `ifdef PITONSYS_PCIE
 
-//wire init_calib_complete_c;
-//(* ASYNC_REG = "TRUE" *) reg [2:1] init_calib_complete_r;
-
-assign sram_flit_in_rdy  = 1'b1;
-assign sram_flit_out_val = 1'b0;
-assign sram_flit_out_data = `NOC_DATA_WIDTH'h0;
-
-meep_shell meep_shell_i
-       (        
-        .HBM_REF_CLK(hbm_ref_clk),
-        .HBM_CATTRIP(hbm_cattrip),
-        
-        //.sys_clk1_clk_p(sys_clk_p),
-        //.sys_clk1_clk_n(sys_clk_n),
-        
-        .axi4_mm_araddr(m_axi_araddr),
+meep_shell meep_shell
+       (.axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
         .axi4_mm_arcache(m_axi_arcache),
         .axi4_mm_arid(m_axi_arid),
@@ -1166,7 +1157,7 @@ meep_shell meep_shell_i
         .axi4_mm_arqos(m_axi_arqos),
         .axi4_mm_arready(m_axi_arready),
         .axi4_mm_arsize(m_axi_arsize),
-       // .axi4_mm_aruser(axi4_mm_aruser),
+        //.axi4_mm_aruser(m_axi_aruser),
         .axi4_mm_arvalid(m_axi_arvalid),
         
         .axi4_mm_awaddr(m_axi_awaddr),
@@ -1179,12 +1170,13 @@ meep_shell meep_shell_i
         .axi4_mm_awqos(m_axi_awqos),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
-     //   .axi4_mm_awuser(m_axi_awuser),
+        //.axi4_mm_awuser(m_axi_awuser),
         .axi4_mm_awvalid(m_axi_awvalid),
         
         .axi4_mm_bid(m_axi_bid),
         .axi4_mm_bready(m_axi_bready),
         .axi4_mm_bresp(m_axi_bresp),
+        //.axi4_mm_buser(m_axi_buser),
         .axi4_mm_bvalid(m_axi_bvalid),
         
         .axi4_mm_rdata(m_axi_rdata),
@@ -1192,107 +1184,14 @@ meep_shell meep_shell_i
         .axi4_mm_rlast(m_axi_rlast),
         .axi4_mm_rready(m_axi_rready),
         .axi4_mm_rresp(m_axi_rresp),
+        //.axi4_mm_ruser(m_axi_ruser),
         .axi4_mm_rvalid(m_axi_rvalid),
         
         .axi4_mm_wdata(m_axi_wdata),
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
-   //     .axi4_mm_wuser(m_axi_wuser),
-        .axi4_mm_wvalid(m_axi_wvalid),
-        
-        .c0_init_calib_complete_0(init_calib_complete),
-        
-       // .sys_rst(~sys_rst_n),
-        
-        .pci_express_x16_rxn(pci_express_x16_rxn),
-        .pci_express_x16_rxp(pci_express_x16_rxp),
-        .pci_express_x16_txn(pci_express_x16_txn),
-        .pci_express_x16_txp(pci_express_x16_txp),
-        .pcie_gpio(pcie_gpio),
-        .pcie_perstn(pcie_perstn),
-        .pcie_refclk_clk_n( pcie_refclk_n),
-        .pcie_refclk_clk_p( pcie_refclk_p),
-		.ui_clk_sync_rst( ui_clk_sync_rst           ),
-        .ui_clk(ui_clk)
-        );
-        
-//       always @ (posedge ui_clk) begin
-//        init_calib_complete_r <= {init_calib_complete_r[1], init_calib_complete_c};
-//       end
-       
-//       assign init_calib_complete = init_calib_complete_r[2];
-`endif//PITONSYS_PCIE      
-`else //PITONSYS_HBM2
-
-assign hbm_cattrip = 0;
-
-`ifdef PITONSYS_DDR4 
-`ifdef PITONSYS_PCIE
-
-meep_shell_ddr meep_shell_ddr_i
-       (.C0_DDR4_S_AXI_CTRL_0_araddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_arready(),
-        .C0_DDR4_S_AXI_CTRL_0_arvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awaddr(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_awready(),
-        .C0_DDR4_S_AXI_CTRL_0_awvalid(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_bresp(),
-        .C0_DDR4_S_AXI_CTRL_0_bvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_rdata(),
-        .C0_DDR4_S_AXI_CTRL_0_rready(1'b0),
-        .C0_DDR4_S_AXI_CTRL_0_rresp(),
-        .C0_DDR4_S_AXI_CTRL_0_rvalid(),
-        .C0_DDR4_S_AXI_CTRL_0_wdata(32'b0),
-        .C0_DDR4_S_AXI_CTRL_0_wready(),
-        .C0_DDR4_S_AXI_CTRL_0_wvalid(1'b0),
-        
-        .axi4_mm_araddr(m_axi_araddr),
-        .axi4_mm_arburst(m_axi_arburst),
-        .axi4_mm_arcache(m_axi_arcache),
-        .axi4_mm_arid(m_axi_arid),
-        .axi4_mm_arlen(m_axi_arlen),
-        .axi4_mm_arlock(m_axi_arlock),
-        .axi4_mm_arprot(m_axi_arprot),
-        .axi4_mm_arqos(m_axi_arqos),
-        .axi4_mm_arready(m_axi_arready),
-        .axi4_mm_arsize(m_axi_arsize),
-        .axi4_mm_aruser(axi4_mm_aruser),
-        .axi4_mm_arvalid(m_axi_arvalid),
-        
-        .axi4_mm_awaddr(m_axi_awaddr),
-        .axi4_mm_awburst(m_axi_awburst),
-        .axi4_mm_awcache(m_axi_awcache),
-        .axi4_mm_awid(m_axi_awid),
-        .axi4_mm_awlen(m_axi_awlen),
-        .axi4_mm_awlock(m_axi_awlock),
-        .axi4_mm_awprot(m_axi_awprot),
-        .axi4_mm_awqos(m_axi_awqos),
-        .axi4_mm_awready(m_axi_awready),
-        .axi4_mm_awsize(m_axi_awsize),
-        .axi4_mm_awuser(m_axi_awuser),
-        .axi4_mm_awvalid(m_axi_awvalid),
-        
-        .axi4_mm_bid(m_axi_bid),
-        .axi4_mm_bready(m_axi_bready),
-        .axi4_mm_bresp(m_axi_bresp),
-        .axi4_mm_buser(m_axi_buser),
-        .axi4_mm_bvalid(m_axi_bvalid),
-        
-        .axi4_mm_rdata(m_axi_rdata),
-        .axi4_mm_rid(m_axi_rid),
-        .axi4_mm_rlast(m_axi_rlast),
-        .axi4_mm_rready(m_axi_rready),
-        .axi4_mm_rresp(m_axi_rresp),
-        .axi4_mm_ruser(m_axi_ruser),
-        .axi4_mm_rvalid(m_axi_rvalid),
-        
-        .axi4_mm_wdata(m_axi_wdata),
-        .axi4_mm_wlast(m_axi_wlast),
-        .axi4_mm_wready(m_axi_wready),
-        .axi4_mm_wstrb(m_axi_wstrb),
-        .axi4_mm_wuser(m_axi_wuser),
+        //.axi4_mm_wuser(m_axi_wuser),
         .axi4_mm_wvalid(m_axi_wvalid),
 
 
@@ -1306,7 +1205,7 @@ meep_shell_ddr meep_shell_ddr_i
         // .axi4_sram_arqos(sram_axi_arqos),
         .axi4_sram_arready(sram_axi_arready),
         .axi4_sram_arsize(sram_axi_arsize),
-        // .axi4_sram_aruser(axi4_mm_aruser),
+        // .axi4_sram_aruser(sram_axi_aruser),
         .axi4_sram_arvalid(sram_axi_arvalid),
 
         .axi4_sram_awaddr(sram_axi_awaddr),
@@ -1344,7 +1243,7 @@ meep_shell_ddr meep_shell_ddr_i
         .axi4_sram_wvalid(sram_axi_wvalid),
 
 
-        .c0_init_calib_complete_0(init_calib_complete),
+        .mem_calib_complete(init_calib_complete),
         
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),
@@ -1361,7 +1260,7 @@ meep_shell_ddr meep_shell_ddr_i
         .ddr4_sdram_c0_par(ddr_parity),
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
         
-        //.c0_ddr4_aresetn(sys_rst_n),
+        .hbm_cattrip(hbm_cattrip),
         
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
@@ -1375,11 +1274,15 @@ meep_shell_ddr meep_shell_ddr_i
         .pcie_gpio(pcie_gpio),
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
-        .pcie_refclk_clk_p( pcie_refclk_p),
-		.ui_clk_sync_rst( ui_clk_sync_rst           ),
-        .ui_clk(ui_clk)
+        .pcie_refclk_clk_p( pcie_refclk_p)
         );
+assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
+assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
+assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
 
+assign ui_clk_sync_rst = ~sys_rst_n;
+assign ui_clk = core_ref_clk;
   
 `else // PITONSYS_PCIE
  
@@ -1403,17 +1306,13 @@ ddr4_axi4 ddr_axi4 (
   .c0_ddr4_ck_c              ( ddr_ck_n                  ),
   .c0_ddr4_reset_n           ( ddr_reset_n               ),
 `ifndef XUPP3R_BOARD
-`ifndef ALVEOU280_BOARD
   .c0_ddr4_dm_dbi_n          ( ddr_dm                    ), // dbi_n is a data bus inversion feature that cannot be used simultaneously with dm
-`endif
 `endif
   .c0_ddr4_dq                ( ddr_dq                    ), 
   .c0_ddr4_dqs_c             ( ddr_dqs_n                 ), 
   .c0_ddr4_dqs_t             ( ddr_dqs_p                 ), 
   .c0_init_calib_complete    ( init_calib_complete       ),
 `ifdef XUPP3R_BOARD
-  .c0_ddr4_parity            ( ddr_parity                ),                        // output wire c0_ddr4_parity
-`elsif ALVEOU280_BOARD
   .c0_ddr4_parity            ( ddr_parity                ),                        // output wire c0_ddr4_parity
 `endif
   .c0_ddr4_interrupt         (                           ),                    // output wire c0_ddr4_interrupt
@@ -1474,7 +1373,8 @@ ddr4_axi4 ddr_axi4 (
   .c0_ddr4_s_axi_rid(m_axi_rid),                    // output wire [15 : 0] c0_ddr4_s_axi_rid
   .c0_ddr4_s_axi_rdata(m_axi_rdata)                 // output wire [511 : 0] c0_ddr4_s_axi_rdata
 );
- `endif //PITONSYS_PCIE
+
+`endif //PITONSYS_PCIE
 
 `else // PITONSYS_DDR4
 
@@ -1561,7 +1461,6 @@ mig_7series_axi4 u_mig_7series_axi4 (
 );
 
 `endif // PITONSYS_DDR4
-`endif//PITONSYS_HBM2      
 `endif // PITONSYS_AXI4_MEM
 
 `ifdef PITON_PROTO

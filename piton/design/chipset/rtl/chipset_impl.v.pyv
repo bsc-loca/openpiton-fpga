@@ -166,6 +166,7 @@ module chipset_impl(
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
     output                                      ddr_parity,
+    output                                      hbm_cattrip,
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -236,13 +237,6 @@ module chipset_impl(
 `endif // ifdef PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
 
-`ifdef PITONSYS_HBM2
-    ,
-    input  hbm_ref_clk,
-    output hbm_cattrip
-
-`endif
-
 `ifdef PITONSYS_IOCTRL
 `ifdef PITONSYS_UART
     ,
@@ -287,8 +281,6 @@ module chipset_impl(
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
     ,
     input          net_axi_clk,
-    output         qsfp_fs,
-    output         qsfp_oeb,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -830,7 +822,7 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_ready(ddr_ready)
         );
     `else
-    mc_top mc_top(
+        mc_top mc_top(
             .mc_ui_clk_sync_rst(mc_ui_clk_sync_rst),
 
             .core_ref_clk(chipset_clk),
@@ -846,7 +838,7 @@ credit_to_valrdy noc3_xbar_to_%s(
 
             .uart_boot_en(uart_boot_en),
             .init_calib_complete_out(init_calib_complete),
- 
+
         `ifdef PITONSYS_DDR4
             .sys_clk_p(mc_clk_p),
             .sys_clk_n(mc_clk_n),
@@ -891,19 +883,14 @@ credit_to_valrdy noc3_xbar_to_%s(
         `ifndef NEXYSVIDEO_BOARD
             .ddr_cs_n(ddr_cs_n),
         `endif // endif NEXYSVIDEO_BOARD
-        `ifdef PITONSYS_DDR4
         `ifdef XUPP3R_BOARD
             .ddr_parity(ddr_parity),
         `elsif ALVEOU280_BOARD
             .ddr_parity(ddr_parity),
+            .hbm_cattrip(hbm_cattrip),
         `else
             .ddr_dm(ddr_dm),
         `endif // XUPP3R_BOARD
-        `endif // PITONSYS_DDR4
-         `ifdef PITONSYS_HBM2
-           .hbm_ref_clk(hbm_ref_clk),
-           .hbm_cattrip(hbm_cattrip),
-        `endif  
             .ddr_odt(ddr_odt)
         );
     `endif // F1_BOARD
@@ -1161,8 +1148,6 @@ uart_top        uart_top (
     `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
         ,
         .net_axi_clk     (net_axi_clk         ),
-        .qsfp_fs         (qsfp_fs),
-        .qsfp_oeb        (qsfp_oeb),
         .qsfp_ref_clk_n  (qsfp_ref_clk_n),
         .qsfp_ref_clk_p  (qsfp_ref_clk_p),
         .qsfp_4x_grx_n   (qsfp_4x_grx_n),
