@@ -798,6 +798,7 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
+set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include"
 
 set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \

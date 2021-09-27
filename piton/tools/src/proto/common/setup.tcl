@@ -79,6 +79,16 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
     ${BOARD_DEFAULT_VERILOG_MACROS}    \
 ]
 
+################# CORE SPECIFIC SECTION #################
+#
+
+if  {$::env(PITON_LAGARTO) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
+  puts "Add Lagarto include directories"
+}
+#
+#########################################################
+
 
 if  {$::env(PITON_OST1) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_OST1"
