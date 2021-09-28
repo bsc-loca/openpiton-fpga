@@ -1,17 +1,17 @@
-# Copyright 2018 ETH Zurich and University of Bologna.
-# Copyright and related rights are licensed under the Solderpad Hardware
-# License, Version 0.51 (the "License"); you may not use this file except in
-# compliance with the License.  You may obtain a copy of the License at
-# http://solderpad.org/licenses/SHL-0.51. Unless required by applicable law
-# or agreed to in writing, software, hardware and materials distributed under
-# this License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-# CONDITIONS OF ANY KIND, either express or implied. See the License for the
-# specific language governing permissions and limitations under the License.
-#
-# Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
-# Date: 26.11.2018
+# Author: Daniel J.Mazure
+# Date: 29.09.2021
 # Description: GitLab CI configuration script.
 
+# Tests over the FPGA set to manual temporarily until one specific machine is devoted 
+# to that task.
+#
+# The CI/CD flow generates a bitstream both for Lagarto and Ariane. The synthesis and
+# implementation scripts run by Vivado doesn't differentiate and search the dcp files
+# in a general folder (./dcp). Files are moved in this script to create separate 
+# artifacts for both implementations.
+#
+# More jobs can be created if we want to check different number of cores. It is currently
+# set to a generic 2x2 configuration.
   
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
@@ -21,7 +21,6 @@ variables:
   BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
-  CORE: "lagarto"
   DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2"
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
@@ -29,98 +28,238 @@ stages:
   - protosyn
   - implementation
   - bitstream
+  - validation
   - fpga-test
 
 ###################################
-# setup tools
+# Synthesis
+###################################
 
-synthesis:
+synthesis-ariane:
   tags: 
     - MEEP_FPGA 
   timeout: 6h
   stage: protosyn
   before_script:
     - export PITON_ROOT=`pwd`
+    - mkdir -p ariane
   script:
     - echo "ROOT= $PITON_ROOT"
-    - source piton/${CORE}_setup.sh
-    - make initialize
+    - source piton/ariane_setup.sh
+    - make initialize CORE=ariane
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
     - make protosyn $DESIGN_OPTIONS
   after_script:
-    - cp -r build/alveou280/system/protosyn_logs .
+    - cp -rf build/alveou280/system/protosyn_logs ariane
+    - cp -rf dcp ariane
 
   artifacts:
        when: always
-       paths: 
-         - protosyn_logs
-         - dcp/synthesis.dcp
+       paths:        
+         - ariane
 
-implementation:
+synthesis-lagarto:
+  tags:
+    - MEEP_FPGA
+  timeout: 6h
+  stage: protosyn
+  before_script:
+    - export PITON_ROOT=`pwd`
+    - mkdir -p lagarto
+  script:
+    - echo "ROOT= $PITON_ROOT"
+    - source piton/lagarto_setup.sh
+    - make initialize CORE=lagarto
+    - echo "RISCV = $RISCV"
+    - echo "VIVADO = $VIVADO_BIN"
+    - make protosyn $DESIGN_OPTIONS
+  after_script:
+    - mkdir -p lagarto
+    - cp -rf build/alveou280/system/protosyn_logs lagarto
+    - cp -rf dcp lagarto
+
+  artifacts:
+       when: always
+       paths:
+         - lagarto
+
+###################################
+# Implementation
+###################################           
+
+implementation-ariane:
         stage: implementation
         timeout: 12h
         tags:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
+            - cp -rf ariane/dcp .
         script:
             - make implementation
+        after_script:
+            - cp -rf dcp/implementation.dcp ariane/dcp
 
         dependencies:
-            - synthesis
+            - synthesis-ariane
 
         artifacts:
             when: on_success
             expire_in: 1 day
             paths:
                 - reports
-                - dcp/implementation.dcp
-bitstream:
+                - ariane
+
+implementation-lagarto:
+        stage: implementation
+        timeout: 12h
+        tags:
+            - MEEP_FPGA
+        before_script:
+            - echo -e "Implementation stage"
+            - cp -rf lagarto/dcp .
+        script:
+            - make implementation
+        after_script:
+            - cp -rf dcp/implementation.dcp lagarto/dcp
+
+        dependencies:
+            - synthesis-lagarto
+
+        artifacts:
+            when: on_success
+            expire_in: 1 day
+            paths:
+                - reports
+                - lagarto
+
+###################################
+# Bitstream
+###################################                 
+
+bitstream-ariane:
         stage: bitstream
         tags:
             - MEEP_FPGA
+        before_script:
+            - cp -rf ariane/dcp .
+            - mkdir -p ariane/bitstream
         script:
             - make bitstream
         after_script:
-            - mv bitstream/*.bit bitstream/$BITSTREAM
+            - mv bitstream/*.bit ariane/bitstream/ariane_$BITSTREAM
         dependencies:
-            - synthesis
-            - implementation
+            - synthesis-ariane
+            - implementation-ariane
         artifacts:
             when: always
             expire_in: 1 month
             paths:
-                - bitstream
+                - ariane
 
-validation:
+bitstream-lagarto:
         stage: bitstream
         tags:
             - MEEP_FPGA
+        before_script:            
+            - cp -rf lagarto/dcp .
+            - mkdir -p lagarto/bitstream
+        script:
+            - make bitstream
+        after_script:
+            - mv bitstream/*.bit lagarto/bitstream/lagarto_$BITSTREAM
+        dependencies:
+            - synthesis-lagarto
+            - implementation-lagarto
+        artifacts:
+            when: always
+            expire_in: 1 month
+            paths:
+                - ariane
+                  
+###################################
+# Validation
+###################################
+                  
+validation-ariane:
+        needs: 
+            - implementation-ariane
+        stage: validation
+        tags:
+            - MEEP_FPGA
+        before_script:            
+            - cp -rf ariane/reports .
         script:
             - echo "Checking implementation reports ..."
             - source $TOOLS_DIR/check_reports.sh
         allow_failure: true
         dependencies:
-            - implementation
-              
-fpga-test:
+            - implementation-ariane
+
+validation-lagarto:
+        needs: 
+            - implementation-lagarto
+        stage: validation
+        tags:
+            - MEEP_FPGA
+        before_script:
+            - cp -rf lagarto/reports .
+        script:
+            - echo "Checking implementation reports ..."
+            - source $TOOLS_DIR/check_reports.sh
+        allow_failure: true
+        dependencies:
+            - implementation-lagarto
+
+###################################
+# HW Test (Set to manual temporarily)
+###################################              
+                            
+fpga-test-ariane:
         stage: fpga-test
+        when: manual
         tags:
             - FPGA_TEST
         before_script:
             - export PATH=$PATH:$QDMA_DRIVERS
             - $TOOLS_DIR/givememyuart
         script:
-            - $TOOLS_DIR/load-bitstream.sh qdma bitstream/$BITSTREAM
+            - $TOOLS_DIR/load-bitstream.sh qdma ariane/bitstream/ariane_$BITSTREAM
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
             - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
             - echo "Checking FPGA log ..."
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
+        after_script:
+            - cp $FPGA_LOG_FILE ariane
         dependencies:
-            - bitstream
+            - bitstream-ariane
         artifacts:
             when: always
             paths:
-            - $FPGA_LOG_FILE
+            - ariane
                   
+fpga-test-lagarto:
+        stage: fpga-test
+        when: manual
+        tags:
+            - FPGA_TEST
+        before_script:
+            - export PATH=$PATH:$QDMA_DRIVERS
+            - $TOOLS_DIR/givememyuart
+        script:
+            - $TOOLS_DIR/load-bitstream.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
+            - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE
+            - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
+            - echo "Checking FPGA log ..."
+            - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
+        after_script:
+            - cp $FPGA_LOG_FILE lagarto
+        dependencies:
+            - bitstream-lagarto
+        artifacts:
+            when: always
+            paths:
+            - lagarto
+
+              
