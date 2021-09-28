@@ -93,6 +93,17 @@ bitstream:
             paths:
                 - bitstream
 
+validation:
+        stage: bitstream
+        tags:
+            - MEEP_FPGA
+        script:
+            - echo "Checking implementation reports ..."
+            - source $TOOLS_DIR/check_reports.sh
+        allow_failure: true
+        dependencies:
+            - implementation
+              
 fpga-test:
         stage: fpga-test
         tags:
@@ -104,8 +115,6 @@ fpga-test:
             - $TOOLS_DIR/load-bitstream.sh qdma bitstream/$BITSTREAM
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
             - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
-            - sleep 60
-            - sudo pkill cat
             - echo "Checking FPGA log ..."
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         dependencies:
