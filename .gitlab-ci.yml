@@ -21,7 +21,7 @@ variables:
   BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
-  DESIGN_OPTIONS: "core=$CORE XTILES=2 YTILES=2"
+  DESIGN_OPTIONS: "XTILES=2 YTILES=2"
   GOLDEN_MESSAGE: "Welcome to Buildroot"
 
 stages:
@@ -49,7 +49,7 @@ synthesis-ariane:
     - make initialize CORE=ariane
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
-    - make protosyn $DESIGN_OPTIONS
+    - make protosyn $DESIGN_OPTIONS CORE=ariane
   after_script:
     - cp -rf build/alveou280/system/protosyn_logs ariane
     - cp -rf dcp ariane
@@ -73,7 +73,7 @@ synthesis-lagarto:
     - make initialize CORE=lagarto
     - echo "RISCV = $RISCV"
     - echo "VIVADO = $VIVADO_BIN"
-    - make protosyn $DESIGN_OPTIONS
+    - make protosyn $DESIGN_OPTIONS CORE=lagarto
   after_script:
     - mkdir -p lagarto
     - cp -rf build/alveou280/system/protosyn_logs lagarto
