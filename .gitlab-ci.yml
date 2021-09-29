@@ -145,6 +145,7 @@ implementation-lagarto:
 bitstream-ariane:
         stage: bitstream
         needs:
+            - synthesis-ariane
             - implementation-ariane
         tags:
             - MEEP_FPGA
@@ -167,6 +168,7 @@ bitstream-ariane:
 bitstream-lagarto:
         stage: bitstream
         needs:
+            - synthesis-lagarto
             - implementation-lagarto
         tags:
             - MEEP_FPGA
