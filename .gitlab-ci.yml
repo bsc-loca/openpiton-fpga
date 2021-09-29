@@ -14,7 +14,7 @@
 # set to a generic 2x2 configuration.
   
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  #GIT_SUBMODULE_STRATEGY: recursive
   FPGA_LOG_FILE: fpga.log
   BITSTREAM: system_${CI_PIPELINE_ID}.bit
   BOOT_SCRIPT: boot_ariane.sh 
@@ -43,6 +43,7 @@ synthesis-ariane:
   before_script:
     - export PITON_ROOT=`pwd`
     - mkdir -p ariane
+    - git submodule update --init --recursive
   script:
     - echo "ROOT= $PITON_ROOT"
     - source piton/ariane_setup.sh
@@ -67,6 +68,7 @@ synthesis-lagarto:
   before_script:
     - export PITON_ROOT=`pwd`
     - mkdir -p lagarto
+    - git submodule update --init --recursive
   script:
     - echo "ROOT= $PITON_ROOT"
     - source piton/lagarto_setup.sh
@@ -227,6 +229,10 @@ validation-lagarto:
 ###################################              
                             
 fpga-test-ariane:
+        needs:
+            - synthesis-ariane
+            - implementation-ariane
+            - bitstream-ariane
         stage: fpga-test
         when: manual
         tags:
@@ -250,6 +256,10 @@ fpga-test-ariane:
             - ariane
                   
 fpga-test-lagarto:
+        needs:
+            - synthesis-lagarto
+            - implementation-lagarto
+            - bitstream-lagarto
         stage: fpga-test
         when: manual
         tags:
