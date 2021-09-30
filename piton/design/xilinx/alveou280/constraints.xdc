@@ -47,6 +47,10 @@ set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clki
 # Reset, note that this is active high on this board!! MAKE LOW for ALVEO!
 #set_property -dict {PACKAGE_PIN BH26  IOSTANDARD LVCMOS12} [get_ports "sys_rst_n"] ;# CPU_RESET_FPGA
 
+set_property PACKAGE_PIN BH26             [get_ports pcie_perstn]                          ;# Bank  67 VCCO - VCC1V8   - IO_L13P_T2L_N0_GC_QBC_67
+set_property IOSTANDARD  LVCMOS18         [get_ports pcie_perstn]                          ;# Bank  67 VCCO - VCC1V8   - IO_L13P_T2L_N0_GC_QBC_67
+
+
 # False paths
 set_false_path -to [get_cells -hierarchical *afifo_ui_rst_r*]
 set_false_path -to [get_cells -hierarchical *ui_clk_sync_rst_r*]

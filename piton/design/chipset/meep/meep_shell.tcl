@@ -434,23 +434,43 @@ set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_00]
   # Create instance: qdma_0, and set properties
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:4.0 qdma_0 ]
   set_property -dict [ list \
-   CONFIG.PCIE_BOARD_INTERFACE {pci_express_x16} \
-   CONFIG.PF1_SRIOV_CAP_INITIAL_VF {4} \
-   CONFIG.PF2_SRIOV_CAP_INITIAL_VF {4} \
-   CONFIG.PF3_SRIOV_CAP_INITIAL_VF {4} \
+   CONFIG.MAILBOX_ENABLE {true} \
+   CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
+   CONFIG.PF1_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF1_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF1_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF2_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF2_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF2_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF3_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF3_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF3_SRIOV_FIRST_VF_OFFSET {0} \
    CONFIG.SRIOV_CAP_ENABLE {true} \
-   CONFIG.SYS_RST_N_BOARD_INTERFACE {pcie_perstn} \
-   CONFIG.axilite_master_en {true} \
+   CONFIG.SRIOV_FIRST_VF_OFFSET {4} \
    CONFIG.barlite_mb_pf0 {1} \
-   CONFIG.barlite_mb_pf1 {1} \
-   CONFIG.barlite_mb_pf2 {1} \
-   CONFIG.barlite_mb_pf3 {1} \
+   CONFIG.barlite_mb_pf1 {0} \
+   CONFIG.barlite_mb_pf2 {0} \
+   CONFIG.barlite_mb_pf3 {0} \
    CONFIG.dma_intf_sel_qdma {AXI_MM} \
+   CONFIG.en_axi_st_qdma {false} \
+   CONFIG.flr_enable {true} \
+   CONFIG.mode_selection {Advanced} \
+   CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
+   CONFIG.select_quad {GTY_Quad_227} \
+   CONFIG.pf0_ari_enabled {true} \
    CONFIG.pf0_bar0_prefetchable_qdma {true} \
-   CONFIG.pf0_bar2_64bit_qdma {true} \
-   CONFIG.pf0_bar2_enabled_qdma {true} \
    CONFIG.pf0_bar2_prefetchable_qdma {true} \
-   CONFIG.tl_pf_enable_reg {4} \
+   CONFIG.pf1_bar0_prefetchable_qdma {true} \
+   CONFIG.pf1_bar2_prefetchable_qdma {true} \
+   CONFIG.pf1_msix_enabled_qdma {false} \
+   CONFIG.pf2_bar0_prefetchable_qdma {true} \
+   CONFIG.pf2_bar2_prefetchable_qdma {true} \
+   CONFIG.pf2_msix_enabled_qdma {false} \
+   CONFIG.pf3_bar0_prefetchable_qdma {true} \
+   CONFIG.pf3_bar2_prefetchable_qdma {true} \
+   CONFIG.pf3_msix_enabled_qdma {false} \
+   CONFIG.testname {mm} \
+   CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0
 
   # Create instance: smartconnect_0, and set properties
