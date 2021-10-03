@@ -36,59 +36,60 @@ stages:
 ###################################
 
 synthesis-ariane:
-  tags: 
-    - MEEP_FPGA 
-  only:
-    - production
-  timeout: 6h
-  stage: protosyn
-  before_script:
-    - export PITON_ROOT=`pwd`
-    - mkdir -p ariane
-    - git submodule update --init --recursive
-  script:
-    - echo "ROOT= $PITON_ROOT"
-    - source piton/ariane_setup.sh
-    - make initialize CORE=ariane
-    - echo "RISCV = $RISCV"
-    - echo "VIVADO = $VIVADO_BIN"
-    - make protosyn $DESIGN_OPTIONS CORE=ariane
-  after_script:
-    - cp -rf build/alveou280/system/protosyn_logs ariane
-    - cp -rf dcp ariane
+        stage: protosyn
+        tags: 
+            - MEEP_FPGA 
+        only:
+            - production
+        timeout: 6h
+        
+        before_script:
+            - export PITON_ROOT=`pwd`
+            - mkdir -p ariane
+            - git submodule update --init --recursive
+        script:
+            - echo "ROOT= $PITON_ROOT"
+            - source piton/ariane_setup.sh
+            - make initialize CORE=ariane
+            - echo "RISCV = $RISCV"
+            - echo "VIVADO = $VIVADO_BIN"
+            - make protosyn $DESIGN_OPTIONS CORE=ariane
+        after_script:
+            - cp -rf build/alveou280/system/protosyn_logs ariane
+            - cp -rf dcp ariane
 
-  artifacts:
-       when: always
-       paths:        
-         - ariane
+        artifacts:
+            when: always
+            paths:        
+                - ariane
 
 synthesis-lagarto:
-  tags:
-    - MEEP_FPGA
-  only:
-    - production
-  timeout: 6h
-  stage: protosyn
-  before_script:
-    - export PITON_ROOT=`pwd`
-    - mkdir -p lagarto
-    - git submodule update --init --recursive
-  script:
-    - echo "ROOT= $PITON_ROOT"
-    - source piton/lagarto_setup.sh
-    - make initialize CORE=lagarto
-    - echo "RISCV = $RISCV"
-    - echo "VIVADO = $VIVADO_BIN"
-    - make protosyn $DESIGN_OPTIONS CORE=lagarto
-  after_script:
-    - mkdir -p lagarto
-    - cp -rf build/alveou280/system/protosyn_logs lagarto
-    - cp -rf dcp lagarto
+        stage: protosyn
+        tags:
+            - MEEP_FPGA
+        only:
+            - production
+        timeout: 6h        
+        before_script:
+            - export PITON_ROOT=`pwd`
+            - mkdir -p lagarto
+            - git submodule update --init --recursive
+        script:
+            - echo "ROOT= $PITON_ROOT"
+            - source piton/lagarto_setup.sh
+            - make initialize CORE=lagarto
+            - echo "RISCV = $RISCV"
+            - echo "VIVADO = $VIVADO_BIN"
+            - make protosyn $DESIGN_OPTIONS CORE=lagarto
+        after_script:
+            - mkdir -p lagarto
+            - cp -rf build/alveou280/system/protosyn_logs lagarto
+            - cp -rf dcp lagarto
 
-  artifacts:
-       when: always
-       paths:
-         - lagarto
+        artifacts:
+            when: always
+            paths:
+                - lagarto
 
 ###################################
 # Implementation
@@ -98,6 +99,8 @@ implementation-ariane:
         stage: implementation
         needs:
             - synthesis-ariane
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -123,6 +126,8 @@ implementation-lagarto:
         stage: implementation
         needs:
             - synthesis-lagarto
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -153,6 +158,8 @@ bitstream-ariane:
         needs:
             - synthesis-ariane
             - implementation-ariane
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         tags:
             - MEEP_FPGA
         before_script:
@@ -176,6 +183,8 @@ bitstream-lagarto:
         needs:
             - synthesis-lagarto
             - implementation-lagarto
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         tags:
             - MEEP_FPGA
         before_script:            
@@ -199,9 +208,11 @@ bitstream-lagarto:
 ###################################
                   
 validation-ariane:
-        needs: 
-            - implementation-ariane
         stage: validation
+        needs: 
+            - implementation-ariane        
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         tags:
             - MEEP_FPGA
         before_script:            
@@ -214,9 +225,11 @@ validation-ariane:
             - implementation-ariane
 
 validation-lagarto:
-        needs: 
-            - implementation-lagarto
         stage: validation
+        needs: 
+            - implementation-lagarto        
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")            
         tags:
             - MEEP_FPGA
         before_script:
@@ -233,12 +246,14 @@ validation-lagarto:
 ###################################              
                             
 fpga-test-ariane:
+        stage: fpga-test
         needs:
             - synthesis-ariane
             - implementation-ariane
-            - bitstream-ariane
-        stage: fpga-test
-        when: manual
+            - bitstream-ariane        
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")
+              #when: manual         
         tags:
             - FPGA_TEST
         before_script:
@@ -256,15 +271,17 @@ fpga-test-ariane:
         artifacts:
             when: always
             paths:
-            - ariane
+                - ariane
                   
 fpga-test-lagarto:
+        stage: fpga-test
         needs:
             - synthesis-lagarto
             - implementation-lagarto
-            - bitstream-lagarto
-        stage: fpga-test
-        when: manual
+            - bitstream-lagarto  
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production")  
+              #when: manual      
         tags:
             - FPGA_TEST
         before_script:
@@ -282,6 +299,6 @@ fpga-test-lagarto:
         artifacts:
             when: always
             paths:
-            - lagarto
+                - lagarto
 
               
