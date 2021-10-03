@@ -39,8 +39,8 @@ synthesis-ariane:
         stage: protosyn
         tags: 
             - MEEP_FPGA 
-        only:
-            - production
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
         timeout: 6h
         
         before_script:
@@ -67,8 +67,8 @@ synthesis-lagarto:
         stage: protosyn
         tags:
             - MEEP_FPGA
-        only:
-            - production
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
         timeout: 6h        
         before_script:
             - export PITON_ROOT=`pwd`
@@ -100,7 +100,7 @@ implementation-ariane:
         needs:
             - synthesis-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -127,7 +127,7 @@ implementation-lagarto:
         needs:
             - synthesis-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -159,7 +159,7 @@ bitstream-ariane:
             - synthesis-ariane
             - implementation-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         tags:
             - MEEP_FPGA
         before_script:
@@ -184,7 +184,7 @@ bitstream-lagarto:
             - synthesis-lagarto
             - implementation-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         tags:
             - MEEP_FPGA
         before_script:            
@@ -212,7 +212,7 @@ validation-ariane:
         needs: 
             - implementation-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         tags:
             - MEEP_FPGA
         before_script:            
@@ -229,7 +229,7 @@ validation-lagarto:
         needs: 
             - implementation-lagarto        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")            
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
         tags:
             - MEEP_FPGA
         before_script:
@@ -252,7 +252,7 @@ fpga-test-ariane:
             - implementation-ariane
             - bitstream-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
               #when: manual         
         tags:
             - FPGA_TEST
@@ -280,7 +280,7 @@ fpga-test-lagarto:
             - implementation-lagarto
             - bitstream-lagarto  
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production")  
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
               #when: manual      
         tags:
             - FPGA_TEST
