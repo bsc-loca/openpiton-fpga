@@ -1,12 +1,9 @@
 [submodule "piton/design/chip/tile/ariane"]
 	path = piton/design/chip/tile/ariane
 	url = https://github.com/pulp-platform/ariane.git
-[submodule "aws"]
-	path = piton/design/aws
-	url = https://github.com/PrincetonUniversity/openpiton-aws.git
 [submodule "piton/design/chip/tile/meep_vas_tile_core/drac-inorder"]
 	path = piton/design/chip/tile/meep_vas_tile_core/drac-inorder
-	url = https://gitlab.bsc.es/meep/rtl_designs/drac-inorder.git
+	url = ../drac-inorder.git
 [submodule "piton/design/chip/tile/meep_vas_tile_core/meep-vpu"]
 	path = piton/design/chip/tile/meep_vas_tile_core/meep-vpu
-	url = https://gitlab.bsc.es/meep/rtl_designs/meep-vpu.git
+	url = ../meep-vpu.git
