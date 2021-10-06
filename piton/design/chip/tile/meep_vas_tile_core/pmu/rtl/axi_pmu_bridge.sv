@@ -92,7 +92,7 @@ module axi_pmu #(
     input logic S_AXI_RREADY,
 
     // Interface to counters
-    // Read interface		
+    // Read interface   
     output logic counter_read_enable, // Tells registers to read data
     input logic counter_read_valid, // Input from registers when data is available
     output logic [COUNTER_ADDRESS_WIDTH-1:0] counter_read_address,
@@ -104,42 +104,53 @@ module axi_pmu #(
     output logic [COUNTER_DATA_WIDTH-1:0] counter_write_data
 );
 
+  logic aw_available;  // Signal to indicate writing address is available to be used
+  logic w_available;  // Signal to indicate writing data is available to be used
+  logic ar_available;  // Signal to indicate reading address is available to be used
+  logic counter_write_valid_syn;
+  logic counter_read_valid_syn;
 
   // Writing logic
 
   // Receives and stores write address
-  logic aw_available;  // Signal to indicate writing address is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
-    if (S_AXI_ARESETN == 1'b0) begin
+    if (!S_AXI_ARESETN) begin
       aw_available <= 1'b0;
       S_AXI_AWREADY <= 1'b0;
       counter_write_address <= 0;
     end else begin
-      if (~aw_available && S_AXI_AWVALID) begin
+      if (!aw_available && S_AXI_AWVALID) begin
         // We are ready to receive the address
         S_AXI_AWREADY <= 1'b1;
         aw_available <= 1'b1;
         counter_write_address <= S_AXI_AWADDR[COUNTER_ADDRESS_WIDTH-1:0];
+      end else if (counter_write_enable && counter_write_valid_syn) begin
+        aw_available <= 0'b0;
+        S_AXI_AWREADY <= 1'b0;
       end else if (S_AXI_AWREADY) begin
+        aw_available <= 0'b0;
         S_AXI_AWREADY <= 1'b0;
       end
     end
   end
 
   // Receives and stores write data
-  logic w_available;  // Signal to indicate writing data is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
-    if (S_AXI_ARESETN == 1'b0) begin
+    if (!S_AXI_ARESETN) begin
       w_available <= 1'b0;
       S_AXI_WREADY <= 1'b0;
       counter_write_data <= 0;
     end else begin
-      if (~w_available && S_AXI_WVALID) begin
+      if (!w_available && S_AXI_WVALID) begin
         // We are ready to receive the data
         S_AXI_WREADY <= 1'b1;
         w_available <= 1'b1;
         counter_write_data <= S_AXI_WDATA;
+      end else if (counter_write_enable && counter_write_valid_syn) begin
+        w_available <= 0'b0;
+        S_AXI_WREADY <= 1'b0;
       end else if (S_AXI_WREADY) begin
+        w_available <= 0'b0;
         S_AXI_WREADY <= 1'b0;
       end
     end
@@ -148,7 +159,7 @@ module axi_pmu #(
   // Send write request to the register bank
 
   // Synchronizer for the write valid input signal
-  logic counter_write_valid_syn;
+
   synchronizer_2_stage write_syn (
       .in (counter_write_valid),
       .out(counter_write_valid_syn),
@@ -156,21 +167,18 @@ module axi_pmu #(
   );
 
   always_ff @(posedge S_AXI_ACLK) begin
-    if (S_AXI_ARESETN == 1'b0) begin
+    if (!S_AXI_ARESETN) begin
       counter_write_enable <= 1'b0;
       S_AXI_BVALID <= 0;
       S_AXI_BRESP <= 2'b0;
     end else begin
-      if (aw_available && w_available && ~counter_write_enable && ~S_AXI_BVALID) begin
-        //	Data and address are available, start request
+      if (aw_available && w_available && !counter_write_enable && !S_AXI_BVALID) begin
+        //  Data and address are available, start request
         counter_write_enable <= 1'b1;
       end else if (counter_write_enable && counter_write_valid_syn) begin
-        //	Write operation finished
+        //  Write operation finished
         counter_write_enable <= 1'b0;
-        aw_available <= 0'b0;
-        w_available <= 0'b0;
-
-        //	Send response
+        //  Send response
         S_AXI_BRESP <= 2'b0;
         S_AXI_BVALID <= 1'b1;
       end else if (S_AXI_BVALID && S_AXI_BREADY) begin
@@ -182,26 +190,30 @@ module axi_pmu #(
   // Read logic
 
   // Receives and stores read address
-  logic ar_available;  // Signal to indicate reading address is available to be used
   always_ff @(posedge S_AXI_ACLK) begin
-    if (S_AXI_ARESETN == 1'b0) begin
+    if (!S_AXI_ARESETN) begin
       ar_available <= 1'b0;
       S_AXI_ARREADY <= 1'b0;
       counter_read_address <= 0;
     end else begin
-      if (~ar_available && S_AXI_ARVALID) begin
+      if (!ar_available && S_AXI_ARVALID) begin
         // We are ready to receive the address
         S_AXI_ARREADY <= 1'b1;
         ar_available <= 1'b1;
         counter_read_address <= S_AXI_ARADDR[COUNTER_ADDRESS_WIDTH-1:0];
+       
+      end else if (counter_read_enable && counter_read_valid_syn) begin
+        ar_available <= 0'b0;
+        S_AXI_ARREADY <= 1'b0;
+
       end else if (S_AXI_ARREADY) begin
+        ar_available <= 0'b0;
         S_AXI_ARREADY <= 1'b0;
       end
     end
   end
 
   // Synchronizer for read_valid signal from register bank
-  logic counter_read_valid_syn;
   synchronizer_2_stage read_syn (
       .in (counter_read_valid),
       .out(counter_read_valid_syn),
@@ -215,17 +227,15 @@ module axi_pmu #(
       S_AXI_RRESP <= 2'b0;
       S_AXI_RDATA <= 0;
     end else begin
-      if (ar_available && ~counter_read_enable && ~S_AXI_RVALID) begin
-        //	Address is available, start read request
+      if (ar_available && !counter_read_enable && !S_AXI_RVALID) begin
+        //  Address is available, start read request
         counter_read_enable <= 1'b1;
       end else if (counter_read_enable && counter_read_valid_syn) begin
-        //	Read operation finished
+        //  Read operation finished
         S_AXI_RDATA <= counter_read_data;
 
         counter_read_enable <= 1'b0;
-        ar_available <= 0'b0;
-
-        //	Send response
+        //  Send response
         S_AXI_RRESP <= 2'b0;
         S_AXI_RVALID <= 1'b1;
       end else if (S_AXI_RVALID && S_AXI_RREADY) begin
