@@ -8,9 +8,17 @@
 // #include <fcntl.h>
 // #include <sys/mman.h>
 
+#include "util.h" // for multi-core support
+
 int main(int argc, char ** argv) {
+
+  // synchronization variable
+  volatile static uint32_t amo_cnt = 0;
+  // synchronize with other cores and wait until it is this core's turn
+  while(argv[0][0] != amo_cnt);
+
   enum {
-    SRAM_BASEADDR = 0xfff0400000, // + 0x00100000,
+    SRAM_BASEADDR = 0xfff0400000,
     SRAM_ADRRANGE = 0x00080000
   };
 
@@ -32,9 +40,9 @@ int main(int argc, char ** argv) {
   size_t const memBytes = SRAM_ADRRANGE / sizeof(uint8_t);
   size_t const axiWidth = 512 / 8;
 
-  printf("-- Running On-chip Static memory test --\n");
-  printf("Testing On-chip memory at addr 0x%lx(virt: 0x%lx) with size %d \n", SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
-  printf(" Checking memory with random values from %x to %x \n", 0, RAND_MAX);
+  printf("-- SRAM test on hart %d of %d harts --\n", argv[0][0], argv[0][1]);
+  printf("Test of SRAM at addr 0x%lx(virt: 0x%lx) with size %d \n", SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
+  // printf(" Checking memory with random values from %x to %x \n", 0, RAND_MAX);
   // first clearing previously stored values
   for (size_t addr = 0; addr < memBytes; ++addr) memPtr8 [addr] = 0;
 
@@ -56,24 +64,27 @@ int main(int argc, char ** argv) {
     val = (val >> 8) | ((addr ^ (~addr >> 8)) << 56);
     // checking readback using different data types
     if (                 memPtr8 [addr  ] != (val >> 56)) {
-      printf("\nERROR: Incorrect readback of Byte at addr %lx from Mem: %x, expected: %lx \n", addr, memPtr8[addr], val >> 56);
+      printf("\nERROR on hart %d: Byte at addr %lx read: %x, expected: %lx \n",     argv[0][0], addr, memPtr8[addr], val >> 56);
       exit(1);
     }
     if ((addr%2) == 1 && memPtr16[addr/2] != (val >> 48)) {
-      printf("\nERROR: Incorrect readback of Word-16 at addr %lx from Mem: %x, expected: %lx \n", addr, memPtr16[addr/2], val >> 48);
+      printf("\nERROR on hart %d: Word-16 at addr %lx read: %x, expected: %lx \n",  argv[0][0], addr, memPtr16[addr/2], val >> 48);
       exit(1);
     }
     if ((addr%4) == 3 && memPtr32[addr/4] != (val >> 32)) {
-      printf("\nERROR: Incorrect readback of Word-32 at addr %lx from Mem: %x, expected: %lx \n", addr, memPtr32[addr/4], val >> 32);
+      printf("\nERROR on hart %d: Word-32 at addr %lx read: %x, expected: %lx \n",  argv[0][0], addr, memPtr32[addr/4], val >> 32);
       exit(1);
     }
     if ((addr%8) == 7 && memPtr64[addr/8] !=  val)        {
-      printf("\nERROR: Incorrect readback of Word-64 at addr %lx from Mem: %lx, expected: %lx \n", addr, memPtr64[addr/8], val);
+      printf("\nERROR on hart %d: Word-64 at addr %lx read: %lx, expected: %lx \n", argv[0][0], addr, memPtr64[addr/8], val);
       exit(1);
     }
   }
 
-  printf("-- On-chip Static memory test Passed --\n");
+  printf("-- SRAM test on hart %d of %d harts Passed --\n", argv[0][0], argv[0][1]);
+
+  // increment atomic counter
+  ATOMIC_OP(amo_cnt, 1, add, w);
 
   return 0;
 }
