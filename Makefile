@@ -1,8 +1,8 @@
 
 FPGA_TARGET ?= alveou280
-PROJECT_SUBDIR =  build/$(FPGA_TARGET)/system/
-PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 ROOT_DIR    =  $(PWD)
+PROJECT_SUBDIR =  $(ROOT_DIR)/build/$(FPGA_TARGET)/system/
+PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
 IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp 
@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= --eth --vnpm
+PROTO_OPTIONS ?= --eth --vnpm --uart-dmw ddr
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -40,13 +40,15 @@ implementation: $(IMPL_DCP)
 
 bitstream: $(BIT_FILE)
 
+incremental:
+	@echo "Source a tcl so Vivado takes the latest dcp file to configure incremental implementaiton"
 
 
 $(RISCV_DIR):
 	piton/$(CORE)_build_tools.sh	
 
-protosyn: clean $(RISCV_DIR)
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --uart-dmw ddr --zeroer_off $(PROTO_OPTIONS)
+protosyn: clean_project $(RISCV_DIR)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -57,9 +59,9 @@ $(IMPL_DCP): $(SYNTH_DCP)
 $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 	
-clean: 
+clean_all: clean_project
 
-	rm -rf $(PROJECT_SUBDIR) dcp bitstream reports
+	rm -rf $(PROJECT_SUBDIR)
 	
 clean_synthesis:	
 	rm -rf dcp/*
@@ -67,4 +69,6 @@ clean_synthesis:
 clean_implementation:
 	rm -rf dcp/implementation.dcp bitstream reports
 
+clean_project: clean_synthesis clean_implementation
+	rm -rf $(PROJECT_DIR)
 
