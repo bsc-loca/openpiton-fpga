@@ -150,19 +150,21 @@ generate
     end
 endgenerate
 
-noc_axi4_bridge_sram_data noc_axi4_bridge_sram_data
-(
-    .MEMCLK(clk), 
-    .RESET_N(rst_n),
-    .CEA(1),
-    .AA(write_req_id),
-    .RDWENA(1'b1),
-    .CEB(deser_go),
-    .AB(fifo_in),
-    .RDWENB(1'b0),
-    .DOUTA(write_req_data),
-    .BWB({`AXI4_DATA_WIDTH{1'b1}}),
-    .DINB(deser_data)
+// Xilinx-synthesizable Simple Dual Port Single Clock RAM
+xilinx_simple_dual_port_1_clock_ram #(
+    .RAM_WIDTH(`AXI4_DATA_WIDTH),                 // Specify RAM data width
+    .RAM_DEPTH(`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT), // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("LOW_LATENCY")               // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+) noc_axi4_bridge_sram_data (
+    .addra(fifo_in),        // Write address bus, width determined from RAM_DEPTH
+    .addrb(fifo_out),       // Read address bus, width determined from RAM_DEPTH
+    .dina(deser_data),      // RAM input data, width determined from RAM_WIDTH
+    .clka(clk),             // Clock
+    .wea(deser_go),         // Write enable
+    .enb(1'b1),             // Read Enable, for additional power savings, disable when not in use
+    .rstb(~rst_n),          // Output reset (does not affect memory contents)
+    .regceb(1'b1),          // Output register enable
+    .doutb(write_req_data)  // RAM output data, width determined from RAM_WIDTH
 );
 
 assign read_req_val = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == READ) && bram_rdy[fifo_out];
@@ -189,19 +191,27 @@ always @(posedge clk) begin
     end
 end
 
-noc_axi4_bridge_sram_req noc_axi4_bridge_sram_req
-(
-    .MEMCLK(clk), 
-    .RESET_N(rst_n),
-    .CEA(1),
-    .AA(preser_arb ? write_resp_id : read_resp_id),
-    .RDWENA(1'b1),
-    .CEB(req_go),
-    .AB(fifo_out),
-    .RDWENB(1'b0),
-    .DOUTA(ser_header_f),
-    .BWB({`MSG_HEADER_WIDTH{1'b1}}),
-    .DINB(pkt_header[fifo_out])
+// Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
+xilinx_true_dual_port_no_change_1_clock_ram #(
+    .RAM_WIDTH(`MSG_HEADER_WIDTH),                // Specify RAM data width
+    .RAM_DEPTH(`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT), // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("LOW_LATENCY")               // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+) noc_axi4_bridge_sram_req (
+    .addra(preser_arb ? write_resp_id : read_resp_id), // Port A address bus, width determined from RAM_DEPTH
+    .addrb(fifo_out),                 // Port B address bus, width determined from RAM_DEPTH
+    .dina(`MSG_HEADER_WIDTH'b0),      // Port A RAM input data, width determined from RAM_WIDTH
+    .dinb(pkt_header[fifo_out]),      // Port B RAM input data, width determined from RAM_WIDTH
+    .clka(clk),                       // Clock
+    .wea(1'b0),                       // Port A write enable
+    .web(1'b1),                       // Port B write enable
+    .ena(1'b1),                       // Port A RAM Enable, for additional power savings, disable port when not in use
+    .enb(req_go),                     // Port B RAM Enable, for additional power savings, disable port when not in use
+    .rsta(~rst_n),                    // Port A output reset (does not affect memory contents)
+    .rstb(~rst_n),                    // Port B output reset (does not affect memory contents)
+    .regcea(1'b1),                    // Port A output register enable
+    .regceb(1'b1),                    // Port B output register enable
+    .douta(ser_header_f),             // Port A RAM output data, width determined from RAM_WIDTH
+    .doutb()                          // Port B RAM output data, width determined from RAM_WIDTH
 );
 
 

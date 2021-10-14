@@ -141,6 +141,20 @@ assign m_axi_arid = {{`AXI4_ID_WIDTH-`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE{1'b0}}, r
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
 
+wire [`MSG_SRC_CHIPID_WIDTH-1:0] rd_src_chipid = req_header_f[`MSG_SRC_CHIPID];
+wire [`MSG_SRC_X_WIDTH     -1:0] rd_src_x      = req_header_f[`MSG_SRC_X];
+wire [`MSG_SRC_Y_WIDTH     -1:0] rd_src_y      = req_header_f[`MSG_SRC_Y];
+wire [`MSG_SRC_FBITS_WIDTH -1:0] rd_src_fbits  = req_header_f[`MSG_SRC_FBITS];
+
+wire [`MSG_DST_CHIPID_WIDTH-1:0] rd_dst_chipid = req_header_f[`MSG_DST_CHIPID];
+wire [`MSG_DST_X_WIDTH     -1:0] rd_dst_x      = req_header_f[`MSG_DST_X];
+wire [`MSG_DST_Y_WIDTH     -1:0] rd_dst_y      = req_header_f[`MSG_DST_Y];
+wire [`MSG_DST_FBITS_WIDTH -1:0] rd_dst_fbits  = req_header_f[`MSG_DST_FBITS];
+
+wire [`MSG_MSHRID_WIDTH    -1:0] rd_mshrid     = req_header_f[`MSG_MSHRID];
+wire [`MSG_LSID_WIDTH      -1:0] rd_lsid       = req_header_f[`MSG_LSID];
+wire [`MSG_SDID_WIDTH      -1:0] rd_sdid       = req_header_f[`MSG_SDID];
+
 // If running uart tests - we need to do address translation
 `ifdef PITONSYS_UART_BOOT
 storage_addr_trans_unified   #(

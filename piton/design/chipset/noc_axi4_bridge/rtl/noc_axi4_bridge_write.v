@@ -120,6 +120,20 @@ wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
 wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
                 || (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
 
+wire [`MSG_SRC_CHIPID_WIDTH-1:0] wr_src_chipid = req_header_f[`MSG_SRC_CHIPID];
+wire [`MSG_SRC_X_WIDTH     -1:0] wr_src_x      = req_header_f[`MSG_SRC_X];
+wire [`MSG_SRC_Y_WIDTH     -1:0] wr_src_y      = req_header_f[`MSG_SRC_Y];
+wire [`MSG_SRC_FBITS_WIDTH -1:0] wr_src_fbits  = req_header_f[`MSG_SRC_FBITS];
+
+wire [`MSG_DST_CHIPID_WIDTH-1:0] wr_dst_chipid = req_header_f[`MSG_DST_CHIPID];
+wire [`MSG_DST_X_WIDTH     -1:0] wr_dst_x      = req_header_f[`MSG_DST_X];
+wire [`MSG_DST_Y_WIDTH     -1:0] wr_dst_y      = req_header_f[`MSG_DST_Y];
+wire [`MSG_DST_FBITS_WIDTH -1:0] wr_dst_fbits  = req_header_f[`MSG_DST_FBITS];
+
+wire [`MSG_MSHRID_WIDTH    -1:0] wr_mshrid     = req_header_f[`MSG_MSHRID];
+wire [`MSG_LSID_WIDTH      -1:0] wr_lsid       = req_header_f[`MSG_LSID];
+wire [`MSG_SDID_WIDTH      -1:0] wr_sdid       = req_header_f[`MSG_SDID];
+
 assign req_rdy = (req_state == IDLE);
 assign m_axi_awvalid = (req_state == PREP_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid = (req_state == PREP_REQ) || (req_state == SENT_AW);
