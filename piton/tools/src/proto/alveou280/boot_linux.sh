@@ -31,7 +31,7 @@ sleep 5 &&
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
 $FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/fedora-fs-dx.raw  $((0x13ff00000)) &&
 sleep 1 &&
-$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x00000000)) &&
+$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x80000000)) &&
 ln -s -f $FEDORA_IMG_PATH/send-file.sh ./send-file
 ln -s -f $FEDORA_IMG_PATH/get-file.sh  ./get-file
 echo "After booting Fedora login on Riscv side with user:riscv, pass:'fedora_rocks!', then: source ./setup.sh"
@@ -45,6 +45,6 @@ echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above ste
 echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma-to-device/dma-from-device utils"
 
 sleep 2
-dma-ctl qdma08000 reg write bar 2 0x0 0x7 #Release Ariane's reset
+dma-ctl qdma08000 reg write bar 2 0x0 0x3 #Release Ariane's reset
 
-picocom -b 115200 /dev/ttyUSB2
+#picocom -b 115200 /dev/ttyUSB2

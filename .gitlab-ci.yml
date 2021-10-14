@@ -17,12 +17,11 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
   FPGA_LOG_FILE: fpga.log
   BITSTREAM: system_${CI_PIPELINE_ID}.bit
-  BOOT_SCRIPT: boot_ariane.sh 
-  BOOTLOADER: /home/dmazure/pcie/linux_images/bbl8.bin
+  BOOT_SCRIPT: piton/tools/src/proto/alveou280/boot_linux.sh
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
   DESIGN_OPTIONS: "XTILES=2 YTILES=2"
-  GOLDEN_MESSAGE: "Welcome to Buildroot"
+  GOLDEN_MESSAGE: "Welcome to the Fedora/RISC-V disk image"
 
 stages:
   - protosyn
@@ -265,7 +264,7 @@ fpga-test-ariane:
             - $TOOLS_DIR/givememyuart
         script:
             - $TOOLS_DIR/load-bitstream.sh qdma ariane/bitstream/ariane_$BITSTREAM
-            - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
+            - source $TOOLS_DIR/$BOOT_SCRIPT
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:
@@ -293,7 +292,7 @@ fpga-test-lagarto:
             - $TOOLS_DIR/givememyuart
         script:
             - $TOOLS_DIR/load-bitstream.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
-            - source $TOOLS_DIR/$BOOT_SCRIPT $BOOTLOADER
+            - source $TOOLS_DIR/$BOOT_SCRIPT
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:

@@ -60,7 +60,6 @@ $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 	
 clean_all: clean_project
-
 	rm -rf $(PROJECT_SUBDIR)
 	
 clean_synthesis:	
