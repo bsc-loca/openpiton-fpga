@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= --eth --vnpm --uart-dmw ddr
+PROTO_OPTIONS ?= --eth --vnpm
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)

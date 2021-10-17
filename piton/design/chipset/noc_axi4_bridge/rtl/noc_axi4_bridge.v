@@ -33,7 +33,8 @@ module noc_axi4_bridge #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter SWAP_ENDIANESS = 0,
     // NOC words to AXI word deserialization order
-    parameter NOC2AXI_DESER_ORDER = 0
+    parameter NOC2AXI_DESER_ORDER = 0,
+    parameter ADDR_OFFSET = 64'h0
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -183,7 +184,8 @@ noc_axi4_bridge_deser #(
 );
 
 noc_axi4_bridge_read #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS),
+    .ADDR_OFFSET (ADDR_OFFSET)
 ) noc_axi4_bridge_read (
     .clk(clk), 
     .rst_n(rst_n), 
@@ -225,7 +227,8 @@ noc_axi4_bridge_read #(
 );
 
 noc_axi4_bridge_write #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS),
+    .ADDR_OFFSET (ADDR_OFFSET)
 ) noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),

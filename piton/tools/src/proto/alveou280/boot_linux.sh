@@ -31,7 +31,7 @@ sleep 5 &&
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
 $FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/fedora-fs-dx.raw  $((0x13ff00000)) &&
 sleep 1 &&
-$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x80000000)) &&
+$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x00000000)) &&
 ln -s -f $FEDORA_IMG_PATH/send-file.sh ./send-file
 ln -s -f $FEDORA_IMG_PATH/get-file.sh  ./get-file
 echo "After booting Fedora login on Riscv side with user:riscv, pass:'fedora_rocks!', then: source ./setup.sh"
