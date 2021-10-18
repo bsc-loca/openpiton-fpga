@@ -1064,6 +1064,9 @@ if PITON_ARIANE:
             else:
               execBase   += "64'h" + romBase
               execLength += "64'h" + romLength
+else:
+    execBase += "64'h0"
+    execLength += "64'h0"
 
 execBase   += "}"
 execLength += "}"
@@ -1226,6 +1229,11 @@ if PITON_LAGARTO:
             else:
               execBase   += "64'h" + romBase
               execLength += "64'h" + romLength
+
+else:
+    execBase += "64'h0"
+    execLength += "64'h0"
+
 
 execBase   += "}"
 execLength += "}"
