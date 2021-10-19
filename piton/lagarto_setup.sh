@@ -71,7 +71,7 @@ fi
 
 # set root directory
 export PITON_ROOT=`pwd`
-export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/meep_vas_tile_core/
+export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
 export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 
 ## GCC and RISCV GCC setup
@@ -95,7 +95,7 @@ source ./piton/piton_settings.bash
 git submodule update --init --recursive piton/design/chip/tile/ariane && \
 	ln -s /home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp ./piton/design/chip/tile/ariane/tmp
 
-git submodule update --init --recursive piton/design/chip/tile/meep_vas_tile_core
+git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
 
 export RISCV=/home/tools/openpiton/riscv_install
 export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
