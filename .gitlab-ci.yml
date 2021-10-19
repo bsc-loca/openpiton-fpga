@@ -93,8 +93,6 @@ build:lagarto:
   tags: 
     - test
   stage: build
-  dependencies: 
-    - tools:build
   script:
     - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
@@ -104,8 +102,6 @@ build:lagarto-torture:
   tags: 
     - test
   stage: build
-  dependencies: 
-    - tools:build
   script:
     - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
@@ -116,7 +112,7 @@ build:lagarto-torture:
 user_level_integer_physical:
   stage: regression
   dependencies: 
-    - build:msm-torture
+    - build:lagarto-torture
   tags: 
     - test
   script:
@@ -130,7 +126,7 @@ user_level_integer_physical:
 user_level_integer_virtual:
   stage: regression
   dependencies:
-    - build:msm-torture
+    - build:lagarto-torture
   tags:
     - test
   script:
