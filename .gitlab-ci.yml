@@ -178,7 +178,14 @@ stages:
   - tools
   - build:lagarto
   - build:torture
-  - lagarto
+  - regression:user_lvl_int_p
+  - regression:user_lvl_int_v
+  - regression:amo_p
+  - regression:amo_v
+  - regression:machine_lvl
+  - regression:supervisor_lvl
+  - regression:user_lvl_int_v
+  - regression:user_lvl_int_v
   - torture
 
 ###################################
@@ -196,10 +203,6 @@ tools:build:
     expire_in: 1 hour
 
 ###################################
-# try to build different configs with VCS
-
-    #- ". /home/tools/riscv_vector_toolchain/set_env.sh"
-
 
 build:msm-lagarto:
   tags: 
@@ -225,46 +228,30 @@ build:msm-torture:
 
 ##############################################################33333
 
-test:tile1_asm_tests_p:
+test:user_level_integer_physical:
   stage: lagarto
   dependencies: 
     - build:msm-torture
   tags: 
-    - test
+    - regression:user_lvl_int_p
   script:
-    - . piton/lagarto_setup.sh
     - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
 
-#test:rv64ui-v-add:
-#  stage: lagarto
-#  dependencies: 
-#    - build:msm-torture
-#  tags: 
-#    - test
-#  script:
-#    - . piton/lagarto_setup.sh
-#    - cd build
-#    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
-#    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
-#    - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
+test:user_level_integer_virtual:
+  stage: lagarto
+  dependencies:
+  ¦ - build:msm-torture
+  tags:
+  ¦ - regression:user_lvl_int_v
+  script:
+  ¦ - cd build
+  ¦ - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
+  ¦ - "cd 2*"
+  ¦ - "regreport . -summary | tee regress.log"
+  ¦ - "grep 'REGRESSION PASSED' regress.log"
 
 
-
-
-
-#test:rv64ui-v-add1:
-#  stage: lagarto
-#  dependencies: 
-#    - build:msm-torture
-#  tags: 
-#    - test
-#  script:
-#    - cd build
-#    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-v-add1.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
-#    - "cd 2*"
-#    - "regreport . -summary | tee regress.log"
-#    - "grep 'Simulation -> PASS (HIT GOOD TRAP)' status.log"
