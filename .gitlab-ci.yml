@@ -83,39 +83,16 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
-  - tools
-  - build:lagarto
-  - build:torture
-  - regression:user_lvl_int_p
-  - regression:user_lvl_int_v
-  - regression:amo_p
-  - regression:amo_v
-  - regression:machine_lvl
-  - regression:supervisor_lvl
-  - regression:user_lvl_int_v
-  - regression:user_lvl_int_v
-  - torture
+  - build
+  - regression
 
-###################################
-# setup tools
-
-tools:build:
-  tags: 
-    - test
-  stage: tools
-  script:
-    - . piton/lagarto_setup.sh
-  artifacts:
-    paths:
-      - piton/design/chip/tile/ariane/tmp/
-    expire_in: 1 hour
 
 ###################################
 
-build:msm-lagarto:
+build:lagarto:
   tags: 
     - test
-  stage: build:lagarto
+  stage: build
   dependencies: 
     - tools:build
   script:
@@ -123,10 +100,10 @@ build:msm-lagarto:
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     - "grep 'Errors: 0' sims.log"
 
-build:msm-torture:
+build:lagarto-torture:
   tags: 
     - test
-  stage: build:torture
+  stage: build
   dependencies: 
     - tools:build
   script:
@@ -136,8 +113,8 @@ build:msm-torture:
 
 ##############################################################33333
 
-test:user_level_integer_physical:
-  stage: regression:user_lvl_int_p
+user_level_integer_physical:
+  stage: regression
   dependencies: 
     - build:msm-torture
   tags: 
@@ -150,8 +127,8 @@ test:user_level_integer_physical:
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
 
-test:user_level_integer_virtual:
-  stage: regression:user_lvl_int_v
+user_level_integer_virtual:
+  stage: regression
   dependencies:
     - build:msm-torture
   tags:
