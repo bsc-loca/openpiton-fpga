@@ -88,7 +88,9 @@ stages:
 
 
 ###################################
-
+# Build                           #
+###################################
+ 
 build:lagarto:
   tags: 
     - test
@@ -107,8 +109,10 @@ build:lagarto-torture:
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
     - "grep 'Errors: 0' sims.log"
 
-##############################################################33333
-
+##############################################################
+## Regression tests                                        ###
+##############################################################
+   
 user_level_integer_physical:
   stage: regression
   dependencies: 
@@ -137,4 +141,87 @@ user_level_integer_virtual:
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
 
+user_level_atomics_physical:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_amo_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+
+user_level_atomics_virtual:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_amo_tests_v -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+
+user_level_mul_div_physical:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:  
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_mul_div_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+
+user_level_mul_div_virtual:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_mul_div_tests_v -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+ 
+machine_levels:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:  
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_machine_lvl_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+
+supervisor_levels:
+  stage: regression
+  dependencies:
+    - build:lagarto-torture
+  tags:
+    - test
+  script:
+    - . piton/lagarto_setup.sh
+    - cd build
+    - sims -group=lagarto_tile1_supervisor_lvl_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
 
