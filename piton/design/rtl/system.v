@@ -993,7 +993,8 @@ chip chip(
     // PLIC
     .irq_i                          ( irq                        ), // level sensitive IR lines, mip & sip (async)
     // PMU
-    .pmu_sig_o                      ( pmu_sig                    )
+    .pmu_sig_o                      ( pmu_sig                    ),
+    .vpu_clk                        (vpu_clk                     )
 `endif
 
 );
@@ -1255,6 +1256,7 @@ chipset chipset(
     .ddr_dqs_p(ddr_dqs_t),
     .ddr_parity(ddr_parity),
     .hbm_cattrip(hbm_cattrip),
+    .vpu_clk(vpu_clk),
 `else
     .ddr_dm(ddr_dm),
 `endif

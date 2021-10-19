@@ -259,7 +259,7 @@ module chipset(
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
     output                                      ddr_parity,
-    output                                      hbm_cattrip,
+    output                                      hbm_cattrip,    
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -545,7 +545,8 @@ module chipset(
     output  [`PITON_NUM_TILES*2-1:0]                  irq_o,         // level sensitive IR lines, mip & sip (async)
     // PMU
     input   [25*(`PITON_NUM_TILES)-1:0]               pmu_sig_i,
-    input                                       pmu_clk
+    input                                       pmu_clk,
+    output                                      vpu_clk
 `endif
 );
 
@@ -936,11 +937,15 @@ end
                 , .mc_sys_clk(mc_clk)
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
-
-            `ifdef PITONSYS_SPI
+            `ifndef ALVEOU280_BOARD
+             `ifdef PITONSYS_SPI
                 // SPI system clock
-                , .sd_sys_clk(sd_sys_clk)
-            `endif // endif PITONSYS_SPI
+                , . (sd_sys_clk)
+             `endif // endif PITONSYS_SPI
+            `else
+                // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
+               , .vpu_clk(vpu_clk)
+            `endif
 
             // Chipset<->passthru clocks
             `ifdef PITONSYS_INC_PASSTHRU

@@ -227,7 +227,9 @@ print(s)
     // PLIC
     input   [1:0]                       irq_i,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    output  [24:0]                      pmu_sig_o
+    output  [24:0]                      pmu_sig_o,
+    // VPU
+    input                               vpu_clk
 `endif
 );
     // clock gating
@@ -1270,7 +1272,9 @@ print(str)
         .l15_rtrn_i          (l15_rtrn                  ),
 
         // PMU
-        .pmu_sig_o               (pmu_sig_o)
+        .pmu_sig_o               (pmu_sig_o),
+	.vpu_clk                 (vpu_clk)
+
     );
 
     assign unavailable_o = 1'b0;
