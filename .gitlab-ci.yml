@@ -141,7 +141,7 @@ test:user_level_integer_physical:
   dependencies: 
     - build:msm-torture
   tags: 
-    - regression_tests
+    - test
   script:
     - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
@@ -154,7 +154,7 @@ test:user_level_integer_virtual:
   dependencies:
     - build:msm-torture
   tags:
-    - regression_tests
+    - test
   script:
     - cd build
     - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
