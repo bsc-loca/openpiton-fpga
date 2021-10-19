@@ -42,106 +42,14 @@ before_script:
   # eda env
   - export CDS_LCU=/eda/cadence/licenses/bin/LCU_4.30.002
   - export PATH="${PATH}:${CDS_LCU}/RHELx86/tools.lnx86/bin"
-  # eda env  cadence
-  #- . environment/cadence/scripts/SPECTRE_19.10.541_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/VMANAGER_20.03.005_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/INDAGO_20.09.001_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/XCELIUM_20.09.001_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/CONFRML_20.10.200_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/INNOVUS_20.11.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/GENUS_19.14.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/SSV_20.11.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/MODUS_19.12.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/LIBERATE_19.21.591_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/PVS_19.15.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/QUANTUS_20.12.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/MVS_20.11.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/IC_6.1.8.140_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/ASSURA_04.16.109_618_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/INTEGRAND_60.00.000_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/JLS_19.15.000_RHELx86.sh
-  #- . environment/cadence/scripts/SIG_19.00.003_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/SPB_17.40.011_RHELx86.sh
-  #- . /eda/cadence/2020-21/scripts/SSV_20.11.000_RHELx86.sh
-  #- . environment/cadence/scripts/VIPCAT_11.30.072_RHELx86.sh
-  # eda env cadence licence
-  #- export CDS_LIC_FILE=5280@eda03.bsc.es
-  #- export LM_LICENSE_FILE=$LM_LICENSE_FILE:$CDS_LIC_FILE
-  # eda env synopsys
-  #- . /eda/synopsys/2020-21/scripts/CORETOOLS_2020.12-1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/CUSTOM-SIM_2020.12-1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/CUSTOM-WV_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/ESP_2020.09-SP1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/EUCLIDE_2020.12-1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/FM_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/ICC_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/ICC2_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/ICV_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/ICVWB_2020.09-SP1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/LC_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/MW_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/NT_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/PROTOCOMP_2020.03-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/PT_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/SFPGA_2020.09-SP1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/SILICONSMART_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/SILVER_2020.06-SP1_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/SPYGLASS_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/STARRC_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/SYN_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/TMAX_2020.09-SP2_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/VCS_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/VC-STATIC_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/VERDI_2020.12_RHELx86.sh
-  #- . /eda/synopsys/2020-21/scripts/VIP_2020.12_RHELx86.sh
-  # eda env synopsys licence
-  #- export SNPS_LICENSE_FILE=27020@epi01.bsc.es
-  #- export SNPSLMD_LICENSE_FILE=27020@epi01.bsc.es
-  #- export LM_LICENSE_FILE=$LM_LICENSE_FILE:$SNPS_LICENSE_FILE:$SNPSLMD_LICENSE_FILE
   # eda env mentor
   - . /eda/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/AMSV_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/CALIBRE_2020.4.15.9_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/CATAPULT_10.5c_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/FPRO_2020.1_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/HDL-DESIGNER_2020.4_RHELx86.sh
-  #- . environment/mentor/scripts/HLVX_2.7.U3_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/LEONARDO_2020a_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/NITRO-SOC_2020.2.R1_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/OASYS-RTL_2020.1.R1_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/PRECISION_2020.1_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/QUESTA-CDC-FML_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/QUESTA-INFACT_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/QUESTA-VIP_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/REQTRACER_2020.4_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/TANNER_2020.1.U6_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/TESSENT_2020.3_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/VISTA_2020.3_RHELx86_32.sh
-  #- . /eda/mentor/2020-21/scripts/VISTA_2020.3_RHELx86_64.sh
-  #- . /eda/mentor/2020-21/scripts/VISUAL-ELITE_2020.3_RHELx86.sh
-  #- . /eda/mentor/2020-21/scripts/X-ENTP-VX_2.7.U8_RHELx86.sh
   - export QUESTA_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
   # eda env mentor licence 
   - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
   - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
   - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
 
-  # eda env imperas
-  #- export IMPERAS_HOME=/eda/imperas/Imperas.20210408
-  #- export IMPERAS_PERSONALITY=CPUMAN_MULTI
-  #- export IMPERAS_UNAME=Linux
-  #- export IMPERAS_ARCH=Linux64
-  #- export IMPERAS_SHRSUF=so
-  #- export IMPERAS_VLNV=${IMPERAS_HOME}/lib/${IMPERAS_ARCH}/ImperasLib
-  #- export IMPERAS_RUNTIME=CpuManager
-  #- export LD_LIBRARY_PATH=$IMPERAS_HOME/bin/$IMPERAS_ARCH:$IMPERAS_HOME/lib/$IMPERAS_ARCH/External/lib
-  #- export PATH=$PATH:$IMPERAS_HOME/bin/$IMPERAS_ARCH
-  #- . environment/imperas/setup.sh
-  #- setupImperas /eda/imperas/imperas.20210408
-  # eda env imperas
-  #- export IMPERASD_LICENSE_FILE=2700@eda03.bsc.es
-  #- export LM_LICENSE_FILE=$LM_LICENSE_FILE:$IMPERASD_LICENSE_FILE
-  # piton setup
   - . ./piton/piton_settings.bash
   # setup python
   - export PITON_ROOT=`pwd`
@@ -229,11 +137,11 @@ build:msm-torture:
 ##############################################################33333
 
 test:user_level_integer_physical:
-  stage: regression_tests
+  stage: regression:user_lvl_int_p
   dependencies: 
     - build:msm-torture
   tags: 
-    - regression:user_lvl_int_p
+    - regression_tests
   script:
     - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
@@ -242,11 +150,11 @@ test:user_level_integer_physical:
     - "grep 'REGRESSION PASSED' regress.log"
 
 test:user_level_integer_virtual:
-  stage: regression_tests
+  stage: regression:user_lvl_int_v
   dependencies:
     - build:msm-torture
   tags:
-    - regression:user_lvl_int_v
+    - regression_tests
   script:
     - cd build
     - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
