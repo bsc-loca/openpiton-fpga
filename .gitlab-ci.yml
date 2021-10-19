@@ -229,7 +229,7 @@ build:msm-torture:
 ##############################################################33333
 
 test:user_level_integer_physical:
-  stage: lagarto
+  stage: regression_tests
   dependencies: 
     - build:msm-torture
   tags: 
@@ -242,16 +242,16 @@ test:user_level_integer_physical:
     - "grep 'REGRESSION PASSED' regress.log"
 
 test:user_level_integer_virtual:
-  stage: lagarto
+  stage: regression_tests
   dependencies:
-  ¦ - build:msm-torture
+    - build:msm-torture
   tags:
-  ¦ - regression:user_lvl_int_v
+    - regression:user_lvl_int_v
   script:
-  ¦ - cd build
-  ¦ - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
-  ¦ - "cd 2*"
-  ¦ - "regreport . -summary | tee regress.log"
-  ¦ - "grep 'REGRESSION PASSED' regress.log"
+    - cd build
+    - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
 
 
