@@ -978,7 +978,8 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 
-noc_axi4_bridge noc_axi4_bridge  (
+noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000))
+ noc_axi4_bridge  (
     .clk                (ui_clk                    ),  
     .rst_n              (~noc_axi4_bridge_rst      ), 
     .uart_boot_en       (uart_boot_en              ),

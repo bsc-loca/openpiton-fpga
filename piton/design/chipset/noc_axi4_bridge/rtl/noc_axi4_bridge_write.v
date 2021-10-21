@@ -33,7 +33,8 @@
 module noc_axi4_bridge_write #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter SWAP_ENDIANESS       = 0,
-    parameter NUM_REQ_THREADS_LOG2 = 4
+    parameter NUM_REQ_THREADS_LOG2 = 4,
+    parameter ADDR_OFFSET = 64'h0
 ) (
     // Clock + Reset
     input  wire                                                    clk,
@@ -212,6 +213,14 @@ assign m_axi_wid  = req_id_f;
 
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
 
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`PHY_ADDR_WIDTH-1:0]  virt_addr_r;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH-1:0] phys_addr_r;
+
+always @(posedge clk) begin : p_debug
+    virt_addr_r            <= virt_addr;
+    phys_addr_r            <= phys_addr;
+end  
+
 // If running uart tests - we need to do address translation
 `ifdef PITONSYS_UART_BOOT
 storage_addr_trans_unified   #(
@@ -271,7 +280,7 @@ always @(posedge clk) begin
         end
 
         offset <= uncacheable ? virt_addr[5:0] : 6'b0;
-        addr <= uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr;
+        addr <= uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
     end
 end
 
