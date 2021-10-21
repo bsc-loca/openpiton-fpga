@@ -180,6 +180,11 @@ always @(posedge clk) begin
   end
 end
 
+wire [`MSG_DST_CHIPID_WIDTH-1:0] resp_dst_chipid = resp_header[`MSG_DST_CHIPID];
+wire [`MSG_DST_X_WIDTH     -1:0] resp_dst_x      = resp_header[`MSG_DST_X];
+wire [`MSG_DST_Y_WIDTH     -1:0] resp_dst_y      = resp_header[`MSG_DST_Y];
+wire [`MSG_DST_FBITS_WIDTH -1:0] resp_dst_fbits  = resp_header[`MSG_DST_FBITS];
+
 always @(*) begin
   case (state)
     ACCEPT: begin
