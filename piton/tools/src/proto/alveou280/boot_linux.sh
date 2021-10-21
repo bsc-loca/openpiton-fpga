@@ -31,6 +31,23 @@ sleep 5 &&
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
 $FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/fedora-fs-dx.raw  $((0x13ff00000)) &&
 sleep 1 &&
+
+offset=0;
+i=0;
+
+echo -e "\r\nZeroing 8GB of memory as requirement for a manycore booting... \r\n"
+while [ "$i" -lt "16" ]
+do
+        offset=$(( 2 * $i ))
+        offsetHex=$( printf "%x" $offset ) ;
+        echo -e "Zeroing 512MB starting at address 0x"$offsetHex"0000000\r\n"
+        dma-to-device -d /dev/qdma08000-MM-1 -s 0x2000000 -a 0x"$offsetHex"0000000 0x0
+        i=$(($i + 1));
+done
+
+echo -e "\r\nMemory zeroing finished\r\n"
+
+
 $FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x00000000)) &&
 ln -s -f $FEDORA_IMG_PATH/send-file.sh ./send-file
 ln -s -f $FEDORA_IMG_PATH/get-file.sh  ./get-file

@@ -112,7 +112,7 @@ foreach inc_file $ALL_INCLUDE_FILES {
 foreach impl_file $ALL_RTL_IMPL_FILES {
     if {[file exists $impl_file]} {
         set file_obj [get_files -of_objects $fileset_obj [list "$impl_file"]]
-        if {[file extension $impl_file] == ".sv"} {
+        if { [file extension $impl_file] == ".sv"} {
           set_property "file_type" "SystemVerilog" $file_obj
         } else {
           set_property "file_type" "Verilog" $file_obj
@@ -125,6 +125,11 @@ foreach impl_file $ALL_RTL_IMPL_FILES {
         set_property "used_in_implementation" "1" $file_obj
         set_property "used_in_simulation" "1" $file_obj
         set_property "used_in_synthesis" "1" $file_obj
+       
+        # Outside the if else tree from above	
+        if {[file extension $impl_file] == ".vhd"} { 
+          set_property "file_type" "VHDL" $file_obj
+        }
     }
 }
 foreach coe_file $ALL_COE_FILES {

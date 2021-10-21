@@ -118,7 +118,7 @@ implementation-ariane:
 
         artifacts:
             when: on_success
-            expire_in: 1 day
+            expire_in: 20 days
             paths:
                 - ariane/dcp/implementation.dcp
                 - ariane/reports
@@ -147,7 +147,7 @@ implementation-lagarto:
 
         artifacts:
             when: on_success
-            expire_in: 1 day
+            expire_in: 20 days
             paths:
                 - lagarto/dcp/implementation.dcp
                 - lagarto/reports

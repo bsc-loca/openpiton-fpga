@@ -978,6 +978,10 @@ set MEEP_VPU_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_mem_lane.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_regs_tail_logic.sv" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_regs_tail_logic_bank.sv" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/Mult4x4.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/Mult8x8.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/MultDSP.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/MultUnit.vhd" \
     "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vpu_drac_wrapper.sv" \
 
 ]

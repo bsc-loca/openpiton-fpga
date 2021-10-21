@@ -490,6 +490,7 @@ def setParserOptions(parser):
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
+    parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
@@ -523,6 +524,8 @@ def makeDefList(options):
     if options.core == 'lagarto':
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
+        if options.core == 'vpu':
+            defines.append("VPU_ENABLE")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
 
@@ -647,7 +650,12 @@ def makeDefList(options):
         disp_string = "Heeey!          I am a chipset  for (Open)Piton Enjoy debugging!"
         defines.append("{OLED_STRING=\\\"%s\\\"}" % disp_string)
 
+    
     return defines
+
+def updateBlockList(options):
+
+    subprocess.Popen('$PITON_ROOT/piton/tools/src/proto/alveou280/update_blocklist.sh ' + options.core, shell=True, executable="/bin/bash")
 
 def makeMemMapping(st_brd, work_dir, log_dir):
     prev_dir = os.getcwd()
@@ -693,6 +701,8 @@ def main():
     ###################################################
     # All options are considered valid from this point
     ###################################################
+
+    updateBlockList(options)
 
     rc_dir = ProtoDir(options.board, options.design, design_data)
 
