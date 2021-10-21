@@ -1452,7 +1452,8 @@ chipset chipset(
     .irq_o                          ( irq                        ), // level sensitive IR lines, mip & sip (async)
     // PMU
     .pmu_sig_i                      ( pmu_sig                    ),
-    .pmu_clk                        ( core_ref_clk               )
+    .pmu_clk                        ( core_ref_clk               ),
+    .vpu_clk                        (vpu_clk                     ),
 `endif
 
 );
