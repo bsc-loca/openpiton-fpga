@@ -166,7 +166,9 @@ noc_axi4_bridge #(
     `ifdef PITON_ARIANE
       .SWAP_ENDIANESS (1),
     `endif
-    .NOC2AXI_DESER_ORDER (1)
+    .NOC2AXI_DESER_ORDER (1),
+    .NUM_REQ_OUTSTANDING_LOG2 (1),
+    .NUM_REQ_THREADS_LOG2 (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
@@ -238,40 +240,62 @@ noc_axi4_bridge #(
   assign sram_axi_wready  = 1'b1;
   assign sram_axi_arready = 1'b1;
 
-  reg sram_axi_rvalid_reg;
+  localparam RVALID_DELAY_LOG = 0;
+  reg [RVALID_DELAY_LOG:0] sram_axi_rvalid_cnt;
+  reg sram_axi_rvalid_en;
   reg [`AXI4_ID_WIDTH-1:0] sram_axi_rid_reg;
-  always @(posedge core_ref_clk) begin
+  always @(posedge core_ref_clk)
     if (~sys_rst_n) begin
-      sram_axi_rvalid_reg <= 1'b0;
+      sram_axi_rvalid_cnt <= {(RVALID_DELAY_LOG+1){1'b0}};
+      sram_axi_rvalid_en <= 1'b0;
       sram_axi_rid_reg <= `AXI4_ID_WIDTH'h0;
     end
-    else if (sram_axi_arvalid) begin 
-      sram_axi_rvalid_reg <= 1'b1;
-      sram_axi_rid_reg <= sram_axi_arid;
+    else begin 
+           if (sram_axi_rvalid) begin
+             if (sram_axi_rready) begin
+               sram_axi_rvalid_cnt <= {(RVALID_DELAY_LOG+1){1'b0}};
+               sram_axi_rvalid_en <= 1'b0;
+             end
+           end
+           else if (sram_axi_rvalid_en) sram_axi_rvalid_cnt <= sram_axi_rvalid_cnt+1;
+           if (sram_axi_arvalid) begin
+             sram_axi_rvalid_cnt <= {{RVALID_DELAY_LOG{1'b0}}, 1'b1};
+             sram_axi_rvalid_en <= 1'b1;
+             sram_axi_rid_reg <= sram_axi_arid;
+           end
     end
-    else if (sram_axi_rready) sram_axi_rvalid_reg <= 1'b0;
-  end
-  assign sram_axi_rvalid = sram_axi_rvalid_reg;
+  assign sram_axi_rvalid = sram_axi_rvalid_cnt[RVALID_DELAY_LOG];
   assign sram_axi_rid    = sram_axi_rid_reg;
   assign sram_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
   assign sram_axi_rresp  = 2'h0;
   assign sram_axi_rlast  = 1'b1;
   assign sram_axi_ruser  = `AXI4_USER_WIDTH'h0;
 
-  reg sram_axi_bvalid_reg;
+  localparam BVALID_DELAY_LOG = 0;
+  reg [BVALID_DELAY_LOG:0] sram_axi_bvalid_cnt;
+  reg sram_axi_bvalid_en;
   reg [`AXI4_ID_WIDTH-1:0] sram_axi_bid_reg;
-  always @(posedge core_ref_clk) begin
-    if (~sys_rst_n) begin 
-      sram_axi_bvalid_reg <= 1'b0;
+  always @(posedge core_ref_clk)
+    if (~sys_rst_n) begin
+      sram_axi_bvalid_cnt <= {(BVALID_DELAY_LOG+1){1'b0}};
+      sram_axi_bvalid_en <= 1'b0;
       sram_axi_bid_reg <= `AXI4_ID_WIDTH'h0;
     end
-    else if (sram_axi_wvalid) begin
-      sram_axi_bvalid_reg <= 1'b1;
-      sram_axi_bid_reg <= sram_axi_wid;
+    else begin
+           if (sram_axi_bvalid) begin
+             if (sram_axi_bready) begin
+               sram_axi_bvalid_cnt <= {(BVALID_DELAY_LOG+1){1'b0}};
+               sram_axi_bvalid_en <= 1'b0;
+             end
+           end
+           else if (sram_axi_bvalid_en) sram_axi_bvalid_cnt <= sram_axi_bvalid_cnt+1;
+           if (sram_axi_wvalid) begin
+             sram_axi_bvalid_cnt <= {{BVALID_DELAY_LOG{1'b0}}, 1'b1};
+             sram_axi_bvalid_en <= 1'b1;
+             sram_axi_bid_reg <= sram_axi_wid;
+           end
     end
-    else if (sram_axi_bready) sram_axi_bvalid_reg <= 1'b0;
-  end
-  assign sram_axi_bvalid  = sram_axi_bvalid_reg;
+  assign sram_axi_bvalid  = sram_axi_bvalid_cnt[BVALID_DELAY_LOG];
   assign sram_axi_bid     = sram_axi_bid_reg;
   assign sram_axi_bresp   = 2'h0;
   assign sram_axi_buser   = `AXI4_USER_WIDTH'h0;
@@ -592,7 +616,6 @@ assign noc_mig_bridge_init_done = init_calib_complete;
 assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif
 
-// `ifndef ALVEOU280_BOARD
 noc_bidir_afifo  mig_afifo  (
     .clk_1           (core_ref_clk      ),
     .rst_1           (afifo_rst_1       ),
@@ -618,17 +641,6 @@ noc_bidir_afifo  mig_afifo  (
     .flit_out_data_1 (mc_flit_out_data  ),
     .flit_out_rdy_1  (mc_flit_out_rdy   )
 );
-
-// above resync FIFO could be eliminated since noc_axi4_bridge works at system freq for meep_shell
-// `else //`ifndef ALVEOU280_BOARD
-//   assign  fifo_trans_val  = mc_flit_in_val;
-//   assign  fifo_trans_data = mc_flit_in_data;
-//   assign  mc_flit_in_rdy  = fifo_trans_rdy;
-
-//   assign  mc_flit_out_val  = trans_fifo_val;
-//   assign  mc_flit_out_data = trans_fifo_data;
-//   assign  trans_fifo_rdy   = mc_flit_out_rdy;
-// `endif
 
 
 `ifndef PITONSYS_AXI4_MEM

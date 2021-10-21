@@ -33,7 +33,9 @@ module noc_axi4_bridge #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter SWAP_ENDIANESS = 0,
     // NOC words to AXI word deserialization order
-    parameter NOC2AXI_DESER_ORDER = 0
+    parameter NOC2AXI_DESER_ORDER = 0,
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
+    parameter NUM_REQ_THREADS_LOG2     = 4
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -107,20 +109,20 @@ wire deser_val;
 wire deser_rdy;
 
 wire [`MSG_HEADER_WIDTH-1:0] read_req_header;
-wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] read_req_id;
+wire [NUM_REQ_THREADS_LOG2-1:0] read_req_id;
 wire read_req_val;
 wire read_req_rdy;
 wire [`AXI4_DATA_WIDTH-1:0] read_resp_data;
-wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] read_resp_id;
+wire [NUM_REQ_THREADS_LOG2-1:0] read_resp_id;
 wire read_resp_val;
 wire read_resp_rdy;
 
 wire write_req_val;
 wire [`MSG_HEADER_WIDTH-1:0] write_req_header;
-wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] write_req_id;
+wire [NUM_REQ_THREADS_LOG2-1:0] write_req_id;
 wire [`AXI4_DATA_WIDTH-1:0] write_req_data;
 wire write_req_rdy;
-wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] write_resp_id;
+wire [NUM_REQ_THREADS_LOG2-1:0] write_resp_id;
 wire write_resp_val;
 wire write_resp_rdy;
 
@@ -130,7 +132,10 @@ wire ser_val;
 wire ser_rdy;
 
 
-noc_axi4_bridge_buffer noc_axi4_bridge_buffer(
+noc_axi4_bridge_buffer #(
+    .NUM_REQ_OUTSTANDING_LOG2 (NUM_REQ_OUTSTANDING_LOG2),
+    .NUM_REQ_THREADS_LOG2     (NUM_REQ_THREADS_LOG2)
+) noc_axi4_bridge_buffer (
     .clk(clk),
     .rst_n(rst_n), 
 
@@ -183,7 +188,8 @@ noc_axi4_bridge_deser #(
 );
 
 noc_axi4_bridge_read #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS),
+    .NUM_REQ_THREADS_LOG2 (NUM_REQ_THREADS_LOG2)
 ) noc_axi4_bridge_read (
     .clk(clk), 
     .rst_n(rst_n), 
@@ -199,6 +205,7 @@ noc_axi4_bridge_read #(
     .resp_id(read_resp_id),
     .resp_data(read_resp_data),
     .resp_rdy(read_resp_rdy),
+    .resp_header(ser_header),
 
     // axi read interface
     .m_axi_arid(m_axi_arid),
@@ -225,7 +232,8 @@ noc_axi4_bridge_read #(
 );
 
 noc_axi4_bridge_write #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS),
+    .NUM_REQ_THREADS_LOG2 (NUM_REQ_THREADS_LOG2)
 ) noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),

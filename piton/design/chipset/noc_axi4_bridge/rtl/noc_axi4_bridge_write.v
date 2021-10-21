@@ -32,7 +32,8 @@
 
 module noc_axi4_bridge_write #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS = 0
+    parameter SWAP_ENDIANESS       = 0,
+    parameter NUM_REQ_THREADS_LOG2 = 4
 ) (
     // Clock + Reset
     input  wire                                                    clk,
@@ -42,12 +43,12 @@ module noc_axi4_bridge_write #(
     // NOC interface
     input  wire                                          req_val,
     input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
-    input  wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]  req_id,
+    input  wire [NUM_REQ_THREADS_LOG2-1:0]               req_id,
     input  wire [`AXI4_DATA_WIDTH-1:0]                   req_data,
     output wire                                          req_rdy,
 
     output wire                                          resp_val,
-    output wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]  resp_id,
+    output wire [NUM_REQ_THREADS_LOG2-1:0]               resp_id,
     input  wire                                          resp_rdy,
 
     // AXI write interface
@@ -113,7 +114,7 @@ assign m_axi_wlast = m_axi_wvalid;
 
 reg [2:0] req_state;
 reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
-reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] req_id_f;
+reg [NUM_REQ_THREADS_LOG2-1:0] req_id_f;
 reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
 
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
@@ -206,8 +207,8 @@ end
 
 
 // Process information here
-assign m_axi_awid = {{`AXI4_ID_WIDTH-`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE{1'b0}}, req_id_f};
-assign m_axi_wid = {{`AXI4_ID_WIDTH-`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE{1'b0}}, req_id_f};
+assign m_axi_awid = req_id_f;
+assign m_axi_wid  = req_id_f;
 
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
 
@@ -283,7 +284,7 @@ wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
 wire resp_go = resp_val & resp_rdy;
 
 reg [2:0] resp_state;
-reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]resp_id_f;
+reg [NUM_REQ_THREADS_LOG2-1:0] resp_id_f;
 
 assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_bready = (resp_state == IDLE);
