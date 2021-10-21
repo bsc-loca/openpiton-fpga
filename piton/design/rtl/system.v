@@ -1256,7 +1256,6 @@ chipset chipset(
     .ddr_dqs_p(ddr_dqs_t),
     .ddr_parity(ddr_parity),
     .hbm_cattrip(hbm_cattrip),
-    .vpu_clk(vpu_clk),
 `else
     .ddr_dm(ddr_dm),
 `endif
@@ -1453,7 +1452,7 @@ chipset chipset(
     // PMU
     .pmu_sig_i                      ( pmu_sig                    ),
     .pmu_clk                        ( core_ref_clk               ),
-    .vpu_clk                        (vpu_clk                     ),
+    .vpu_clk                        (vpu_clk                     )
 `endif
 
 );

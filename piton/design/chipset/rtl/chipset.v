@@ -929,9 +929,9 @@ end
             .locked(clk_locked),
 
          // Main chipset clock
-            `ifndef PYTONSYS_LAGARTO
+           // `ifndef PYTONSYS_LAGARTO
             .chipset_clk(chipset_clk)
-            `endif
+            //`endif
 
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
@@ -973,9 +973,9 @@ end
     `endif //ifndef F1_BOARD
 `endif // PITON_BOARD
 
-`ifdef PYTONSYS_LAGARTO
-        assign chipset_clk = vpu_clk;
-`endif
+//`ifdef PYTONSYS_LAGARTO
+//        assign chipset_clk = vpu_clk;
+//`endif
 
 // If we are using a passthru, we need to convert
 // differential signals to single ended

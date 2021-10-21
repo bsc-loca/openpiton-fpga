@@ -295,6 +295,7 @@ def makeProject(board, hbm, design_data, work_dir, log_dir, slurm, dep_list):
     proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
     proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
+    setUARTXilinxFreq(board, design_data)
     # Passing parameter to TCL
     if board == "alveou280" and hbm: os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
     jid = None
@@ -690,6 +691,11 @@ def genUARTInit(board, design_data):
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000;""" % div, file=f)
     f.close()
 
+def setUARTXilinxFreq(board, design_data):
+    print_info("Using core clock frequency: %s MHz" % design_data["BOARDS"][board]["FREQ"])
+    os.environ['SYSTEM_FREQ'] = str(design_data["BOARDS"][board]["FREQ"])
+
+
 def main():
     parser = OptionParser(add_help_option=False)
     parser = setParserOptions(parser)
@@ -702,7 +708,7 @@ def main():
     # All options are considered valid from this point
     ###################################################
 
-    updateBlockList(options)
+    #updateBlockList(options)
 
     rc_dir = ProtoDir(options.board, options.design, design_data)
 

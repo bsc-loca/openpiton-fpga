@@ -53,6 +53,13 @@ set_property strategy Performance_ExtraTimingOpt [get_runs impl_1]
 # Dealing with Vivado case, when it locks IPs as old ones
 upgrade_ip [get_ips -all]
 
+# Set the correct frequency for the Xilix UART IP
+
+set UART_FREQ $env(SYSTEM_FREQ)
+puts "Setting AXI UART frequency to ${UART_FREQ}MHz "
+
+set_property -dict [list CONFIG.C_S_AXI_ACLK_FREQ_HZ_d "$UART_FREQ" CONFIG.C_S_AXI_ACLK_FREQ_HZ "${UART_FREQ}000000"] [get_ips uart_16550]
+
 # Extra open/close to make Vivado use defines for a project,
 # not only for synthesis
 close_project
