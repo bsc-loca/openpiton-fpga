@@ -1226,9 +1226,9 @@ fake_uart fake_uart (
      assign ariane_boot_sel = uart_boot_en;
   `else
     `ifdef PITONSYS_UART_BOOT
-       assign ariane_boot_sel = bootrom_linux_en;
-    `else
        assign ariane_boot_sel = uart_boot_en;
+    `else
+       assign ariane_boot_sel = bootrom_linux_en;
     `endif
   `endif
 `else
@@ -1337,9 +1337,9 @@ print(str)
      assign lagarto_boot_sel = uart_boot_en;
   `else
     `ifdef PITONSYS_UART_BOOT
-       assign lagarto_boot_sel = bootrom_linux_en;
-    `else
        assign lagarto_boot_sel = uart_boot_en;
+    `else
+       assign lagarto_boot_sel = bootrom_linux_en;
     `endif
   `endif
 `else
