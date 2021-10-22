@@ -30,7 +30,10 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_buffer (
+module noc_axi4_bridge_buffer #(
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
+    parameter NUM_REQ_THREADS_LOG2     = 4
+) (
   input clk, 
   input rst_n, 
 
@@ -42,25 +45,25 @@ module noc_axi4_bridge_buffer (
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] read_req_header, 
-  output [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] read_req_id,
+  output [NUM_REQ_THREADS_LOG2-1:0] read_req_id,
   output read_req_val, 
   input  read_req_rdy,
 
   // read response in
   input [`AXI4_DATA_WIDTH-1:0] read_resp_data, 
-  input [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] read_resp_id,
+  input [NUM_REQ_THREADS_LOG2-1:0] read_resp_id,
   input read_resp_val, 
   output  read_resp_rdy,
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] write_req_header, 
-  output [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] write_req_id,
+  output [NUM_REQ_THREADS_LOG2-1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data, 
   output write_req_val, 
   input  write_req_rdy,
 
   // read response in
-  input [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] write_resp_id,
+  input [NUM_REQ_THREADS_LOG2-1:0] write_resp_id,
   input write_resp_val, 
   output  write_resp_rdy,
 
@@ -84,23 +87,25 @@ reg [`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0]                          pkt_command;
 
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_in;
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_out;
-reg preser_arb;
-reg [`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0] bram_rdy;
-reg [`AXI4_DATA_WIDTH-1:0] ser_data_f;
-wire [`MSG_HEADER_WIDTH-1:0] ser_header_f;
-reg ser_val_f;
-reg [`AXI4_DATA_WIDTH-1:0] ser_data_ff;
-reg [`MSG_HEADER_WIDTH-1:0] ser_header_ff;
-reg ser_val_ff;
+
+localparam NUM_REQ_OUTSTANDING = 1 << NUM_REQ_OUTSTANDING_LOG2;
+// reg preser_arb;
+// reg [NUM_REQ_OUTSTANDING-1:0] bram_rdy;
+// reg [`AXI4_DATA_WIDTH-1:0] ser_data_f;
+// wire [`MSG_HEADER_WIDTH-1:0] ser_header_f;
+// reg ser_val_f;
+// reg [`AXI4_DATA_WIDTH-1:0] ser_data_ff;
+// reg [`MSG_HEADER_WIDTH-1:0] ser_header_ff;
+// reg ser_val_ff;
 
 
 wire deser_go = (deser_rdy & deser_val);
 wire read_req_go = (read_req_val & read_req_rdy);
-wire read_resp_go = (read_resp_val & read_resp_rdy);
+// wire read_resp_go = (read_resp_val & read_resp_rdy);
 wire write_req_go = (write_req_val & write_req_rdy);
-wire write_resp_go = (write_resp_val & write_resp_rdy);
+// wire write_resp_go = (write_resp_val & write_resp_rdy);
 wire req_go = read_req_go || write_req_go;
-wire preser_rdy = ~ser_val_ff || ser_rdy;
+// wire preser_rdy = ~ser_val_ff || ser_rdy;
 wire ser_go = ser_val & ser_rdy;
 
 //
@@ -150,28 +155,47 @@ generate
     end
 endgenerate
 
-noc_axi4_bridge_sram_data noc_axi4_bridge_sram_data
-(
-    .MEMCLK(clk), 
-    .RESET_N(rst_n),
-    .CEA(1),
-    .AA(write_req_id),
-    .RDWENA(1'b1),
-    .CEB(deser_go),
-    .AB(fifo_in),
-    .RDWENB(1'b0),
-    .DOUTA(write_req_data),
-    .BWB({`AXI4_DATA_WIDTH{1'b1}}),
-    .DINB(deser_data)
+// Xilinx-synthesizable Simple Dual Port Single Clock RAM
+xilinx_simple_dual_port_1_clock_ram #(
+    .RAM_WIDTH(`AXI4_DATA_WIDTH),                 // Specify RAM data width
+    .RAM_DEPTH(`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT), // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("LOW_LATENCY")               // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+) noc_axi4_bridge_sram_data (
+    .addra(fifo_in),        // Write address bus, width determined from RAM_DEPTH
+    .addrb(fifo_out),       // Read address bus, width determined from RAM_DEPTH
+    .dina(deser_data),      // RAM input data, width determined from RAM_WIDTH
+    .clka(clk),             // Clock
+    .wea(deser_go),         // Write enable
+    .enb(1'b1),             // Read Enable, for additional power savings, disable when not in use
+    .rstb(~rst_n),          // Output reset (does not affect memory contents)
+    .regceb(1'b1),          // Output register enable
+    .doutb(write_req_data)  // RAM output data, width determined from RAM_WIDTH
 );
 
-assign read_req_val = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == READ) && bram_rdy[fifo_out];
-assign read_req_header = pkt_header[fifo_out];
-assign read_req_id = fifo_out;
+reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wr_ptr;
+reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rd_ptr;
 
-assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == WRITE) && bram_rdy[fifo_out];
+wire outstnd_empt = (outstnd_rd_ptr ==  outstnd_wr_ptr);
+wire outstnd_full = (outstnd_rd_ptr == (outstnd_wr_ptr ^ {1'b1,{NUM_REQ_OUTSTANDING_LOG2{1'b0}}}));
+
+always @(posedge clk) begin
+  if(~rst_n) begin
+    outstnd_wr_ptr <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+    outstnd_rd_ptr <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+  end 
+  else begin
+    if (req_go) outstnd_wr_ptr <= outstnd_wr_ptr + 1;
+    if (ser_go) outstnd_rd_ptr <= outstnd_rd_ptr + 1;
+  end
+end
+
+assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == READ)  && !outstnd_full;
+assign read_req_header = pkt_header[fifo_out];
+assign read_req_id = 0; //fifo_out;
+
+assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == WRITE) && !outstnd_full;
 assign write_req_header = pkt_header[fifo_out];
-assign write_req_id = fifo_out;
+assign write_req_id = 0; //fifo_out;
 
 assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
 
@@ -180,86 +204,109 @@ assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
 // GET_RESPONSE
 //
 
-always @(posedge clk) begin
-    if(~rst_n) begin
-        preser_arb <= 1'b0;
-    end 
-    else begin
-        preser_arb <= preser_arb + 1'b1;
-    end
-end
+// always @(posedge clk) begin
+//     if(~rst_n) begin
+//         preser_arb <= 1'b0;
+//     end 
+//     else begin
+//         preser_arb <= preser_arb + 1'b1;
+//     end
+// end
 
-noc_axi4_bridge_sram_req noc_axi4_bridge_sram_req
-(
-    .MEMCLK(clk), 
-    .RESET_N(rst_n),
-    .CEA(1),
-    .AA(preser_arb ? write_resp_id : read_resp_id),
-    .RDWENA(1'b1),
-    .CEB(req_go),
-    .AB(fifo_out),
-    .RDWENB(1'b0),
-    .DOUTA(ser_header_f),
-    .BWB({`MSG_HEADER_WIDTH{1'b1}}),
-    .DINB(pkt_header[fifo_out])
+// Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
+xilinx_true_dual_port_no_change_1_clock_ram #(
+    .RAM_WIDTH(`MSG_HEADER_WIDTH),    // Specify RAM data width
+    .RAM_DEPTH(NUM_REQ_OUTSTANDING),  // Specify RAM depth (number of entries)
+    .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+) noc_axi4_bridge_sram_req (
+    .addra(outstnd_rd_ptr[NUM_REQ_OUTSTANDING_LOG2-1:0]), // Port A address bus, width determined from RAM_DEPTH
+    .addrb(outstnd_wr_ptr[NUM_REQ_OUTSTANDING_LOG2-1:0]), // Port B address bus, width determined from RAM_DEPTH
+    .dina(`MSG_HEADER_WIDTH'b0),      // Port A RAM input data, width determined from RAM_WIDTH
+    .dinb(pkt_header[fifo_out]),      // Port B RAM input data, width determined from RAM_WIDTH
+    .clka(clk),                       // Clock
+    .wea(1'b0),                       // Port A write enable
+    .web(1'b1),                       // Port B write enable
+    .ena(1'b1),                       // Port A RAM Enable, for additional power savings, disable port when not in use
+    .enb(req_go),                     // Port B RAM Enable, for additional power savings, disable port when not in use
+    .rsta(~rst_n),                    // Port A output reset (does not affect memory contents)
+    .rstb(~rst_n),                    // Port B output reset (does not affect memory contents)
+    .regcea(1'b1),                    // Port A output register enable
+    .regceb(1'b1),                    // Port B output register enable
+    .douta(ser_header),               // Port A RAM output data, width determined from RAM_WIDTH
+    .doutb()                          // Port B RAM output data, width determined from RAM_WIDTH
 );
 
+reg outstnd_val;
+always @(posedge clk)
+    if(~rst_n) outstnd_val <= 1'b0;
+    else       outstnd_val <= ~outstnd_empt;
+wire outstnd_en = outstnd_val & ~outstnd_empt;
 
-generate 
-    for (i = 0; i < `NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT; i = i + 1) begin
-        always @(posedge clk) begin
-            if(~rst_n) begin
-                bram_rdy[i] <= 1;
-            end 
-            else begin
-                bram_rdy[i] <= (req_go & (i == fifo_out))               ? 0 
-                             : (write_resp_go & (i == write_resp_id)) ? 1
-                             : (read_resp_go & (i == read_resp_id))   ? 1
-                             :                                          bram_rdy[i];
-            end
-        end
-    end
-endgenerate
+wire outstnd_command = (ser_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
+                       (ser_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
 
-assign read_resp_rdy = ~preser_arb & preser_rdy;
-assign write_resp_rdy = preser_arb & preser_rdy;
+assign read_resp_rdy  = outstnd_en & ser_rdy & ~outstnd_command;
+assign write_resp_rdy = outstnd_en & ser_rdy &  outstnd_command;
+
+assign ser_val = outstnd_en & (outstnd_command ? write_resp_val : read_resp_val);
+assign ser_data = outstnd_command ? 0 : read_resp_data;
 
 
-always @(posedge clk) begin
-    if(~rst_n) begin
-        ser_data_f <= 0;
-        ser_val_f <= 0;
-        ser_header_ff <= 0;
-        ser_val_ff <= 0;
-        ser_data_ff <= 0;
-    end 
-    else begin
-        if (preser_rdy) begin
-            if (preser_arb) begin
-                ser_val_f <= write_resp_val;
-                ser_data_f <= 0;
-            end
-            else begin
-                ser_val_f <= read_resp_val;
-                ser_data_f <= read_resp_data;
-            end
-            ser_val_ff <= ser_val_f;
-            ser_data_ff <= ser_data_f;
-            ser_header_ff <= ser_header_f;
-        end
-        else begin
-            ser_val_f <= ser_val_f;
-            ser_data_f <= ser_data_f;
-            ser_val_ff <= ser_val_ff;
-            ser_data_ff <= ser_data_ff;
-            ser_header_ff <= ser_header_ff;
-        end
-    end
-end
+// generate 
+//     for (i = 0; i < NUM_REQ_OUTSTANDING; i = i + 1) begin
+//         always @(posedge clk) begin
+//             if(~rst_n) begin
+//                 bram_rdy[i] <= 1;
+//             end 
+//             else begin
+//                 bram_rdy[i] <= (req_go & (i == fifo_out))               ? 0 
+//                              : (write_resp_go & (i == write_resp_id)) ? 1
+//                              : (read_resp_go & (i == read_resp_id))   ? 1
+//                              :                                          bram_rdy[i];
+//             end
+//         end
+//     end
+// endgenerate
 
-assign ser_data = ser_data_ff;
-assign ser_val = ser_val_ff;
-assign ser_header = ser_header_ff;
+// assign read_resp_rdy = ~preser_arb & preser_rdy;
+// assign write_resp_rdy = preser_arb & preser_rdy;
+
+
+// always @(posedge clk) begin
+//     if(~rst_n) begin
+//         ser_data_f <= 0;
+//         ser_val_f <= 0;
+//         ser_header_ff <= 0;
+//         ser_val_ff <= 0;
+//         ser_data_ff <= 0;
+//     end 
+//     else begin
+//         if (preser_rdy) begin
+//             if (preser_arb) begin
+//                 ser_val_f <= write_resp_val;
+//                 ser_data_f <= 0;
+//             end
+//             else begin
+//                 ser_val_f <= read_resp_val;
+//                 ser_data_f <= read_resp_data;
+//             end
+//             ser_val_ff <= ser_val_f;
+//             ser_data_ff <= ser_data_f;
+//             ser_header_ff <= ser_header_f;
+//         end
+//         else begin
+//             ser_val_f <= ser_val_f;
+//             ser_data_f <= ser_data_f;
+//             ser_val_ff <= ser_val_ff;
+//             ser_data_ff <= ser_data_ff;
+//             ser_header_ff <= ser_header_ff;
+//         end
+//     end
+// end
+
+// assign ser_data = ser_data_ff;
+// assign ser_val = ser_val_ff;
+// assign ser_header = ser_header_ff;
 
 
 /*

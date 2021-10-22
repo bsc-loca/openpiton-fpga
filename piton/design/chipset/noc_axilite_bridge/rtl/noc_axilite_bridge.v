@@ -432,6 +432,26 @@ localparam STORE_ACK = 1'd1;
         m_axi_bready = (w_resp_buf_status == BUF_STATUS_WAITRESP);
     end
 
+   wire [`MSG_SRC_CHIPID_WIDTH-1:0] r_req_src_chipid = r_req_buf_header2_f[`MSG_SRC_CHIPID_];
+   wire [`MSG_SRC_X_WIDTH     -1:0] r_req_src_x      = r_req_buf_header2_f[`MSG_SRC_X_];
+   wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_src_y      = r_req_buf_header2_f[`MSG_SRC_Y_];
+   wire [`MSG_SRC_FBITS_WIDTH -1:0] r_req_src_fbits  = r_req_buf_header2_f[`MSG_SRC_FBITS_];
+
+   wire [`MSG_DST_CHIPID_WIDTH-1:0] r_req_dst_chipid = r_req_buf_header0_f[`MSG_DST_CHIPID];
+   wire [`MSG_DST_X_WIDTH     -1:0] r_req_dst_x      = r_req_buf_header0_f[`MSG_DST_X];
+   wire [`MSG_DST_Y_WIDTH     -1:0] r_req_dst_y      = r_req_buf_header0_f[`MSG_DST_Y];
+   wire [`MSG_DST_FBITS_WIDTH -1:0] r_req_dst_fbits  = r_req_buf_header0_f[`MSG_DST_FBITS];
+
+   wire [`MSG_SRC_CHIPID_WIDTH-1:0] w_req_src_chipid = w_req_buf_header2_f[`MSG_SRC_CHIPID_];
+   wire [`MSG_SRC_X_WIDTH     -1:0] w_req_src_x      = w_req_buf_header2_f[`MSG_SRC_X_];
+   wire [`MSG_SRC_Y_WIDTH     -1:0] w_req_src_y      = w_req_buf_header2_f[`MSG_SRC_Y_];
+   wire [`MSG_SRC_FBITS_WIDTH -1:0] w_req_src_fbits  = w_req_buf_header2_f[`MSG_SRC_FBITS_];
+
+   wire [`MSG_DST_CHIPID_WIDTH-1:0] w_req_dst_chipid = w_req_buf_header0_f[`MSG_DST_CHIPID];
+   wire [`MSG_DST_X_WIDTH     -1:0] w_req_dst_x      = w_req_buf_header0_f[`MSG_DST_X];
+   wire [`MSG_DST_Y_WIDTH     -1:0] w_req_dst_y      = w_req_buf_header0_f[`MSG_DST_Y];
+   wire [`MSG_DST_FBITS_WIDTH -1:0] w_req_dst_fbits  = w_req_buf_header0_f[`MSG_DST_FBITS];
+
     // Create response header
     assign r_resp_buf_header0_next[`MSG_DST_CHIPID] = r_req_buf_header2_f[`MSG_SRC_CHIPID_];
     assign r_resp_buf_header0_next[`MSG_DST_X]      = r_req_buf_header2_f[`MSG_SRC_X_];
