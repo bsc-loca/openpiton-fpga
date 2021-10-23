@@ -197,6 +197,7 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
 
+
     # use custom vivado version if provided
     if(os.environ.get('VIVADO_BIN')) is not None:
         cmd = os.environ['VIVADO_BIN'].split(" ") + ["-mode", "batch", "-source", script]
@@ -297,7 +298,9 @@ def makeProject(board, hbm, design_data, work_dir, log_dir, slurm, dep_list):
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
     setUARTXilinxFreq(board, design_data)
     # Passing parameter to TCL
-    if board == "alveou280" and hbm: os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
+    if board == "alveou280" and hbm:
+        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
+        print_info("HBM is defined as primary system RAM")
     jid = None
     if (tool == "vivado"):
         print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
@@ -553,9 +556,8 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
 
-    # Alex Kropotov: no limitation for mapping of test just to BRAM
     # --bram-test option
-    if (options.test_name != None and options.uart_dmw == None):
+    if (options.test_name != None and options.uart_dmw == "bram"):
         defines.append("PITON_FPGA_BRAM_TEST")
         defines.append("PITONSYS_NO_MC")
 
@@ -565,7 +567,6 @@ def makeDefList(options):
     elif options.uart_dmw == "bram":
         defines.append("PITONSYS_UART_BOOT")
         defines.append("PITON_FPGA_BRAM_TEST")
-        defines.append("PITONSYS_NO_MC")
 
     if options.uart_reset == True:
         defines.append("PITONSYS_UART_RESET")
@@ -651,7 +652,6 @@ def makeDefList(options):
         disp_string = "Heeey!          I am a chipset  for (Open)Piton Enjoy debugging!"
         defines.append("{OLED_STRING=\\\"%s\\\"}" % disp_string)
 
-    
     return defines
 
 def updateBlockList(options):
@@ -960,8 +960,7 @@ def main():
     ###################################
 
     if run_map_test:
-        # Alex Kropotov: no limitation for mapping of test just to BRAM
-        if (options.test_name != None and options.uart_dmw == None):
+        if options.test_name != None:
             strg_type = "bram"
         else:
             strg_type = options.uart_dmw
@@ -985,6 +984,7 @@ def main():
         jid = makeProject(options.board, options.hbm, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
         if jid != None:
             dep_list.append(jid)
+
 
     ## TODO: update this options for simulations from VCS
     if run_gen_test_bram:
