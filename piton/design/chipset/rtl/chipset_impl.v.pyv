@@ -1228,7 +1228,7 @@ fake_uart fake_uart (
     `ifdef PITONSYS_UART_BOOT
        assign ariane_boot_sel = uart_boot_en;
     `else
-       assign ariane_boot_sel = bootrom_linux_en;
+       assign ariane_boot_sel = 1'b0;
     `endif
   `endif
 `else
