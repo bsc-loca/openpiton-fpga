@@ -1246,6 +1246,10 @@ if romIsPresent:
 
 print("    assign lagarto_bootaddr  =  64'h%s;" % bootAddr)
 %>
+    vas_tile_core #(
+<%
+str = '''
+%>
     lagarto_verilog_wrap #(
 <%
 str = '''

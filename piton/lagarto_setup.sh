@@ -71,7 +71,8 @@ fi
 
 # set root directory
 export PITON_ROOT=`pwd`
-export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas-tile-core/
+export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
+
 
 ## GCC and RISCV GCC setup
 export CXX=g++ CC=gcc
@@ -83,7 +84,8 @@ source ./piton/piton_settings.bash
 echo "Piton settings applied"
 # These setting is for SATU server.
 
-#git submodule update --init --recursive piton/design/chip/tile/vas-tile-core
+git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
+
 
 export RISCV=/home/tools/openpiton/riscv_install
 export PATH=$RISCV/bin:$PATH
@@ -94,10 +96,10 @@ export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
 
 
+if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]
+
 ### MEEP WORKSTATIONS SPECIFICS
-echo "Apply Lagarto riscv toolchain environment"
-source /home/tools/riscv_vector_toolchain/set_env.sh
-#source /eda/env.sh
+
 echo "MEEP environment applied successfully"
 
 
