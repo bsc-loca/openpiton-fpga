@@ -1267,6 +1267,7 @@ print(str)
 
         .boot_addr_i         (lagarto_bootaddr        ),
         .hart_id_i           ({{64-`JTAG_FLATID_WIDTH{1'b0}}, flat_tileid} ),
+        .ipi_i               (ipi_i),
 
         .l15_req_o           (l15_req                   ),
         .l15_rtrn_i          (l15_rtrn                  ),

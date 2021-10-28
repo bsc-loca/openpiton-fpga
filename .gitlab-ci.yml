@@ -23,7 +23,7 @@ variables:
   DESIGN_OPTIONS: "XTILES=2 YTILES=2"
   GOLDEN_MESSAGE: "Welcome to the Fedora/RISC-V disk image"
   ## Temp variables while lagarto+Fedora is developed
-  GOLDEN_MESSAGE_LAGARTO: "riscv_clocksource" 
+  GOLDEN_MESSAGE_LAGARTO: "io scheduler kyber registered" 
   OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi.bin
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
 
