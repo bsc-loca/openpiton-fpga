@@ -32,45 +32,48 @@
 
 module noc_axi4_bridge_buffer #(
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
-    parameter NUM_REQ_THREADS_LOG2     = 4
+    parameter NUM_REQ_YTHREADS_LOG2 = 2,
+    parameter NUM_REQ_XTHREADS_LOG2 = 2, 
+    localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
+                                      NUM_REQ_XTHREADS_LOG2
 ) (
-  input clk, 
-  input rst_n, 
+  input clk,
+  input rst_n,
 
   // from deserializer
-  input [`MSG_HEADER_WIDTH-1:0] deser_header, 
-  input [`AXI4_DATA_WIDTH-1:0] deser_data, 
-  input deser_val, 
-  output  deser_rdy,
+  input [`MSG_HEADER_WIDTH-1:0] deser_header,
+  input [`AXI4_DATA_WIDTH-1:0] deser_data,
+  input  deser_val,
+  output deser_rdy,
 
   // read request out
-  output [`MSG_HEADER_WIDTH-1:0] read_req_header, 
+  output [`MSG_HEADER_WIDTH-1:0] read_req_header,
   output [NUM_REQ_THREADS_LOG2-1:0] read_req_id,
-  output read_req_val, 
+  output read_req_val,
   input  read_req_rdy,
 
   // read response in
-  input [`AXI4_DATA_WIDTH-1:0] read_resp_data, 
+  input [`AXI4_DATA_WIDTH-1:0] read_resp_data,
   input [NUM_REQ_THREADS_LOG2-1:0] read_resp_id,
-  input read_resp_val, 
-  output  read_resp_rdy,
+  input  read_resp_val,
+  output read_resp_rdy,
 
   // read request out
-  output [`MSG_HEADER_WIDTH-1:0] write_req_header, 
+  output [`MSG_HEADER_WIDTH-1:0] write_req_header,
   output [NUM_REQ_THREADS_LOG2-1:0] write_req_id,
-  output [`AXI4_DATA_WIDTH-1:0] write_req_data, 
-  output write_req_val, 
+  output [`AXI4_DATA_WIDTH-1:0] write_req_data,
+  output write_req_val,
   input  write_req_rdy,
 
   // read response in
   input [NUM_REQ_THREADS_LOG2-1:0] write_resp_id,
-  input write_resp_val, 
-  output  write_resp_rdy,
+  input  write_resp_val,
+  output write_resp_rdy,
 
   // in serializer
-  output [`MSG_HEADER_WIDTH-1:0] ser_header, 
-  output [`AXI4_DATA_WIDTH-1:0] ser_data, 
-  output ser_val, 
+  output [`MSG_HEADER_WIDTH-1:0] ser_header,
+  output [`AXI4_DATA_WIDTH-1:0] ser_data,
+  output ser_val,
   input  ser_rdy
 );
 
@@ -88,24 +91,12 @@ reg [`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0]                          pkt_command;
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_in;
 reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_out;
 
-localparam NUM_REQ_OUTSTANDING = 1 << NUM_REQ_OUTSTANDING_LOG2;
-// reg preser_arb;
-// reg [NUM_REQ_OUTSTANDING-1:0] bram_rdy;
-// reg [`AXI4_DATA_WIDTH-1:0] ser_data_f;
-// wire [`MSG_HEADER_WIDTH-1:0] ser_header_f;
-// reg ser_val_f;
-// reg [`AXI4_DATA_WIDTH-1:0] ser_data_ff;
-// reg [`MSG_HEADER_WIDTH-1:0] ser_header_ff;
-// reg ser_val_ff;
-
-
 wire deser_go = (deser_rdy & deser_val);
 wire read_req_go = (read_req_val & read_req_rdy);
 // wire read_resp_go = (read_resp_val & read_resp_rdy);
 wire write_req_go = (write_req_val & write_req_rdy);
 // wire write_resp_go = (write_resp_val & write_resp_rdy);
 wire req_go = read_req_go || write_req_go;
-// wire preser_rdy = ~ser_val_ff || ser_rdy;
 wire ser_go = ser_val & ser_rdy;
 
 //
@@ -155,6 +146,8 @@ generate
     end
 endgenerate
 
+assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
+
 // Xilinx-synthesizable Simple Dual Port Single Clock RAM
 xilinx_simple_dual_port_1_clock_ram #(
     .RAM_WIDTH(`AXI4_DATA_WIDTH),                 // Specify RAM data width
@@ -172,141 +165,150 @@ xilinx_simple_dual_port_1_clock_ram #(
     .doutb(write_req_data)  // RAM output data, width determined from RAM_WIDTH
 );
 
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wr_ptr;
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rd_ptr;
-
-wire outstnd_empt = (outstnd_rd_ptr ==  outstnd_wr_ptr);
-wire outstnd_full = (outstnd_rd_ptr == (outstnd_wr_ptr ^ {1'b1,{NUM_REQ_OUTSTANDING_LOG2{1'b0}}}));
-
-always @(posedge clk) begin
-  if(~rst_n) begin
-    outstnd_wr_ptr <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
-    outstnd_rd_ptr <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
-  end 
-  else begin
-    if (req_go) outstnd_wr_ptr <= outstnd_wr_ptr + 1;
-    if (ser_go) outstnd_rd_ptr <= outstnd_rd_ptr + 1;
-  end
-end
-
-assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == READ)  && !outstnd_full;
-assign read_req_header = pkt_header[fifo_out];
-assign read_req_id = 0; //fifo_out;
-
-assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) && (pkt_command[fifo_out] == WRITE) && !outstnd_full;
-assign write_req_header = pkt_header[fifo_out];
-assign write_req_id = 0; //fifo_out;
-
-assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
-
 
 //
 // GET_RESPONSE
 //
 
-// always @(posedge clk) begin
-//     if(~rst_n) begin
-//         preser_arb <= 1'b0;
-//     end 
-//     else begin
-//         preser_arb <= preser_arb + 1'b1;
-//     end
-// end
+localparam NUM_REQ_THREADS = 1 << NUM_REQ_THREADS_LOG2;
+reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS : 0];
+reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS : 0];
+
+reg [NUM_REQ_THREADS      : 0] outstnd_vrt_empt;
+reg [NUM_REQ_THREADS_LOG2 : 0] itr_empt;
+always @(*)
+  for (itr_empt = 0; itr_empt <= NUM_REQ_THREADS; itr_empt = itr_empt+1)
+    outstnd_vrt_empt[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] ==  outstnd_vrt_wrptrs[itr_empt]);
+
+
+reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
+reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptrs[NUM_REQ_THREADS : 0];
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr = outstnd_abs_rdptrs[full_resp_id];
+
+reg init_outstnd_mem;
+always @(posedge clk)
+  if(~rst_n) init_outstnd_mem <= 1'b1;
+  else if (outstnd_abs_rdptr == {NUM_REQ_OUTSTANDING_LOG2{1'b1}}) init_outstnd_mem <= 1'b0;
+
+
+reg [NUM_REQ_THREADS : 0] outstnd_abs_rdptrs_val;
+always @(posedge clk)
+  if(~rst_n || init_outstnd_mem) full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
+  else if (outstnd_vrt_empt[full_resp_id] || outstnd_abs_rdptrs_val[full_resp_id]) begin
+    // higher priority for Read response
+    if (write_resp_val) full_resp_id <= {WRITE,write_resp_id};
+    if (read_resp_val ) full_resp_id <= {READ ,read_resp_id };
+  end
+
+
+localparam OUTSTND_HDR_WIDTH = NUM_REQ_OUTSTANDING_LOG2 + 1 + `MSG_HEADER_WIDTH;
+wire [OUTSTND_HDR_WIDTH-1 : 0] clean_header;
+
+reg [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr;
+always @(posedge clk)
+  if(~rst_n) outstnd_abs_wrptr <= {NUM_REQ_OUTSTANDING_LOG2{1'b0}};
+  else // searching for first free request location
+    if (clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem) outstnd_abs_wrptr <= outstnd_abs_wrptr + 1;
+
+
+wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header [fifo_out];
+wire                          req_command = pkt_command[fifo_out];
+wire [`MSG_SRC_X_WIDTH-1:0] req_src_x = req_header[`MSG_SRC_X];
+wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
+wire [NUM_REQ_THREADS_LOG2-1:0] req_id = {req_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
+                                          req_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
+wire [NUM_REQ_THREADS_LOG2 : 0] full_req_id = {req_command, req_id};
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
+
+wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
+wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
+                    (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+wire [`MSG_SRC_X_WIDTH-1:0] stor_src_x = stor_header[`MSG_SRC_X];
+wire [`MSG_SRC_Y_WIDTH-1:0] stor_src_y = stor_header[`MSG_SRC_Y];
+wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
+                                           stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
+wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {stor_command, stor_id};
+
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
+reg [NUM_REQ_THREADS_LOG2 : 0] itr_ptr;
+always @(posedge clk)
+  if(~rst_n) begin
+    for (itr_ptr = 0; itr_ptr <= NUM_REQ_THREADS; itr_ptr = itr_ptr+1) begin
+      outstnd_vrt_wrptrs[itr_ptr] <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      outstnd_vrt_rdptrs[itr_ptr] <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      outstnd_abs_rdptrs[itr_ptr] <= { NUM_REQ_OUTSTANDING_LOG2   {1'b0}};
+      outstnd_abs_rdptrs_val[itr_ptr] <= 1'b0;
+    end
+  end
+  else begin
+    if (req_go) begin 
+      outstnd_vrt_wrptrs[full_req_id] <= outstnd_vrt_wrptrs[full_req_id] + 1;
+      if (outstnd_vrt_empt[full_req_id]) begin
+        outstnd_abs_rdptrs[full_req_id] <= outstnd_abs_wrptr;
+        outstnd_abs_rdptrs_val[full_req_id] <= 1'b1;
+      end
+    end
+    if (ser_go) begin 
+      outstnd_vrt_rdptrs    [full_resp_id] <= outstnd_vrt_rdptrs[full_resp_id] + 1;
+      outstnd_abs_rdptrs_val[full_resp_id] <= 1'b0;
+    end
+    if (!outstnd_vrt_empt[full_resp_id]) begin
+      if (stor_header[`MSG_HEADER_WIDTH] && full_stor_id == full_resp_id && 
+          stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] == outstnd_vrt_rdptr)
+        outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
+      // searching for next valid request location for responded ID
+      else outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptrs[full_resp_id] +1;
+    end
+    // Initialization of Outstanding requests memory
+    if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptrs[full_resp_id] +1;
+  end
+
+
+assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && !req_command && !clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem;
+assign read_req_header = req_header;
+assign read_req_id = req_id;
+
+assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem;
+assign write_req_header = req_header;
+assign write_req_id = req_id;
+
 
 // Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
 xilinx_true_dual_port_no_change_1_clock_ram #(
-    .RAM_WIDTH(`MSG_HEADER_WIDTH),    // Specify RAM data width
-    .RAM_DEPTH(NUM_REQ_OUTSTANDING),  // Specify RAM depth (number of entries)
+    .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
+    .RAM_DEPTH(1<<NUM_REQ_OUTSTANDING_LOG2), // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-) noc_axi4_bridge_sram_req (
-    .addra(outstnd_rd_ptr[NUM_REQ_OUTSTANDING_LOG2-1:0]), // Port A address bus, width determined from RAM_DEPTH
-    .addrb(outstnd_wr_ptr[NUM_REQ_OUTSTANDING_LOG2-1:0]), // Port B address bus, width determined from RAM_DEPTH
-    .dina(`MSG_HEADER_WIDTH'b0),      // Port A RAM input data, width determined from RAM_WIDTH
-    .dinb(pkt_header[fifo_out]),      // Port B RAM input data, width determined from RAM_WIDTH
+) outstnd_req_mem (
+    .addra(outstnd_abs_rdptr),        // Port A address bus, width determined from RAM_DEPTH
+    .addrb(outstnd_abs_wrptr),        // Port B address bus, width determined from RAM_DEPTH
+    .dina({OUTSTND_HDR_WIDTH{1'b0}}), // Port A RAM input data, width determined from RAM_WIDTH
+    .dinb({outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
     .clka(clk),                       // Clock
-    .wea(1'b0),                       // Port A write enable
+    .wea(1'b1),                       // Port A write enable
     .web(1'b1),                       // Port B write enable
-    .ena(1'b1),                       // Port A RAM Enable, for additional power savings, disable port when not in use
+    .ena(ser_go | init_outstnd_mem),  // Port A RAM Enable, for additional power savings, disable port when not in use
     .enb(req_go),                     // Port B RAM Enable, for additional power savings, disable port when not in use
     .rsta(~rst_n),                    // Port A output reset (does not affect memory contents)
     .rstb(~rst_n),                    // Port B output reset (does not affect memory contents)
     .regcea(1'b1),                    // Port A output register enable
     .regceb(1'b1),                    // Port B output register enable
-    .douta(ser_header),               // Port A RAM output data, width determined from RAM_WIDTH
-    .doutb()                          // Port B RAM output data, width determined from RAM_WIDTH
+    .douta(stor_header),              // Port A RAM output data, width determined from RAM_WIDTH
+    .doutb(clean_header)              // Port B RAM output data, width determined from RAM_WIDTH
 );
 
+wire outstnd_resp_val = outstnd_abs_rdptrs_val[full_resp_id];
 reg outstnd_val;
 always @(posedge clk)
     if(~rst_n) outstnd_val <= 1'b0;
-    else       outstnd_val <= ~outstnd_empt;
-wire outstnd_en = outstnd_val & ~outstnd_empt;
+    else       outstnd_val <= outstnd_resp_val; //~outstnd_empt;
+wire outstnd_en = outstnd_val & outstnd_resp_val; //~outstnd_empt;
 
-wire outstnd_command = (ser_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
-                       (ser_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+assign read_resp_rdy  = outstnd_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
+assign write_resp_rdy = outstnd_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
 
-assign read_resp_rdy  = outstnd_en & ser_rdy & ~outstnd_command;
-assign write_resp_rdy = outstnd_en & ser_rdy &  outstnd_command;
-
-assign ser_val = outstnd_en & (outstnd_command ? write_resp_val : read_resp_val);
-assign ser_data = outstnd_command ? 0 : read_resp_data;
-
-
-// generate 
-//     for (i = 0; i < NUM_REQ_OUTSTANDING; i = i + 1) begin
-//         always @(posedge clk) begin
-//             if(~rst_n) begin
-//                 bram_rdy[i] <= 1;
-//             end 
-//             else begin
-//                 bram_rdy[i] <= (req_go & (i == fifo_out))               ? 0 
-//                              : (write_resp_go & (i == write_resp_id)) ? 1
-//                              : (read_resp_go & (i == read_resp_id))   ? 1
-//                              :                                          bram_rdy[i];
-//             end
-//         end
-//     end
-// endgenerate
-
-// assign read_resp_rdy = ~preser_arb & preser_rdy;
-// assign write_resp_rdy = preser_arb & preser_rdy;
-
-
-// always @(posedge clk) begin
-//     if(~rst_n) begin
-//         ser_data_f <= 0;
-//         ser_val_f <= 0;
-//         ser_header_ff <= 0;
-//         ser_val_ff <= 0;
-//         ser_data_ff <= 0;
-//     end 
-//     else begin
-//         if (preser_rdy) begin
-//             if (preser_arb) begin
-//                 ser_val_f <= write_resp_val;
-//                 ser_data_f <= 0;
-//             end
-//             else begin
-//                 ser_val_f <= read_resp_val;
-//                 ser_data_f <= read_resp_data;
-//             end
-//             ser_val_ff <= ser_val_f;
-//             ser_data_ff <= ser_data_f;
-//             ser_header_ff <= ser_header_f;
-//         end
-//         else begin
-//             ser_val_f <= ser_val_f;
-//             ser_data_f <= ser_data_f;
-//             ser_val_ff <= ser_val_ff;
-//             ser_data_ff <= ser_data_ff;
-//             ser_header_ff <= ser_header_ff;
-//         end
-//     end
-// end
-
-// assign ser_data = ser_data_ff;
-// assign ser_val = ser_val_ff;
-// assign ser_header = ser_header_ff;
+assign ser_val = outstnd_en & (read_resp_val | write_resp_val);
+assign ser_data = read_resp_val ? read_resp_data : 0; // higher priority for Read response
+assign ser_header = stor_header;
 
 
 /*

@@ -35,8 +35,11 @@ module noc_axi4_bridge #(
     // NOC words to AXI word deserialization order
     parameter NOC2AXI_DESER_ORDER = 0,
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
-    parameter NUM_REQ_THREADS_LOG2     = 4,
-    parameter ADDR_OFFSET = 64'h0
+    parameter NUM_REQ_YTHREADS_LOG2 = 2,
+    parameter NUM_REQ_XTHREADS_LOG2 = 2,
+    parameter ADDR_OFFSET = 64'h0,
+    localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
+                                      NUM_REQ_XTHREADS_LOG2
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -135,7 +138,8 @@ wire ser_rdy;
 
 noc_axi4_bridge_buffer #(
     .NUM_REQ_OUTSTANDING_LOG2 (NUM_REQ_OUTSTANDING_LOG2),
-    .NUM_REQ_THREADS_LOG2     (NUM_REQ_THREADS_LOG2)
+    .NUM_REQ_YTHREADS_LOG2 (NUM_REQ_YTHREADS_LOG2),
+    .NUM_REQ_XTHREADS_LOG2 (NUM_REQ_XTHREADS_LOG2)
 ) noc_axi4_bridge_buffer (
     .clk(clk),
     .rst_n(rst_n), 

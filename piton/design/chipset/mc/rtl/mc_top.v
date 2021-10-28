@@ -167,8 +167,9 @@ noc_axi4_bridge #(
       .SWAP_ENDIANESS (1),
     `endif
     .NOC2AXI_DESER_ORDER (1),
-    .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_THREADS_LOG2 (1)
+    .NUM_REQ_OUTSTANDING_LOG2 (2),
+    .NUM_REQ_YTHREADS_LOG2 (1),
+    .NUM_REQ_XTHREADS_LOG2 (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 

@@ -272,8 +272,9 @@ noc_axilite_bridge #(
 noc_axi4_bridge #(
     .SWAP_ENDIANESS (SWAP_ENDIANESS),
     .NOC2AXI_DESER_ORDER (1),
-    .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_THREADS_LOG2 (1)
+    .NUM_REQ_OUTSTANDING_LOG2 (2),
+    .NUM_REQ_YTHREADS_LOG2 (1),
+    .NUM_REQ_XTHREADS_LOG2 (1)
 ) noc_ethernet_bridge (
     .clk                (net_axi_clk),  
     .rst_n              (rst_n      ), 
