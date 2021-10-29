@@ -676,7 +676,7 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/rtl/chip_rst_seq.v" \
     "${DV_ROOT}/design/common/rtl/alarm_counter.v" \
     "${DV_ROOT}/design/common/rtl/bram_sdp_1ck.v" \
-    "${DV_ROOT}/design/common/rtl/bram_tdp_1ck_nochange.v" \
+    "${DV_ROOT}/design/common/rtl/bram_tdp_1ck_wrfirst.v" \
     "${DV_ROOT}/design/common/uart/rtl/Const.v" \
     "${DV_ROOT}/design/common/uart/rtl/Counter.v" \
     "${DV_ROOT}/design/common/uart/rtl/ParityGen.v" \

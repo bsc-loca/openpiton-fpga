@@ -1,11 +1,12 @@
 
-//  Xilinx True Dual Port RAM, No Change, Single Clock
+//  Xilinx True Dual Port RAM, Write First with Single Clock
 //  This code implements a parameterizable true dual port memory (both ports can read and write).
-//  This is a no change RAM which retains the last read value on the output during writes
-//  which is the most power efficient mode.
+//  This implements write-first mode where the data being written to the RAM also resides on
+//  the output port.  If the output data is not needed during writes or the last read value is
+//  desired to be retained, it is suggested to use no change as it is more power efficient.
 //  If a reset or enable is not necessary, it may be tied off or removed from the code.
 
-module xilinx_true_dual_port_no_change_1_clock_ram #(
+module xilinx_true_dual_port_write_first_1_clock_ram #(
   parameter RAM_WIDTH = 18,                       // Specify RAM data width
   parameter RAM_DEPTH = 1024,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "HIGH_PERFORMANCE", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
@@ -47,16 +48,18 @@ module xilinx_true_dual_port_no_change_1_clock_ram #(
 
   always @(posedge clka)
     if (ena)
-      if (wea)
+      if (wea) begin
         BRAM[addra] <= dina;
-      else
+        ram_data_a <= dina;
+      end else
         ram_data_a <= BRAM[addra];
 
   always @(posedge clka)
     if (enb)
-      if (web)
+      if (web) begin
         BRAM[addrb] <= dinb;
-      else
+        ram_data_b <= dinb;
+      end else
         ram_data_b <= BRAM[addrb];
 
   //  The following code generates HIGH_PERFORMANCE (use output register) or LOW_LATENCY (no output register)
@@ -101,14 +104,14 @@ module xilinx_true_dual_port_no_change_1_clock_ram #(
 
 endmodule
 
-// The following is an instantiation template for xilinx_true_dual_port_no_change_1_clock_ram
+// The following is an instantiation template for xilinx_true_dual_port_write_first_1_clock_ram
 /*
-  //  Xilinx True Dual Port RAM, No Change, Single Clock
-  xilinx_true_dual_port_no_change_1_clock_ram #(
+  //  Xilinx True Dual Port RAM, Write First with Single Clock
+  xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(18),                       // Specify RAM data width
     .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
-    .INIT_FILE = ""                        // Specify name/location of RAM initialization file if using one (leave blank if not)
+    .INIT_FILE("")                        // Specify name/location of RAM initialization file if using one (leave blank if not)
   ) your_instance_name (
     .addra(addra),   // Port A address bus, width determined from RAM_DEPTH
     .addrb(addrb),   // Port B address bus, width determined from RAM_DEPTH

@@ -204,12 +204,14 @@ always @(posedge clk)
 
 localparam OUTSTND_HDR_WIDTH = NUM_REQ_OUTSTANDING_LOG2 + 1 + `MSG_HEADER_WIDTH;
 wire [OUTSTND_HDR_WIDTH-1 : 0] clean_header;
+wire req_occup = clean_header[`MSG_HEADER_WIDTH];
 
-reg [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr;
+reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr;
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr_nxt = outstnd_abs_wrptr + req_occup;
 always @(posedge clk)
   if(~rst_n) outstnd_abs_wrptr <= {NUM_REQ_OUTSTANDING_LOG2{1'b0}};
   else // searching for first free request location
-    if (clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem) outstnd_abs_wrptr <= outstnd_abs_wrptr + 1;
+    if (!init_outstnd_mem) outstnd_abs_wrptr <= outstnd_abs_wrptr_nxt;
 
 
 wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header [fifo_out];
@@ -265,30 +267,30 @@ always @(posedge clk)
   end
 
 
-assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && !req_command && !clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem;
+assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && !req_command && !req_occup && !init_outstnd_mem;
 assign read_req_header = req_header;
 assign read_req_id = req_id;
 
-assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !clean_header[`MSG_HEADER_WIDTH] && !init_outstnd_mem;
+assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !req_occup && !init_outstnd_mem;
 assign write_req_header = req_header;
 assign write_req_id = req_id;
 
 
 // Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
-xilinx_true_dual_port_no_change_1_clock_ram #(
+xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
     .RAM_DEPTH(1<<NUM_REQ_OUTSTANDING_LOG2), // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
 ) outstnd_req_mem (
     .addra(outstnd_abs_rdptr),        // Port A address bus, width determined from RAM_DEPTH
-    .addrb(outstnd_abs_wrptr),        // Port B address bus, width determined from RAM_DEPTH
+    .addrb(outstnd_abs_wrptr_nxt),    // Port B address bus, width determined from RAM_DEPTH
     .dina({OUTSTND_HDR_WIDTH{1'b0}}), // Port A RAM input data, width determined from RAM_WIDTH
     .dinb({outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
     .clka(clk),                       // Clock
-    .wea(1'b1),                       // Port A write enable
-    .web(1'b1),                       // Port B write enable
-    .ena(ser_go | init_outstnd_mem),  // Port A RAM Enable, for additional power savings, disable port when not in use
-    .enb(req_go),                     // Port B RAM Enable, for additional power savings, disable port when not in use
+    .wea(ser_go | init_outstnd_mem),  // Port A write enable
+    .web(req_go),                     // Port B write enable
+    .ena(1'b1),                       // Port A RAM Enable, for additional power savings, disable port when not in use
+    .enb(1'b1),                       // Port B RAM Enable, for additional power savings, disable port when not in use
     .rsta(~rst_n),                    // Port A output reset (does not affect memory contents)
     .rstb(~rst_n),                    // Port B output reset (does not affect memory contents)
     .regcea(1'b1),                    // Port A output register enable
