@@ -31,8 +31,6 @@
 
 
 module noc_axi4_bridge_read #(
-    // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS       = 0,
     parameter NUM_REQ_THREADS_LOG2 = 4,
     parameter ADDR_OFFSET = 64'h0
 ) (
@@ -51,7 +49,6 @@ module noc_axi4_bridge_read #(
     output wire [NUM_REQ_THREADS_LOG2-1:0]               resp_id,
     output  reg [`AXI4_DATA_WIDTH-1:0]                   resp_data,
     input  wire                                          resp_rdy,
-    input  wire [`MSG_HEADER_WIDTH-1:0]                  resp_header,
 
     // AXI Read Interface
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid,
@@ -183,77 +180,8 @@ storage_addr_trans #(
 );
 
 
-// Have to save request size and offset to process data later
-reg [6:0] size;
-reg [5:0] offset;
 reg [NUM_REQ_THREADS_LOG2-1:0] resp_id_f;
 wire resp_go;
-wire [`PHY_ADDR_WIDTH-1:0] resp_addr = resp_header[`MSG_ADDR];
-wire uncacheable = (resp_addr[`PHY_ADDR_WIDTH-1]) 
-                || (resp_header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ);
-
-// generate begin
-//     genvar i;
-//     for (i = 0; i < `NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT; i = i + 1) begin
-//         always @(posedge clk) begin
-//             if(~rst_n) begin
-//                 size[i] <= 7'b0;
-//                 offset[i] <= 6'b0;
-//             end 
-//             else begin
-//                 if ((i == req_id_f) && m_axi_argo) begin
-                always @(*)
-                    if (uncacheable) begin
-                        offset = resp_addr[5:0];
-                        case (resp_header[`MSG_DATA_SIZE])
-                            `MSG_DATA_SIZE_0B: begin
-                                size = 7'd0;
-                            end
-                            `MSG_DATA_SIZE_1B: begin
-                                size = 7'd1;
-                            end
-                            `MSG_DATA_SIZE_2B: begin
-                                size = 7'd2;
-                            end
-                            `MSG_DATA_SIZE_4B: begin
-                                size = 7'd4;
-                            end
-                            `MSG_DATA_SIZE_8B: begin
-                                size = 7'd8;
-                            end
-                            `MSG_DATA_SIZE_16B: begin
-                                size = 7'd16;
-                            end
-                            `MSG_DATA_SIZE_32B: begin
-                                size = 7'd32;
-                            end
-                            `MSG_DATA_SIZE_64B: begin
-                                size = 7'd64;
-                            end
-                            default: begin
-                                // should never end up here
-                                size = 7'b0;
-                            end
-                        endcase
-                    end
-                    else begin
-                        offset = 6'b0;
-                        size   = 7'd64;
-                    end
-//                 end
-//                 else if ((i == resp_id_f) & resp_go) begin
-//                     size[i] <= 7'b0;
-//                     offset[i] <= 7'b0;
-//                 end
-//                 else begin
-//                     size[i] <= size[i];
-//                     offset[i] <= offset[i];
-//                 end
-//             end
-//         end
-//     end
-// end
-// endgenerate
 
 wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
 assign m_axi_araddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
@@ -281,7 +209,7 @@ always  @(posedge clk) begin
                 resp_id_f <= m_axi_rgo ? m_axi_rid : resp_id_f;
             end
             GOT_RESP: begin
-                resp_state <= resp_rdy ? SEND_RESP : resp_state;
+                resp_state <= SEND_RESP;
                 resp_id_f <= resp_id_f;
             end
             SEND_RESP: begin
@@ -302,35 +230,14 @@ assign resp_id = resp_id_f;
 
 
 reg [`AXI4_DATA_WIDTH-1:0] data_offseted;
-reg [`AXI4_DATA_WIDTH-1:0] rdata;
 
 always @(posedge clk) begin
     if(~rst_n) begin
-        rdata <= 0;
+        data_offseted <= 0;
     end 
     else begin
-        if (m_axi_rgo) rdata <= m_axi_rdata;
+        if (m_axi_rgo) data_offseted <= m_axi_rdata;
     end
-end
-
-wire [`AXI4_DATA_WIDTH-1:0] data_just_offseted = rdata >> (8*offset);
-// wire [5:0] swap_grnlty = size - 7'h1;
-// following code produces less LUTs
-wire [5:0] swap_grnlty = size[0] ? 6'd0  :
-                         size[1] ? 6'd1  :
-                         size[2] ? 6'd3  :
-                         size[3] ? 6'd7  :
-                         size[4] ? 6'd15 :
-                         size[5] ? 6'd31 :
-                                   6'd63;
-reg [6:0] idxr;
-always @(*) begin
-  if (SWAP_ENDIANESS) begin
-    data_offseted = {`AXI4_DATA_WIDTH{1'b0}};
-    for (idxr = 0; idxr <= swap_grnlty; idxr = idxr+1)
-      data_offseted[idxr*8 +: 8] = data_just_offseted[(swap_grnlty - idxr)*8 +: 8];
-  end
-  else data_offseted = data_just_offseted;
 end
 
 always @(posedge clk) begin
@@ -340,33 +247,8 @@ always @(posedge clk) begin
     else begin
         case (resp_state)
             GOT_RESP: begin
-                case (size) 
-                    7'd0: begin 
-                        resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
-                    end
-                    7'd1: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/8{data_offseted[7:0]}};
-                    end
-                    7'd2: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/16{data_offseted[15:0]}};
-                    end
-                    7'd4: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/32{data_offseted[31:0]}};
-                    end
-                    7'd8: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/64{data_offseted[63:0]}};
-                    end
-                    7'd16: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/128{data_offseted[127:0]}};
-                    end
-                    7'd32: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/256{data_offseted[255:0]}};
-                    end
-                    default: begin
-                        resp_data <= {`AXI4_DATA_WIDTH/512{data_offseted[511:0]}};
-                    end
-                endcase
-            end
+                resp_data <= data_offseted;
+           end
             SEND_RESP: begin
                 resp_data <= resp_go ? {`AXI4_DATA_WIDTH{1'b0}} : resp_data;
             end

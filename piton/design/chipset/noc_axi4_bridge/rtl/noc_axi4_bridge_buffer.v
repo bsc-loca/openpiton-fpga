@@ -31,6 +31,7 @@
 
 
 module noc_axi4_bridge_buffer #(
+    parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
     parameter NUM_REQ_YTHREADS_LOG2 = 2,
     parameter NUM_REQ_XTHREADS_LOG2 = 2, 
@@ -306,8 +307,63 @@ wire outstnd_en = outstnd_val & outstnd_resp_val; //~outstnd_empt;
 assign read_resp_rdy  = outstnd_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
 assign write_resp_rdy = outstnd_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
 
+// correction of read responsed data according to stored outstanding request
+wire [`PHY_ADDR_WIDTH-1:0] virt_addr = stor_header[`MSG_ADDR];
+wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) || (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ);
+wire [5:0] offset = uncacheable ? virt_addr[5:0] : 6'b0;
+wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*offset);
+
+reg [6:0] size;
+always @(*)
+  if (uncacheable)
+    case (stor_header[`MSG_DATA_SIZE])
+      `MSG_DATA_SIZE_0B:  size = 7'd0;
+      `MSG_DATA_SIZE_1B:  size = 7'd1;
+      `MSG_DATA_SIZE_2B:  size = 7'd2;
+      `MSG_DATA_SIZE_4B:  size = 7'd4;
+      `MSG_DATA_SIZE_8B:  size = 7'd8;
+      `MSG_DATA_SIZE_16B: size = 7'd16;
+      `MSG_DATA_SIZE_32B: size = 7'd32;
+      `MSG_DATA_SIZE_64B: size = 7'd64;
+      default:            size = 7'b0; // should never end up here
+    endcase
+  else                    size = 7'd64;
+
+reg [`AXI4_DATA_WIDTH-1:0] rdata_swapped;
+// wire [5:0] swap_grnlty = size - 7'h1;
+// following code produces less LUTs
+wire [5:0] swap_grnlty = size[0] ? 6'd0  :
+                         size[1] ? 6'd1  :
+                         size[2] ? 6'd3  :
+                         size[3] ? 6'd7  :
+                         size[4] ? 6'd15 :
+                         size[5] ? 6'd31 :
+                                   6'd63;
+reg [6:0] itr_swp;
+always @(*) begin
+  if (SWAP_ENDIANESS) begin
+    rdata_swapped = {`AXI4_DATA_WIDTH{1'b0}};
+    for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
+      rdata_swapped[itr_swp*8 +: 8] = rdata_offseted[(swap_grnlty - itr_swp)*8 +: 8];
+  end
+  else rdata_swapped = rdata_offseted;
+end
+
+reg [`AXI4_DATA_WIDTH-1:0] resp_data;
+always @(*)
+  case (size)
+    7'd0:    resp_data <= {`AXI4_DATA_WIDTH    {1'b0}};
+    7'd1:    resp_data <= {`AXI4_DATA_WIDTH/8  {rdata_swapped[7  :0]}};
+    7'd2:    resp_data <= {`AXI4_DATA_WIDTH/16 {rdata_swapped[15 :0]}};
+    7'd4:    resp_data <= {`AXI4_DATA_WIDTH/32 {rdata_swapped[31 :0]}};
+    7'd8:    resp_data <= {`AXI4_DATA_WIDTH/64 {rdata_swapped[63 :0]}};
+    7'd16:   resp_data <= {`AXI4_DATA_WIDTH/128{rdata_swapped[127:0]}};
+    7'd32:   resp_data <= {`AXI4_DATA_WIDTH/256{rdata_swapped[255:0]}};
+    default: resp_data <= {`AXI4_DATA_WIDTH/512{rdata_swapped[511:0]}};
+  endcase
+
 assign ser_val = outstnd_en & (read_resp_val | write_resp_val);
-assign ser_data = read_resp_val ? read_resp_data : 0; // higher priority for Read response
+assign ser_data = read_resp_val ? resp_data : 0; // higher priority for Read response
 assign ser_header = stor_header;
 
 
