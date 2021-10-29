@@ -823,7 +823,6 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_4bits.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_unit.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/exe_stage.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/interface_icache/rtl/icache_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/if_stage/rtl/if_stage.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/id_stage/rtl/immediate.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/mul_unit.sv" \
@@ -883,12 +882,13 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/lagarto_dcache_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/ld_st_FSM.v" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/l1_dcache_adapter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/noc_pmu.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/axi_pmu_bridge.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/synchronizer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-pmu/src/rtl/noc_pmu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-pmu/src/rtl/axi_pmu_bridge.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-pmu/src/rtl/synchronizer.sv" \
 
 ]
  	
+  #"${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/interface_icache/rtl/icache_interface.sv" \
 
 set MEEP_VPU_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include/config_control.svh" \
