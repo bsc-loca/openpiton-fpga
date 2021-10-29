@@ -856,32 +856,30 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/rv_plic_gateway.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_regmap.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/fifo_v3.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/lfsr_8bit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/lzc.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/rr_arb_tree.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/exp_backoff.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/deprecated/rrarbiter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/deprecated/fifo_v2.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/mmu.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/ptw.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/tlb.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/fpga-support/rtl/SyncSpRamBeNx64.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/util/sram.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_ctrl.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_mem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_missunit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_wbuffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_icache.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_l15_adapter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_cache_subsystem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/fifo_v3.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/lfsr_8bit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/lzc.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/rr_arb_tree.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/exp_backoff.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/deprecated/rrarbiter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/deprecated/fifo_v2.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/mmu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/ptw.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/tlb.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/fpga-support/rtl/SyncSpRamBeNx64.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/util/sram.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_dcache_ctrl.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_dcache_mem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_dcache_missunit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_dcache_wbuffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_dcache.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_icache.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_l15_adapter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_cache_subsystem.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-sc_csr/src/rtl/csr_regfile.sv" \
-	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/lagarto_verilog_wrap.sv" \
-	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/vas_tile_core.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/vas_tile_core.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/scalar_core_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/lagarto_openpiton_top.sv" \
-	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/icache_itf/icache_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/icache_itf/icache_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/lagarto_dcache_interface.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/ld_st_FSM.v" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/l1_dcache_adapter.sv" \
