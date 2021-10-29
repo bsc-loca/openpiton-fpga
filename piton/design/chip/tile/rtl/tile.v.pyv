@@ -1249,10 +1249,6 @@ print("    assign lagarto_bootaddr  =  64'h%s;" % bootAddr)
     vas_tile_core #(
 <%
 str = '''
-%>
-    lagarto_verilog_wrap #(
-<%
-str = '''
         .DmBaseAddress          ( 64'h%s ),
         .SwapEndianess          ( 1'b1 ),
         .NrExecuteRegionRules   ( %d   ),

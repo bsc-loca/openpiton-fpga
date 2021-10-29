@@ -96,7 +96,6 @@ export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
 
 
-if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]
 
 ### MEEP WORKSTATIONS SPECIFICS
 
