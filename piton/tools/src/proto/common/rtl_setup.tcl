@@ -31,7 +31,7 @@
 set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include
         ${DV_ROOT}/design/chipset/include
         ${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
-#        ${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include"
+#        ${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -47,7 +47,7 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
 ]
 
-#"${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
+#"${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
 
 set GLOBAL_DEFAULT_VERILOG_MACROS "NO_SCAN FPGA_SYN PITON_FPGA_SYNTH PITON_PROTO"
 
@@ -431,7 +431,7 @@ set SPARC_RTL_FILES [list \
 set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/tb/ariane_soc_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi/src/axi_pkg.sv"                               \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_pkg.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_pkg.sv"                          \
     "${DV_ROOT}/design/chip/tile/ariane/include/riscv_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/include/ariane_pkg.sv"                                \
     "${DV_ROOT}/design/chip/tile/ariane/include/ariane_axi_pkg.sv"                            \
@@ -458,9 +458,9 @@ set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/src/popcount.sv"                     \
     "${DV_ROOT}/design/chip/tile/ariane/src/fpga-support/rtl/SyncSpRamBeNx64.sv"              \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi_mem_if/src/axi2mem.sv"                        \
-    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/pulp_clock_gating.sv"      \
-    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
-    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/pulp_clock_mux2.sv"        \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/pulp_clock_gating.sv"      \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/cluster_clock_inverter.sv" \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/pulp_clock_mux2.sv"        \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi_adapter.sv"                                   \
     "${DV_ROOT}/design/chip/tile/ariane/src/alu.sv"                                           \
     "${DV_ROOT}/design/chip/tile/ariane/src/fpu_wrap.sv"                                      \
@@ -508,22 +508,22 @@ set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/wt_cache_subsystem.sv"            \
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/clint.sv"                                   \
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/axi_lite_interface.sv"                      \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/debug_rom/debug_rom.sv"                 \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_csrs.sv"                         \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_mem.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_top.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_cdc.sv"                         \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_jtag.sv"                        \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_sba.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_jtag_tap.sv"                    \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/debug_rom/debug_rom.sv"                 \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_csrs.sv"                         \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_mem.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_top.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_cdc.sv"                         \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_jtag.sv"                        \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_sba.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_jtag_tap.sv"                    \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/riscv_peripherals.sv"                       \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/ariane_verilog_wrap.sv"                     \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/bootrom/baremetal/bootrom.sv"               \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/bootrom/linux/bootrom_linux.sv"             \
-    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/rv_plic_target.sv"                    \
-    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/rv_plic_gateway.sv"                   \
-    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/plic_regmap.sv"                       \
-    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/plic_top.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/rv_plic_target.sv"                    \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/rv_plic_gateway.sv"                   \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/plic_regmap.sv"                       \
+    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/plic_top.sv"                          \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb_wrap.sv"                 \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb.sv"                      \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb_64_32.sv"                \
@@ -800,190 +800,188 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
-set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include"
+set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
 
 set LAGARTO_RTL_FILES [ list \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/EPI_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/riscv_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv_ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/includes/drac_icache_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/branch_predictor.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/branch_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/control_unit/rtl/control_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/interface_csr/rtl/csr_interface.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/datapath.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/interface_dcache/rtl/dcache_interface.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/id_stage/rtl/decoder.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_4bits.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/exe_stage.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/interface_icache/rtl/icache_interface.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/if_stage/rtl/if_stage.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/id_stage/rtl/immediate.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/mul_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/datapath/rtl/rr_stage/rtl/regfile.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/drac-inorder/rtl/register.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/tech_cells_generic/src/pulp_clock_mux2.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_soc_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/axi_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/ariane_axi_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/include/axi_intf.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/register_interface/src/reg_intf.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/clint/clint.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/clint/axi_lite_interface.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_csrs.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_mem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dmi_cdc.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dmi_jtag.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dm_sba.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/src/dmi_jtag_tap.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/riscv-dbg/debug_rom/debug_rom.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/openpiton/riscv_peripherals.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/openpiton/bootrom/baremetal/bootrom.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/openpiton/bootrom/linux/bootrom_linux.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/axi_mem_if/src/axi2mem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/common_cells/src/cdc_2phase.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/rv_plic/rtl/rv_plic_target.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/rv_plic/rtl/rv_plic_gateway.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/rv_plic/rtl/plic_regmap.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/rv_plic/rtl/plic_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/fifo_v3.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/lfsr_8bit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/lzc.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/rr_arb_tree.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/exp_backoff.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/deprecated/rrarbiter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/common_cells/src/deprecated/fifo_v2.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/mmu.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/ptw.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/tlb.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/fpga-support/rtl/SyncSpRamBeNx64.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/util/sram.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_dcache_ctrl.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_dcache_mem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_dcache_missunit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_dcache_wbuffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_dcache.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_icache.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_l15_adapter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ariane_cache_subsystem/cache_subsystem/wt_cache_subsystem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/csr_regfile.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/lagarto_verilog_wrap.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/openpiton/lagarto_openpiton_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/lagarto_dcache_interface.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/ld_st_FSM.v" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/l1_dcache_adapter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/noc_pmu.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/axi_pmu_bridge.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/src/pmu/rtl/synchronizer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/EPI_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/riscv_ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_icache_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/if_stage/rtl/branch_predictor.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/branch_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/control_unit/rtl/control_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/interface_csr/rtl/csr_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/datapath.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/interface_dcache/rtl/dcache_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/id_stage/rtl/decoder.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_4bits.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/div_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/exe_stage.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/interface_icache/rtl/icache_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/if_stage/rtl/if_stage.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/id_stage/rtl/immediate.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/mul_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/rr_stage/rtl/regfile.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/register.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/tech_cells_generic/src/cluster_clock_inverter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/tech_cells_generic/src/pulp_clock_mux2.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_soc_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/axi_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_axi_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/interfaces/axi_intf.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/register_interface/src/reg_intf_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/register_interface/src/reg_intf.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/clint/clint.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/clint/axi_lite_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_csrs.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_mem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dmi_cdc.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dmi_jtag.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_sba.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dmi_jtag_tap.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/riscv-dbg/debug_rom/debug_rom.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/riscv_peripherals.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/bootrom/baremetal/bootrom.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/bootrom/linux/bootrom_linux.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/axi_mem_if/src/axi2mem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/common_cells/src/cdc_2phase.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/rv_plic_target.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/rv_plic_gateway.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_regmap.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/fifo_v3.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/lfsr_8bit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/lzc.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/rr_arb_tree.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/exp_backoff.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/deprecated/rrarbiter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/common_cells/src/deprecated/fifo_v2.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/mmu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/ptw.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/tlb.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/fpga-support/rtl/SyncSpRamBeNx64.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/util/sram.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_ctrl.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_mem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_missunit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache_wbuffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_dcache.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_icache.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_l15_adapter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_cache_subsystem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-sc_csr/src/rtl/csr_regfile.sv" \
+	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/lagarto_verilog_wrap.sv" \
+	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/vas_tile_core.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/scalar_core_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/lagarto_openpiton_top.sv" \
+	"${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/icache_itf/icache_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/lagarto_dcache_interface.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/ld_st_FSM.v" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rtl/dcache_itf/l1_dcache_adapter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/noc_pmu.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/axi_pmu_bridge.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/pmu/rtl/synchronizer.sv" \
 
 ]
-
-set LAGARTO_CHIPSET_IP_FILES [ list \
-    "${DV_ROOT}/design/chipset/xilinx/${BOARD}/ip_cores/clk_mmcm/clk_mmcm_lagarto" \
-    "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/uart_16550/uart_16550_lagarto" \
-]
-    	
+ 	
 
 set MEEP_VPU_FILES [ list \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include/config_control.svh" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include/bsc_custom_defines.svh" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/include/registers.svh" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/FSM_lane.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/FunctionalUnit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/IMU.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/LoadBuffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/Mask_RAT.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/RAT.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/fpuv_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/package/fpuv_wrapper_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/VECTOR_LANE.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/VRF_bank.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/VRF_mapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/VRF_slice.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/VRF_slice_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/WB_BUFFER.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/adder.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/arith_queue.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/avispado_emulator_lite.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/carrylookahead_8bits.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/comparator_dec.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/bitwise_logical.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/divsqrt/divsqrt_iter.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/divsqrt/divsqrt_nrst.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/divsqrt/divsqrt_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_cast_multi.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_classifier.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_divsqrt_multi.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_fma.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_fma_multi.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/common_cells/fpuv_lzc.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_noncomp.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_opgroup_block.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_opgroup_fmt_slice.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_opgroup_multifmt_slice.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_rounding.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/common_cells/fpuv_rr_arb_tree.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_top.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/fpuv_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/index_buffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/load_management_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_formating.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_registers_bank.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_regs.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_regs_address.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_regs_buffer_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_regs_source_buffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mask_regs_tail_logic.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/masked_operation.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/mem_queue.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/merger.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/multi_lane_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/multiplier.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/popcount.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/pre_issue_queue.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/queue_demux.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/reduction_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/renaming_logic.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/reorder_buffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_data_packer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_data_unpacker.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_fifo.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_if.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_logic.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/ring_node.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/shifters.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/single_port_bram.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/source_buffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/source_wrapper.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/store_buffer.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/store_mem_unit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/unpacker.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/valid_bit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/valid_mask_bit.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_ctrl.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_ctrl_lane.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_ctrl_source.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_ctrl_source_mask.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_enable.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_enable_block.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_mem.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_element_mem_lane.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_regs_tail_logic.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vec_regs_tail_logic_bank.sv" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/Mult4x4.vhd" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/Mult8x8.vhd" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/MultDSP.vhd" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/MultUnit.vhd" \
-    "${DV_ROOT}/design/chip/tile/vas-tile-core/meep-vpu/src/rtl/vpu_drac_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include/config_control.svh" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include/bsc_custom_defines.svh" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include/registers.svh" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/FSM_lane.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/FunctionalUnit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/IMU.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/LoadBuffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/Mask_RAT.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/RAT.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/fpuv_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/fpuv_wrapper_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/VECTOR_LANE.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/VRF_bank.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/VRF_mapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/VRF_slice.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/VRF_slice_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/WB_BUFFER.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/adder.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/arith_queue.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/avispado_emulator_lite.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/carrylookahead_8bits.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/comparator_dec.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/bitwise_logical.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/divsqrt/divsqrt_iter.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/divsqrt/divsqrt_nrst.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/divsqrt/divsqrt_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_cast_multi.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_classifier.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_divsqrt_multi.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_fma.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_fma_multi.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/common_cells/fpuv_lzc.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_noncomp.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_opgroup_block.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_opgroup_fmt_slice.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_opgroup_multifmt_slice.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_rounding.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/common_cells/fpuv_rr_arb_tree.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/fpuv_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/index_buffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/load_management_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_formating.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_registers_bank.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_regs.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_regs_address.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_regs_buffer_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_regs_source_buffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mask_regs_tail_logic.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/masked_operation.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/mem_queue.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/merger.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/multi_lane_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/multiplier.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/popcount.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/pre_issue_queue.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/queue_demux.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/reduction_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/renaming_logic.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/reorder_buffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_data_packer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_data_unpacker.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_fifo.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_if.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_logic.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/ring_node.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/shifters.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/single_port_bram.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/source_buffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/source_wrapper.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/store_buffer.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/store_mem_unit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/unpacker.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/valid_bit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/valid_mask_bit.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_ctrl.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_ctrl_lane.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_ctrl_source.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_ctrl_source_mask.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_enable.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_enable_block.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_mem.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_element_mem_lane.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_regs_tail_logic.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vec_regs_tail_logic_bank.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/Mult4x4.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/Mult8x8.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/MultDSP.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/MultUnit.vhd" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/rtl/vpu_drac_wrapper.sv" \
 
 ]
