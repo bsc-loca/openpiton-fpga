@@ -807,7 +807,7 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/EPI_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/riscv_ariane_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/riscv_ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_icache_pkg.sv" \
@@ -831,7 +831,7 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/tech_cells_generic/src/cluster_clock_inverter.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/tech_cells_generic/src/pulp_clock_mux2.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_soc_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/axi_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_axi_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/interfaces/axi_intf.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/register_interface/src/reg_intf_pkg.sv" \
