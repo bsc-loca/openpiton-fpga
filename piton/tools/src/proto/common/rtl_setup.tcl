@@ -851,10 +851,10 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/openpiton/bootrom/linux/bootrom_linux.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/axi_mem_if/src/axi2mem.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/common_cells/src/cdc_2phase.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/rv_plic_target.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/rv_plic_gateway.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_regmap.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/rv_plic/rtl/plic_top.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rv_plic/rtl/rv_plic_target.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rv_plic/rtl/rv_plic_gateway.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rv_plic/rtl/plic_regmap.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/src/rv_plic/rtl/plic_top.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/fifo_v3.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/lfsr_8bit.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/common_cells/src/lzc.sv" \
