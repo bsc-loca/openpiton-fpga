@@ -179,7 +179,7 @@ reg [NUM_REQ_THREADS      : 0] outstnd_vrt_empt;
 reg [NUM_REQ_THREADS_LOG2 : 0] itr_empt;
 always @(*)
   for (itr_empt = 0; itr_empt <= NUM_REQ_THREADS; itr_empt = itr_empt+1)
-    outstnd_vrt_empt[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] ==  outstnd_vrt_wrptrs[itr_empt]);
+    outstnd_vrt_empt[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
 
 
 reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
@@ -232,7 +232,14 @@ wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0]
                                            stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
 wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {stor_command, stor_id};
 
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
+wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
+wire outstnd_vrt_rdptr_val = (outstnd_abs_rdptr_val ||
+                             (outstnd_vrt_rdptrs    [full_resp_id] == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
+                              full_stor_id ==        full_resp_id  && stor_header[`MSG_HEADER_WIDTH]));
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_nxt = outstnd_abs_rdptr +
+                                                            (~init_outstnd_mem &
+                                                             ~outstnd_vrt_empt[full_resp_id] &
+                                                             ~outstnd_vrt_rdptr_val);
 reg [NUM_REQ_THREADS_LOG2 : 0] itr_ptr;
 always @(posedge clk)
   if(~rst_n) begin
@@ -255,15 +262,11 @@ always @(posedge clk)
       outstnd_vrt_rdptrs    [full_resp_id] <= outstnd_vrt_rdptrs[full_resp_id] + 1;
       outstnd_abs_rdptrs_val[full_resp_id] <= 1'b0;
     end
-    if (!outstnd_vrt_empt[full_resp_id]) begin
-      if (stor_header[`MSG_HEADER_WIDTH] && full_stor_id == full_resp_id && 
-          stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] == outstnd_vrt_rdptr)
-        outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
-      // searching for next valid request location for responded ID
-      else outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptrs[full_resp_id] +1;
-    end
+    if (!outstnd_vrt_empt[full_resp_id] && outstnd_vrt_rdptr_val) outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
     // Initialization of Outstanding requests memory
     if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptrs[full_resp_id] +1;
+    // searching for the next valid request location for responded ID
+    else outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr_nxt;
   end
 
 
@@ -282,7 +285,7 @@ xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_DEPTH(1<<NUM_REQ_OUTSTANDING_LOG2), // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
 ) outstnd_req_mem (
-    .addra(outstnd_abs_rdptr),        // Port A address bus, width determined from RAM_DEPTH
+    .addra(outstnd_abs_rdptr_nxt),    // Port A address bus, width determined from RAM_DEPTH
     .addrb(outstnd_abs_wrptr_nxt),    // Port B address bus, width determined from RAM_DEPTH
     .dina({OUTSTND_HDR_WIDTH{1'b0}}), // Port A RAM input data, width determined from RAM_WIDTH
     .dinb({outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
@@ -299,15 +302,14 @@ xilinx_true_dual_port_write_first_1_clock_ram #(
     .doutb(clean_header)              // Port B RAM output data, width determined from RAM_WIDTH
 );
 
-wire outstnd_resp_val = outstnd_abs_rdptrs_val[full_resp_id];
-reg outstnd_val;
+reg stor_hdr_val;
 always @(posedge clk)
-    if(~rst_n) outstnd_val <= 1'b0;
-    else       outstnd_val <= outstnd_resp_val; //~outstnd_empt;
-wire outstnd_en = outstnd_val & outstnd_resp_val; //~outstnd_empt;
+  if(~rst_n) stor_hdr_val <= 1'b0;
+  else       stor_hdr_val <= outstnd_abs_rdptr_val;
+wire stor_hdr_en = stor_hdr_val & outstnd_abs_rdptr_val;
 
-assign read_resp_rdy  = outstnd_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
-assign write_resp_rdy = outstnd_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
+assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
+assign write_resp_rdy = stor_hdr_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
 
 // correction of read responsed data according to stored outstanding request
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = stor_header[`MSG_ADDR];
@@ -364,7 +366,7 @@ always @(*)
     default: resp_data <= {`AXI4_DATA_WIDTH/512{rdata_swapped[511:0]}};
   endcase
 
-assign ser_val = outstnd_en & (read_resp_val | write_resp_val);
+assign ser_val = stor_hdr_en & (read_resp_val | write_resp_val);
 assign ser_data = read_resp_val ? resp_data : 0; // higher priority for Read response
 assign ser_header = stor_header;
 
