@@ -809,7 +809,7 @@ set LAGARTO_RTL_FILES [ list \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/riscv_ariane_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv" \
-    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/cache_subsystem/wt_cache_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_cache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_icache_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/alu.sv" \
     "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/if_stage/rtl/bimodal_predictor.sv" \
