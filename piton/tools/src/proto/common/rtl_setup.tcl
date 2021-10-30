@@ -431,7 +431,7 @@ set SPARC_RTL_FILES [list \
 set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/tb/ariane_soc_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi/src/axi_pkg.sv"                               \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_pkg.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_pkg.sv"                          \
     "${DV_ROOT}/design/chip/tile/ariane/include/riscv_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/include/ariane_pkg.sv"                                \
     "${DV_ROOT}/design/chip/tile/ariane/include/ariane_axi_pkg.sv"                            \
@@ -458,9 +458,9 @@ set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/src/popcount.sv"                     \
     "${DV_ROOT}/design/chip/tile/ariane/src/fpga-support/rtl/SyncSpRamBeNx64.sv"              \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi_mem_if/src/axi2mem.sv"                        \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/pulp_clock_gating.sv"      \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/cluster_clock_inverter.sv" \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/tech_cells_generic/src/pulp_clock_mux2.sv"        \
+    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/pulp_clock_gating.sv"      \
+    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/cluster_clock_inverter.sv" \
+    "${DV_ROOT}/design/chip/tile/ariane/src/tech_cells_generic/src/pulp_clock_mux2.sv"        \
     "${DV_ROOT}/design/chip/tile/ariane/src/axi_adapter.sv"                                   \
     "${DV_ROOT}/design/chip/tile/ariane/src/alu.sv"                                           \
     "${DV_ROOT}/design/chip/tile/ariane/src/fpu_wrap.sv"                                      \
@@ -508,22 +508,22 @@ set ARIANE_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/src/cache_subsystem/wt_cache_subsystem.sv"            \
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/clint.sv"                                   \
     "${DV_ROOT}/design/chip/tile/ariane/src/clint/axi_lite_interface.sv"                      \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/debug_rom/debug_rom.sv"                 \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_csrs.sv"                         \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_mem.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_top.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_cdc.sv"                         \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_jtag.sv"                        \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dm_sba.sv"                          \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/riscv-dbg/src/dmi_jtag_tap.sv"                    \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/debug_rom/debug_rom.sv"                 \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_csrs.sv"                         \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_mem.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_top.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_cdc.sv"                         \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_jtag.sv"                        \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dm_sba.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/src/riscv-dbg/src/dmi_jtag_tap.sv"                    \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/riscv_peripherals.sv"                       \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/ariane_verilog_wrap.sv"                     \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/bootrom/baremetal/bootrom.sv"               \
     "${DV_ROOT}/design/chip/tile/ariane/openpiton/bootrom/linux/bootrom_linux.sv"             \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/rv_plic_target.sv"                    \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/rv_plic_gateway.sv"                   \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/plic_regmap.sv"                       \
-    "${DV_ROOT}/design/chip/tile/ariane/modules/rv_plic/rtl/plic_top.sv"                          \
+    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/rv_plic_target.sv"                    \
+    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/rv_plic_gateway.sv"                   \
+    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/plic_regmap.sv"                       \
+    "${DV_ROOT}/design/chip/tile/ariane/src/rv_plic/rtl/plic_top.sv"                          \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb_wrap.sv"                 \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb.sv"                      \
     "${DV_ROOT}/design/chip/tile/ariane/fpga/src/axi2apb/src/axi2apb_64_32.sv"                \
