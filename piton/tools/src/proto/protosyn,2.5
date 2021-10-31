@@ -528,7 +528,7 @@ def makeDefList(options):
     if options.core == 'lagarto':
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
-        if options.core == 'vpu':
+        if options.vpu:
             defines.append("VPU_ENABLE")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
@@ -881,6 +881,7 @@ def main():
 
     for d in defines:
         print_info(d)
+
 
     print_info("--------------------------------")
 
