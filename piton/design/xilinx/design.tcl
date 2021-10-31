@@ -44,6 +44,7 @@ if {$::env(PITON_ARIANE) != "0"} {
 } 
 
 if {$::env(PITON_LAGARTO) != "0" } {
+    source $LAGARTO_ROOT/parseFlistLagarto.tcl
     set CORE_RTL_FILES [concat \
 	${OTHER_RTL_FILES} \
 	${LAGARTO_RTL_FILES} \
