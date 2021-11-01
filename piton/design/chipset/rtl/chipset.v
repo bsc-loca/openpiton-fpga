@@ -601,6 +601,7 @@ reg                                             chipset_rst_n_ff;
 // UART boot stuff
 wire                                            uart_boot_en;
 wire                                            uart_timeout_en;
+wire                                            uart_bootrom_linux_en;
 
 // NoC power test hop count from switches if enabled
 wire  [3:0]                                     noc_power_test_hop_count;
