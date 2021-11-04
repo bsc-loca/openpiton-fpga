@@ -175,11 +175,11 @@ localparam NUM_REQ_THREADS = 1 << (NUM_REQ_THREADS_LOG2 + 1); // read/write requ
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS-1 : 0];
 
-reg [NUM_REQ_THREADS-1      : 0] outstnd_vrt_empt;
+reg [NUM_REQ_THREADS-1      : 0] outstnd_vrt_empts;
 reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_empt;
 always @(*)
   for (itr_empt = 0; itr_empt < NUM_REQ_THREADS; itr_empt = itr_empt+1)
-    outstnd_vrt_empt[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
+    outstnd_vrt_empts[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
 
 
 reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
@@ -192,10 +192,12 @@ always @(posedge clk)
   else if (outstnd_abs_rdptr == {NUM_REQ_OUTSTANDING_LOG2{1'b1}}) init_outstnd_mem <= 1'b0;
 
 
-reg [NUM_REQ_THREADS-1 : 0] outstnd_abs_rdptrs_val;
+reg [NUM_REQ_THREADS-1 : 0]  outstnd_abs_rdptrs_val;
+wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
+wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
-  else if (outstnd_vrt_empt[full_resp_id] || outstnd_abs_rdptrs_val[full_resp_id]) begin
+  else if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
     // higher priority for Read response
     if (write_resp_val) full_resp_id <= {WRITE,write_resp_id};
     if (read_resp_val ) full_resp_id <= {READ ,read_resp_id };
@@ -221,7 +223,6 @@ wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
 wire [NUM_REQ_THREADS_LOG2-1:0] req_id = {req_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
                                           req_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
 wire [NUM_REQ_THREADS_LOG2 : 0] full_req_id = {req_command, req_id};
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
 
 wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
@@ -232,11 +233,12 @@ wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0]
                                            stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
 wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {stor_command, stor_id};
 
-wire outstnd_vrt_rdptr_val = (outstnd_abs_rdptrs_val[full_resp_id] ||
-                             (outstnd_vrt_rdptrs    [full_resp_id] == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
-                              full_stor_id ==        full_resp_id  && stor_header[`MSG_HEADER_WIDTH]));
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
+wire outstnd_vrt_rdptr_val = (outstnd_abs_rdptr_val ||
+                             (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
+                              full_resp_id == full_stor_id && stor_header[`MSG_HEADER_WIDTH]));
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_mem = outstnd_abs_rdptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
-                                                                                   (~outstnd_vrt_empt[full_resp_id] &
+                                                                                   (~outstnd_vrt_empt &
                                                                                     ~outstnd_vrt_rdptr_val)};
 reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_ptr;
 always @(posedge clk)
@@ -251,12 +253,12 @@ always @(posedge clk)
   else begin
     if (req_go) begin 
       outstnd_vrt_wrptrs[full_req_id] <= outstnd_vrt_wrptrs[full_req_id] + 1;
-      if (outstnd_vrt_empt[full_req_id]) begin
+      if (outstnd_vrt_empts[full_req_id]) begin
         outstnd_abs_rdptrs[full_req_id] <= outstnd_abs_wrptr;
         outstnd_abs_rdptrs_val[full_req_id] <= 1'b1;
       end
     end
-    if (!outstnd_vrt_empt[full_resp_id]) begin
+    if (!outstnd_vrt_empt) begin
       if (outstnd_vrt_rdptr_val) outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
       // searching for the next valid request location for responded ID
       outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr_mem;
@@ -266,7 +268,7 @@ always @(posedge clk)
       outstnd_abs_rdptrs_val[full_resp_id] <= 1'b0;
     end
     // Initialization of Outstanding requests memory
-    if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptrs[full_resp_id] +1;
+    if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr + 1;
   end
 
 
@@ -278,6 +280,7 @@ assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !
 assign write_req_header = req_header;
 assign write_req_id = req_id;
 
+wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
 
 // Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
@@ -310,13 +313,13 @@ always @(posedge clk)
         read_resp_val) resp_val <= 1'b1;
     if (ser_go)        resp_val <= 1'b0;
   end
-wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id] & resp_val;
+wire outstnd_abs_rdptr_val_act = outstnd_abs_rdptr_val & resp_val;
 
 reg stor_hdr_val;
 always @(posedge clk)
   if(~rst_n) stor_hdr_val <= 1'b0;
-  else       stor_hdr_val <= outstnd_abs_rdptr_val;
-wire stor_hdr_en = stor_hdr_val & outstnd_abs_rdptr_val;
+  else       stor_hdr_val <= outstnd_abs_rdptr_val_act;
+wire stor_hdr_en = stor_hdr_val & outstnd_abs_rdptr_val_act;
 
 assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
