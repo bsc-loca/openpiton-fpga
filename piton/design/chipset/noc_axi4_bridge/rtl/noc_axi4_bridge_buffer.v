@@ -34,7 +34,8 @@ module noc_axi4_bridge_buffer #(
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
     parameter NUM_REQ_YTHREADS_LOG2 = 2,
-    parameter NUM_REQ_XTHREADS_LOG2 = 2, 
+    parameter NUM_REQ_XTHREADS_LOG2 = 2,
+    parameter RDWR_REORDER = 0,
     localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
                                       NUM_REQ_XTHREADS_LOG2
 ) (
@@ -44,38 +45,38 @@ module noc_axi4_bridge_buffer #(
   // from deserializer
   input [`MSG_HEADER_WIDTH-1:0] deser_header,
   input [`AXI4_DATA_WIDTH-1:0] deser_data,
-  input  deser_val,
-  output deser_rdy,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  deser_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output deser_rdy,
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] read_req_header,
-  output [NUM_REQ_THREADS_LOG2-1:0] read_req_id,
-  output read_req_val,
-  input  read_req_rdy,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [NUM_REQ_THREADS_LOG2-1:0] read_req_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_req_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  read_req_rdy,
 
   // read response in
   input [`AXI4_DATA_WIDTH-1:0] read_resp_data,
-  input [NUM_REQ_THREADS_LOG2-1:0] read_resp_id,
-  input  read_resp_val,
-  output read_resp_rdy,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [NUM_REQ_THREADS_LOG2-1:0] read_resp_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  read_resp_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_resp_rdy,
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] write_req_header,
-  output [NUM_REQ_THREADS_LOG2-1:0] write_req_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [NUM_REQ_THREADS_LOG2-1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data,
-  output write_req_val,
-  input  write_req_rdy,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output write_req_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  write_req_rdy,
 
   // read response in
-  input [NUM_REQ_THREADS_LOG2-1:0] write_resp_id,
-  input  write_resp_val,
-  output write_resp_rdy,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [NUM_REQ_THREADS_LOG2-1:0] write_resp_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  write_resp_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output write_resp_rdy,
 
   // in serializer
   output [`MSG_HEADER_WIDTH-1:0] ser_header,
   output [`AXI4_DATA_WIDTH-1:0] ser_data,
-  output ser_val,
-  input  ser_rdy
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output ser_val,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input  ser_rdy
 );
 
 localparam INVALID = 1'd0;
@@ -89,16 +90,16 @@ reg [`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0]                          pkt_state_bu
 reg [`MSG_HEADER_WIDTH-1:0]   pkt_header[`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0];
 reg [`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT-1:0]                          pkt_command;
 
-reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_in;
-reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_out;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_in;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0]    fifo_out;
 
-wire deser_go = (deser_rdy & deser_val);
-wire read_req_go = (read_req_val & read_req_rdy);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire deser_go = (deser_rdy & deser_val);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_req_go = (read_req_val & read_req_rdy);
 // wire read_resp_go = (read_resp_val & read_resp_rdy);
-wire write_req_go = (write_req_val & write_req_rdy);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_req_go = (write_req_val & write_req_rdy);
 // wire write_resp_go = (write_resp_val & write_resp_rdy);
-wire req_go = read_req_go || write_req_go;
-wire ser_go = ser_val & ser_rdy;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire req_go = read_req_go || write_req_go;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire ser_go = ser_val & ser_rdy;
 
 //
 //  SEND REQUESTS 
@@ -171,45 +172,48 @@ xilinx_simple_dual_port_1_clock_ram #(
 // GET_RESPONSE
 //
 
-localparam NUM_REQ_THREADS = 1 << (NUM_REQ_THREADS_LOG2 + 1); // read/write request type go as an extension to thread ID
+localparam NUM_REQ_THREADS = 1 << (NUM_REQ_THREADS_LOG2 + 1); // read/write request type go as an extension to thread ID if RDWR_REORDER=1 
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS-1 : 0];
 
-reg [NUM_REQ_THREADS-1      : 0] outstnd_vrt_empts;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1      : 0] outstnd_vrt_empts;
 reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_empt;
 always @(*)
   for (itr_empt = 0; itr_empt < NUM_REQ_THREADS; itr_empt = itr_empt+1)
     outstnd_vrt_empts[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
 
 
-reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
 reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptrs[NUM_REQ_THREADS-1 : 0];
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr = outstnd_abs_rdptrs[full_resp_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr = outstnd_abs_rdptrs[full_resp_id];
 
-reg init_outstnd_mem;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg init_outstnd_mem;
 always @(posedge clk)
   if(~rst_n) init_outstnd_mem <= 1'b1;
   else if (outstnd_abs_rdptr == {NUM_REQ_OUTSTANDING_LOG2{1'b1}}) init_outstnd_mem <= 1'b0;
 
 
-reg [NUM_REQ_THREADS-1 : 0]  outstnd_abs_rdptrs_val;
-wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
-wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_abs_rdptrs_val;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_command;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_resp_val_act  = read_resp_val  && (RDWR_REORDER || !outstnd_command[read_resp_id ]);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_resp_val_act = write_resp_val && (RDWR_REORDER ||  outstnd_command[write_resp_id]);
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
   else if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
     // higher priority for Read response
-    if (write_resp_val) full_resp_id <= {WRITE,write_resp_id};
-    if (read_resp_val ) full_resp_id <= {READ ,read_resp_id };
+    if (write_resp_val_act) full_resp_id <= {RDWR_REORDER ? WRITE:1'b0, write_resp_id};
+    if (read_resp_val_act ) full_resp_id <= {RDWR_REORDER ? READ :1'b0, read_resp_id };
   end
 
 
 localparam OUTSTND_HDR_WIDTH = NUM_REQ_OUTSTANDING_LOG2 + 1 + `MSG_HEADER_WIDTH;
-wire [OUTSTND_HDR_WIDTH-1 : 0] clean_header;
-wire req_occup = clean_header[`MSG_HEADER_WIDTH];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [OUTSTND_HDR_WIDTH-1 : 0] clean_header;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire req_occup = clean_header[`MSG_HEADER_WIDTH];
 
-reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr;
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr_mem = outstnd_abs_wrptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_wrptr_mem = outstnd_abs_wrptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
                                                                                    (~init_outstnd_mem & req_occup)};
 always @(posedge clk)
   if(~rst_n) outstnd_abs_wrptr <= {NUM_REQ_OUTSTANDING_LOG2{1'b0}};
@@ -222,24 +226,24 @@ wire [`MSG_SRC_X_WIDTH-1:0] req_src_x = req_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
 wire [NUM_REQ_THREADS_LOG2-1:0] req_id = {req_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
                                           req_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-wire [NUM_REQ_THREADS_LOG2 : 0] full_req_id = {req_command, req_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_THREADS_LOG2 : 0] full_req_id = {RDWR_REORDER ? req_command:1'b0, req_id};
 
-wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
                     (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
 wire [`MSG_SRC_X_WIDTH-1:0] stor_src_x = stor_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] stor_src_y = stor_header[`MSG_SRC_Y];
 wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
                                            stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {stor_command, stor_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {RDWR_REORDER ? stor_command:1'b0, stor_id};
 
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
-wire outstnd_vrt_rdptr_val = (outstnd_abs_rdptr_val ||
-                             (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
-                              full_resp_id == full_stor_id && stor_header[`MSG_HEADER_WIDTH]));
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_mem = outstnd_abs_rdptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
-                                                                                   (~outstnd_vrt_empt &
-                                                                                    ~outstnd_vrt_rdptr_val)};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_rdptr_val = (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
+                              full_resp_id == full_stor_id && stor_header[`MSG_HEADER_WIDTH]);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_mem = outstnd_abs_rdptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
+                                                                                   (~ outstnd_vrt_empt &
+                                                                                    ~(outstnd_vrt_rdptr_val |
+                                                                                      outstnd_abs_rdptr_val))};
 reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_ptr;
 always @(posedge clk)
   if(~rst_n) begin
@@ -254,12 +258,16 @@ always @(posedge clk)
     if (req_go) begin 
       outstnd_vrt_wrptrs[full_req_id] <= outstnd_vrt_wrptrs[full_req_id] + 1;
       if (outstnd_vrt_empts[full_req_id]) begin
-        outstnd_abs_rdptrs[full_req_id] <= outstnd_abs_wrptr;
+        outstnd_abs_rdptrs    [full_req_id] <= outstnd_abs_wrptr;
         outstnd_abs_rdptrs_val[full_req_id] <= 1'b1;
+        outstnd_command       [full_req_id] <= req_command;
       end
     end
     if (!outstnd_vrt_empt) begin
-      if (outstnd_vrt_rdptr_val) outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
+      if (!outstnd_abs_rdptr_val && outstnd_vrt_rdptr_val) begin 
+        outstnd_abs_rdptrs_val[full_resp_id] <= 1'b1;
+        outstnd_command       [full_resp_id] <= stor_command;
+      end
       // searching for the next valid request location for responded ID
       outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr_mem;
     end
@@ -280,7 +288,7 @@ assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !
 assign write_req_header = req_header;
 assign write_req_id = req_id;
 
-wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
 
 // Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
@@ -305,32 +313,32 @@ xilinx_true_dual_port_write_first_1_clock_ram #(
     .doutb(clean_header)              // Port B RAM output data, width determined from RAM_WIDTH
 );
 
-reg resp_val;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg resp_val;
 always @(posedge clk)
   if(~rst_n) resp_val <= 1'b0;
   else begin
-    if (write_resp_val |
-        read_resp_val) resp_val <= 1'b1;
-    if (ser_go)        resp_val <= 1'b0;
+    if (write_resp_val_act |
+        read_resp_val_act) resp_val <= 1'b1;
+    if (ser_go)            resp_val <= 1'b0;
   end
-wire outstnd_abs_rdptr_val_act = outstnd_abs_rdptr_val & resp_val;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_abs_rdptr_val_act = outstnd_abs_rdptr_val & resp_val;
 
-reg stor_hdr_val;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg stor_hdr_val;
 always @(posedge clk)
   if(~rst_n) stor_hdr_val <= 1'b0;
   else       stor_hdr_val <= outstnd_abs_rdptr_val_act;
-wire stor_hdr_en = stor_hdr_val & outstnd_abs_rdptr_val_act;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire stor_hdr_en = stor_hdr_val & outstnd_abs_rdptr_val_act;
 
-assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~full_resp_id[NUM_REQ_THREADS_LOG2];
-assign write_resp_rdy = stor_hdr_en & ser_rdy &  full_resp_id[NUM_REQ_THREADS_LOG2];
+assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
+assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // correction of read responsed data according to stored outstanding request
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = stor_header[`MSG_ADDR];
 wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) || (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ);
-wire [5:0] offset = uncacheable ? virt_addr[5:0] : 6'b0;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [5:0] offset = uncacheable ? virt_addr[5:0] : 6'b0;
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*offset);
 
-reg [6:0] size;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [6:0] size;
 always @(*)
   if (uncacheable)
     case (stor_header[`MSG_DATA_SIZE])
@@ -379,8 +387,8 @@ always @(*)
     default: resp_data <= {`AXI4_DATA_WIDTH/512{rdata_swapped[511:0]}};
   endcase
 
-assign ser_val = stor_hdr_en & (read_resp_val | write_resp_val);
-assign ser_data = read_resp_val ? resp_data : 0; // higher priority for Read response
+assign ser_val    = stor_hdr_en;
+assign ser_data   = stor_command ? `AXI4_DATA_WIDTH'b0 : resp_data;
 assign ser_header = stor_header;
 
 

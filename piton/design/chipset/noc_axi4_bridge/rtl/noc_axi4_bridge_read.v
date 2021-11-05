@@ -62,16 +62,16 @@ module noc_axi4_bridge_read #(
     output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
     output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
-    output wire                               m_axi_arvalid,
-    input  wire                               m_axi_arready,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_arvalid,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_arready,
 
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
     input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
     input  wire                               m_axi_rlast,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
-    input  wire                               m_axi_rvalid,
-    output wire                               m_axi_rready
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_rvalid,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_rready
 );
 
 

@@ -64,22 +64,22 @@ module noc_axi4_bridge_write #(
     output wire [`AXI4_QOS_WIDTH    -1:0]     m_axi_awqos,
     output wire [`AXI4_REGION_WIDTH -1:0]     m_axi_awregion,
     output wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser,
-    output wire                               m_axi_awvalid,
-    input  wire                               m_axi_awready,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_awvalid,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_awready,
 
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
     output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
     output wire                               m_axi_wlast,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
-    output wire                               m_axi_wvalid,
-    input  wire                               m_axi_wready,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_wvalid,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_wready,
 
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
-    input  wire                               m_axi_bvalid,
-    output wire                               m_axi_bready
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_bvalid,
+    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_bready
 );
 
 
