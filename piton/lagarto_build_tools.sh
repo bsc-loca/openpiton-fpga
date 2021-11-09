@@ -67,10 +67,10 @@ else
   #scripts/install-verilator.sh
 
   # build the RISCV tests if necessary
-  VERSION="7cc76ea83b4f827596158c8ba0763e93da65de8f"
+  VERSION="f2b342931939d9f88da4e70cadbd685b4e2f21c9"
   cd tmp
 
-  [ -d riscv-tests ] ||  git clone https://github.com/riscv/riscv-tests.git #git clone https://gitlab.bsc.es/meep/rtl_designs/acme_components/riscv-tests.git
+  [ -d riscv-tests ] ||  git clone https://gitlab.bsc.es/meep/rtl_designs/acme_components/riscv-tests.git
   cd riscv-tests
   git checkout $VERSION
   git submodule update --init --recursive
