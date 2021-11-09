@@ -13,6 +13,7 @@
 # Description: GitLab CI configuration script.
 
 before_script:
+  - export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
   - . piton/lagarto_setup.sh
   - . piton/lagarto_build_tools.sh
 
