@@ -40,8 +40,9 @@ int main(int argc, char ** argv) {
   size_t const memBytes = SRAM_ADRRANGE / sizeof(uint8_t);
   size_t const axiWidth = 512 / 8;
 
-  printf("-- SRAM test on hart %d of %d harts --\n", argv[0][0], argv[0][1]);
-  printf("Test of SRAM at addr 0x%lx(virt: 0x%lx) with size %d \n", SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
+  printf("-- SRAM test --\n");
+  printf("-- Hart %d of %d: Test of SRAM at addr 0x%lx(virt: 0x%lx) with size %d -- \n",
+         argv[0][0], argv[0][1], SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
   // printf(" Checking memory with random values from %x to %x \n", 0, RAND_MAX);
   // first clearing previously stored values
   for (size_t addr = 0; addr < memBytes; ++addr) memPtr8 [addr] = 0;
