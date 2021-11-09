@@ -91,12 +91,6 @@ export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 # note: customize this script to reflect your tool setup
 source ./piton/piton_settings.bash
 
-# These setting is for SATU server.
-git submodule update --init --recursive piton/design/chip/tile/ariane && \
-	ln -s /home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp ./piton/design/chip/tile/ariane/tmp
-
-git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
-
 export RISCV=/home/tools/openpiton/riscv_install
 export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
@@ -105,7 +99,6 @@ export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
-
 
 if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]
 then
