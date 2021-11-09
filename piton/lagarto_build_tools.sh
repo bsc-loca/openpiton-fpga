@@ -64,7 +64,7 @@ else
   scripts/build-riscv-gcc.sh
   scripts/install-fesvr.sh
   scripts/install-spike.sh
-  scripts/install-verilator.sh
+  #scripts/install-verilator.sh
 
   # build the RISCV tests if necessary
   VERSION="7cc76ea83b4f827596158c8ba0763e93da65de8f"
