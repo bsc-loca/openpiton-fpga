@@ -2241,10 +2241,18 @@ sub assemble_diag
     die "DIE. could not clean up assembly diag run area"  if ($?) ;
 
     # add default path to look for precompiled RISCV 64bit assembly tests diags in case of ariane
-    if (($opt{ariane} | $opt{lagarto}) and $opt{precompiled}) {
+    if ($opt{ariane} and $opt{precompiled}) {
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/isa";
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/benchmarks";
     }
+    # add default path to look for precompiled RISCV 64bit assembly tests diags in case of lagarto
+    if ($opt{lagarto} and $opt{precompiled}) {
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/isa";
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/benchmarks";
+    }
+
+
+
 
     # find diagnostic
     my $diag_full_path = &find_diag_path ($opt{asm_diag_name}, $opt{asm_diag_path}, $opt{asm_diag_root}) ;
