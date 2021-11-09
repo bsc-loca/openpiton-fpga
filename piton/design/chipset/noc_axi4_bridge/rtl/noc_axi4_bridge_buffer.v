@@ -199,12 +199,14 @@ always @(posedge clk)
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_command;
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_resp_val_act  = read_resp_val  && (RDWR_REORDER || (!outstnd_command[read_resp_id ] && outstnd_abs_rdptrs_val[read_resp_id ]));
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_resp_val_act = write_resp_val && (RDWR_REORDER || ( outstnd_command[write_resp_id] && outstnd_abs_rdptrs_val[write_resp_id]));
+wire [NUM_REQ_THREADS_LOG2 : 0] full_rd_resp_id = {RDWR_REORDER ? READ :1'b0, read_resp_id };
+wire [NUM_REQ_THREADS_LOG2 : 0] full_wr_resp_id = {RDWR_REORDER ? WRITE:1'b0, write_resp_id};
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
   else if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
-    // higher priority for Read response
-    if (write_resp_val_act) full_resp_id <= {RDWR_REORDER ? WRITE:1'b0, write_resp_id};
-    if (read_resp_val_act ) full_resp_id <= {RDWR_REORDER ? READ :1'b0, read_resp_id };
+    // higher priority for Read response in case the coming ID is not which we already have 
+    if (write_resp_val_act && !(read_resp_val_act  && full_resp_id == full_rd_resp_id)) full_resp_id <= full_wr_resp_id;
+    if (read_resp_val_act  && !(write_resp_val_act && full_resp_id == full_wr_resp_id)) full_resp_id <= full_rd_resp_id;
   end
 
 
