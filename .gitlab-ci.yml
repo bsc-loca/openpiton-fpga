@@ -39,6 +39,7 @@ build:
     - test
   script:
     - . ./piton/lagarto_setup.sh
+    - . ./piton/lagarto_build_tools.sh 
     - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     - "grep 'Errors: 0' sims.log"
