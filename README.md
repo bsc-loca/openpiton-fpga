@@ -1,3 +1,91 @@
+# OpenPiton MEEP: ACME
+## Description
+
+This repository is a fork from OpenPiton: https://github.com/PrincetonUniversity/openpiton
+
+We keep the two original branch (openpiton, openpiton-dev) with all the history.
+
+We have created two new branches, feature/lagarto_ariane_cache and feature/lagarto_node
+
+The branch feature/lagarto_ariane_cache will connect Lagaro M20 to the Ariane Cache subsystem.
+
+The branch feature/lagarto_node will design a new cache infraestructure using the L1.5 as L1 Data cache, use the L1 ICache from Drac, the TLB and PTW from lowrisc and create a custom addres translation for the new l1 d-cache.
+
+### Cloning the repo
+    
+    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b feature/lagarto_ariane_cache
+
+### Set enviroment
+    
+    source /home/tools/riscv_vector_toolchain/set_env.sh
+    source /eda/env.sh
+
+### Setup and submodules initialization
+
+    cd openpiton_lagarto
+    source piton/lagarto_setup.sh
+
+### Building the simulation model
+    
+    cd build
+
+Compiling Openpiton with Lagarto
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+
+Compiling with torture (to generate signature file for spike):
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+
+You can clean the files before to compile for lagarto by doing:
+    sims clean
+    rm -rf manycore
+
+### Launch simulation
+
+#### Running RISC-V Tests 
+
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -gui
+
+#### Running RISC-V benchmarks   
+
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 dhrystone.riscv -lagarto -precompiled
+
+List of supported benchmarks:
+
+- median
+- qsort
+- rsort
+- towers
+- vvadd
+- multiply
+- dhrystone
+- matmul
+- pmp
+
+#### Regressions
+
+The RISC-V ISA tests, benchmarks and some additonal simple example programs have been added to the regression suite of OpenPiton, and can be invoked as described below.
+RISC-V ISA tests are grouped into the following four batches, where the last two are the regressions for atomic memory operations (AMOs):
+
+    sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+
+List of regression tests supported:
+
+- lagarto_tile1_asm_tests_p
+- lagarto_tile1_asm_tests_v
+- lagarto_tile1_amo_tests_p
+- lagarto_tile1_amo_tests_v
+- lagarto_tile1_mul_div_tests_p
+- lagarto_tile1_mul_div_tests_v
+- lagarto_tile1_machine_lvl_tests_p
+- lagarto_tile1_supervisor_lvl_tests_p
+
+If you would like to get an overview of the exit status of a regression batch, step into the regression subfolder and call
+
+    regreport . -summary
+
+
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
 # OpenPiton Research Platform   [![Build Status](https://jenkins.princeton.edu/buildStatus/icon?job=cloud/piton_git_push_master)](https://jenkins.princeton.edu/job/cloud/job/piton_git_push_master/)
