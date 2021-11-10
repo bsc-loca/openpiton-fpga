@@ -1306,9 +1306,9 @@ sub pre_build
     my $num_sources = 2;
     # 2 targets per core (M/S mode)
     my $num_targets = 2 * $ENV{PITON_NUM_TILES};
-    print "generating PLIC for Ariane with $num_targets targets and $num_sources sources...\n";
-    !system("cd $ENV{LAGARTO_ROOT}/../ariane/src/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
-      die (" Error generating PLIC for Ariane.");
+    print "generating PLIC for Lagarto with $num_targets targets and $num_sources sources...\n";
+    !system("cd $ENV{LAGARTO_ROOT}modules/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
+      die (" Error generating PLIC for Lagarto.");
     print "done\n";
   }
 
