@@ -22,8 +22,8 @@ before_script:
   #- . ./piton/lagarto_setup.sh
   #- . ./piton/lagarto_build_tools.sh 
 
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+#variables:
+  #GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - build
