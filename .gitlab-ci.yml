@@ -26,154 +26,77 @@ variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
-  - settings
   - build
-  - regression1
-  - regression2
-
-set_env:
-  tags: 
-    - test
-  stage: settings
-  script:
-  - . ./piton/lagarto_setup.sh
-  - . ./piton/lagarto_build_tools.sh 
+  - regression
 
 ###################################
 # Build                           #
 ###################################
  
-build:lagarto:
+build:
+  stage: build
   tags: 
     - test
-  stage: build
   script:
     - . ./piton/lagarto_setup.sh
     - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     - "grep 'Errors: 0' sims.log"
-
-build:lagarto-torture:
-  tags: 
-    - test
-  stage: build
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
     - "grep 'Errors: 0' sims.log"
 
 ##############################################################
 ## Regression tests                                        ###
 ##############################################################
-   
-user_level_integer_physical:
-  stage: regression1
-  dependencies: 
-    - build:lagarto-torture
+
+regression:
+  stage: regression
   tags: 
     - test
   script:
     - . ./piton/lagarto_setup.sh
+    - . ./piton/lagarto_build_tools.sh 
     - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_integer_virtual:
-  stage: regression2
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
+    - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_atomics_physical:
-  stage: regression1
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_amo_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_atomics_virtual:
-  stage: regression2
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_amo_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_mul_div_physical:
-  stage: regression1
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:  
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_mul_div_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_mul_div_virtual:
-  stage: regression2
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_mul_div_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
- 
-machine_levels:
-  stage: regression2
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:  
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_machine_lvl_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-supervisor_levels:
-  stage: regression1
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - cd build
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_supervisor_lvl_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee regress.log"
