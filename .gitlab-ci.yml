@@ -13,11 +13,14 @@
 # Description: GitLab CI configuration script.
 
 before_script:
-  - . /eda/env.sh
+  - . /eda/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
+  - export QUESTA_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+  # eda env mentor licence 
+  - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
+  - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
+  - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
   - . ./piton/lagarto_setup.sh
-  - . ./piton/lagarto_build_tools.sh
-
- 
+  - . ./piton/lagarto_build_tools.sh 
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
