@@ -31,9 +31,9 @@ stages:
   - regression1
   - regression2
 
-build:lagarto:
+set_env:
   tags: 
-    - settings
+    - test
   stage: settings
   script:
   - . ./piton/lagarto_setup.sh
