@@ -78,11 +78,16 @@ Then recompile the benchmark to work with 4 tiles:
 
 Then run the benchmarks as below:
 
-    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd.riscv
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd -riscv-rtl_timeout=100000000
+
 
 or
     
-    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-matmul.riscv
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-matmul.riscv -rtl_timeout=100000000
+
+After the execution of the benchmark you can display the result with:
+    
+    cat fake_uart.log
 
 #### Regressions
 
