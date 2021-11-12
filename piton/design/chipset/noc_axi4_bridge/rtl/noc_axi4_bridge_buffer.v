@@ -207,14 +207,16 @@ always @(posedge clk)
     full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
     resp_val <= 1'b0;
   end
-  else if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
-    // higher priority for Read response in case the coming ID is not which we already have 
-    if (write_resp_val_act && !(read_resp_val_act  && full_resp_id == full_rd_resp_id)) full_resp_id <= full_wr_resp_id;
-    if (read_resp_val_act  && !(write_resp_val_act && full_resp_id == full_wr_resp_id)) full_resp_id <= full_rd_resp_id;
+  else begin
+    if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
+      // higher priority for Read response in case the coming ID is not which we already have 
+      if (write_resp_val_act && !(read_resp_val_act  && full_resp_id == full_rd_resp_id)) full_resp_id <= full_wr_resp_id;
+      if (read_resp_val_act  && !(write_resp_val_act && full_resp_id == full_wr_resp_id)) full_resp_id <= full_rd_resp_id;
 
-    if (write_resp_val_act ||
-        read_resp_val_act) resp_val <= 1'b1;
-    if (ser_go)            resp_val <= 1'b0;
+      if (write_resp_val_act ||
+          read_resp_val_act) resp_val <= 1'b1;
+    end
+    if (ser_go)              resp_val <= 1'b0;
   end
 
 
