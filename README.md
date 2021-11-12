@@ -71,11 +71,12 @@ First build the system with the number of tiles that you desire. The below examp
 
 Then recompile the benchmark to work with 4 tiles:
 
-    cd piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+    cd $PITON_ROOT/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
     make clean
     make benchmarks NUMTILES=-DPITON_NUMTILES=4
-    
-Then go to the build area and run the benchmarks as below:
+    cd $PITON_ROOT/build
+
+Then run the benchmarks as below:
 
     sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd.riscv
 
