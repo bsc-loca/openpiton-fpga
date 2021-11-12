@@ -1298,17 +1298,17 @@ sub pre_build
   if($opt{lagarto}) {
     print "compiling DTS and bootroms for Lagarto..\n";
     !system("cd $ENV{LAGARTO_ROOT}/bootrom/baremetal && make clean && make all && cd - > /dev/null") or
-      die (" Error compiling DTS for ariane.");
+      die (" Error compiling DTS for Lagarto.");
     !system("cd $ENV{LAGARTO_ROOT}/bootrom/linux && make clean && make all MAX_HARTS=$ENV{PITON_NUM_TILES} && cd - > /dev/null") or
-      die (" Error compiling DTS for ariane.");
+      die (" Error compiling DTS for Lagarto.");
     print "done\n";
     # currently we have two sources (hardcoded in chipset_impl): UART and Ethernet
     my $num_sources = 2;
     # 2 targets per core (M/S mode)
     my $num_targets = 2 * $ENV{PITON_NUM_TILES};
-    print "generating PLIC for Ariane with $num_targets targets and $num_sources sources...\n";
-    !system("cd $ENV{LAGARTO_ROOT}/../ariane/src/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
-      die (" Error generating PLIC for Ariane.");
+    print "generating PLIC for Lagarto with $num_targets targets and $num_sources sources...\n";
+    !system("cd $ENV{LAGARTO_ROOT}/modules/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
+      die (" Error generating PLIC for Lagarto.");
     print "done\n";
   }
 
@@ -2241,10 +2241,18 @@ sub assemble_diag
     die "DIE. could not clean up assembly diag run area"  if ($?) ;
 
     # add default path to look for precompiled RISCV 64bit assembly tests diags in case of ariane
-    if (($opt{ariane} | $opt{lagarto}) and $opt{precompiled}) {
+    if ($opt{ariane} and $opt{precompiled}) {
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/isa";
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/benchmarks";
     }
+    # add default path to look for precompiled RISCV 64bit assembly tests diags in case of lagarto
+    if ($opt{lagarto} and $opt{precompiled}) {
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/isa";
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/benchmarks";
+    }
+
+
+
 
     # find diagnostic
     my $diag_full_path = &find_diag_path ($opt{asm_diag_name}, $opt{asm_diag_path}, $opt{asm_diag_root}) ;

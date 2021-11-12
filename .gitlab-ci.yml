@@ -13,215 +13,105 @@
 # Description: GitLab CI configuration script.
 
 before_script:
-  - git submodule update --init --recursive
-  - export PITON_ROOT=`pwd`
-  # paths to local or network installations (the riscv toolchain is not built in the ci job as in travis)
-  # (license setup is then done by the SEPP startup script)
-  #- eval "function vcs() { command vcs-2017.03-kgf vcs -full64 \"\$@\"; };"
-  #- export -f vcs
-  - export VCS_HOME="/eda/synopsys/2020-21/RHELx86/VCS_2020.12"
-  #- export MODELSIM_VERSION="-10.6b -64"
-  #- export MODELSIM_HOME="/usr/pack/modelsim-10.6b-kgf/"
-  - export VIVADO_BIN="/opt/Xilinx/Vivado/2020.1/bin/"
-  - export CXX=g++ CC=gcc
-  - export RISCV=/tmp/scratch2/gitlabci/riscv_install
-  - export VERILATOR_ROOT=/tmp/scratch2/gitlabci/verilator-4.014/
-  - export PATH=$PATH:${RISCV}/bin:$VERILATOR_ROOT/bin
-  - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
-  # this is for sims batches
-  - export DRMJOBSCRATCHSPACE=/tmp/scratch2/gitlabci/tmp/
-  # set_ev riscv_vector_toolchange
-  - export RISCV_VEC_TOOL_VER=rvv-0.7.1
-  - export RISCV=$RISCV_VEC_TOOL
-  - export RISCV_VEC_TOOL=/home/tools/riscv_vector_toolchain/$RISCV_VEC_TOOL_VER
-  - export PATH=$RISCV/bin:$PATH
-  # eda env
-  - export CDS_LCU=/eda/cadence/licenses/bin/LCU_4.30.002
-  - export PATH="${PATH}:${CDS_LCU}/RHELx86/tools.lnx86/bin"
-  # eda env mentor
   - . /eda/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
   - export QUESTA_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
   # eda env mentor licence 
   - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
   - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
   - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
+  #- . ./piton/lagarto_setup.sh
+  #- . ./piton/lagarto_build_tools.sh 
 
-  - . ./piton/piton_settings.bash
-  # setup python
-  - export PITON_ROOT=`pwd`
-  - export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
-  - export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
-    ## GCC and RISCV GCC setup
-  - export CXX=g++ CC=gcc
-    # customize this to a fast local disk
-  - export RISCV=/scratch/`whoami`/riscv_install
-  - export VERILATOR_ROOT=$ARIANE_ROOT/tmp/verilator-4.014/
-    # setup paths
-  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
-  - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-
-# source OpenPiton setup script
-# note: customize this script to reflect your tool setup
-  - export RISCV=/home/tools/openpiton/riscv_install
-  - export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
-  - export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
-  - export LIBRARY_PATH=$RISCV/lib
-  - export LD_LIBRARY_PATH=$RISCV/lib
-  - export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-  - export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
-
-  
-variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+#variables:
+  #GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
   - build
   - regression
 
-
 ###################################
 # Build                           #
 ###################################
  
-build:lagarto:
+build:
+  stage: build
   tags: 
     - test
-  stage: build
   script:
+    - . ./piton/lagarto_setup.sh
+    - . ./piton/lagarto_build_tools.sh 
     - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     - "grep 'Errors: 0' sims.log"
-
-build:lagarto-torture:
-  tags: 
-    - test
-  stage: build
-  script:
-    - cd build
     - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
     - "grep 'Errors: 0' sims.log"
 
 ##############################################################
 ## Regression tests                                        ###
 ##############################################################
-   
-user_level_integer_physical:
+
+regression:
   stage: regression
-  dependencies: 
-    - build:lagarto-torture
   tags: 
     - test
   script:
-    - . piton/lagarto_setup.sh
+    - . ./piton/lagarto_setup.sh
+    - . ./piton/lagarto_build_tools.sh 
     - cd build
     - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_integer_virtual:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_atomics_physical:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_amo_tests_p -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_atomics_virtual:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_amo_tests_v -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_mul_div_physical:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:  
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_mul_div_tests_p -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-user_level_mul_div_virtual:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_mul_div_tests_v -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
- 
-machine_levels:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:  
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_machine_lvl_tests_p -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
-supervisor_levels:
-  stage: regression
-  dependencies:
-    - build:lagarto-torture
-  tags:
-    - test
-  script:
-    - . piton/lagarto_setup.sh
-    - cd build
+    - "cd .."
+    - "rm -rf 2*"
     - sims -group=lagarto_tile1_supervisor_lvl_tests_p -sim_type=msm
     - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
-
+    - "cd .."
+    - "rm -rf 2*"
+    - "cat final_report.log"

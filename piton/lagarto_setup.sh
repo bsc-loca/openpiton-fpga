@@ -72,13 +72,13 @@ fi
 # set root directory
 export PITON_ROOT=`pwd`
 export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
-export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 
 ## GCC and RISCV GCC setup
 export CXX=g++ CC=gcc
 # customize this to a fast local disk
-export RISCV=/scratch/`whoami`/riscv_install
-export VERILATOR_ROOT=$ARIANE_ROOT/tmp/verilator-4.014/
+export RISCV=/home/tools/openpiton/riscv_install
+#export RISCV=/home/`whoami`/tools/riscv_install
+export VERILATOR_ROOT=$LAGARTO_ROOT/tmp/verilator-4.014/
 
 # setup paths
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
@@ -91,14 +91,7 @@ export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 # note: customize this script to reflect your tool setup
 source ./piton/piton_settings.bash
 
-# These setting is for SATU server.
-git submodule update --init --recursive piton/design/chip/tile/ariane && \
-	ln -s /home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp ./piton/design/chip/tile/ariane/tmp
-
-git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
-
 export RISCV=/home/tools/openpiton/riscv_install
-export VERILATOR_ROOT=/home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/verilator-4.014/
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
@@ -106,13 +99,12 @@ export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
 
-
 if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]
 then
     echo
     echo "----------------------------------------------------------------------"
     echo "setup complete. do not forget to run the following script             "
-    echo "if you run the setup for the first time: ./piton/ariane_build_tools.sh"
+    echo "if you run the setup for the first time: ./piton/lagarto_build_tools.sh"
     echo "----------------------------------------------------------------------"
     echo
 else
