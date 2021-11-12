@@ -63,6 +63,11 @@ List of supported benchmarks:
 - matmul
 - pmp
 
+After the execution of the benchmark you can display the result with:
+    
+    cat fake_uart.log
+
+
 #### Running RISC-V MT Benchmarks
 
 First build the system with the number of tiles that you desire. The below example use 4 tiles.
