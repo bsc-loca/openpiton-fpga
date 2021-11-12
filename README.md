@@ -63,6 +63,24 @@ List of supported benchmarks:
 - matmul
 - pmp
 
+#### Running RISC-V MT Benchmarks
+
+First build the system with the number of tiles that you desire. The below example use 4 tiles.
+
+    sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+
+Then recompile the benchmark to work with 4 tiles:
+
+    cd piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+    make clean
+    make benchmarks NUMTILES=-DPITON_NUMTILES=4
+    
+Then go to the build area and run the benchmarks as below:
+
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd.riscv
+or
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-matmul.riscv
+
 #### Regressions
 
 The RISC-V ISA tests, benchmarks and some additonal simple example programs have been added to the regression suite of OpenPiton, and can be invoked as described below.
