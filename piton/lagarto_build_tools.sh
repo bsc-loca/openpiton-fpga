@@ -82,12 +82,12 @@ else
 
   # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
   cd benchmarks/common/
-  rm syscalls.c util.h 
-  #crt.S link.ld
-  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/syscalls.c
-  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/util.h
-  #ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/crt.S
-  #ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/link.ld
+  rm syscalls.c util.h crt.S
+
+  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
+  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
+  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
+  
   cd -
   
   cd build
