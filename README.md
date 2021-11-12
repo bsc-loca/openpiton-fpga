@@ -78,7 +78,9 @@ Then recompile the benchmark to work with 4 tiles:
 Then go to the build area and run the benchmarks as below:
 
     sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd.riscv
+
 or
+    
     sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-matmul.riscv
 
 #### Regressions
