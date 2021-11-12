@@ -15,15 +15,11 @@ The branch feature/lagarto_node will design a new cache infraestructure using th
     
     git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b feature/lagarto_ariane_cache
 
-### Set enviroment
-    
-    source /home/tools/riscv_vector_toolchain/set_env.sh
-    source /eda/env.sh
-
 ### Setup and submodules initialization
 
     cd openpiton_lagarto
     source piton/lagarto_setup.sh
+    source piton/lagarto_build_tools.sh
 
 ### Building the simulation model
     
