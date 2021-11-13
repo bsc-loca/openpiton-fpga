@@ -97,6 +97,7 @@ module mc_top (
 
     output                          init_calib_complete_out,
 `endif // ifdef PITON_FPGA_MC_DDR3
+    output                          mc_axi_deadlock,
 
 `ifdef PITONSYS_MC_SRAM
     input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
@@ -175,6 +176,11 @@ noc_axi4_bridge #(
     .rst_n              (sys_rst_n), 
     .uart_boot_en       (1'b0),
     .phy_init_done      (1'b1),
+    .axi_id_deadlock    (
+`ifndef PITON_FPGA_MC_DDR3
+                         mc_axi_deadlock // taking "alarm" signal from SRAM AXI in case SDRAM is absent
+`endif
+                        ),
 
     .src_bridge_vr_noc2_val(sram_flit_in_val),
     .src_bridge_vr_noc2_dat(sram_flit_in_data),
@@ -988,6 +994,7 @@ noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000),
     .rst_n              (~noc_axi4_bridge_rst      ), 
     .uart_boot_en       (uart_boot_en              ),
     .phy_init_done      (noc_axi4_bridge_init_done ),
+    .axi_id_deadlock    (mc_axi_deadlock           ),
 
     .src_bridge_vr_noc2_val(fifo_trans_val),
     .src_bridge_vr_noc2_dat(fifo_trans_data),

@@ -41,6 +41,7 @@ module noc_axi4_bridge_buffer #(
 ) (
   input clk,
   input rst_n,
+  output reg axi_id_deadlock,
 
   // from deserializer
   input [`MSG_HEADER_WIDTH-1:0] deser_header,
@@ -206,15 +207,23 @@ always @(posedge clk)
   if(~rst_n || init_outstnd_mem) begin 
     full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
     resp_val <= 1'b0;
+    axi_id_deadlock <= 1'b0;
   end
   else begin
     if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
-      // higher priority for Read response in case the coming ID is not which we already have 
+      // Higher priority for Read response in case we have not already started working with the Write response ID some earlier,
+      // In order to change priority two following strings should be exchanged (the condition is symmetrical)
       if (write_resp_val_act && !(read_resp_val_act  && full_resp_id == full_rd_resp_id)) full_resp_id <= full_wr_resp_id;
       if (read_resp_val_act  && !(write_resp_val_act && full_resp_id == full_wr_resp_id)) full_resp_id <= full_rd_resp_id;
 
       if (write_resp_val_act ||
           read_resp_val_act) resp_val <= 1'b1;
+
+      // Catching possible AXI ID Deadlock in RDWR_INORDER mode:
+      // both Rd and Wr responses don't correspond simultaneously to expected inorder ones
+      if (read_resp_val  &&  outstnd_command[read_resp_id ] && outstnd_abs_rdptrs_val[read_resp_id ] &&
+          write_resp_val && !outstnd_command[write_resp_id] && outstnd_abs_rdptrs_val[write_resp_id] &&
+          !RDWR_REORDER) axi_id_deadlock <= 1'b1;
     end
     if (ser_go)              resp_val <= 1'b0;
   end

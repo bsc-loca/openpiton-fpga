@@ -44,6 +44,7 @@ module noc_axi4_bridge #(
     input  wire                                   rst_n,
     input  wire                                   uart_boot_en,
     input  wire                                   phy_init_done, 
+    output                                        axi_id_deadlock,
 
     // Noc interface
     input  wire                                   src_bridge_vr_noc2_val,
@@ -141,7 +142,8 @@ noc_axi4_bridge_buffer #(
     .NUM_REQ_XTHREADS_LOG2 (NUM_REQ_XTHREADS_LOG2)
 ) noc_axi4_bridge_buffer (
     .clk(clk),
-    .rst_n(rst_n), 
+    .rst_n(rst_n),
+    .axi_id_deadlock(axi_id_deadlock),
 
     .deser_header(deser_header),
     .deser_data(deser_data),

@@ -67,6 +67,7 @@ localparam LINE_0_LEN = 4;
 localparam LINE_1_LEN = 6;
 localparam LINE_2_LEN = 6;
 localparam LINE_3_LEN = 7;
+localparam LINE_4_LEN = 29;
 
 // set of hardwired lines to send
 wire  [LINE_CNTR_WIDTH-1:0] str_len [LINE_NUMBER-1:0];
@@ -75,11 +76,13 @@ assign str_len[0] = LINE_0_LEN;
 assign str_len[1] = LINE_1_LEN;
 assign str_len[2] = LINE_1_LEN;
 assign str_len[3] = LINE_3_LEN;
+assign str_len[4] = LINE_4_LEN;
 
 reg   [CHAR_WIDTH-1:0]  line_0 [LINE_0_LEN-1:0];  // DONE
 reg   [CHAR_WIDTH-1:0]  line_1 [LINE_1_LEN-1:0];  // PASSED
 reg   [CHAR_WIDTH-1:0]  line_2 [LINE_2_LEN-1:0];  // FAILED
 reg   [CHAR_WIDTH-1:0]  line_3 [LINE_3_LEN-1:0];  // TIMEOUT
+wire  [CHAR_WIDTH-1:0]  line_4 [LINE_4_LEN-1:0];  // MC AXI ID DEADLOCK
 
 // DONE
 always @(posedge axi_clk) begin
@@ -120,6 +123,37 @@ always @(posedge axi_clk) begin
   line_3[6] <= 8'h54;
 end
 
+// MC AXI ID DEADLOCK
+assign line_4[0 ] = "\n";
+assign line_4[1 ] = "H";
+assign line_4[2 ] = "W";
+assign line_4[3 ] = "_";
+assign line_4[4 ] = "C";
+assign line_4[5 ] = "R";
+assign line_4[6 ] = "A";
+assign line_4[7 ] = "S";
+assign line_4[8 ] = "H";
+assign line_4[9 ] = ":";
+assign line_4[10] = "M";
+assign line_4[11] = "C";
+assign line_4[12] = "_";
+assign line_4[13] = "A";
+assign line_4[14] = "X";
+assign line_4[15] = "I";
+assign line_4[16] = "_";
+assign line_4[17] = "I";
+assign line_4[18] = "D";
+assign line_4[19] = "_";
+assign line_4[20] = "D";
+assign line_4[21] = "E";
+assign line_4[22] = "A";
+assign line_4[23] = "D";
+assign line_4[24] = "L";
+assign line_4[25] = "O";
+assign line_4[26] = "C";
+assign line_4[27] = "K";
+assign line_4[28] = "\n";
+
 // stub
 assign m_axi_bready   = 1'b1;
 assign m_axi_rready   = 1'b1;
@@ -140,7 +174,7 @@ wire  [LINE_CNTR_WIDTH-1:0]   curr_line_len;
 wire [CHAR_WIDTH-1:0]   char_0;
 wire [CHAR_WIDTH-1:0]   char_1;
 wire [CHAR_WIDTH-1:0]   char_2;
-wire [CHAR_WIDTH-1:0]   char_3;
+wire [CHAR_WIDTH-1:0]   char_4;
 
 assign ar_sent         = m_axi_arvalid & m_axi_arready;
 assign tx_sent        = m_axi_wvalid  & m_axi_wready;
@@ -223,10 +257,12 @@ assign char_0 = line_0[char_cnt];
 assign char_1 = line_1[char_cnt];
 assign char_2 = line_2[char_cnt];
 assign char_3 = line_3[char_cnt];
+assign char_4 = line_4[char_cnt];
 
 assign curr_char =  ({8{str_sel == `CFG_DONE_STRING}} & char_0) |
                     ({8{str_sel == `PASSED_STRING}}   & char_1) |
                     ({8{str_sel == `FAILED_STRING}}   & char_2) |
+                    ({8{str_sel == `MC_AXI_DEADLOCK_STRING}} & char_4) |
                     ({8{str_sel == `TIMEOUT_STRING}}  & char_3) ;
 
 
