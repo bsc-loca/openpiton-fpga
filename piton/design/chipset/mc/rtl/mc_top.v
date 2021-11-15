@@ -168,6 +168,7 @@ noc_axi4_bridge #(
       .SWAP_ENDIANESS (1),
     `endif
     .NOC2AXI_DESER_ORDER (1),
+    .RDWR_INORDER (0),
     .NUM_REQ_OUTSTANDING_LOG2 (2),
     .NUM_REQ_YTHREADS_LOG2 (1),
     .NUM_REQ_XTHREADS_LOG2 (1)

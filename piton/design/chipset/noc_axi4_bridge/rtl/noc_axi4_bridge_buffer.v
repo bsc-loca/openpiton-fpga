@@ -32,10 +32,13 @@
 
 module noc_axi4_bridge_buffer #(
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    // Control of Rd/Wr responses order. Being enabled, enforces Rd/Wr responses order to the NOC the same as requests from the NOC.
+    // Should be enabled for OP since it is not tolerant to Rd/Wr reordering. This makes possible "Rd/Wr AXI ID thread deadlock" in case of multiple IDs.
+    // A detection of such event is implemented, but was never met from connected HBM/DDR/BRAM/URAM memories so far.
+    parameter RDWR_INORDER = 1,
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
     parameter NUM_REQ_YTHREADS_LOG2 = 2,
     parameter NUM_REQ_XTHREADS_LOG2 = 2,
-    parameter RDWR_REORDER = 0,
     localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
                                       NUM_REQ_XTHREADS_LOG2
 ) (
@@ -173,18 +176,19 @@ xilinx_simple_dual_port_1_clock_ram #(
 // GET_RESPONSE
 //
 
-localparam NUM_REQ_THREADS = 1 << (NUM_REQ_THREADS_LOG2 + 1); // read/write request type go as an extension to thread ID if RDWR_REORDER=1 
+localparam FULL_NUM_REQ_THREADS_LOG2 = NUM_REQ_THREADS_LOG2 + (RDWR_INORDER ? 0:1); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
+localparam NUM_REQ_THREADS = 1 << FULL_NUM_REQ_THREADS_LOG2;
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS-1 : 0];
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1      : 0] outstnd_vrt_empts;
-reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_empt;
+reg [FULL_NUM_REQ_THREADS_LOG2 : 0] itr_empt;
 always @(*)
   for (itr_empt = 0; itr_empt < NUM_REQ_THREADS; itr_empt = itr_empt+1)
     outstnd_vrt_empts[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
 
 
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [NUM_REQ_THREADS_LOG2 : 0] full_resp_id;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_resp_id;
 reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptrs[NUM_REQ_THREADS-1 : 0];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr = outstnd_abs_rdptrs[full_resp_id];
 
@@ -197,15 +201,15 @@ always @(posedge clk)
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_abs_rdptrs_val;
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_command;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_resp_val_act  = read_resp_val  && (RDWR_REORDER || (!outstnd_command[read_resp_id ] && outstnd_abs_rdptrs_val[read_resp_id ]));
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_resp_val_act = write_resp_val && (RDWR_REORDER || ( outstnd_command[write_resp_id] && outstnd_abs_rdptrs_val[write_resp_id]));
-wire [NUM_REQ_THREADS_LOG2 : 0] full_rd_resp_id = {RDWR_REORDER ? READ :1'b0, read_resp_id };
-wire [NUM_REQ_THREADS_LOG2 : 0] full_wr_resp_id = {RDWR_REORDER ? WRITE:1'b0, write_resp_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_command; // the vector stores the latest command type for particular ID, needed and effective only in RDWR_INORDER mode
+wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_rd_resp_id = {READ , read_resp_id };
+wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_wr_resp_id = {WRITE, write_resp_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_resp_val_act  = read_resp_val  && (!outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id]);
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_resp_val_act = write_resp_val && ( outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id]);
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg resp_val;
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) begin 
-    full_resp_id <= {(NUM_REQ_THREADS_LOG2+1){1'b0}};
+    full_resp_id <= {FULL_NUM_REQ_THREADS_LOG2{1'b0}};
     resp_val <= 1'b0;
     axi_id_deadlock <= 1'b0;
   end
@@ -219,11 +223,11 @@ always @(posedge clk)
       if (write_resp_val_act ||
           read_resp_val_act) resp_val <= 1'b1;
 
-      // Catching possible AXI ID Deadlock in RDWR_INORDER mode:
-      // both Rd and Wr responses don't correspond simultaneously to expected inorder ones
-      if (read_resp_val  &&  outstnd_command[read_resp_id ] && outstnd_abs_rdptrs_val[read_resp_id ] &&
-          write_resp_val && !outstnd_command[write_resp_id] && outstnd_abs_rdptrs_val[write_resp_id] &&
-          !RDWR_REORDER) axi_id_deadlock <= 1'b1;
+      // Catching "Rd/Wr AXI ID thread deadlock" possible in RDWR_INORDER mode with multiple IDs:
+      // both Rd and Wr responses simultaneously don't correspond to expected inorder ones
+      if (read_resp_val  &&  outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id] &&
+          write_resp_val && !outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id])
+        axi_id_deadlock <= 1'b1;
     end
     if (ser_go)              resp_val <= 1'b0;
   end
@@ -247,7 +251,7 @@ wire [`MSG_SRC_X_WIDTH-1:0] req_src_x = req_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
 wire [NUM_REQ_THREADS_LOG2-1:0] req_id = {req_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
                                           req_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_THREADS_LOG2 : 0] full_req_id = {RDWR_REORDER ? req_command:1'b0, req_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_req_id = {req_command, req_id};
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
@@ -256,7 +260,7 @@ wire [`MSG_SRC_X_WIDTH-1:0] stor_src_x = stor_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] stor_src_y = stor_header[`MSG_SRC_Y];
 wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
                                            stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_THREADS_LOG2 : 0] full_stor_id = {RDWR_REORDER ? stor_command:1'b0, stor_id};
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_stor_id = {stor_command, stor_id};
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_rdptr_val = (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
@@ -265,7 +269,7 @@ wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0]
                                                                                    (~ outstnd_vrt_empt &
                                                                                     ~(outstnd_vrt_rdptr_val |
                                                                                       outstnd_abs_rdptr_val))};
-reg [NUM_REQ_THREADS_LOG2+1 : 0] itr_ptr;
+reg [FULL_NUM_REQ_THREADS_LOG2 : 0] itr_ptr;
 always @(posedge clk)
   if(~rst_n) begin
     for (itr_ptr = 0; itr_ptr < NUM_REQ_THREADS; itr_ptr = itr_ptr+1) begin
@@ -311,7 +315,7 @@ assign write_req_id = req_id;
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
 
-// Xilinx-synthesizable True Dual Port RAM, No Change, Single Clock
+// Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
     .RAM_DEPTH(1<<NUM_REQ_OUTSTANDING_LOG2), // Specify RAM depth (number of entries)
