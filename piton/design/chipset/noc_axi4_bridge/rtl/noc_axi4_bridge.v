@@ -36,9 +36,7 @@ module noc_axi4_bridge #(
     parameter RDWR_INORDER = 1, // control of Rd/Wr responses order
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
     parameter NUM_REQ_YTHREADS_LOG2 = 2,
-    parameter NUM_REQ_XTHREADS_LOG2 = 2,
-    localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
-                                      NUM_REQ_XTHREADS_LOG2
+    parameter NUM_REQ_XTHREADS_LOG2 = 2
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -113,20 +111,20 @@ wire deser_val;
 wire deser_rdy;
 
 wire [`MSG_HEADER_WIDTH-1:0] read_req_header;
-wire [NUM_REQ_THREADS_LOG2-1:0] read_req_id;
+wire [`AXI4_ID_WIDTH   -1:0] read_req_id;
 wire read_req_val;
 wire read_req_rdy;
 wire [`AXI4_DATA_WIDTH-1:0] read_resp_data;
-wire [NUM_REQ_THREADS_LOG2-1:0] read_resp_id;
+wire [`AXI4_ID_WIDTH  -1:0] read_resp_id;
 wire read_resp_val;
 wire read_resp_rdy;
 
 wire write_req_val;
 wire [`MSG_HEADER_WIDTH-1:0] write_req_header;
-wire [NUM_REQ_THREADS_LOG2-1:0] write_req_id;
-wire [`AXI4_DATA_WIDTH-1:0] write_req_data;
+wire [`AXI4_ID_WIDTH   -1:0] write_req_id;
+wire [`AXI4_DATA_WIDTH -1:0] write_req_data;
 wire write_req_rdy;
-wire [NUM_REQ_THREADS_LOG2-1:0] write_resp_id;
+wire [`AXI4_ID_WIDTH   -1:0] write_resp_id;
 wire write_resp_val;
 wire write_resp_rdy;
 
@@ -196,7 +194,6 @@ noc_axi4_bridge_deser #(
 );
 
 noc_axi4_bridge_read #(
-    .NUM_REQ_THREADS_LOG2 (NUM_REQ_THREADS_LOG2),
     .ADDR_OFFSET (ADDR_OFFSET)
 ) noc_axi4_bridge_read (
     .clk(clk), 
@@ -240,7 +237,6 @@ noc_axi4_bridge_read #(
 
 noc_axi4_bridge_write #(
     .SWAP_ENDIANESS (SWAP_ENDIANESS),
-    .NUM_REQ_THREADS_LOG2 (NUM_REQ_THREADS_LOG2),
     .ADDR_OFFSET (ADDR_OFFSET)
 ) noc_axi4_bridge_write (
     // Clock + Reset

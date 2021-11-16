@@ -32,8 +32,7 @@
 
 module noc_axi4_bridge_write #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS       = 0,
-    parameter NUM_REQ_THREADS_LOG2 = 4,
+    parameter SWAP_ENDIANESS = 0,
     parameter ADDR_OFFSET = 64'h0
 ) (
     // Clock + Reset
@@ -44,12 +43,12 @@ module noc_axi4_bridge_write #(
     // NOC interface
     input  wire                                          req_val,
     input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
-    input  wire [NUM_REQ_THREADS_LOG2-1:0]               req_id,
-    input  wire [`AXI4_DATA_WIDTH-1:0]                   req_data,
+    input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
+    input  wire [`AXI4_DATA_WIDTH -1:0]                  req_data,
     output wire                                          req_rdy,
 
     output wire                                          resp_val,
-    output wire [NUM_REQ_THREADS_LOG2-1:0]               resp_id,
+    output wire [`AXI4_ID_WIDTH   -1:0]                  resp_id,
     input  wire                                          resp_rdy,
 
     // AXI write interface
@@ -115,8 +114,8 @@ assign m_axi_wlast = m_axi_wvalid;
 
 reg [2:0] req_state;
 reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
-reg [NUM_REQ_THREADS_LOG2-1:0] req_id_f;
-reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
+reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
+reg [`AXI4_DATA_WIDTH -1:0] req_data_f;
 
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
 wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
@@ -293,7 +292,7 @@ wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
 wire resp_go = resp_val & resp_rdy;
 
 reg [2:0] resp_state;
-reg [NUM_REQ_THREADS_LOG2-1:0] resp_id_f;
+reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
 
 assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_bready = (resp_state == IDLE);

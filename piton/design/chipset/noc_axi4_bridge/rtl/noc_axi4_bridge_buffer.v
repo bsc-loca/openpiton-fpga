@@ -38,9 +38,7 @@ module noc_axi4_bridge_buffer #(
     parameter RDWR_INORDER = 1,
     parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
     parameter NUM_REQ_YTHREADS_LOG2 = 2,
-    parameter NUM_REQ_XTHREADS_LOG2 = 2,
-    localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 +
-                                      NUM_REQ_XTHREADS_LOG2
+    parameter NUM_REQ_XTHREADS_LOG2 = 2
 ) (
   input clk,
   input rst_n,
@@ -54,25 +52,25 @@ module noc_axi4_bridge_buffer #(
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] read_req_header,
-  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [NUM_REQ_THREADS_LOG2-1:0] read_req_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [`AXI4_ID_WIDTH-1:0] read_req_id,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_req_val,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) input  read_req_rdy,
 
   // read response in
   input [`AXI4_DATA_WIDTH-1:0] read_resp_data,
-  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [NUM_REQ_THREADS_LOG2-1:0] read_resp_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [`AXI4_ID_WIDTH-1:0] read_resp_id,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) input  read_resp_val,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_resp_rdy,
 
   // read request out
   output [`MSG_HEADER_WIDTH-1:0] write_req_header,
-  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [NUM_REQ_THREADS_LOG2-1:0] write_req_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) output [`AXI4_ID_WIDTH-1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output write_req_val,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) input  write_req_rdy,
 
   // read response in
-  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [NUM_REQ_THREADS_LOG2-1:0] write_resp_id,
+  (* keep="TRUE" *) (* mark_debug="TRUE" *) input [`AXI4_ID_WIDTH-1:0] write_resp_id,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) input  write_resp_val,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output write_resp_rdy,
 
@@ -176,6 +174,7 @@ xilinx_simple_dual_port_1_clock_ram #(
 // GET_RESPONSE
 //
 
+localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 + NUM_REQ_XTHREADS_LOG2;
 localparam FULL_NUM_REQ_THREADS_LOG2 = NUM_REQ_THREADS_LOG2 + (RDWR_INORDER ? 0:1); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
 localparam NUM_REQ_THREADS = 1 << FULL_NUM_REQ_THREADS_LOG2;
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
@@ -188,7 +187,7 @@ always @(*)
     outstnd_vrt_empts[itr_empt] = (outstnd_vrt_rdptrs[itr_empt] == outstnd_vrt_wrptrs[itr_empt]);
 
 
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_resp_id;
+(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_resp_id;
 reg  [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptrs[NUM_REQ_THREADS-1 : 0];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr = outstnd_abs_rdptrs[full_resp_id];
 
@@ -202,14 +201,14 @@ always @(posedge clk)
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_abs_rdptr_val = outstnd_abs_rdptrs_val[full_resp_id];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg [NUM_REQ_THREADS-1 : 0]  outstnd_command; // the vector stores the latest command type for particular ID, needed and effective only in RDWR_INORDER mode
-wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_rd_resp_id = {READ , read_resp_id };
-wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_wr_resp_id = {WRITE, write_resp_id};
+wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_rd_resp_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{READ }}} << NUM_REQ_THREADS_LOG2) | (read_resp_id  & ((1<< NUM_REQ_THREADS_LOG2)-1));
+wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_wr_resp_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{WRITE}}} << NUM_REQ_THREADS_LOG2) | (write_resp_id & ((1<< NUM_REQ_THREADS_LOG2)-1));
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire read_resp_val_act  = read_resp_val  && (!outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id]);
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire write_resp_val_act = write_resp_val && ( outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id]);
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg resp_val;
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) begin 
-    full_resp_id <= {FULL_NUM_REQ_THREADS_LOG2{1'b0}};
+    full_resp_id <= {1'b0,{FULL_NUM_REQ_THREADS_LOG2{1'b0}}};
     resp_val <= 1'b0;
     axi_id_deadlock <= 1'b0;
   end
@@ -249,18 +248,18 @@ wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header [fifo_out];
 wire                          req_command = pkt_command[fifo_out];
 wire [`MSG_SRC_X_WIDTH-1:0] req_src_x = req_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
-wire [NUM_REQ_THREADS_LOG2-1:0] req_id = {req_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
-                                          req_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_req_id = {req_command, req_id};
+wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] req_id = ((req_src_y & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) << NUM_REQ_XTHREADS_LOG2) |
+                                                    (req_src_x & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_req_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{req_command}}} << NUM_REQ_THREADS_LOG2) | req_id;
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
                     (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
 wire [`MSG_SRC_X_WIDTH-1:0] stor_src_x = stor_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH-1:0] stor_src_y = stor_header[`MSG_SRC_Y];
-wire [NUM_REQ_THREADS_LOG2-1:0] stor_id = {stor_src_y[NUM_REQ_YTHREADS_LOG2-1:0],
-                                           stor_src_x[NUM_REQ_XTHREADS_LOG2-1:0]};
-(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [FULL_NUM_REQ_THREADS_LOG2-1 : 0] full_stor_id = {stor_command, stor_id};
+wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] stor_id = ((stor_src_y & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) << NUM_REQ_XTHREADS_LOG2) |
+                                                     (stor_src_x & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+(* keep="TRUE" *) (* mark_debug="TRUE" *) wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_stor_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{stor_command}}} << NUM_REQ_THREADS_LOG2) | stor_id;
 
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
 (* keep="TRUE" *) (* mark_debug="TRUE" *) wire outstnd_vrt_rdptr_val = (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
@@ -471,5 +470,10 @@ ila_axi_protocol_checker ila_axi_protocol_checker (
     .probe1(reqresp_count) // input wire [159:0]  probe1
 );
 */
+
+function integer clip2zer;
+  input integer val;
+  clip2zer = val < 0 ? 0 : val;
+endfunction
 
 endmodule

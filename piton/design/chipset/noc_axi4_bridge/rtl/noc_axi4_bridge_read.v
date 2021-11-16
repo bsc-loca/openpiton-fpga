@@ -31,7 +31,6 @@
 
 
 module noc_axi4_bridge_read #(
-    parameter NUM_REQ_THREADS_LOG2 = 4,
     parameter ADDR_OFFSET = 64'h0
 ) (
     // Clock + Reset
@@ -42,11 +41,11 @@ module noc_axi4_bridge_read #(
     // NOC interface
     input  wire                                          req_val,
     input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
-    input  wire [NUM_REQ_THREADS_LOG2-1:0]               req_id,
+    input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
     output wire                                          req_rdy,
 
     output wire                                          resp_val,
-    output wire [NUM_REQ_THREADS_LOG2-1:0]               resp_id,
+    output wire [`AXI4_ID_WIDTH  -1:0]                   resp_id,
     output  reg [`AXI4_DATA_WIDTH-1:0]                   resp_data,
     input  wire                                          resp_rdy,
 
@@ -102,7 +101,7 @@ wire req_go = req_val & req_rdy;
 
 reg req_state;
 reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
-reg [NUM_REQ_THREADS_LOG2-1:0] req_id_f;
+reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
 
 assign req_rdy = (req_state == IDLE);
 assign m_axi_arvalid = (req_state == GOT_REQ);
@@ -180,7 +179,7 @@ storage_addr_trans #(
 );
 
 
-reg [NUM_REQ_THREADS_LOG2-1:0] resp_id_f;
+reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
 wire resp_go;
 
 wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;

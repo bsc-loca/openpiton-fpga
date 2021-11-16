@@ -169,9 +169,9 @@ noc_axi4_bridge #(
     `endif
     .NOC2AXI_DESER_ORDER (1),
     .RDWR_INORDER (0),
-    .NUM_REQ_OUTSTANDING_LOG2 (2),
+    .NUM_REQ_OUTSTANDING_LOG2 (1),
     .NUM_REQ_YTHREADS_LOG2 (1),
-    .NUM_REQ_XTHREADS_LOG2 (1)
+    .NUM_REQ_XTHREADS_LOG2 (0)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
@@ -986,7 +986,7 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000),
-    .NUM_REQ_OUTSTANDING_LOG2 (2),
+    .NUM_REQ_OUTSTANDING_LOG2 (1),
     .NUM_REQ_YTHREADS_LOG2 (1),
     .NUM_REQ_XTHREADS_LOG2 (1)
 )
