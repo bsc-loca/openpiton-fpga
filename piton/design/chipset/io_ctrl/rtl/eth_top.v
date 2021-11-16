@@ -274,7 +274,7 @@ noc_axi4_bridge #(
     .NOC2AXI_DESER_ORDER (1),
     .RDWR_INORDER (0),
     .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_YTHREADS_LOG2 (0),
+    .NUM_REQ_YTHREADS_LOG2 (1),
     .NUM_REQ_XTHREADS_LOG2 (1)
 ) noc_ethernet_bridge (
     .clk                (net_axi_clk),  

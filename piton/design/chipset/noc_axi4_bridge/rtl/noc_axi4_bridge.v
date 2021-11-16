@@ -34,9 +34,9 @@ module noc_axi4_bridge #(
     parameter NOC2AXI_DESER_ORDER = 0, // NOC words to AXI word deserialization order
     parameter ADDR_OFFSET = 64'h0,
     parameter RDWR_INORDER = 1, // control of Rd/Wr responses order
-    parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
-    parameter NUM_REQ_YTHREADS_LOG2 = 2,
-    parameter NUM_REQ_XTHREADS_LOG2 = 2
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
+    parameter NUM_REQ_YTHREADS_LOG2 = 0,
+    parameter NUM_REQ_XTHREADS_LOG2 = 0
 ) (
     // Clock + Reset
     input  wire                                   clk,

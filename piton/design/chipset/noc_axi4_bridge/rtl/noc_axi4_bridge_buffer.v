@@ -36,9 +36,9 @@ module noc_axi4_bridge_buffer #(
     // Should be enabled for OP since it is not tolerant to Rd/Wr reordering. This makes possible "Rd/Wr AXI ID thread deadlock" in case of multiple IDs.
     // A detection of such event is implemented, but was never met from connected HBM/DDR/BRAM/URAM memories so far.
     parameter RDWR_INORDER = 1,
-    parameter NUM_REQ_OUTSTANDING_LOG2 = 6,
-    parameter NUM_REQ_YTHREADS_LOG2 = 2,
-    parameter NUM_REQ_XTHREADS_LOG2 = 2
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
+    parameter NUM_REQ_YTHREADS_LOG2 = 0,
+    parameter NUM_REQ_XTHREADS_LOG2 = 0
 ) (
   input clk,
   input rst_n,
