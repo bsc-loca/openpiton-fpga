@@ -57,7 +57,7 @@ else
   # parallel compilation
   export NUM_JOBS=4
 
-  cd piton/design/chip/tile/vas_tile_core/
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
 
   # not all tools are required at the moment
   scripts/make-tmp.sh
@@ -68,12 +68,12 @@ else
   
 # build the RISCV tests if necessary
   # VERSION="f2b342931939d9f88da4e70cadbd685b4e2f21c9"
-  cd tmp
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp
 
   #[ -d riscv-tests ] ||  git clone https://gitlab.bsc.es/meep/rtl_designs/acme_components/riscv-tests.git
-  cp -R ../modules/riscv-tests . 
+  cp -R ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/riscv-tests . 
 
-  cd riscv-tests
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests
   #git checkout $VERSION
   #git submodule update --init --recursive
 
@@ -81,17 +81,16 @@ else
   mkdir -p build
 
   # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-  cd benchmarks/common/
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks/common/
   rm syscalls.c util.h crt.S
 
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
   
-  cd -
-  
-  cd build
-  ../configure --prefix=$ROOT/tmp/riscv-tests/build
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+
+  ../configure --prefix=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
 
   make clean
   make isa        -j${NUM_JOBS} > /dev/null
