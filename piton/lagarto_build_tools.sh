@@ -52,45 +52,45 @@ then
     echo "Please source lagarto_setup.sh first, while being in the root folder."
 else
 
+VAS_TILE_CORE_PATH=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core
+ISA_TEST_MODULE_PATH=${VAS_TILE_CORE_PATH}/modules/riscv-tests
+BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
+
   git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
 
   # parallel compilation
   export NUM_JOBS=4
 
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
+  cd ${VAS_TILE_CORE_PATH}
 
-  # not all tools are required at the moment
-  scripts/make-tmp.sh
-  scripts/build-riscv-gcc.sh
-  #scripts/install-fesvr.sh
-  #scripts/install-spike.sh
-  #scripts/install-verilator.sh
+  scripts/make-tmp.sh          # Make the tmp area
+  scripts/build-riscv-gcc.sh   # Build the RISCV toolchain
   
-# build the RISCV tests if necessary
-  # VERSION="f2b342931939d9f88da4e70cadbd685b4e2f21c9"
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp
+  #########################################
+  # build the RISCV tests  and benchmarks #
+  #########################################
+  cd ${BUILD_TMP_PATH}
 
-  #[ -d riscv-tests ] ||  git clone https://gitlab.bsc.es/meep/rtl_designs/acme_components/riscv-tests.git
-  cp -R ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/riscv-tests . 
+  # Copying the ISA and Benchmart to tmp
+  cp -R ${ISA_TEST_MODULE_PATH} .
 
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests
-  #git checkout $VERSION
-  #git submodule update --init --recursive
+  # cd into the copied ISA/Benchmark folder
+  cd ${BUILD_TMP_PATH}/riscv-tests
 
   autoconf
   mkdir -p build
 
   # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/tmp/riscv-tests/benchmarks/common/
+  cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
   rm syscalls.c util.h crt.S
 
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
   
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+  cd ${BUILD_TMP_PATH}/riscv-tests/build
 
-  ../configure --prefix=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+  ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
 
   make clean
   make isa        -j${NUM_JOBS} > /dev/null
