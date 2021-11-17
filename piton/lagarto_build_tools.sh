@@ -81,7 +81,7 @@ else
   mkdir -p build
 
   # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks/common/
+  cd ${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/modules/tmp/riscv-tests/benchmarks/common/
   rm syscalls.c util.h crt.S
 
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
