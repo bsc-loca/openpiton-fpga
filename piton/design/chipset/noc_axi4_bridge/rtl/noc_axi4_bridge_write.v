@@ -45,6 +45,7 @@ module noc_axi4_bridge_write #(
     input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
     input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
     input  wire [`AXI4_DATA_WIDTH -1:0]                  req_data,
+    input  wire [`AXI4_STRB_WIDTH -1:0]                  req_strb,
     output wire                                          req_rdy,
 
     output wire                                          resp_val,
@@ -116,6 +117,7 @@ reg [2:0] req_state;
 reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
 reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
 reg [`AXI4_DATA_WIDTH -1:0] req_data_f;
+reg [`AXI4_STRB_WIDTH -1:0] req_strb_f;
 
 wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
 wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
@@ -163,43 +165,52 @@ always  @(posedge clk) begin
         req_id_f <= 0;
         req_state <= IDLE;
         req_data_f <= 0;
+        req_strb_f <= 0;
     end else begin
         case (req_state)
             IDLE: begin
                 req_state <= req_go ? GOT_REQ : req_state;
                 req_header_f <= req_go ? req_header : req_header_f;
                 req_id_f <= req_go ? req_id : req_id_f;
+                // req_data_f <= req_go ? req_data : req_data_f;
                 req_data_f <= req_data_f;
+                req_strb_f <= req_go ? req_strb : req_strb_f;
             end
             GOT_REQ: begin
                 req_state <= PREP_REQ;
                 req_header_f <= req_header_f;
                 req_id_f <= req_id_f;
+                // req_data_f <= req_data_f;
                 req_data_f <= SWAP_ENDIANESS ? req_data_swp : req_data; // get data one cycle later because of bram in buffer
+                req_strb_f <= req_strb_f;
             end
             PREP_REQ: begin
                 req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE : m_axi_awgo ? SENT_AW : m_axi_wgo ? SENT_W : req_state;
                 req_header_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_header_f;
                 req_id_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_id_f;
                 req_data_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_data_f;
+                req_strb_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_strb_f;
             end
             SENT_AW: begin
                 req_state <= m_axi_wgo ? IDLE : req_state;
                 req_header_f <= m_axi_wgo ? 0 : req_header_f;
                 req_id_f <= m_axi_wgo ? 0 : req_id_f;
                 req_data_f <= m_axi_wgo ? 0 : req_data_f;
+                req_strb_f <= m_axi_wgo ? 0 : req_strb_f;
             end
             SENT_W: begin
                 req_state <= m_axi_awgo ? IDLE : req_state;
                 req_header_f <= m_axi_awgo ? 0 : req_header_f;
                 req_id_f <= m_axi_awgo ? 0 : req_id_f;
                 req_data_f <= m_axi_awgo ? 0 : req_data_f;
+                req_strb_f <= m_axi_awgo ? 0 : req_strb_f;
             end
             default : begin
                 req_header_f <= 0;
                 req_id_f <= 0;
                 req_state <= IDLE;
                 req_data_f <= 0;
+                req_strb_f <= 0;
             end
         endcase
     end
@@ -211,14 +222,6 @@ assign m_axi_awid = req_id_f;
 assign m_axi_wid  = req_id_f;
 
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
-
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`PHY_ADDR_WIDTH-1:0]  virt_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH-1:0] phys_addr_r;
-
-always @(posedge clk) begin : p_debug
-    virt_addr_r            <= virt_addr;
-    phys_addr_r            <= phys_addr;
-end  
 
 // If running uart tests - we need to do address translation
 `ifdef PITONSYS_UART_BOOT
@@ -232,6 +235,7 @@ storage_addr_trans #(
     .storage_addr_out   (phys_addr  )
 );
 
+// wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
 reg [`AXI4_STRB_WIDTH-1:0] strb_before_offset;
 reg [5:0] offset;
 reg [`AXI4_ADDR_WIDTH-1:0] addr;
@@ -284,6 +288,8 @@ always @(posedge clk) begin
 end
 
 assign m_axi_awaddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
+// assign m_axi_wstrb = req_strb_f;
+// assign m_axi_wdata = req_data_f;
 assign m_axi_wstrb = strb_before_offset << offset;
 assign m_axi_wdata = req_data_f << (8*offset);
 

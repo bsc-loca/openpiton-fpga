@@ -123,6 +123,7 @@ wire write_req_val;
 wire [`MSG_HEADER_WIDTH-1:0] write_req_header;
 wire [`AXI4_ID_WIDTH   -1:0] write_req_id;
 wire [`AXI4_DATA_WIDTH -1:0] write_req_data;
+wire [`AXI4_STRB_WIDTH -1:0] write_req_strb;
 wire write_req_rdy;
 wire [`AXI4_ID_WIDTH   -1:0] write_resp_id;
 wire write_resp_val;
@@ -163,6 +164,7 @@ noc_axi4_bridge_buffer #(
     .write_req_header(write_req_header),
     .write_req_id(write_req_id),
     .write_req_data(write_req_data),
+    .write_req_strb(write_req_strb),
     .write_req_val(write_req_val), 
     .write_req_rdy(write_req_rdy),
 
@@ -249,6 +251,7 @@ noc_axi4_bridge_write #(
     .req_header(write_req_header),
     .req_id(write_req_id),
     .req_data(write_req_data),
+    .req_strb(write_req_strb),
     .req_rdy(write_req_rdy),
 
     .resp_val(write_resp_val),
