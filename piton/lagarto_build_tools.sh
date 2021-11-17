@@ -52,9 +52,9 @@ then
     echo "Please source lagarto_setup.sh first, while being in the root folder."
 else
 
-VAS_TILE_CORE_PATH=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core
-ISA_TEST_MODULE_PATH=${VAS_TILE_CORE_PATH}/modules/riscv-tests
-BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
+  VAS_TILE_CORE_PATH=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core
+  ISA_TEST_MODULE_PATH=${VAS_TILE_CORE_PATH}/modules/riscv-tests
+  BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
 
   git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
 
@@ -63,45 +63,69 @@ BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
 
   cd ${VAS_TILE_CORE_PATH}
 
-  scripts/make-tmp.sh          # Make the tmp area
+  #########################################
+  #  Build the toolchain                  #
+  #########################################
+
   scripts/build-riscv-gcc.sh   # Build the RISCV toolchain
   
   #########################################
   # build the RISCV tests  and benchmarks #
   #########################################
-  cd ${BUILD_TMP_PATH}
+ 
+  if [ ! -d ${BUILD_TMP_PATH} ] 
+  then
+    scripts/make-tmp.sh          # Make the tmp area
+    cd ${BUILD_TMP_PATH}
 
-  # Copying the ISA and Benchmart to tmp
-  cp -R ${ISA_TEST_MODULE_PATH} .
+    # Copying the ISA and Benchmart to tmp if not exist
+    [ -d riscv-tests ] || cp -R ${ISA_TEST_MODULE_PATH} .
 
-  # cd into the copied ISA/Benchmark folder
-  cd ${BUILD_TMP_PATH}/riscv-tests
+    # cd into the copied ISA/Benchmark folder
+    cd ${BUILD_TMP_PATH}/riscv-tests
 
-  autoconf
-  mkdir -p build
+    autoconf
+    mkdir -p build
 
-  # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-  cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
-  rm syscalls.c util.h crt.S
+    # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
+    cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
+    
+    rm syscalls.c  
+    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
+    
+    rm util.h 
+    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
+    
+    rm crt.S 
+    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
+ 
+    cd ${BUILD_TMP_PATH}/riscv-tests/build
 
-  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
-  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
-  ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
-  
-  cd ${BUILD_TMP_PATH}/riscv-tests/build
+    ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
 
-  ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
+    make clean
 
-  make clean
-  make isa        -j${NUM_JOBS} > /dev/null
-  make benchmarks -j${NUM_JOBS} > /dev/null
-  make install
-  cd ${PITON_ROOT}
+    make isa        -j${NUM_JOBS} > /dev/null
+    make benchmarks -j${NUM_JOBS} > /dev/null
+    make install
+    cd ${PITON_ROOT}
 
-  echo
-  echo "----------------------------------------------------------------------"
-  echo "build complete"
-  echo "----------------------------------------------------------------------"
-  echo
+    echo
+    echo "----------------------------------------------------------------------"
+    echo "build complete"
+    echo "----------------------------------------------------------------------"
+    echo
+    
+  else
+
+    cd ${PITON_ROOT}
+    echo
+    echo " *** NOTE: ISA Test and Benchmark already built. Please remove tmp to recompile it again. !!!"
+    echo "----------------------------------------------------------------------"
+    echo "build complete"
+    echo "----------------------------------------------------------------------"
+    echo
+
+  fi
 
 fi
