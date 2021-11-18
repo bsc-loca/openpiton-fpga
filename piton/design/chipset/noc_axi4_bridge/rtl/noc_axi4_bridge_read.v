@@ -154,17 +154,6 @@ wire [`MSG_MSHRID_WIDTH    -1:0] rd_mshrid     = req_header_f[`MSG_MSHRID];
 wire [`MSG_LSID_WIDTH      -1:0] rd_lsid       = req_header_f[`MSG_LSID];
 wire [`MSG_SDID_WIDTH      -1:0] rd_sdid       = req_header_f[`MSG_SDID];
 
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`PHY_ADDR_WIDTH-1:0]  virt_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH-1:0] phys_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH   -1:0] m_axi_araddr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH   -1:0] m_axi_araddr_r2;
-
-always @(posedge clk) begin : p_debug
-    virt_addr_r            <= virt_addr;
-    phys_addr_r            <= phys_addr;
-    m_axi_araddr_r         <= m_axi_araddr;
-    m_axi_araddr_r2        <= m_axi_araddr_r - 64'h80000000;
-end  
 
 // If running uart tests - we need to do address translation
 `ifdef PITONSYS_UART_BOOT
