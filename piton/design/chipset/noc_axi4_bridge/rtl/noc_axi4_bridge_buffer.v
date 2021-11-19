@@ -178,7 +178,7 @@ xilinx_simple_dual_port_1_clock_ram #(
 
 wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header[fifo_out];
 
-// correction of write data according to queueed request
+// Transformation of write data according to queueed request
 reg [6:0] wr_size;
 reg [5:0] wr_offset;
 always @(*) extractSize(req_header, wr_size, wr_offset);
@@ -376,7 +376,7 @@ always @(posedge clk)
 assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
-// correction of read data according to stored outstanding request
+// Transformation of read data according to outstanded request
 reg [6:0] rd_size;
 reg [5:0] rd_offset;
 always @(*) extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size, rd_offset);

@@ -77,7 +77,7 @@ module noc_axi4_bridge_read #(
 localparam IDLE = 2'd0;
 localparam GOT_REQ = 2'd1;
 localparam GOT_RESP = 2'd2;
-localparam SEND_RESP = 2'd3;
+// localparam SEND_RESP = 2'd3;
 
 wire [`AXI4_ADDR_WIDTH-1:0]addr_paddings = `AXI4_ADDR_WIDTH'b0;
 
@@ -183,31 +183,31 @@ assign resp_go = resp_val & resp_rdy;
 
 reg [1:0] resp_state;
 
-assign resp_val = (resp_state == SEND_RESP);
+assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_rready = (resp_state == IDLE);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
         resp_id_f <= 0;
         resp_state <= IDLE;
+        resp_data <= 0;
     end else begin
         case (resp_state)
             IDLE: begin
                 resp_state <= m_axi_rgo ? GOT_RESP : resp_state;
                 resp_id_f <= m_axi_rgo ? m_axi_rid : resp_id_f;
+                resp_data <= m_axi_rgo ? m_axi_rdata : resp_data;
             end
             GOT_RESP: begin
-                resp_state <= SEND_RESP;
-                resp_id_f <= resp_id_f;
-            end
-            SEND_RESP: begin
                 resp_state <= resp_go ? IDLE : resp_state;
                 resp_id_f <= resp_go ? 0 : resp_id_f;
+                resp_data <= resp_go ? 0 : resp_data;
             end
             default : begin
                 // should never end up here
                 resp_id_f <= 0;
                 resp_state <= IDLE;
+                resp_data <= 0;
             end
         endcase
     end
@@ -217,35 +217,35 @@ end
 assign resp_id = resp_id_f;
 
 
-reg [`AXI4_DATA_WIDTH-1:0] data_offseted;
+// reg [`AXI4_DATA_WIDTH-1:0] data_offseted;
 
-always @(posedge clk) begin
-    if(~rst_n) begin
-        data_offseted <= 0;
-    end 
-    else begin
-        if (m_axi_rgo) data_offseted <= m_axi_rdata;
-    end
-end
+// always @(posedge clk) begin
+//     if(~rst_n) begin
+//         data_offseted <= 0;
+//     end 
+//     else begin
+//         if (m_axi_rgo) data_offseted <= m_axi_rdata;
+//     end
+// end
 
-always @(posedge clk) begin
-    if (~rst_n) begin
-        resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
-    end 
-    else begin
-        case (resp_state)
-            GOT_RESP: begin
-                resp_data <= data_offseted;
-           end
-            SEND_RESP: begin
-                resp_data <= resp_go ? {`AXI4_DATA_WIDTH{1'b0}} : resp_data;
-            end
-            default: begin
-                resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
-            end
-        endcase // resp_state
-    end 
-end
+// always @(posedge clk) begin
+//     if (~rst_n) begin
+//         resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
+//     end 
+//     else begin
+//         case (resp_state)
+//             GOT_RESP: begin
+//                 resp_data <= data_offseted;
+//            end
+//             SEND_RESP: begin
+//                 resp_data <= resp_go ? {`AXI4_DATA_WIDTH{1'b0}} : resp_data;
+//             end
+//             default: begin
+//                 resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
+//             end
+//         endcase // resp_state
+//     end 
+// end
 /*
 ila_read ila_read(
     .clk(clk), // input wire clk
