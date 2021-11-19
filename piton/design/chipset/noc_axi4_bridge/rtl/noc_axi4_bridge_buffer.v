@@ -151,10 +151,13 @@ generate
     end
 endgenerate
 
+reg req_val;
+always @(posedge clk)
+  if(~rst_n) req_val <= 1'b0;
+  else       req_val <= (pkt_state_buf[fifo_out] == WAITING && !req_go);
+
 assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
 wire [`AXI4_DATA_WIDTH-1:0] wdata;
-// compensation of memory latency by applying advanced address
-wire [`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1:0] fifo_out_mem = fifo_out + {{(`NOC_AXI4_BRIDGE_BUFFER_ADDR_SIZE-1){1'b0}}, req_go};
 
 // Xilinx-synthesizable Simple Dual Port Single Clock RAM
 xilinx_simple_dual_port_1_clock_ram #(
@@ -173,56 +176,15 @@ xilinx_simple_dual_port_1_clock_ram #(
     .doutb(wdata)           // RAM output data, width determined from RAM_WIDTH
 );
 
-assign write_req_data = wdata;
-assign write_req_strb = `AXI4_STRB_WIDTH'h0;
-
 wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header[fifo_out];
+
+// correction of write data according to queueed request
 // reg [6:0] wr_size;
-// // //-------
-// // reg [5:0] wr_offset;
-// // always @(*) extractSize(req_header, wr_size, wr_offset);
-// wire [`PHY_ADDR_WIDTH-1:0] wr_virt_addr = req_header[`MSG_ADDR];
-// wire wr_uncacheable = (wr_virt_addr[`PHY_ADDR_WIDTH-1]) ||
-//                 (req_header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-//                 (req_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-// always @(*)
-//   if (wr_uncacheable)
-//     case (req_header[`MSG_DATA_SIZE])
-//       `MSG_DATA_SIZE_0B:  wr_size = 7'd0;
-//       `MSG_DATA_SIZE_1B:  wr_size = 7'd1;
-//       `MSG_DATA_SIZE_2B:  wr_size = 7'd2;
-//       `MSG_DATA_SIZE_4B:  wr_size = 7'd4;
-//       `MSG_DATA_SIZE_8B:  wr_size = 7'd8;
-//       `MSG_DATA_SIZE_16B: wr_size = 7'd16;
-//       `MSG_DATA_SIZE_32B: wr_size = 7'd32;
-//       `MSG_DATA_SIZE_64B: wr_size = 7'd64;
-//       default:            wr_size = 7'b0; // should never end up here
-//     endcase
-//   else                    wr_size = 7'd64;
-// wire [5:0] wr_offset = wr_uncacheable ? wr_virt_addr[5:0] : 6'b0;
-// //-------
+// reg [5:0] wr_offset;
+// always @(*) extractSize(req_header, wr_size, wr_offset);
 
-
-// //-------
-// // wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
-// //                                                                       wdata;
-// reg [`AXI4_DATA_WIDTH-1:0] wdata_swapped;
-// wire [5:0] wr_swap_grnlty = wr_size[0] ? 6'd0  :
-//                 wr_size[1] ? 6'd1  :
-//                 wr_size[2] ? 6'd3  :
-//                 wr_size[3] ? 6'd7  :
-//                 wr_size[4] ? 6'd15 :
-//                 wr_size[5] ? 6'd31 :
-//                           6'd63;
-// reg [6:0] wr_itr_swp;
-// always @(*)
-//   if (SWAP_ENDIANESS) begin
-//   wdata_swapped = `AXI4_DATA_WIDTH'h0;
-//   for (wr_itr_swp = 0; wr_itr_swp <= wr_swap_grnlty; wr_itr_swp = wr_itr_swp+1)
-//     wdata_swapped[wr_itr_swp*8 +: 8] = wdata[(wr_swap_grnlty - wr_itr_swp)*8 +: 8];
-//   end
-//   else wdata_swapped = wdata;
-// //-------
+// wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
+//                                                                       wdata;
 
 // // wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
 // wire [`AXI4_DATA_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
@@ -236,6 +198,10 @@ wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header[fifo_out];
 
 // assign write_req_data = wdata_swapped << (8*wr_offset);
 // assign write_req_strb = wstrb         <<    wr_offset;
+
+assign write_req_data = wdata;
+assign write_req_strb = `AXI4_STRB_WIDTH'h0;
+
 
 
 //
@@ -371,11 +337,11 @@ always @(posedge clk)
   end
 
 
-assign read_req_val  = (pkt_state_buf[fifo_out] == WAITING) && !req_command && !req_occup && !init_outstnd_mem;
+assign read_req_val  = req_val && !req_command && !req_occup && !init_outstnd_mem;
 assign read_req_header = req_header;
 assign read_req_id = req_id;
 
-assign write_req_val = (pkt_state_buf[fifo_out] == WAITING) &&  req_command && !req_occup && !init_outstnd_mem;
+assign write_req_val = req_val &&  req_command && !req_occup && !init_outstnd_mem;
 assign write_req_header = req_header;
 assign write_req_id = req_id;
 
@@ -414,55 +380,14 @@ always @(posedge clk)
 assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
-// correction of read responsed data according to stored outstanding request
+// correction of read data according to stored outstanding request
 reg [6:0] rd_size;
-//-------
 reg [5:0] rd_offset;
 always @(*) extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size, rd_offset);
-// wire [`PHY_ADDR_WIDTH-1:0] rd_virt_addr = stor_header[`MSG_ADDR];
-// wire rd_uncacheable = (rd_virt_addr[`PHY_ADDR_WIDTH-1]) ||
-//                 (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-//                 (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-// always @(*)
-//   if (rd_uncacheable)
-//     case (stor_header[`MSG_DATA_SIZE])
-//       `MSG_DATA_SIZE_0B:  rd_size = 7'd0;
-//       `MSG_DATA_SIZE_1B:  rd_size = 7'd1;
-//       `MSG_DATA_SIZE_2B:  rd_size = 7'd2;
-//       `MSG_DATA_SIZE_4B:  rd_size = 7'd4;
-//       `MSG_DATA_SIZE_8B:  rd_size = 7'd8;
-//       `MSG_DATA_SIZE_16B: rd_size = 7'd16;
-//       `MSG_DATA_SIZE_32B: rd_size = 7'd32;
-//       `MSG_DATA_SIZE_64B: rd_size = 7'd64;
-//       default:            rd_size = 7'b0; // should never end up here
-//     endcase
-//   else                    rd_size = 7'd64;
-// wire [5:0] rd_offset = rd_uncacheable ? rd_virt_addr[5:0] : 6'b0;
-//-------
-
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
-//-------
-wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped = SWAP_ENDIANESS ? swapData(rdata_offseted, rd_size) :
-                                                                      rdata_offseted;
-// reg [`AXI4_DATA_WIDTH-1:0] rdata_swapped;
-// wire [5:0] rd_swap_grnlty = rd_size[0] ? 6'd0  :
-//                 rd_size[1] ? 6'd1  :
-//                 rd_size[2] ? 6'd3  :
-//                 rd_size[3] ? 6'd7  :
-//                 rd_size[4] ? 6'd15 :
-//                 rd_size[5] ? 6'd31 :
-//                           6'd63;
-// reg [6:0] rd_itr_swp;
-// always @(*)
-//   if (SWAP_ENDIANESS) begin
-//   rdata_swapped = `AXI4_DATA_WIDTH'h0;
-//   for (rd_itr_swp = 0; rd_itr_swp <= rd_swap_grnlty; rd_itr_swp = rd_itr_swp+1)
-//     rdata_swapped[rd_itr_swp*8 +: 8] = rdata_offseted[(rd_swap_grnlty - rd_itr_swp)*8 +: 8];
-//   end
-//   else rdata_swapped = rdata_offseted;
-//-------
-
+wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped  = SWAP_ENDIANESS ? swapData(rdata_offseted, rd_size) :
+                                                                       rdata_offseted;
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata = rd_size[0] ? {`AXI4_DATA_WIDTH/8  {rdata_swapped[7  :0]}} :
                                     rd_size[1] ? {`AXI4_DATA_WIDTH/16 {rdata_swapped[15 :0]}} :

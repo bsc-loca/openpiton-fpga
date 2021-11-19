@@ -146,8 +146,8 @@ reg [6:0] wr_size;
 reg [5:0] wr_offset;
 always @(*) extractSize(req_header_f, wr_size, wr_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] req_data_swp = SWAP_ENDIANESS ? swapData(req_data, wr_size) :
-                                                                     req_data;
+wire [`AXI4_DATA_WIDTH-1:0] req_data_swp = SWAP_ENDIANESS ? swapData(req_data_f, wr_size) :
+                                                                     req_data_f;
 
 // wire [5:0] swap_grnlty = uncacheable ? (
 //                            req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_1B  ? 6'd0  :
@@ -179,16 +179,14 @@ always  @(posedge clk) begin
                 req_state <= req_go ? GOT_REQ : req_state;
                 req_header_f <= req_go ? req_header : req_header_f;
                 req_id_f <= req_go ? req_id : req_id_f;
-                // req_data_f <= req_go ? req_data : req_data_f;
-                req_data_f <= req_data_f;
+                req_data_f <= req_go ? req_data : req_data_f;
                 req_strb_f <= req_go ? req_strb : req_strb_f;
             end
             GOT_REQ: begin
                 req_state <= PREP_REQ;
                 req_header_f <= req_header_f;
                 req_id_f <= req_id_f;
-                // req_data_f <= req_data_f;
-                req_data_f <= req_data_swp; // get data one cycle later because of bram in buffer
+                req_data_f <= req_data_f;
                 req_strb_f <= req_strb_f;
             end
             PREP_REQ: begin
@@ -309,7 +307,7 @@ assign m_axi_awaddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
 // assign m_axi_wstrb = req_strb_f;
 // assign m_axi_wdata = req_data_f;
 assign m_axi_wstrb = wstrb << wr_offset;
-assign m_axi_wdata = req_data_f << (8*wr_offset);
+assign m_axi_wdata = req_data_swp << (8*wr_offset);
 
 // inbound responses
 wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
