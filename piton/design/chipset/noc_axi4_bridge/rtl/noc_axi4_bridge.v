@@ -238,7 +238,6 @@ noc_axi4_bridge_read #(
 );
 
 noc_axi4_bridge_write #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS),
     .ADDR_OFFSET (ADDR_OFFSET)
 ) noc_axi4_bridge_write (
     // Clock + Reset

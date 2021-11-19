@@ -179,29 +179,25 @@ xilinx_simple_dual_port_1_clock_ram #(
 wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header[fifo_out];
 
 // correction of write data according to queueed request
-// reg [6:0] wr_size;
-// reg [5:0] wr_offset;
-// always @(*) extractSize(req_header, wr_size, wr_offset);
+reg [6:0] wr_size;
+reg [5:0] wr_offset;
+always @(*) extractSize(req_header, wr_size, wr_offset);
 
-// wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
-//                                                                       wdata;
+wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
+                                                                      wdata;
 
-// // wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-// wire [`AXI4_DATA_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
-//                                     wr_size[1] ? { 2{1'b1}} :
-//                                     wr_size[2] ? { 4{1'b1}} :
-//                                     wr_size[3] ? { 8{1'b1}} :
-//                                     wr_size[4] ? {16{1'b1}} :
-//                                     wr_size[5] ? {32{1'b1}} :
-//                                     wr_size[6] ? {64{1'b1}} :
-//                                     `AXI4_DATA_WIDTH'h0;
+// wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
+wire [`AXI4_DATA_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
+                                    wr_size[1] ? { 2{1'b1}} :
+                                    wr_size[2] ? { 4{1'b1}} :
+                                    wr_size[3] ? { 8{1'b1}} :
+                                    wr_size[4] ? {16{1'b1}} :
+                                    wr_size[5] ? {32{1'b1}} :
+                                    wr_size[6] ? {64{1'b1}} :
+                                    `AXI4_DATA_WIDTH'h0;
 
-// assign write_req_data = wdata_swapped << (8*wr_offset);
-// assign write_req_strb = wstrb         <<    wr_offset;
-
-assign write_req_data = wdata;
-assign write_req_strb = `AXI4_STRB_WIDTH'h0;
-
+assign write_req_data = wdata_swapped << (8*wr_offset);
+assign write_req_strb = wstrb         <<    wr_offset;
 
 
 //

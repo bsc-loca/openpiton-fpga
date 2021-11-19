@@ -32,7 +32,6 @@
 
 module noc_axi4_bridge_write #(
     // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS = 0,
     parameter ADDR_OFFSET = 64'h0
 ) (
     // Clock + Reset
@@ -142,12 +141,12 @@ assign m_axi_awvalid = (req_state == PREP_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid = (req_state == PREP_REQ) || (req_state == SENT_AW);
 
 
-reg [6:0] wr_size;
-reg [5:0] wr_offset;
-always @(*) extractSize(req_header_f, wr_size, wr_offset);
+// reg [6:0] wr_size;
+// reg [5:0] wr_offset;
+// always @(*) extractSize(req_header_f, wr_size, wr_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] req_data_swp = SWAP_ENDIANESS ? swapData(req_data_f, wr_size) :
-                                                                     req_data_f;
+// wire [`AXI4_DATA_WIDTH-1:0] req_data_swp = SWAP_ENDIANESS ? swapData(req_data_f, wr_size) :
+//                                                                      req_data_f;
 
 // wire [5:0] swap_grnlty = uncacheable ? (
 //                            req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_1B  ? 6'd0  :
@@ -293,21 +292,21 @@ wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:
 // end
 
 // wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-wire [`AXI4_DATA_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
-                                    wr_size[1] ? { 2{1'b1}} :
-                                    wr_size[2] ? { 4{1'b1}} :
-                                    wr_size[3] ? { 8{1'b1}} :
-                                    wr_size[4] ? {16{1'b1}} :
-                                    wr_size[5] ? {32{1'b1}} :
-                                    wr_size[6] ? {64{1'b1}} :
-                                    `AXI4_DATA_WIDTH'h0;
+// wire [`AXI4_DATA_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
+//                                     wr_size[1] ? { 2{1'b1}} :
+//                                     wr_size[2] ? { 4{1'b1}} :
+//                                     wr_size[3] ? { 8{1'b1}} :
+//                                     wr_size[4] ? {16{1'b1}} :
+//                                     wr_size[5] ? {32{1'b1}} :
+//                                     wr_size[6] ? {64{1'b1}} :
+//                                     `AXI4_DATA_WIDTH'h0;
 
 
 assign m_axi_awaddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
-// assign m_axi_wstrb = req_strb_f;
-// assign m_axi_wdata = req_data_f;
-assign m_axi_wstrb = wstrb << wr_offset;
-assign m_axi_wdata = req_data_swp << (8*wr_offset);
+assign m_axi_wstrb = req_strb_f;
+assign m_axi_wdata = req_data_f;
+// assign m_axi_wstrb = wstrb << wr_offset;
+// assign m_axi_wdata = req_data_swp << (8*wr_offset);
 
 // inbound responses
 wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
@@ -346,55 +345,55 @@ end
 assign resp_id = resp_id_f;
 
 
-task automatic extractSize;
-  input  [`MSG_HEADER_WIDTH-1 :0] header;
-  output [6:0] size;
-  output [5:0] offset;
-  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
-  reg uncacheable;
-  begin
-  virt_addr = header[`MSG_ADDR];
-  uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-  if (uncacheable)
-    case (header[`MSG_DATA_SIZE])
-      `MSG_DATA_SIZE_0B:  size = 7'd0;
-      `MSG_DATA_SIZE_1B:  size = 7'd1;
-      `MSG_DATA_SIZE_2B:  size = 7'd2;
-      `MSG_DATA_SIZE_4B:  size = 7'd4;
-      `MSG_DATA_SIZE_8B:  size = 7'd8;
-      `MSG_DATA_SIZE_16B: size = 7'd16;
-      `MSG_DATA_SIZE_32B: size = 7'd32;
-      `MSG_DATA_SIZE_64B: size = 7'd64;
-      default:            size = 7'b0; // should never end up here
-    endcase
-  else                    size = 7'd64;
-  offset = uncacheable ? virt_addr[5:0] : 6'b0;
-  end
-endtask
+// task automatic extractSize;
+//   input  [`MSG_HEADER_WIDTH-1 :0] header;
+//   output [6:0] size;
+//   output [5:0] offset;
+//   reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
+//   reg uncacheable;
+//   begin
+//   virt_addr = header[`MSG_ADDR];
+//   uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
+//                 (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
+//                 (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+//   if (uncacheable)
+//     case (header[`MSG_DATA_SIZE])
+//       `MSG_DATA_SIZE_0B:  size = 7'd0;
+//       `MSG_DATA_SIZE_1B:  size = 7'd1;
+//       `MSG_DATA_SIZE_2B:  size = 7'd2;
+//       `MSG_DATA_SIZE_4B:  size = 7'd4;
+//       `MSG_DATA_SIZE_8B:  size = 7'd8;
+//       `MSG_DATA_SIZE_16B: size = 7'd16;
+//       `MSG_DATA_SIZE_32B: size = 7'd32;
+//       `MSG_DATA_SIZE_64B: size = 7'd64;
+//       default:            size = 7'b0; // should never end up here
+//     endcase
+//   else                    size = 7'd64;
+//   offset = uncacheable ? virt_addr[5:0] : 6'b0;
+//   end
+// endtask
 
 
-function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
-  input [`AXI4_DATA_WIDTH-1:0] data;
-  input [6:0] size;
-  reg [5:0] swap_grnlty;
-  reg [6:0] itr_swp;
-  begin
-  // swap_grnlty = size - 7'h1;
-  // the following code produces less LUTs
-  swap_grnlty = size[0] ? 6'd0  :
-                size[1] ? 6'd1  :
-                size[2] ? 6'd3  :
-                size[3] ? 6'd7  :
-                size[4] ? 6'd15 :
-                size[5] ? 6'd31 :
-                          6'd63;
-  swapData = `AXI4_DATA_WIDTH'h0;
-  for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
-    swapData[itr_swp*8 +: 8] = data[(swap_grnlty - itr_swp)*8 +: 8];
-  end
-endfunction
+// function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
+//   input [`AXI4_DATA_WIDTH-1:0] data;
+//   input [6:0] size;
+//   reg [5:0] swap_grnlty;
+//   reg [6:0] itr_swp;
+//   begin
+//   // swap_grnlty = size - 7'h1;
+//   // the following code produces less LUTs
+//   swap_grnlty = size[0] ? 6'd0  :
+//                 size[1] ? 6'd1  :
+//                 size[2] ? 6'd3  :
+//                 size[3] ? 6'd7  :
+//                 size[4] ? 6'd15 :
+//                 size[5] ? 6'd31 :
+//                           6'd63;
+//   swapData = `AXI4_DATA_WIDTH'h0;
+//   for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
+//     swapData[itr_swp*8 +: 8] = data[(swap_grnlty - itr_swp)*8 +: 8];
+//   end
+// endfunction
 
 
 /*
