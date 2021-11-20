@@ -31,6 +31,7 @@
 
 
 module noc_axi4_bridge_buffer #(
+    parameter ADDR_OFFSET = 64'h0,
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     // Control of Rd/Wr responses order. Being enabled, enforces Rd/Wr responses order to the NOC the same as requests from the NOC.
     // Should be enabled for OP since it is not tolerant to Rd/Wr reordering. This makes possible "Rd/Wr AXI ID thread deadlock" in case of multiple IDs.
@@ -42,6 +43,7 @@ module noc_axi4_bridge_buffer #(
 ) (
   input clk,
   input rst_n,
+  input uart_boot_en, 
   output reg axi_id_deadlock,
 
   // from deserializer
@@ -51,7 +53,7 @@ module noc_axi4_bridge_buffer #(
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output deser_rdy,
 
   // read request out
-  output [`MSG_HEADER_WIDTH-1:0] read_req_header,
+  output [`AXI4_ADDR_WIDTH-1:0] read_req_addr,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output [`AXI4_ID_WIDTH-1:0] read_req_id,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_req_val,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) input  read_req_rdy,
@@ -63,7 +65,7 @@ module noc_axi4_bridge_buffer #(
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output read_resp_rdy,
 
   // read request out
-  output [`MSG_HEADER_WIDTH-1:0] write_req_header,
+  output [`AXI4_ADDR_WIDTH-1:0] write_req_addr,
   (* keep="TRUE" *) (* mark_debug="TRUE" *) output [`AXI4_ID_WIDTH-1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data,
   output [`AXI4_STRB_WIDTH-1:0] write_req_strb,
@@ -177,6 +179,43 @@ xilinx_simple_dual_port_1_clock_ram #(
 );
 
 wire [`MSG_HEADER_WIDTH-1 :0] req_header  = pkt_header[fifo_out];
+
+wire [`MSG_SRC_CHIPID_WIDTH-1:0] src_chipid = req_header[`MSG_SRC_CHIPID];
+wire [`MSG_SRC_X_WIDTH     -1:0] src_x      = req_header[`MSG_SRC_X];
+wire [`MSG_SRC_Y_WIDTH     -1:0] src_y      = req_header[`MSG_SRC_Y];
+wire [`MSG_SRC_FBITS_WIDTH -1:0] src_fbits  = req_header[`MSG_SRC_FBITS];
+
+wire [`MSG_DST_CHIPID_WIDTH-1:0] dst_chipid = req_header[`MSG_DST_CHIPID];
+wire [`MSG_DST_X_WIDTH     -1:0] dst_x      = req_header[`MSG_DST_X];
+wire [`MSG_DST_Y_WIDTH     -1:0] dst_y      = req_header[`MSG_DST_Y];
+wire [`MSG_DST_FBITS_WIDTH -1:0] dst_fbits  = req_header[`MSG_DST_FBITS];
+
+wire [`MSG_MSHRID_WIDTH    -1:0] mshrid     = req_header[`MSG_MSHRID];
+wire [`MSG_LSID_WIDTH      -1:0] lsid       = req_header[`MSG_LSID];
+wire [`MSG_SDID_WIDTH      -1:0] sdid       = req_header[`MSG_SDID];
+
+
+wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];
+wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
+
+// If running uart tests - we need to do address translation
+`ifdef PITONSYS_UART_BOOT
+storage_addr_trans_unified   #(
+`else
+storage_addr_trans #(
+`endif
+.STORAGE_ADDR_WIDTH(`AXI4_ADDR_WIDTH)
+) cpu_mig_addr_translator (
+    .va_byte_addr       (virt_addr  ),
+    .storage_addr_out   (phys_addr  )
+);
+
+wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
+wire [`AXI4_ADDR_WIDTH-1:0] req_addr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
+
+assign read_req_addr  = req_addr;
+assign write_req_addr = req_addr;
+
 
 // Transformation of write data according to queueed request
 reg [6:0] wr_size;

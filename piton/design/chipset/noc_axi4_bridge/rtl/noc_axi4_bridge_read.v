@@ -30,17 +30,14 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_read #(
-    parameter ADDR_OFFSET = 64'h0
-) (
+module noc_axi4_bridge_read (
     // Clock + Reset
     input  wire                                          clk,
     input  wire                                          rst_n,
-    input  wire                                          uart_boot_en, 
 
     // NOC interface
     input  wire                                          req_val,
-    input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
+    input  wire [`AXI4_ADDR_WIDTH -1:0]                  req_addr,
     input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
     output wire                                          req_rdy,
 
@@ -100,7 +97,7 @@ wire m_axi_argo = m_axi_arvalid & m_axi_arready;
 wire req_go = req_val & req_rdy;
 
 reg req_state;
-reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
+reg [`AXI4_ADDR_WIDTH -1:0] req_addr_f;
 reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
 
 assign req_rdy = (req_state == IDLE);
@@ -108,24 +105,24 @@ assign m_axi_arvalid = (req_state == GOT_REQ);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        req_header_f <= 0;
+        req_addr_f <= 0;
         req_id_f <= 0;
         req_state <= IDLE;
     end else begin
         case (req_state)
             IDLE: begin
                 req_state <= req_go ? GOT_REQ : req_state;
-                req_header_f <= req_go ? req_header : req_header_f;
+                req_addr_f <= req_go ? req_addr : req_addr_f;
                 req_id_f <= req_go ? req_id : req_id_f;
             end
             GOT_REQ: begin
                 req_state <= m_axi_argo ? IDLE : req_state;
-                req_header_f <= m_axi_argo ? 0 : req_header_f;
+                req_addr_f <= m_axi_argo ? 0 : req_addr_f;
                 req_id_f <= m_axi_argo ? 0 : req_id_f;
             end
             default : begin
                 // should never end up here
-                req_header_f <= 0;
+                req_addr_f <= 0;
                 req_id_f <= 0;
                 req_state <= IDLE;
             end
@@ -136,50 +133,14 @@ end
 
 // Process information here
 assign m_axi_arid = req_id_f;
-
-wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
-wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
-
-wire [`MSG_SRC_CHIPID_WIDTH-1:0] rd_src_chipid = req_header_f[`MSG_SRC_CHIPID];
-wire [`MSG_SRC_X_WIDTH     -1:0] rd_src_x      = req_header_f[`MSG_SRC_X];
-wire [`MSG_SRC_Y_WIDTH     -1:0] rd_src_y      = req_header_f[`MSG_SRC_Y];
-wire [`MSG_SRC_FBITS_WIDTH -1:0] rd_src_fbits  = req_header_f[`MSG_SRC_FBITS];
-
-wire [`MSG_DST_CHIPID_WIDTH-1:0] rd_dst_chipid = req_header_f[`MSG_DST_CHIPID];
-wire [`MSG_DST_X_WIDTH     -1:0] rd_dst_x      = req_header_f[`MSG_DST_X];
-wire [`MSG_DST_Y_WIDTH     -1:0] rd_dst_y      = req_header_f[`MSG_DST_Y];
-wire [`MSG_DST_FBITS_WIDTH -1:0] rd_dst_fbits  = req_header_f[`MSG_DST_FBITS];
-
-wire [`MSG_MSHRID_WIDTH    -1:0] rd_mshrid     = req_header_f[`MSG_MSHRID];
-wire [`MSG_LSID_WIDTH      -1:0] rd_lsid       = req_header_f[`MSG_LSID];
-wire [`MSG_SDID_WIDTH      -1:0] rd_sdid       = req_header_f[`MSG_SDID];
-
-
-// If running uart tests - we need to do address translation
-`ifdef PITONSYS_UART_BOOT
-storage_addr_trans_unified   #(
-`else
-storage_addr_trans #(
-`endif
-.STORAGE_ADDR_WIDTH(`AXI4_ADDR_WIDTH)
-) cpu_mig_waddr_translator (
-    .va_byte_addr       (virt_addr  ),
-    .storage_addr_out   (phys_addr  )
-);
-
-
-reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
-wire resp_go;
-
-wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
-assign m_axi_araddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
-
+assign m_axi_araddr = req_addr_f;
 
 
 // inbound responses
 
+reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
+wire resp_go = resp_val & resp_rdy;
 wire m_axi_rgo = m_axi_rvalid & m_axi_rready;
-assign resp_go = resp_val & resp_rdy;
 
 reg [1:0] resp_state;
 
@@ -217,35 +178,6 @@ end
 assign resp_id = resp_id_f;
 
 
-// reg [`AXI4_DATA_WIDTH-1:0] data_offseted;
-
-// always @(posedge clk) begin
-//     if(~rst_n) begin
-//         data_offseted <= 0;
-//     end 
-//     else begin
-//         if (m_axi_rgo) data_offseted <= m_axi_rdata;
-//     end
-// end
-
-// always @(posedge clk) begin
-//     if (~rst_n) begin
-//         resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
-//     end 
-//     else begin
-//         case (resp_state)
-//             GOT_RESP: begin
-//                 resp_data <= data_offseted;
-//            end
-//             SEND_RESP: begin
-//                 resp_data <= resp_go ? {`AXI4_DATA_WIDTH{1'b0}} : resp_data;
-//             end
-//             default: begin
-//                 resp_data <= {`AXI4_DATA_WIDTH{1'b0}};
-//             end
-//         endcase // resp_state
-//     end 
-// end
 /*
 ila_read ila_read(
     .clk(clk), // input wire clk
