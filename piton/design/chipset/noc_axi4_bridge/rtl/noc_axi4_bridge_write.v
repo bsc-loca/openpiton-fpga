@@ -122,45 +122,32 @@ assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
+        req_state <= IDLE;
         req_addr_f <= 0;
         req_id_f <= 0;
-        req_state <= IDLE;
         req_data_f <= 0;
         req_strb_f <= 0;
     end else begin
         case (req_state)
-            IDLE: begin
-                req_state <= req_go ? GOT_REQ : req_state;
-                req_addr_f <= req_go ? req_addr : req_addr_f;
-                req_id_f <= req_go ? req_id : req_id_f;
-                req_data_f <= req_go ? req_data : req_data_f;
-                req_strb_f <= req_go ? req_strb : req_strb_f;
+            IDLE: if (req_go) begin
+                req_state  <= GOT_REQ;
+                req_addr_f <= req_addr;
+                req_id_f   <= req_id;
+                req_data_f <= req_data;
+                req_strb_f <= req_strb;
             end
-            GOT_REQ: begin
-                req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE : m_axi_awgo ? SENT_AW : m_axi_wgo ? SENT_W : req_state;
-                req_addr_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_addr_f;
-                req_id_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_id_f;
-                req_data_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_data_f;
-                req_strb_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_strb_f;
-            end
-            SENT_AW: begin
-                req_state <= m_axi_wgo ? IDLE : req_state;
-                req_addr_f <= m_axi_wgo ? 0 : req_addr_f;
-                req_id_f <= m_axi_wgo ? 0 : req_id_f;
-                req_data_f <= m_axi_wgo ? 0 : req_data_f;
-                req_strb_f <= m_axi_wgo ? 0 : req_strb_f;
-            end
-            SENT_W: begin
-                req_state <= m_axi_awgo ? IDLE : req_state;
-                req_addr_f <= m_axi_awgo ? 0 : req_addr_f;
-                req_id_f <= m_axi_awgo ? 0 : req_id_f;
-                req_data_f <= m_axi_awgo ? 0 : req_data_f;
-                req_strb_f <= m_axi_awgo ? 0 : req_strb_f;
-            end
+            GOT_REQ:
+                req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE :
+                              m_axi_awgo              ? SENT_AW :
+                                           m_axi_wgo  ? SENT_W : req_state;
+            SENT_AW: if (m_axi_wgo)
+                req_state <= IDLE;
+            SENT_W: if (m_axi_awgo)
+                req_state <= IDLE;
             default : begin
+                req_state <= IDLE;
                 req_addr_f <= 0;
                 req_id_f <= 0;
-                req_state <= IDLE;
                 req_data_f <= 0;
                 req_strb_f <= 0;
             end
@@ -189,21 +176,19 @@ assign m_axi_bready = (resp_state == IDLE);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        resp_id_f <= 0;
         resp_state <= IDLE;
+        resp_id_f  <= 0;
     end else begin
         case (resp_state)
-            IDLE: begin
-                resp_state <= m_axi_bgo ? GOT_RESP : resp_state;
-                resp_id_f <= m_axi_bgo ? m_axi_bid : resp_id_f;
+            IDLE: if (m_axi_bgo) begin
+                resp_state <= GOT_RESP;
+                resp_id_f  <= m_axi_bid;
             end
-            GOT_RESP: begin
-                resp_state <= resp_go ? IDLE : resp_state;
-                resp_id_f <= resp_go ? 0 : resp_id_f;
-            end
+            GOT_RESP: if (resp_go)
+                resp_state <= IDLE;
             default : begin
                 resp_state <= IDLE;
-                resp_id_f <= 0;
+                resp_id_f  <= 0;
             end
         endcase
     end

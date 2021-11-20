@@ -138,16 +138,8 @@ generate
                     pkt_command[i] <= (deser_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) 
                                    || (deser_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
                 end
-                else if ((i == fifo_out) & req_go) begin
-                      pkt_state_buf[i] <= INVALID;
-                      pkt_header[i] <= `MSG_HEADER_WIDTH'b0;
-                      pkt_command[i] <= 1'b0;
-                end
-                else begin
-                    pkt_state_buf[i] <= pkt_state_buf[i];
-                    pkt_header[i] <= pkt_header[i];
-                    pkt_command[i] <= pkt_command[i];
-                end
+                else if ((i == fifo_out) & req_go)
+                    pkt_state_buf[i] <= INVALID;
             end
         end
     end

@@ -105,26 +105,23 @@ assign m_axi_arvalid = (req_state == GOT_REQ);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        req_addr_f <= 0;
-        req_id_f <= 0;
         req_state <= IDLE;
+        req_addr_f <= 0;
+        req_id_f   <= 0;
     end else begin
         case (req_state)
-            IDLE: begin
-                req_state <= req_go ? GOT_REQ : req_state;
-                req_addr_f <= req_go ? req_addr : req_addr_f;
-                req_id_f <= req_go ? req_id : req_id_f;
+            IDLE: if (req_go) begin
+                req_state  <= GOT_REQ;
+                req_addr_f <= req_addr;
+                req_id_f   <= req_id;
             end
-            GOT_REQ: begin
-                req_state <= m_axi_argo ? IDLE : req_state;
-                req_addr_f <= m_axi_argo ? 0 : req_addr_f;
-                req_id_f <= m_axi_argo ? 0 : req_id_f;
-            end
+            GOT_REQ: if (m_axi_argo)
+                req_state <= IDLE;
             default : begin
                 // should never end up here
+                req_state <= IDLE;
                 req_addr_f <= 0;
                 req_id_f <= 0;
-                req_state <= IDLE;
             end
         endcase
     end
@@ -149,25 +146,22 @@ assign m_axi_rready = (resp_state == IDLE);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        resp_id_f <= 0;
         resp_state <= IDLE;
+        resp_id_f <= 0;
         resp_data <= 0;
     end else begin
         case (resp_state)
-            IDLE: begin
-                resp_state <= m_axi_rgo ? GOT_RESP : resp_state;
-                resp_id_f <= m_axi_rgo ? m_axi_rid : resp_id_f;
-                resp_data <= m_axi_rgo ? m_axi_rdata : resp_data;
+            IDLE: if (m_axi_rgo) begin
+                resp_state <= GOT_RESP;
+                resp_id_f  <= m_axi_rid;
+                resp_data  <= m_axi_rdata;
             end
-            GOT_RESP: begin
-                resp_state <= resp_go ? IDLE : resp_state;
-                resp_id_f <= resp_go ? 0 : resp_id_f;
-                resp_data <= resp_go ? 0 : resp_data;
-            end
+            GOT_RESP: if (resp_go)
+                resp_state <= IDLE;
             default : begin
                 // should never end up here
-                resp_id_f <= 0;
                 resp_state <= IDLE;
+                resp_id_f <= 0;
                 resp_data <= 0;
             end
         endcase
