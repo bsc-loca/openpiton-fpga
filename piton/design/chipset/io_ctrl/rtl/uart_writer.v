@@ -174,6 +174,7 @@ wire  [LINE_CNTR_WIDTH-1:0]   curr_line_len;
 wire [CHAR_WIDTH-1:0]   char_0;
 wire [CHAR_WIDTH-1:0]   char_1;
 wire [CHAR_WIDTH-1:0]   char_2;
+wire [CHAR_WIDTH-1:0]   char_3;
 wire [CHAR_WIDTH-1:0]   char_4;
 
 assign ar_sent         = m_axi_arvalid & m_axi_arready;

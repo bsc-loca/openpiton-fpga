@@ -59,22 +59,22 @@ module noc_axi4_bridge_write (
     output wire [`AXI4_QOS_WIDTH    -1:0]     m_axi_awqos,
     output wire [`AXI4_REGION_WIDTH -1:0]     m_axi_awregion,
     output wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_awvalid,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_awready,
+    output wire                               m_axi_awvalid,
+    input  wire                               m_axi_awready,
 
     output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
     output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
     output wire                               m_axi_wlast,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_wvalid,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_wready,
+    output wire                               m_axi_wvalid,
+    input  wire                               m_axi_wready,
 
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_bvalid,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_bready
+    input  wire                               m_axi_bvalid,
+    output wire                               m_axi_bready
 );
 
 
@@ -122,9 +122,9 @@ assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        req_state <= IDLE;
+        req_state  <= IDLE;
         req_addr_f <= 0;
-        req_id_f <= 0;
+        req_id_f   <= 0;
         req_data_f <= 0;
         req_strb_f <= 0;
     end else begin
@@ -145,9 +145,9 @@ always  @(posedge clk) begin
             SENT_W: if (m_axi_awgo)
                 req_state <= IDLE;
             default : begin
-                req_state <= IDLE;
+                req_state  <= IDLE;
                 req_addr_f <= 0;
-                req_id_f <= 0;
+                req_id_f   <= 0;
                 req_data_f <= 0;
                 req_strb_f <= 0;
             end
@@ -157,11 +157,11 @@ end
 
 
 // Process information here
-assign m_axi_awid = req_id_f;
-assign m_axi_wid  = req_id_f;
+assign m_axi_awid   = req_id_f;
 assign m_axi_awaddr = req_addr_f;
-assign m_axi_wstrb = req_strb_f;
-assign m_axi_wdata = req_data_f;
+assign m_axi_wid    = req_id_f;
+assign m_axi_wstrb  = req_strb_f;
+assign m_axi_wdata  = req_data_f;
 
 // inbound responses
 wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
@@ -196,7 +196,6 @@ end
 
 // process data here
 assign resp_id = resp_id_f;
-
 
 /*
 ila_write ila_write (

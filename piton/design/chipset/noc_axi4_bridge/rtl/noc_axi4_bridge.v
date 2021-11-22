@@ -33,10 +33,10 @@ module noc_axi4_bridge #(
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NOC2AXI_DESER_ORDER = 0, // NOC words to AXI word deserialization order
     parameter ADDR_OFFSET = 64'h0,
-    parameter RDWR_INORDER = 1, // control of Rd/Wr responses order
-    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
-    parameter NUM_REQ_YTHREADS_LOG2 = 0,
-    parameter NUM_REQ_XTHREADS_LOG2 = 0
+    parameter RDWR_INORDER = 0, // control of Rd/Wr responses order
+    parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_YTHREADS = 1,
+    parameter NUM_REQ_XTHREADS = 1
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -136,12 +136,12 @@ wire ser_rdy;
 
 
 noc_axi4_bridge_buffer #(
-    .ADDR_OFFSET (ADDR_OFFSET),
     .SWAP_ENDIANESS (SWAP_ENDIANESS),
+    .ADDR_OFFSET (ADDR_OFFSET),
     .RDWR_INORDER (RDWR_INORDER),
-    .NUM_REQ_OUTSTANDING_LOG2 (NUM_REQ_OUTSTANDING_LOG2),
-    .NUM_REQ_YTHREADS_LOG2 (NUM_REQ_YTHREADS_LOG2),
-    .NUM_REQ_XTHREADS_LOG2 (NUM_REQ_XTHREADS_LOG2)
+    .NUM_REQ_OUTSTANDING (NUM_REQ_OUTSTANDING),
+    .NUM_REQ_YTHREADS (NUM_REQ_YTHREADS),
+    .NUM_REQ_XTHREADS (NUM_REQ_XTHREADS)
 ) noc_axi4_bridge_buffer (
     .clk(clk),
     .rst_n(rst_n),

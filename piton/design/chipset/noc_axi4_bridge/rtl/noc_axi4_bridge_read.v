@@ -58,16 +58,16 @@ module noc_axi4_bridge_read (
     output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
     output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
     output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_arvalid,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_arready,
+    output wire                               m_axi_arvalid,
+    input  wire                               m_axi_arready,
 
     input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
     input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
     input  wire                               m_axi_rlast,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) input  wire                               m_axi_rvalid,
-    (* keep="TRUE" *) (* mark_debug="TRUE" *) output wire                               m_axi_rready
+    input  wire                               m_axi_rvalid,
+    output wire                               m_axi_rready
 );
 
 
@@ -121,7 +121,7 @@ always  @(posedge clk) begin
                 // should never end up here
                 req_state <= IDLE;
                 req_addr_f <= 0;
-                req_id_f <= 0;
+                req_id_f   <= 0;
             end
         endcase
     end
@@ -147,8 +147,8 @@ assign m_axi_rready = (resp_state == IDLE);
 always  @(posedge clk) begin
     if(~rst_n) begin
         resp_state <= IDLE;
-        resp_id_f <= 0;
-        resp_data <= 0;
+        resp_id_f  <= 0;
+        resp_data  <= 0;
     end else begin
         case (resp_state)
             IDLE: if (m_axi_rgo) begin
@@ -161,8 +161,8 @@ always  @(posedge clk) begin
             default : begin
                 // should never end up here
                 resp_state <= IDLE;
-                resp_id_f <= 0;
-                resp_data <= 0;
+                resp_id_f  <= 0;
+                resp_data  <= 0;
             end
         endcase
     end

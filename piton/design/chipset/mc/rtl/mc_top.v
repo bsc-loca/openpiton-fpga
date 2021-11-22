@@ -167,11 +167,13 @@ noc_axi4_bridge #(
     `ifdef PITON_ARIANE
       .SWAP_ENDIANESS (1),
     `endif
-    .NOC2AXI_DESER_ORDER (1),
-    .RDWR_INORDER (0),
-    .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_YTHREADS_LOG2 (1),
-    .NUM_REQ_XTHREADS_LOG2 (1)
+    `ifndef PITON_FPGA_MC_DDR3
+      // applying the same parameters as for SDRAM in case it is absent
+      .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+      .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+      .NUM_REQ_XTHREADS (`PITON_X_TILES),
+    `endif
+    .NOC2AXI_DESER_ORDER (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
@@ -987,9 +989,9 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 
 noc_axi4_bridge #(
     .ADDR_OFFSET(64'h80000000),
-    .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_YTHREADS_LOG2 (1),
-    .NUM_REQ_XTHREADS_LOG2 (1)
+    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+    .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+    .NUM_REQ_XTHREADS (`PITON_X_TILES)
 )
  noc_axi4_bridge  (
     .clk                (ui_clk                    ),  
