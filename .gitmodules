@@ -2,6 +2,6 @@
 	path = piton/design/chip/tile/ariane
 	url = ../meep_ariane.git
 
-[submodule "piton/design/chip/tile/vas-tile-core"]
-	path = piton/design/chip/tile/vas-tile-core
-	url = ../vas-tile-core.git
+[submodule "piton/design/chip/tile/vas_tile_core"]
+	path = piton/design/chip/tile/vas_tile_core
+	url = ../../../rtl_designs/vas_tile_core.git
