@@ -26,6 +26,7 @@ variables:
   GOLDEN_MESSAGE_LAGARTO: "io scheduler kyber registered" 
   OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi.bin
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
+  DEPLOY_DIR: /home/dmazure/ACME_deploy
 
 stages:
   - protosyn
@@ -33,6 +34,7 @@ stages:
   - bitstream
   - validation
   - fpga-test
+  - deploy
 
 ###################################
 # Synthesis
@@ -308,4 +310,27 @@ fpga-test-lagarto:
             paths:
                 - lagarto
 
-              
+deploy-ariane:
+        stage: deploy
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        script:
+            - cp -r ariane $DELPLOY_DIR/ariane_$CI_COMMIT_SHA
+        dependencies:
+            - synthesis-ariane
+            - implementation-ariane
+            - bitstream-ariane
+            - fpga-test-ariane
+
+deploy-lagarto:
+        stage: deploy
+        rules:
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        script:
+            - cp -r lagarto $DEPLOY_DIR/lagarto_$CI_COMMIT_SHA
+        dependencies:
+            - synthesis-lagarto
+            - implementation-lagarto
+            - bitstream-lagarto
+            - fpga-test-lagarto
+
