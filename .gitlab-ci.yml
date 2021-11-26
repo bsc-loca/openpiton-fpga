@@ -316,6 +316,8 @@ fpga-test-lagarto:
 
 deploy-ariane:
         stage: deploy
+        tags:
+            - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
         script:
@@ -329,6 +331,8 @@ deploy-ariane:
 
 deploy-lagarto:
         stage: deploy
+        tags:
+            - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
         script:
