@@ -278,6 +278,7 @@ fpga-test-ariane:
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:
             - cp $FPGA_LOG_FILE ariane
+            - sudo pkill cat
         dependencies:
             - bitstream-ariane
         artifacts:
@@ -307,6 +308,7 @@ fpga-test-lagarto:
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE_LAGARTO
         after_script:
             - cp $FPGA_LOG_FILE lagarto
+            - sudo pkill cat
         dependencies:
             - bitstream-lagarto
         artifacts:
