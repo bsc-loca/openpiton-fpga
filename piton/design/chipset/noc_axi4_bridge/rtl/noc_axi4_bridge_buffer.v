@@ -270,8 +270,9 @@ wire outstnd_vrt_empt      = outstnd_vrt_empts     [full_resp_id];
 reg [NUM_REQ_THREADS-1 : 0]  outstnd_command; // the vector stores the latest command type for particular ID, needed and effective only in RDWR_INORDER mode
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_rd_resp_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{READ }}} << NUM_REQ_THREADS_LOG2) | (read_resp_id  & ((1<< NUM_REQ_THREADS_LOG2)-1));
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_wr_resp_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{WRITE}}} << NUM_REQ_THREADS_LOG2) | (write_resp_id & ((1<< NUM_REQ_THREADS_LOG2)-1));
-wire read_resp_val_act  = read_resp_val  && (!outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id]);
-wire write_resp_val_act = write_resp_val && ( outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id]);
+// masking outstnd_command by RDWR_INORDER just to reduce extra-logic (outstnd_command is not effective if RDWR_INORDER=0 anyway)
+wire read_resp_val_act  = read_resp_val  && (!RDWR_INORDER || (!outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id]));
+wire write_resp_val_act = write_resp_val && (!RDWR_INORDER || ( outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id]));
 reg resp_val;
 always @(posedge clk)
   if(~rst_n || init_outstnd_mem) begin 
@@ -290,9 +291,10 @@ always @(posedge clk)
           read_resp_val_act) resp_val <= 1'b1;
 
       // Catching "Rd/Wr AXI ID thread deadlock" possible in RDWR_INORDER mode with multiple IDs:
-      // both Rd and Wr responses simultaneously don't correspond to expected inorder ones
+      // both Rd and Wr responses simultaneously don't correspond to expected inorder ones.
+      // Masking the condition by RDWR_INORDER just to reduce extra-logic (outstnd_command is not effective if RDWR_INORDER=0 anyway)
       if (read_resp_val  &&  outstnd_command[full_rd_resp_id] && outstnd_abs_rdptrs_val[full_rd_resp_id] &&
-          write_resp_val && !outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id])
+          write_resp_val && !outstnd_command[full_wr_resp_id] && outstnd_abs_rdptrs_val[full_wr_resp_id] && RDWR_INORDER)
         axi_id_deadlock <= 1'b1;
     end
     if (ser_go)              resp_val <= 1'b0;
