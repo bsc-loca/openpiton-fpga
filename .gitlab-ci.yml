@@ -316,10 +316,16 @@ fpga-test-lagarto:
 
 deploy-ariane:
         stage: deploy
+        tags:
+            - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        before_script:
+            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
         script:
-            - cp -r ariane $DELPLOY_DIR/ariane_$CI_COMMIT_SHA
+            - date >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/date.txt
+            - cp -r ariane/* $DELPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
+            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/commit_message.txt
         dependencies:
             - synthesis-ariane
             - implementation-ariane
@@ -328,10 +334,16 @@ deploy-ariane:
 
 deploy-lagarto:
         stage: deploy
+        tags:
+            - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        before_script:
+            - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
-            - cp -r lagarto $DEPLOY_DIR/lagarto_$CI_COMMIT_SHA
+            - date >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/date.txt
+            - cp -r lagarto/* $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
+            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/commit_message.txt
         dependencies:
             - synthesis-lagarto
             - implementation-lagarto
