@@ -278,7 +278,6 @@ fpga-test-ariane:
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:
             - cp $FPGA_LOG_FILE ariane
-            - sudo pkill cat
         dependencies:
             - bitstream-ariane
         artifacts:
@@ -308,7 +307,6 @@ fpga-test-lagarto:
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE_LAGARTO
         after_script:
             - cp $FPGA_LOG_FILE lagarto
-            - sudo pkill cat
         dependencies:
             - bitstream-lagarto
         artifacts:
@@ -322,9 +320,12 @@ deploy-ariane:
             - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        before_script:
+            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
         script:
-            - cp -r ariane $DELPLOY_DIR/ariane_$CI_COMMIT_SHA
-            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHA/commit_message.txt
+            - date >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/date.txt
+            - cp -r ariane $DELPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
+            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/commit_message.txt
         dependencies:
             - synthesis-ariane
             - implementation-ariane
@@ -337,9 +338,12 @@ deploy-lagarto:
             - MEEP_FPGA
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+        before_script:
+            - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
-            - cp -r lagarto $DEPLOY_DIR/lagarto_$CI_COMMIT_SHA
-            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHA/commit_message.txt
+            - date >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/date.txt
+            - cp -r lagarto $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
+            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/commit_message.txt
         dependencies:
             - synthesis-lagarto
             - implementation-lagarto
