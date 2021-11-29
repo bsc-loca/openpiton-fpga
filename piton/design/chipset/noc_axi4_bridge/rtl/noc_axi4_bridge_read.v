@@ -71,10 +71,9 @@ module noc_axi4_bridge_read (
 );
 
 
-localparam IDLE = 2'd0;
-localparam GOT_REQ = 2'd1;
-localparam GOT_RESP = 2'd2;
-// localparam SEND_RESP = 2'd3;
+localparam IDLE     = 1'b0;
+localparam GOT_REQ  = 1'b1;
+localparam GOT_RESP = 1'b1;
 
 wire [`AXI4_ADDR_WIDTH-1:0]addr_paddings = `AXI4_ADDR_WIDTH'b0;
 
@@ -139,7 +138,7 @@ reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
 wire resp_go = resp_val & resp_rdy;
 wire m_axi_rgo = m_axi_rvalid & m_axi_rready;
 
-reg [1:0] resp_state;
+reg resp_state;
 
 assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_rready = (resp_state == IDLE);

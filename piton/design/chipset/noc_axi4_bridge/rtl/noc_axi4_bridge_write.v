@@ -78,12 +78,11 @@ module noc_axi4_bridge_write (
 );
 
 
-localparam IDLE = 3'd0;
-localparam GOT_REQ = 3'd1;
-// localparam PREP_REQ = 3'd2;
-localparam SENT_AW = 3'd3;
-localparam SENT_W = 3'd4;
-localparam GOT_RESP = 3'd1;
+localparam IDLE     = 2'h0;
+localparam GOT_REQ  = 2'h1;
+localparam SENT_AW  = 2'h2;
+localparam SENT_W   = 2'h3;
+localparam GOT_RESP = 1'b1;
 
 //==============================================================================
 // Tie constant outputs in axi4
@@ -108,7 +107,7 @@ wire m_axi_wgo = m_axi_wvalid & m_axi_wready;
 wire req_go = req_val & req_rdy;
 assign m_axi_wlast = m_axi_wvalid;
 
-reg [2:0] req_state;
+reg [1:0] req_state;
 reg [`AXI4_ADDR_WIDTH -1:0] req_addr_f;
 reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
 reg [`AXI4_DATA_WIDTH -1:0] req_data_f;
@@ -167,7 +166,7 @@ assign m_axi_wdata  = req_data_f;
 wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
 wire resp_go = resp_val & resp_rdy;
 
-reg [2:0] resp_state;
+reg resp_state;
 reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
 
 assign resp_val = (resp_state == GOT_RESP);
