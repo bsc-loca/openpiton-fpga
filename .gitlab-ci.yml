@@ -58,56 +58,84 @@ regression:
     - . ./piton/lagarto_setup.sh
     - . ./piton/lagarto_build_tools.sh 
     - cd build
-    - sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+    - sims -group=lagarto_tile1_rv64ui_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_asm_tests_v -sim_type=msm
+    - sims -group=lagarto_tile1_rv64ui_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_amo_tests_p -sim_type=msm
+    - sims -group=lagarto_tile1_rv64ua_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_amo_tests_v -sim_type=msm
+    - sims -group=lagarto_tile1_rv64ua_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_mul_div_tests_p -sim_type=msm
+    - sims -group=lagarto_tile1_rv64um_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_mul_div_tests_v -sim_type=msm
+    - sims -group=lagarto_tile1_rv64um_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_machine_lvl_tests_p -sim_type=msm
+    - sims -group=lagarto_tile1_rv64mi_tests_p -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
     - "grep 'REGRESSION PASSED' regress.log"
     - "cd .."
     - "rm -rf 2*"
-    - sims -group=lagarto_tile1_supervisor_lvl_tests_p -sim_type=msm
+    - sims -group=lagarto_tile1_rv64si_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    - "cd .."
+    - "rm -rf 2*"
+    - sims -group=lagarto_tile1_rv64uf_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    - "cd .."
+    - "rm -rf 2*"
+    - sims -group=lagarto_tile1_rv64uf_tests_v -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    - "cd .."
+    - "rm -rf 2*"
+    - sims -group=lagarto_tile1_rv64ud_tests_p -sim_type=msm
+    - "cd 2*"
+    - "regreport . -summary | tee -a ../final_report.log"
+    - "regreport . -summary | tee regress.log"
+    - "grep 'REGRESSION PASSED' regress.log"
+    - "cd .."
+    - "rm -rf 2*"
+    - sims -group=lagarto_tile1_rv64ud_tests_v -sim_type=msm
     - "cd 2*"
     - "regreport . -summary | tee -a ../final_report.log"
     - "regreport . -summary | tee regress.log"
