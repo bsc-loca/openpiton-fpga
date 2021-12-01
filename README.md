@@ -99,14 +99,18 @@ RISC-V ISA tests are grouped into the following four batches, where the last two
 
 List of regression tests supported:
 
-- lagarto_tile1_asm_tests_p
-- lagarto_tile1_asm_tests_v
-- lagarto_tile1_amo_tests_p
-- lagarto_tile1_amo_tests_v
-- lagarto_tile1_mul_div_tests_p
-- lagarto_tile1_mul_div_tests_v
-- lagarto_tile1_machine_lvl_tests_p
-- lagarto_tile1_supervisor_lvl_tests_p
+- lagarto_tile1_rv64ui_tests_p 
+- lagarto_tile1_rv64ui_tests_v 
+- lagarto_tile1_rv64ua_tests_p
+- lagarto_tile1_rv64ua_tests_v
+- lagarto_tile1_rv64um_tests_p
+- lagarto_tile1_rv64um_tests_v
+- lagarto_tile1_rv64mi_tests_p
+- lagarto_tile1_rv64si_tests_p
+- lagarto_tile1_rv64uf_tests_p
+- lagarto_tile1_rv64uf_tests_v
+- lagarto_tile1_rv64ud_tests_p
+- lagarto_tile1_rv64ud_tests_v
 
 If you would like to get an overview of the exit status of a regression batch, step into the regression subfolder and call
 

@@ -2350,7 +2350,7 @@ sub assemble_diag
           $ENV{RV64_MARCH} = "rv64imafdc" ;
         }
         if ($opt{lagarto}) {
-          $ENV{RV64_MARCH} = "rv64ima" ;
+          $ENV{RV64_MARCH} = "rv64imafd" ;
         }
       } else {
         $ENV{RV64_MARCH} = $opt{rv64_march} ;
@@ -2360,7 +2360,7 @@ sub assemble_diag
           $ENV{RV64_MABI} = "lp64d" ;
         }
         if ($opt{lagarto}) {
-          $ENV{RV64_MABI} = "lp64" ;
+          $ENV{RV64_MABI} = "lp64d" ;
         }
       } else {
         $ENV{RV64_MABI} = $opt{rv64_mabi} ;
