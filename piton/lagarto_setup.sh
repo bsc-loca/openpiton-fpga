@@ -47,11 +47,12 @@ echo "openpiton/lagarto path setup"
 echo "----------------------------------------------------------------------"
 echo
 
-echo "make sure that you source this script in a bash shell in the root folder of OpenPiton"
+#echo "make sure that you source this script in a bash shell in the root folder of OpenPiton"
 
 if [ "$0" !=  "bash" ] && [ "$0" != "-bash" ]
 then
-  echo "not in bash ($0), aborting"
+  #echo "not in bash ($0), aborting"
+  echo "not in bash ($0)"
   #return
 
 fi
@@ -93,23 +94,8 @@ source ./piton/piton_settings.bash
 
 echo "Piton settings applied"
 
-
-### MEEP WORKSTATIONS SPECIFICS
-
-echo "MEEP environment applied successfully"
-
-
-if [[ $(readlink -e "${RISCV}/bin/spike") == "" ]]
-then
-    echo
-    echo "----------------------------------------------------------------------"
-    echo "setup complete. do not forget to run the following script             "
-    echo "----------------------------------------------------------------------"
-    echo
-else
-    echo
-    echo "----------------------------------------------------------------------"
-    echo "setup complete."
-    echo "----------------------------------------------------------------------"
-    echo
-fi
+echo
+echo "----------------------------------------------------------------------"
+echo "setup complete."
+echo "----------------------------------------------------------------------"
+echo

@@ -28,8 +28,35 @@
 # for creating a Vivado project
 #
 # Boiler plate startup
+
 set DV_ROOT $::env(DV_ROOT)
+set MEEP_ROOT $::env(MEEP_DIR)
+
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
+
+if { [info exists "::env(MEEP_SHELL)"] } {
+	
+	# Following lines could be in a separate tcl file
+	# Protosyn needs to run at least once to generate the files. Then it can finish
+	# -> after writing the file list and the defines list, so they can be processed later 
+	# -> by the MEEP Shell flow. 
+	# The MEEP Shell flow can then benefit of part of this tcl, which is parsing xci, vhd, 
+	# -> and verilog files. The shell needs in fact this kind of processing, leveraging from 
+	# -> a simple list.	
+	# This could be in a sourced script which checks the MEEP_SHELL environment variable:
+	# If it exists, it is protosyn. If not, is the MEEP_SHELL calling it
+	
+	#set ALL_RTL_IMPL_FILES [concat ${ALL_RTL_IMPL_FILES} ${MEEP_RTL_FILES}]
+	#set ALL_FILES [concat ${ALL_FILES} $MEEP_RTL_FILES{}]
+	
+	puts "MEEP DIR: $MEEP_ROOT\r\n"
+	
+	source $MEEP_ROOT/tcl/project_options.tcl
+
+puts "MEEP Shell protosyn flow completed"	
+exit
+} 
+
 
 # Create project
 create_project -force ${PROJECT_NAME} ${PROJECT_DIR}

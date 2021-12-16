@@ -164,3 +164,11 @@ cov*/
 transcript*
 sc_dpiheader.h
 vsim.dbg
+
+#####################
+# MEEP Shell symlink
+#####################
+
+# ignore the folder (symlink) but not the contents
+#/meep_shell
+#!/meep_shell/
