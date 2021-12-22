@@ -22,7 +22,6 @@ module openpiton_wrapper (
     input            mem_axi_awready ,
 
     // AXI Write Data Channel Signals
-    output  [5:0]   mem_axi_wid ,
     output  [511:0] mem_axi_wdata ,
     output  [63:0]  mem_axi_wstrb ,
     output          mem_axi_wlast ,
