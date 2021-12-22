@@ -2,9 +2,10 @@
 
 
 module openpiton_wrapper (    
-    input            sys_clk ,
-    input   [4:0]    pcie_gpio  ,
-    //input            mc_clk ,
+    input            chipset_clk,
+    input            mc_clk,
+	input   [4:0]    pcie_gpio ,
+	output 			 ExtArstn,
     // AXI Write Address Channel Signals
     output  [5:0]    mem_axi_awid ,
     output  [63:0]   mem_axi_awaddr ,
@@ -21,6 +22,7 @@ module openpiton_wrapper (
     input            mem_axi_awready ,
 
     // AXI Write Data Channel Signals
+    output  [5:0]   mem_axi_wid ,
     output  [511:0] mem_axi_wdata ,
     output  [63:0]  mem_axi_wstrb ,
     output          mem_axi_wlast ,
@@ -59,7 +61,7 @@ module openpiton_wrapper (
     input            mem_axi_bvalid ,
     output           mem_axi_bready ,
 
-    input            mem_ready ,
+    input mem_calib_complete,
 
     // Ethernet
 
@@ -72,12 +74,13 @@ module openpiton_wrapper (
     output            eth_axi_awlock ,
     output  [3:0]     eth_axi_awcache ,
     output  [2:0]     eth_axi_awprot ,
-    //output  [3:0]     eth_axi_awqos ,
-    //output  [3:0]     eth_axi_awregion ,
+    output  [3:0]     eth_axi_awqos ,
+    output  [3:0]     eth_axi_awregion ,
     output  [10:0]    eth_axi_awuser ,
     output            eth_axi_awvalid ,
     input             eth_axi_awready ,
 
+    output   [5:0]    eth_axi_wid ,
     output   [511:0]  eth_axi_wdata ,
     output   [63:0]   eth_axi_wstrb ,
     output            eth_axi_wlast ,
@@ -93,8 +96,8 @@ module openpiton_wrapper (
     output            eth_axi_arlock ,
     output   [3:0]    eth_axi_arcache ,
     output   [2:0]    eth_axi_arprot ,
-    //output   [3:0]    eth_axi_arqos ,
-    //output   [3:0]    eth_axi_arregion ,
+    output   [3:0]    eth_axi_arqos ,
+    output   [3:0]    eth_axi_arregion ,
     output   [10:0]   eth_axi_aruser ,
     output            eth_axi_arvalid ,
     input             eth_axi_arready ,
@@ -117,19 +120,20 @@ module openpiton_wrapper (
  
     // AXI interface
     output [5:0]      sram_axi_awid ,
-    output [18:0]     sram_axi_awaddr ,
+    output [63:0]     sram_axi_awaddr ,
     output [7:0]      sram_axi_awlen ,
     output [2:0]      sram_axi_awsize ,
     output [1:0]      sram_axi_awburst ,
     output            sram_axi_awlock ,
     output [3:0]      sram_axi_awcache ,
     output [2:0]      sram_axi_awprot ,
-//    output [3:0]      sram_axi_awqos ,
-//    output [3:0]      sram_axi_awregion ,
+    output [3:0]      sram_axi_awqos ,
+    output [3:0]      sram_axi_awregion ,
     output [10:0]     sram_axi_awuser ,
     output            sram_axi_awvalid ,
     input             sram_axi_awready ,
 
+    output  [5:0]     sram_axi_wid ,
     output  [511:0]   sram_axi_wdata ,
     output  [63:0]    sram_axi_wstrb ,
     output            sram_axi_wlast ,
@@ -138,15 +142,15 @@ module openpiton_wrapper (
     input             sram_axi_wready ,
 
     output  [5:0]    sram_axi_arid ,
-    output  [18:0]   sram_axi_araddr ,
+    output  [63:0]   sram_axi_araddr ,
     output  [7:0]    sram_axi_arlen ,
     output  [2:0]    sram_axi_arsize ,
     output  [1:0]    sram_axi_arburst ,
     output           sram_axi_arlock ,
     output  [3:0]    sram_axi_arcache ,
     output  [2:0]    sram_axi_arprot ,
-    //output  [3:0]    sram_axi_arqos ,
-    //output  [3:0]    sram_axi_arregion ,
+    output  [3:0]    sram_axi_arqos ,
+    output  [3:0]    sram_axi_arregion ,
     output  [10:0]   sram_axi_aruser ,
     output           sram_axi_arvalid ,
     input            sram_axi_arready ,

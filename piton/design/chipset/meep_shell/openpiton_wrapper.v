@@ -2,9 +2,11 @@
 
 
 module openpiton_wrapper(    
-    input            sys_clk,
-    input   [4:0]    pcie_gpio ,
-    //input            mc_clk,
+    input            chipset_clk,
+    input            mc_clk,
+	input   [4:0]    pcie_gpio ,
+	output 			 ExtArstn,
+
     // AXI Write Address Channel Signals
     output  [5:0]    mem_axi_awid,
     output  [63:0]   mem_axi_awaddr,
@@ -60,7 +62,7 @@ module openpiton_wrapper(
     input            mem_axi_bvalid,
     output           mem_axi_bready,
 
-    input            mem_ready,
+    input mem_calib_complete,
 
     // Ethernet
 
@@ -114,8 +116,6 @@ module openpiton_wrapper(
     input    [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input                                 eth_axi_bvalid,
     output                                eth_axi_bready,
-    
-    input    [1:0]                        eth_irq,
 
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
@@ -186,70 +186,71 @@ module openpiton_wrapper(
     input                                uart_axi_rvalid,
     output                               uart_axi_rready,
 
-    input 				 uart_irq
+    output 				 uart_irq
 
   );
 
   system ACME_OP (
-           .sys_clk(sys_clk)	,
-           .pcie_gpio(pcie_gpio) ,
-           //.mc_clk(mc_clk),
-           // AXI Write Address Channel Signals
-           .mem_axi_awid(mem_axi_awid),
-           .mem_axi_awaddr(mem_axi_awaddr),
-           .mem_axi_awlen(mem_axi_awlen),
-           .mem_axi_awsize(mem_axi_awsize),
-           .mem_axi_awburst(mem_axi_awburst),
-           .mem_axi_awlock(mem_axi_awlock),
-           .mem_axi_awcache(mem_axi_awcache),
-           .mem_axi_awprot(mem_axi_awprot),
-           .mem_axi_awqos(mem_axi_awqos),
-           .mem_axi_awregion(mem_axi_awregion),
-           .mem_axi_awuser(mem_axi_awuser),
-           .mem_axi_awvalid(mem_axi_awvalid),
-           .mem_axi_awready(mem_axi_awready),
+       .chipset_clk(chipset_clk)	,
+       .mc_clk(mc_clk),
+	   .pcie_gpio(pcie_gpio) ,
+	   .ExtArstn(ExtArstn),
+       // AXI Write Address Channel Signals
+       .mem_axi_awid(mem_axi_awid),
+       .mem_axi_awaddr(mem_axi_awaddr),
+       .mem_axi_awlen(mem_axi_awlen),
+       .mem_axi_awsize(mem_axi_awsize),
+       .mem_axi_awburst(mem_axi_awburst),
+       .mem_axi_awlock(mem_axi_awlock),
+       .mem_axi_awcache(mem_axi_awcache),
+       .mem_axi_awprot(mem_axi_awprot),
+       .mem_axi_awqos(mem_axi_awqos),
+       .mem_axi_awregion(mem_axi_awregion),
+       .mem_axi_awuser(mem_axi_awuser),
+       .mem_axi_awvalid(mem_axi_awvalid),
+       .mem_axi_awready(mem_axi_awready),
 
-           // AXI Write Data Channel Signals
-           .mem_axi_wid(mem_axi_wid),
-           .mem_axi_wdata(mem_axi_wdata),
-           .mem_axi_wstrb(mem_axi_wstrb),
-           .mem_axi_wlast(mem_axi_wlast),
-           .mem_axi_wuser(mem_axi_wuser),
-           .mem_axi_wvalid(mem_axi_wvalid),
-           .mem_axi_wready(mem_axi_wready),
+       // AXI Write Data Channel Signals
+       .mem_axi_wid(mem_axi_wid),
+       .mem_axi_wdata(mem_axi_wdata),
+       .mem_axi_wstrb(mem_axi_wstrb),
+       .mem_axi_wlast(mem_axi_wlast),
+       .mem_axi_wuser(mem_axi_wuser),
+       .mem_axi_wvalid(mem_axi_wvalid),
+       .mem_axi_wready(mem_axi_wready),
 
-           // AXI Read Address Channel Signals
-           .mem_axi_arid(mem_axi_arid),
-           .mem_axi_araddr(mem_axi_araddr),
-           .mem_axi_arlen(mem_axi_arlen),
-           .mem_axi_arsize(mem_axi_arsize),
-           .mem_axi_arburst(mem_axi_arburst),
-           .mem_axi_arlock(mem_axi_arlock),
-           .mem_axi_arcache(mem_axi_arcache),
-           .mem_axi_arprot(mem_axi_arprot),
-           .mem_axi_arqos(mem_axi_arqos),
-           .mem_axi_arregion(mem_axi_arregion),
-           .mem_axi_aruser(mem_axi_aruser),
-           .mem_axi_arvalid(mem_axi_arvalid),
-           .mem_axi_arready(mem_axi_arready),
+       // AXI Read Address Channel Signals
+       .mem_axi_arid(mem_axi_arid),
+       .mem_axi_araddr(mem_axi_araddr),
+       .mem_axi_arlen(mem_axi_arlen),
+       .mem_axi_arsize(mem_axi_arsize),
+       .mem_axi_arburst(mem_axi_arburst),
+       .mem_axi_arlock(mem_axi_arlock),
+       .mem_axi_arcache(mem_axi_arcache),
+       .mem_axi_arprot(mem_axi_arprot),
+       .mem_axi_arqos(mem_axi_arqos),
+       .mem_axi_arregion(mem_axi_arregion),
+       .mem_axi_aruser(mem_axi_aruser),
+       .mem_axi_arvalid(mem_axi_arvalid),
+       .mem_axi_arready(mem_axi_arready),
 
-           // AXI Read Data Channel Signals
-           .mem_axi_rid(mem_axi_rid),
-           .mem_axi_rdata(mem_axi_rdata),
-           .mem_axi_rresp(mem_axi_rresp),
-           .mem_axi_rlast(mem_axi_rlast),
-           .mem_axi_ruser(mem_axi_ruser),
-           .mem_axi_rvalid(mem_axi_rvalid),
-           .mem_axi_rready(mem_axi_rready),
+       // AXI Read Data Channel Signals
+       .mem_axi_rid(mem_axi_rid),
+       .mem_axi_rdata(mem_axi_rdata),
+       .mem_axi_rresp(mem_axi_rresp),
+       .mem_axi_rlast(mem_axi_rlast),
+       .mem_axi_ruser(mem_axi_ruser),
+       .mem_axi_rvalid(mem_axi_rvalid),
+       .mem_axi_rready(mem_axi_rready),
 
-           // AXI Write Response Channel Signals
-           .mem_axi_bid(mem_axi_bid),
-           .mem_axi_bresp(mem_axi_bresp),
-           .mem_axi_buser(mem_axi_buser),
-           .mem_axi_bvalid(mem_axi_bvalid),
-           .mem_axi_bready(mem_axi_bready),
+       // AXI Write Response Channel Signals
+       .mem_axi_bid(mem_axi_bid),
+       .mem_axi_bresp(mem_axi_bresp),
+       .mem_axi_buser(mem_axi_buser),
+       .mem_axi_bvalid(mem_axi_bvalid),
+       .mem_axi_bready(mem_axi_bready),
 
-           .ddr_ready(mem_ready),
+       .mem_calib_complete(mem_calib_complete),
 
       // Ethernet
 
@@ -299,8 +300,6 @@ module openpiton_wrapper(
        .eth_axi_wstrb(eth_axi_wstrb),
        // .eth_axi_wuser(eth_axi_wuser),
        .eth_axi_wvalid(eth_axi_wvalid),
-       
-       .eth_irq(eth_irq),
 
         .sram_axi_araddr(sram_axi_araddr),
         .sram_axi_arburst(sram_axi_arburst),
@@ -367,7 +366,7 @@ module openpiton_wrapper(
         .uart_axi_rvalid(uart_axi_rvalid),
         .uart_axi_rready(uart_axi_rready),
 
-	.uart_irq(uart_irq)
+	    .uart_irq(uart_irq)
 
          );
 
