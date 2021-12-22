@@ -90,6 +90,10 @@ module chipset(
     input sys_clk,
 `else
     // Oscillator clock
+ `ifdef PITONSYS_MEEP
+  input                                       chipset_clk,
+  input                                       mc_clk,
+ `else
 `ifdef PITON_CHIPSET_CLKS_GEN
     `ifdef PITON_CHIPSET_DIFF_CLK
         input                                       clk_osc_p,
@@ -102,7 +106,7 @@ module chipset(
     `ifdef PITONSYS_DDR4
         input                                       mc_clk_p,
         input                                       mc_clk_n,
-    `endif // PITONSYS_DDR4
+     `endif // PITONSYS_DDR4
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     input                                       chipset_clk,
@@ -117,6 +121,7 @@ module chipset(
         input                                       sd_sys_clk,
     `endif // endif PITONSYS_SPI
 `endif // endif PITON_CHIPSET_CLKS_GEN
+`endif
 `endif // ifdef F1_BOARD
 
 
@@ -258,8 +263,64 @@ module chipset(
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
-    output                                      ddr_parity,
-    output                                      hbm_cattrip,    
+    `ifdef PITONSYS_MEEP
+    input                           hbm_calib_complete,    
+    //
+    	    // AXI interface
+    output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
+    output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
+    output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
+    output wire [`AXI4_SIZE_WIDTH   -1:0]    m_axi_awsize,
+    output wire [`AXI4_BURST_WIDTH  -1:0]    m_axi_awburst,
+    output wire                              m_axi_awlock,
+    output wire [`AXI4_CACHE_WIDTH  -1:0]    m_axi_awcache,
+    output wire [`AXI4_PROT_WIDTH   -1:0]    m_axi_awprot,
+    output wire [`AXI4_QOS_WIDTH    -1:0]    m_axi_awqos,
+    output wire [`AXI4_REGION_WIDTH -1:0]    m_axi_awregion,
+    output wire [`AXI4_USER_WIDTH   -1:0]    m_axi_awuser,
+    output wire                              m_axi_awvalid,
+    input  wire                              m_axi_awready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
+    output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
+    output wire                               m_axi_wlast,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
+    output wire                               m_axi_wvalid,
+    input  wire                               m_axi_wready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid,
+    output wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr,
+    output wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen,
+    output wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize,
+    output wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst,
+    output wire                               m_axi_arlock,
+    output wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache,
+    output wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot,
+    output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
+    output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
+    output wire                               m_axi_arvalid,
+    input  wire                               m_axi_arready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
+    input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
+    input  wire                               m_axi_rlast,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
+    input  wire                               m_axi_rvalid,
+    output wire                               m_axi_rready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
+    input  wire                               m_axi_bvalid,
+    output wire                               m_axi_bready,
+    `else
+    output                          ddr_parity,
+    output                          hbm_cattrip,
+    
+    `endif
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -332,6 +393,26 @@ module chipset(
 
 `ifdef PITONSYS_IOCTRL
     `ifdef PITONSYS_UART
+     `ifdef PITONSYS_MEEP
+        output  [12:0]                          uart_axi_awaddr,        
+        output                                  uart_axi_awvalid,
+        input                                   uart_axi_awready,
+        output  [31:0]                          uart_axi_wdata,
+        output  [3:0 ]                          uart_axi_wstrb,
+        output                                  uart_axi_wvalid,
+        input                                   uart_axi_wready,
+        input  [1:0]                            uart_axi_bresp,
+        input                                   uart_axi_bvalid,
+        output                                  uart_axi_bready,
+        output  [12:0]                          uart_axi_araddr,
+        output                                  uart_axi_arvalid,
+        input                                   uart_axi_arready,
+        input  [31:0]                           uart_axi_rdata,
+        input  [1:0]                            uart_axi_rresp,
+        input                                   uart_axi_rvalid,
+        output                                  uart_axi_rready,
+        input                                   uart_irq,
+     `else
         output                                      uart_tx,
         input                                       uart_rx,
         `ifdef PITONSYS_UART_BOOT
@@ -342,6 +423,7 @@ module chipset(
         `ifdef PITONSYS_UART_RESET
             output uart_rst_out_n,
         `endif
+      `endif // PITONSYS_MEE
     `endif // endif PITONSYS_UART
 
 
@@ -560,8 +642,10 @@ module chipset(
 
 // Generated clock for the core logic in the chipset
 `ifdef PITON_CHIPSET_CLKS_GEN
+    `ifndef PITONSYS_MEEP
     wire                                        chipset_clk;
     wire                                        mc_clk;
+    `endif
 `endif // endif PITON_CHIPSET_CLKS_GEN
 
 `ifdef PITON_BOARD
@@ -914,6 +998,7 @@ end
     assign chipset_clk = passthru_chipset_clk;
 `else
     `ifndef F1_BOARD
+       `ifndef PITONSYS_MEEP
         `ifdef PITON_CHIPSET_CLKS_GEN
             clk_mmcm    clk_mmcm    (
 
@@ -935,7 +1020,8 @@ end
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
                 // Memory controller clock
-                , .mc_sys_clk(mc_clk)
+                //, .mc_sys_clk(mc_clk)
+                , .mc_sys_clk()
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
             `ifndef ALVEOU280_BOARD
@@ -966,6 +1052,9 @@ end
             `endif
         );
         `endif // endif PITON_CHIPSET_CLKS_GEN
+       `else 
+          assign clk_locked = 1'b1;
+       `endif // not def PITONSYS_MEEP
     `else // ifndef F1_BOARD
         assign clk_locked = 1'b1;
         assign chipset_clk = sys_clk;
@@ -1314,8 +1403,12 @@ chipset_impl_noc_power_test  chipset_impl (
     `ifndef F1_BOARD
         // Memory controller clock
         `ifdef PITONSYS_DDR4
+            `ifndef PITONSYS_MEEP
             .mc_clk_p(mc_clk_p),
             .mc_clk_n(mc_clk_n),
+            `else
+            .mc_clk(mc_clk),
+            `endif
         `else  // PITONSYS_DDR4                               
             .mc_clk(mc_clk),
         `endif  // PITONSYS_DDR4                               
@@ -1386,8 +1479,64 @@ chipset_impl_noc_power_test  chipset_impl (
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
                 `elsif ALVEOU280_BOARD
+                     `ifdef PITONSYS_MEEP
+                    .hbm_calib_complete (hbm_calib_complete),
+                    
+                    .m_axi_awid      (m_axi_awid     ),
+                    .m_axi_awaddr    (m_axi_awaddr   ),
+                    .m_axi_awlen     (m_axi_awlen    ),
+                    .m_axi_awsize    (m_axi_awsize   ),
+                    .m_axi_awburst   (m_axi_awburst  ),
+                    .m_axi_awlock    (m_axi_awlock   ),
+                    .m_axi_awcache   (m_axi_awcache  ),
+                    .m_axi_awprot    (m_axi_awprot   ),
+                    .m_axi_awqos     (m_axi_awqos    ),
+                    .m_axi_awregion  (m_axi_awregion ),
+                    .m_axi_awuser    (m_axi_awuser   ),
+                    .m_axi_awvalid   (m_axi_awvalid  ),
+                    .m_axi_awready   (m_axi_awready  ),
+                    
+                    .m_axi_wid       (m_axi_wid      ),
+                    .m_axi_wdata     (m_axi_wdata    ),
+                    .m_axi_wstrb     (m_axi_wstrb    ),
+                    .m_axi_wlast     (m_axi_wlast    ),
+                    .m_axi_wuser     (m_axi_wuser    ),
+                    .m_axi_wvalid    (m_axi_wvalid   ),
+                    .m_axi_wready    (m_axi_wready   ),
+                    
+                    .m_axi_arid      (m_axi_arid     ),
+                    .m_axi_araddr    (m_axi_araddr   ),
+                    .m_axi_arlen     (m_axi_arlen    ),
+                    .m_axi_arsize    (m_axi_arsize   ),
+                    .m_axi_arburst   (m_axi_arburst  ),
+                    .m_axi_arlock    (m_axi_arlock   ),
+                    .m_axi_arcache   (m_axi_arcache  ),
+                    .m_axi_arprot    (m_axi_arprot   ),
+                    .m_axi_arqos     (m_axi_arqos    ),
+                    .m_axi_arregion  (m_axi_arregion ),
+                    .m_axi_aruser    (m_axi_aruser   ),
+                    .m_axi_arvalid   (m_axi_arvalid  ),
+                    .m_axi_arready   (m_axi_arready  ),
+                    
+                    .m_axi_rid       (m_axi_rid      ),
+                    .m_axi_rdata     (m_axi_rdata    ),
+                    .m_axi_rresp     (m_axi_rresp    ),
+                    .m_axi_rlast     (m_axi_rlast    ),
+                    .m_axi_ruser     (m_axi_ruser    ),
+                    .m_axi_rvalid    (m_axi_rvalid   ),
+                    .m_axi_rready    (m_axi_rready   ),
+                    
+                    .m_axi_bid       (m_axi_bid      ),
+                    .m_axi_bresp     (m_axi_bresp    ),
+                    .m_axi_buser     (m_axi_buser    ),
+                    .m_axi_bvalid    (m_axi_bvalid   ),
+                    .m_axi_bready    (m_axi_bready   ),
+
+        
+                    `else
                     .ddr_parity(ddr_parity),
-                    .hbm_cattrip(hbm_cattrip),
+                    .hbm_cattrip(hbm_cattrip),       
+                    `endif
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
@@ -1456,6 +1605,27 @@ chipset_impl_noc_power_test  chipset_impl (
 
     `ifdef PITONSYS_IOCTRL
         `ifdef PITONSYS_UART
+           `ifdef PITONSYS_MEEP
+            ,                                
+            // UART
+            .uart_axi_awaddr(uart_axi_awaddr),
+            .uart_axi_awvalid(uart_axi_awvalid),
+            .uart_axi_awready(uart_axi_awready),
+            .uart_axi_wdata(uart_axi_wdata),
+            .uart_axi_wstrb(uart_axi_wstrb),
+            .uart_axi_wvalid(uart_axi_wvalid),
+            .uart_axi_wready(uart_axi_wready),
+            .uart_axi_bresp(uart_axi_bresp),
+            .uart_axi_bvalid(uart_axi_bvalid),
+            .uart_axi_bready(uart_axi_bready),
+            .uart_axi_araddr(uart_axi_araddr),
+            .uart_axi_arvalid(uart_axi_arvalid),
+            .uart_axi_arready(uart_axi_arready),
+            .uart_axi_rdata(uart_axi_rdata),
+            .uart_axi_rresp(uart_axi_rresp),
+            .uart_axi_rvalid(uart_axi_rvalid),
+            .uart_axi_rready(uart_axi_rready)         
+           `else
             ,
             .uart_tx(uart_tx),
             .uart_rx(uart_rx)
@@ -1469,6 +1639,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 `endif
 
             `endif // endif PITONSYS_UART_BOOT
+            `endif //// PITONSYS_MEEP
         `endif // endif PITONSYS_UART
 
         `ifdef PITONSYS_SPI

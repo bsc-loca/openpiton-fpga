@@ -46,9 +46,12 @@ module mc_top (
     
 `ifdef PITONSYS_DDR4
     // directly feed in 250MHz ref clock
+    `ifndef PITONSYS_MEEP
     input                           sys_clk_p,
     input                           sys_clk_n,
-
+    `else
+    input mc_clk,    
+    `endif
     output                          ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]     ddr_bg,
 `else // PITONSYS_DDR4
@@ -85,8 +88,66 @@ module mc_top (
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD
+
+    `ifdef PITONSYS_MEEP
+    input                           init_calib_complete,
+    
+    //
+    	    // AXI interface
+    output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
+    output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
+    output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
+    output wire [`AXI4_SIZE_WIDTH   -1:0]    m_axi_awsize,
+    output wire [`AXI4_BURST_WIDTH  -1:0]    m_axi_awburst,
+    output wire                              m_axi_awlock,
+    output wire [`AXI4_CACHE_WIDTH  -1:0]    m_axi_awcache,
+    output wire [`AXI4_PROT_WIDTH   -1:0]    m_axi_awprot,
+    output wire [`AXI4_QOS_WIDTH    -1:0]    m_axi_awqos,
+    output wire [`AXI4_REGION_WIDTH -1:0]    m_axi_awregion,
+    output wire [`AXI4_USER_WIDTH   -1:0]    m_axi_awuser,
+    output wire                              m_axi_awvalid,
+    input  wire                              m_axi_awready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
+    output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
+    output wire                               m_axi_wlast,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
+    output wire                               m_axi_wvalid,
+    input  wire                               m_axi_wready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid,
+    output wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr,
+    output wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen,
+    output wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize,
+    output wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst,
+    output wire                               m_axi_arlock,
+    output wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache,
+    output wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot,
+    output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
+    output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
+    output wire                               m_axi_arvalid,
+    input  wire                               m_axi_arready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
+    input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
+    input  wire                               m_axi_rlast,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
+    input  wire                               m_axi_rvalid,
+    output wire                               m_axi_rready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
+    input  wire                               m_axi_bvalid,
+    output wire                               m_axi_bready,
+    `else
     output                          ddr_parity,
     output                          hbm_cattrip,
+    
+    `endif
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -308,7 +369,7 @@ noc_axi4_bridge #(
 
 reg     [31:0]                      delay_cnt;
 reg                                 ui_clk_syn_rst_delayed;
-wire                                init_calib_complete;
+//wire                                init_calib_complete;
 wire                                afifo_rst_1;
 wire                                afifo_rst_2;
 
@@ -356,6 +417,7 @@ wire                                noc_mig_bridge_init_done;
 `else // PITONSYS_AXI4_MEM
 
 // AXI4 interface
+`ifndef PITONSYS_MEEP
 wire [`AXI4_ID_WIDTH     -1:0]     m_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     m_axi_awaddr;
 wire [`AXI4_LEN_WIDTH    -1:0]     m_axi_awlen;
@@ -405,6 +467,7 @@ wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp;
 wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser;
 wire                               m_axi_bvalid;
 wire                               m_axi_bready;
+`endif
 
 wire [`AXI4_ID_WIDTH     -1:0]     core_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr;
@@ -1157,9 +1220,10 @@ axi4_zeroer axi4_zeroer(
 
 `ifdef PITONSYS_DDR4
 
-`ifdef PITONSYS_PCIE
+//`ifdef PITONSYS_PCIE
+`ifdef PITONSYS_MEEP
 
-meep_shell meep_shell
+/*meep_shell meep_shell
        (.axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
         .axi4_mm_arcache(m_axi_arcache),
@@ -1257,26 +1321,11 @@ meep_shell meep_shell
 
 
         .mem_calib_complete(init_calib_complete),
-        
-        .ddr4_sdram_c0_act_n(ddr_act_n),
-        .ddr4_sdram_c0_adr(ddr_addr),
-        .ddr4_sdram_c0_ba(ddr_ba),
-        .ddr4_sdram_c0_bg(ddr_bg),
-        .ddr4_sdram_c0_ck_c(ddr_ck_n),
-        .ddr4_sdram_c0_ck_t(ddr_ck_p),
-        .ddr4_sdram_c0_cke(ddr_cke),
-        .ddr4_sdram_c0_cs_n(ddr_cs_n),
-        .ddr4_sdram_c0_dq(ddr_dq),
-        .ddr4_sdram_c0_dqs_c(ddr_dqs_n),
-        .ddr4_sdram_c0_dqs_t(ddr_dqs_p),
-        .ddr4_sdram_c0_odt(ddr_odt),
-        .ddr4_sdram_c0_par(ddr_parity),
-        .ddr4_sdram_c0_reset_n(ddr_reset_n),
-        
+                
         .hbm_cattrip(hbm_cattrip),
         
-        .ddr_clk_clk_n(sys_clk_n),
-        .ddr_clk_clk_p(sys_clk_p),
+        .hbm_clk_n(sys_clk_n),
+        .hbm_clk_p(sys_clk_p),
         .sys_rst(~sys_rst_n),
         .sys_clk(core_ref_clk),
         
@@ -1288,14 +1337,14 @@ meep_shell meep_shell
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
         .pcie_refclk_clk_p( pcie_refclk_p)
-        );
-assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
-assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
-assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
-assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
+        );*/
+//assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
+//assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
+//assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+//assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
 
 assign ui_clk_sync_rst = ~sys_rst_n;
-assign ui_clk = core_ref_clk;
+assign ui_clk = mc_clk;
   
 `else // PITONSYS_PCIE
  

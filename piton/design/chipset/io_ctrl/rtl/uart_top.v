@@ -65,7 +65,7 @@ module uart_top (
     input                                   xbar_uart_noc3_valid,
     input [`NOC_DATA_WIDTH-1:0]             xbar_uart_noc3_data,     
     output                                  uart_xbar_noc3_ready,
-    `ifdef ALVEOU280_BOARD
+    `ifdef PITONSYS_MEEP
     
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
@@ -514,7 +514,7 @@ uart_mux   uart_mux (
       assign s_axi_bresp   = 2'h0;
 
       assign uart_interrupt = 1'b0;
-    `elsif ALVEOU280_BOARD
+    `elsif PITONSYS_MEEP
     
       assign uart_axi_awaddr = s_axi_awaddr;
       assign uart_axi_awvalid = s_axi_awvalid;
