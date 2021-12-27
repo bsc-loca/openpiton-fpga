@@ -1742,9 +1742,9 @@ chipset_impl_noc_power_test  chipset_impl (
                     .hbm_cattrip(hbm_cattrip),       
                     `endif
                 `else
-                    .ddr_dm(ddr_dm),
+                    .ddr_dm(ddr_dm)
                 `endif // XUPP3R_BOARD
-                .ddr_odt(ddr_odt)
+                .ddr_odt(ddr_odt),
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),
                 // AXI Write Address Channel Signals
@@ -1810,7 +1810,7 @@ chipset_impl_noc_power_test  chipset_impl (
     `ifdef PITONSYS_IOCTRL
         `ifdef PITONSYS_UART
            `ifdef PITONSYS_MEEP                                          
-            // UART
+            // UART            
             .uart_axi_awaddr(uart_axi_awaddr),
             .uart_axi_awvalid(uart_axi_awvalid),
             .uart_axi_awready(uart_axi_awready),

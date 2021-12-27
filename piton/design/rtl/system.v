@@ -1685,7 +1685,7 @@ chipset chipset(
 		    .sram_axi_wready(sram_axi_wready),
 		    .sram_axi_wstrb(sram_axi_wstrb),
 		    // .axi4_sram_wuser(sram_axi_wuser),
-		    .sram_axi_wvalid(sram_axi_wvalid)
+		    .sram_axi_wvalid(sram_axi_wvalid),
 
             `else
             .ddr_parity(ddr_parity),
