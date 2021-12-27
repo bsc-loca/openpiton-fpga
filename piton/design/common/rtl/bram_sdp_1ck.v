@@ -23,6 +23,9 @@ module xilinx_simple_dual_port_1_clock_ram #(
   reg [RAM_WIDTH-1:0] BRAM [RAM_DEPTH-1:0];
   reg [RAM_WIDTH-1:0] ram_data = {RAM_WIDTH{1'b0}};
 
+  // actual read pipeline for inter-port write-first policy
+  reg [clogb2(RAM_DEPTH-1)-1:0] addrb_rd;
+
   // The following code either initializes the memory values to a specified file or to all zeros to match hardware
   generate
     if (INIT_FILE != "") begin: use_init_file
@@ -40,8 +43,10 @@ module xilinx_simple_dual_port_1_clock_ram #(
     if (wea)
       BRAM[addra] <= dina;
     if (enb)
+      addrb_rd <= addrb;
       ram_data <= BRAM[addrb];
   end
+  // always @(*) ram_data = BRAM[addrb_rd];
 
   //  The following code generates HIGH_PERFORMANCE (use output register) or LOW_LATENCY (no output register)
   generate

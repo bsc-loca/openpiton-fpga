@@ -6,4 +6,4 @@ bram_1rw_wrapper.v
 bram_1r1w_wrapper.v
 synchronizer.v
 bram_sdp_1ck.v
-bram_tdp_1ck_nochange.v
+bram_tdp_1ck_wrfirst.v

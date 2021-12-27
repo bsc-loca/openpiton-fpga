@@ -553,6 +553,7 @@ wire                                            chip_filter_noc3_ready;
 
 wire                                            test_good_end;
 wire                                            test_bad_end;
+wire                                            mc_axi_deadlock;
 
 <%
 for i in range(len(devices)):
@@ -1019,6 +1020,7 @@ credit_to_valrdy noc3_xbar_to_%s(
 
             .uart_boot_en(uart_boot_en),
             .init_calib_complete_out(init_calib_complete),
+            .mc_axi_deadlock(mc_axi_deadlock),
 
         `ifdef PITONSYS_DDR4
            `ifndef PITONSYS_MEEP
@@ -1158,6 +1160,7 @@ fake_mem_ctrl fake_mem_ctrl(
     mc_top mc_top(
       .core_ref_clk(chipset_clk),
       .sys_rst_n(chipset_rst_n),
+      .mc_axi_deadlock(mc_axi_deadlock),
 
       .sram_flit_in_data(buf_sram_noc2_data),
       .sram_flit_in_val(buf_sram_noc2_valid),
@@ -1167,6 +1170,8 @@ fake_mem_ctrl fake_mem_ctrl(
       .sram_flit_out_val(sram_buf_noc3_valid),
       .sram_flit_out_rdy(buf_sram_noc3_ready)
     );
+`else
+    assign mc_axi_deadlock = 1'b0;
 `endif // endif PITONSYS_MC_SRAM
 
 `endif // endif PITON_FPGA_MC_DDR3
@@ -1309,6 +1314,7 @@ uart_top        uart_top (
     .test_start                 ( test_start                            ),
     .test_good_end              ( test_good_end                         ),
     .test_bad_end               ( test_bad_end                          ),
+    .mc_axi_deadlock            ( mc_axi_deadlock                       ),
     .uart_rst_out_n             ( uart_rst_out_n                        ),
 
     .chip_id                    ( {1'b1, {(`NOC_CHIPID_WIDTH-1){1'b0}}} ),

@@ -103,7 +103,7 @@ always @(posedge clk) begin
       SEND_DATA: begin
         if (remaining_flits == `MSG_LENGTH_WIDTH'b1) begin
           state <= flit_out_rdy ? ACCEPT : SEND_DATA;
-          remaining_flits <= 0;
+          if (flit_out_rdy) remaining_flits <= 0; // bug fix: clearing should be conditional, Alex Kropotov (BSC)
         end
         else begin
           state <= SEND_DATA;

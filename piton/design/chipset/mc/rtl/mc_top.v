@@ -158,6 +158,7 @@ module mc_top (
 
     output                          init_calib_complete_out,
 `endif // ifdef PITON_FPGA_MC_DDR3
+    output                          mc_axi_deadlock,
 
 `ifdef PITONSYS_MC_SRAM
     input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
@@ -227,14 +228,23 @@ noc_axi4_bridge #(
     `ifdef PITON_ARIANE
       .SWAP_ENDIANESS (1),
     `endif
-    .NOC2AXI_DESER_ORDER (1),
-    .NUM_REQ_OUTSTANDING_LOG2 (1),
-    .NUM_REQ_THREADS_LOG2 (1)
+    `ifndef PITON_FPGA_MC_DDR3
+      // applying the same parameters as for SDRAM in case it is absent
+      .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+      .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+      .NUM_REQ_XTHREADS (`PITON_X_TILES),
+    `endif
+    .NOC2AXI_DESER_ORDER (1)
 ) sram_noc_axi4_bridge (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
     .uart_boot_en       (1'b0),
     .phy_init_done      (1'b1),
+    .axi_id_deadlock    (
+`ifndef PITON_FPGA_MC_DDR3
+                         mc_axi_deadlock // taking "alarm" signal from SRAM AXI in case SDRAM is absent
+`endif
+                        ),
 
     .src_bridge_vr_noc2_val(sram_flit_in_val),
     .src_bridge_vr_noc2_dat(sram_flit_in_data),
@@ -1040,13 +1050,18 @@ assign noc_axi4_bridge_init_done = init_calib_complete;
 assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
-
-noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000))
+noc_axi4_bridge #(
+    .ADDR_OFFSET(64'h80000000),
+    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+    .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+    .NUM_REQ_XTHREADS (`PITON_X_TILES)
+)
  noc_axi4_bridge  (
     .clk                (ui_clk                    ),  
     .rst_n              (~noc_axi4_bridge_rst      ), 
     .uart_boot_en       (uart_boot_en              ),
     .phy_init_done      (noc_axi4_bridge_init_done ),
+    .axi_id_deadlock    (mc_axi_deadlock           ),
 
     .src_bridge_vr_noc2_val(fifo_trans_val),
     .src_bridge_vr_noc2_dat(fifo_trans_data),

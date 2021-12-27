@@ -30,26 +30,21 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_write #(
-    // swap endianess, needed when used in conjunction with a little endian core like Ariane
-    parameter SWAP_ENDIANESS       = 0,
-    parameter NUM_REQ_THREADS_LOG2 = 4,
-    parameter ADDR_OFFSET = 64'h0
-) (
+module noc_axi4_bridge_write (
     // Clock + Reset
     input  wire                                                    clk,
     input  wire                                                    rst_n,
-    input  wire                                                    uart_boot_en, 
 
     // NOC interface
     input  wire                                          req_val,
-    input  wire [`MSG_HEADER_WIDTH-1:0]                  req_header,
-    input  wire [NUM_REQ_THREADS_LOG2-1:0]               req_id,
-    input  wire [`AXI4_DATA_WIDTH-1:0]                   req_data,
+    input  wire [`AXI4_ADDR_WIDTH -1:0]                  req_addr,
+    input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
+    input  wire [`AXI4_DATA_WIDTH -1:0]                  req_data,
+    input  wire [`AXI4_STRB_WIDTH -1:0]                  req_strb,
     output wire                                          req_rdy,
 
     output wire                                          resp_val,
-    output wire [NUM_REQ_THREADS_LOG2-1:0]               resp_id,
+    output wire [`AXI4_ID_WIDTH   -1:0]                  resp_id,
     input  wire                                          resp_rdy,
 
     // AXI write interface
@@ -83,12 +78,11 @@ module noc_axi4_bridge_write #(
 );
 
 
-localparam IDLE = 3'd0;
-localparam GOT_REQ = 3'd1;
-localparam PREP_REQ = 3'd2;
-localparam SENT_AW = 3'd3;
-localparam SENT_W = 3'd4;
-localparam GOT_RESP = 3'd1;
+localparam IDLE     = 2'h0;
+localparam GOT_REQ  = 2'h1;
+localparam SENT_AW  = 2'h2;
+localparam SENT_W   = 2'h3;
+localparam GOT_RESP = 1'b1;
 
 //==============================================================================
 // Tie constant outputs in axi4
@@ -113,94 +107,48 @@ wire m_axi_wgo = m_axi_wvalid & m_axi_wready;
 wire req_go = req_val & req_rdy;
 assign m_axi_wlast = m_axi_wvalid;
 
-reg [2:0] req_state;
-reg [`MSG_HEADER_WIDTH-1:0] req_header_f;
-reg [NUM_REQ_THREADS_LOG2-1:0] req_id_f;
-reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
+reg [1:0] req_state;
+reg [`AXI4_ADDR_WIDTH -1:0] req_addr_f;
+reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
+reg [`AXI4_DATA_WIDTH -1:0] req_data_f;
+reg [`AXI4_STRB_WIDTH -1:0] req_strb_f;
 
-wire [`PHY_ADDR_WIDTH-1:0] virt_addr = req_header_f[`MSG_ADDR];
-wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1])
-                || (req_header_f[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-
-wire [`MSG_SRC_CHIPID_WIDTH-1:0] wr_src_chipid = req_header_f[`MSG_SRC_CHIPID];
-wire [`MSG_SRC_X_WIDTH     -1:0] wr_src_x      = req_header_f[`MSG_SRC_X];
-wire [`MSG_SRC_Y_WIDTH     -1:0] wr_src_y      = req_header_f[`MSG_SRC_Y];
-wire [`MSG_SRC_FBITS_WIDTH -1:0] wr_src_fbits  = req_header_f[`MSG_SRC_FBITS];
-
-wire [`MSG_DST_CHIPID_WIDTH-1:0] wr_dst_chipid = req_header_f[`MSG_DST_CHIPID];
-wire [`MSG_DST_X_WIDTH     -1:0] wr_dst_x      = req_header_f[`MSG_DST_X];
-wire [`MSG_DST_Y_WIDTH     -1:0] wr_dst_y      = req_header_f[`MSG_DST_Y];
-wire [`MSG_DST_FBITS_WIDTH -1:0] wr_dst_fbits  = req_header_f[`MSG_DST_FBITS];
-
-wire [`MSG_MSHRID_WIDTH    -1:0] wr_mshrid     = req_header_f[`MSG_MSHRID];
-wire [`MSG_LSID_WIDTH      -1:0] wr_lsid       = req_header_f[`MSG_LSID];
-wire [`MSG_SDID_WIDTH      -1:0] wr_sdid       = req_header_f[`MSG_SDID];
 
 assign req_rdy = (req_state == IDLE);
-assign m_axi_awvalid = (req_state == PREP_REQ) || (req_state == SENT_W);
-assign m_axi_wvalid = (req_state == PREP_REQ) || (req_state == SENT_AW);
+assign m_axi_awvalid = (req_state == GOT_REQ) || (req_state == SENT_W);
+assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
 
-
-wire [5:0] swap_grnlty = uncacheable ? (
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_1B  ? 6'd0  :
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_2B  ? 6'd1  :
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_4B  ? 6'd3  :
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_8B  ? 6'd7  :
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_16B ? 6'd15 :
-                           req_header_f[`MSG_DATA_SIZE] == `MSG_DATA_SIZE_32B ? 6'd31 :
-                                                                                6'd63 ) :
-                                                                                6'd63;
-reg [`AXI4_DATA_WIDTH-1:0] req_data_swp;
-reg [6:0] idxw;
-always @(*) begin
-  req_data_swp = {`AXI4_DATA_WIDTH{1'b0}};
-  for (idxw = 0; idxw <= swap_grnlty; idxw = idxw+1)
-    req_data_swp[idxw*8 +: 8] = req_data[(swap_grnlty - idxw)*8 +: 8];
-end
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        req_header_f <= 0;
-        req_id_f <= 0;
-        req_state <= IDLE;
+        req_state  <= IDLE;
+        req_addr_f <= 0;
+        req_id_f   <= 0;
         req_data_f <= 0;
+        req_strb_f <= 0;
     end else begin
         case (req_state)
-            IDLE: begin
-                req_state <= req_go ? GOT_REQ : req_state;
-                req_header_f <= req_go ? req_header : req_header_f;
-                req_id_f <= req_go ? req_id : req_id_f;
-                req_data_f <= req_data_f;
+            IDLE: if (req_go) begin
+                req_state  <= GOT_REQ;
+                req_addr_f <= req_addr;
+                req_id_f   <= req_id;
+                req_data_f <= req_data;
+                req_strb_f <= req_strb;
             end
-            GOT_REQ: begin
-                req_state <= PREP_REQ;
-                req_header_f <= req_header_f;
-                req_id_f <= req_id_f;
-                req_data_f <= SWAP_ENDIANESS ? req_data_swp : req_data; // get data one cycle later because of bram in buffer
-            end
-            PREP_REQ: begin
-                req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE : m_axi_awgo ? SENT_AW : m_axi_wgo ? SENT_W : req_state;
-                req_header_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_header_f;
-                req_id_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_id_f;
-                req_data_f <= (m_axi_awgo & m_axi_wgo) ? 0 : req_data_f;
-            end
-            SENT_AW: begin
-                req_state <= m_axi_wgo ? IDLE : req_state;
-                req_header_f <= m_axi_wgo ? 0 : req_header_f;
-                req_id_f <= m_axi_wgo ? 0 : req_id_f;
-                req_data_f <= m_axi_wgo ? 0 : req_data_f;
-            end
-            SENT_W: begin
-                req_state <= m_axi_awgo ? IDLE : req_state;
-                req_header_f <= m_axi_awgo ? 0 : req_header_f;
-                req_id_f <= m_axi_awgo ? 0 : req_id_f;
-                req_data_f <= m_axi_awgo ? 0 : req_data_f;
-            end
-            default : begin
-                req_header_f <= 0;
-                req_id_f <= 0;
+            GOT_REQ:
+                req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE :
+                              m_axi_awgo              ? SENT_AW :
+                                           m_axi_wgo  ? SENT_W : req_state;
+            SENT_AW: if (m_axi_wgo)
                 req_state <= IDLE;
+            SENT_W: if (m_axi_awgo)
+                req_state <= IDLE;
+            default : begin
+                req_state  <= IDLE;
+                req_addr_f <= 0;
+                req_id_f   <= 0;
                 req_data_f <= 0;
+                req_strb_f <= 0;
             end
         endcase
     end
@@ -208,92 +156,18 @@ end
 
 
 // Process information here
-assign m_axi_awid = req_id_f;
-assign m_axi_wid  = req_id_f;
-
-wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
-
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`PHY_ADDR_WIDTH-1:0]  virt_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH-1:0] phys_addr_r;
-
-always @(posedge clk) begin : p_debug
-    virt_addr_r            <= virt_addr;
-    phys_addr_r            <= phys_addr;
-end  
-
-// If running uart tests - we need to do address translation
-`ifdef PITONSYS_UART_BOOT
-storage_addr_trans_unified   #(
-`else
-storage_addr_trans #(
-`endif
-.STORAGE_ADDR_WIDTH(`AXI4_ADDR_WIDTH)
-) cpu_mig_raddr_translator (
-    .va_byte_addr       (virt_addr  ),
-    .storage_addr_out   (phys_addr  )
-);
-
-reg [`AXI4_STRB_WIDTH-1:0] strb_before_offset;
-reg [5:0] offset;
-reg [`AXI4_ADDR_WIDTH-1:0] addr;
-always @(posedge clk) begin
-    if (~rst_n) begin
-        offset <= 6'b0;
-        strb_before_offset <= `AXI4_STRB_WIDTH'b0;
-        addr <= `AXI4_ADDR_WIDTH'b0;
-    end
-    else begin
-        if (uncacheable) begin
-            case (req_header_f[`MSG_DATA_SIZE])
-                `MSG_DATA_SIZE_0B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'b0;
-                end
-                `MSG_DATA_SIZE_1B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'b1;
-                end
-                `MSG_DATA_SIZE_2B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'b11;
-                end
-                `MSG_DATA_SIZE_4B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hf;
-                end
-                `MSG_DATA_SIZE_8B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hff;
-                end
-                `MSG_DATA_SIZE_16B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hffff;
-                end
-                `MSG_DATA_SIZE_32B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hffffffff;
-                end
-                `MSG_DATA_SIZE_64B: begin
-                    strb_before_offset <= `AXI4_STRB_WIDTH'hffffffffffffffff;
-                end
-                default: begin
-                    // should never end up here
-                    strb_before_offset <= `AXI4_STRB_WIDTH'b0;
-                end
-            endcase
-        end
-        else begin
-            strb_before_offset <= `AXI4_STRB_WIDTH'hffffffffffffffff;
-        end
-
-        offset <= uncacheable ? virt_addr[5:0] : 6'b0;
-        addr <= uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
-    end
-end
-
-assign m_axi_awaddr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
-assign m_axi_wstrb = strb_before_offset << offset;
-assign m_axi_wdata = req_data_f << (8*offset);
+assign m_axi_awid   = req_id_f;
+assign m_axi_awaddr = req_addr_f;
+assign m_axi_wid    = req_id_f;
+assign m_axi_wstrb  = req_strb_f;
+assign m_axi_wdata  = req_data_f;
 
 // inbound responses
 wire m_axi_bgo = m_axi_bvalid & m_axi_bready;
 wire resp_go = resp_val & resp_rdy;
 
-reg [2:0] resp_state;
-reg [NUM_REQ_THREADS_LOG2-1:0] resp_id_f;
+reg resp_state;
+reg [`AXI4_ID_WIDTH-1:0] resp_id_f;
 
 assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_bready = (resp_state == IDLE);
@@ -301,21 +175,19 @@ assign m_axi_bready = (resp_state == IDLE);
 
 always  @(posedge clk) begin
     if(~rst_n) begin
-        resp_id_f <= 0;
         resp_state <= IDLE;
+        resp_id_f  <= 0;
     end else begin
         case (resp_state)
-            IDLE: begin
-                resp_state <= m_axi_bgo ? GOT_RESP : resp_state;
-                resp_id_f <= m_axi_bgo ? m_axi_bid : resp_id_f;
+            IDLE: if (m_axi_bgo) begin
+                resp_state <= GOT_RESP;
+                resp_id_f  <= m_axi_bid;
             end
-            GOT_RESP: begin
-                resp_state <= resp_go ? IDLE : resp_state;
-                resp_id_f <= resp_go ? 0 : resp_id_f;
-            end
+            GOT_RESP: if (resp_go)
+                resp_state <= IDLE;
             default : begin
                 resp_state <= IDLE;
-                resp_id_f <= 0;
+                resp_id_f  <= 0;
             end
         endcase
     end
