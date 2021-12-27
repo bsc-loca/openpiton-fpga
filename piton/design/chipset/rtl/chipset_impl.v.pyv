@@ -237,7 +237,7 @@ module chipset_impl(
     output wire                              eth_axi_awvalid,
     input  wire                              eth_axi_awready,
 
-    output wire  [`AXI4_ID_WIDTH     -1:0]    eth_axi_wid,
+    //output wire  [`AXI4_ID_WIDTH     -1:0]    eth_axi_wid,
     output wire  [`AXI4_DATA_WIDTH   -1:0]    eth_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    eth_axi_wstrb,
     output wire                               eth_axi_wlast,
@@ -272,6 +272,8 @@ module chipset_impl(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input  wire                               eth_axi_bvalid,
     output wire                               eth_axi_bready, 
+    
+    input wire   [1:0 ]                       eth_irq,
 	
 	// Memory interchange space
 	output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
@@ -1482,15 +1484,68 @@ uart_top        uart_top (
 
         .net_phy_mdio_io ( net_phy_mdio_io    ),
         .net_phy_mdc     ( net_phy_mdc        )
-    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+    `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE        
         ,
         .net_axi_clk     (net_axi_clk         ),
+        `ifndef PITONSYS_MEEP
         .qsfp_ref_clk_n  (qsfp_ref_clk_n),
         .qsfp_ref_clk_p  (qsfp_ref_clk_p),
         .qsfp_4x_grx_n   (qsfp_4x_grx_n),
         .qsfp_4x_grx_p   (qsfp_4x_grx_p),
         .qsfp_4x_gtx_n   (qsfp_4x_gtx_n),
         .qsfp_4x_gtx_p   (qsfp_4x_gtx_p)
+        `else
+        .core_axi_awid      (eth_axi_awid   ),
+        .core_axi_awaddr    (eth_axi_awaddr ),
+        .core_axi_awlen     (eth_axi_awlen  ),
+        .core_axi_awsize    (eth_axi_awsize ),
+        .core_axi_awburst   (eth_axi_awburst),
+        .core_axi_awlock    (eth_axi_awlock ),
+        .core_axi_awcache   (eth_axi_awcache),
+        .core_axi_awprot    (eth_axi_awprot ),
+        .core_axi_awqos     (eth_axi_awqos  ),
+        .core_axi_awuser    (eth_axi_awuser ),
+        .core_axi_awvalid   (eth_axi_awvalid ),
+        .core_axi_awready   (eth_axi_awready ),
+                            
+        .core_axi_wdata     (eth_axi_wdata ),
+        .core_axi_wstrb     (eth_axi_wstrb ),
+        .core_axi_wlast     (eth_axi_wlast ),
+        .core_axi_wuser     (eth_axi_wuser ),
+        .core_axi_wvalid    (eth_axi_wvalid),
+        .core_axi_wready    (eth_axi_wready),
+                            
+        .core_axi_arid      (eth_axi_arid  ),
+        .core_axi_araddr    (eth_axi_araddr),
+        .core_axi_arlen     (eth_axi_arlen ),
+        .core_axi_arsize    (eth_axi_arsize),
+        .core_axi_arburst   (eth_axi_arburst ),
+        .core_axi_arlock    (eth_axi_arlock  ),
+        .core_axi_arcache   (eth_axi_arcache ),
+        .core_axi_arprot    (eth_axi_arprot  ),
+        .core_axi_arqos     (eth_axi_arqos   ),
+        .core_axi_arregion  (eth_axi_arregion),
+        .core_axi_aruser    (eth_axi_aruser  ),
+        .core_axi_arvalid   (eth_axi_arvalid ),
+        .core_axi_arready   (eth_axi_arready ),
+                            
+        .core_axi_rid       (eth_axi_rid   ),
+        .core_axi_rdata     (eth_axi_rdata ),
+        .core_axi_rresp     (eth_axi_rresp ),
+        .core_axi_rlast     (eth_axi_rlast ),
+        .core_axi_ruser     (eth_axi_ruser ),
+        .core_axi_rvalid    (eth_axi_rvalid ),
+        .core_axi_rready    (eth_axi_rready ),
+                            
+        .core_axi_bid       (eth_axi_bid    ),
+        .core_axi_bresp     (eth_axi_bresp  ),
+        .core_axi_buser     (eth_axi_buser  ),
+        .core_axi_bvalid    (eth_axi_bvalid ),
+        .core_axi_bready    (eth_axi_bready ),
+        
+        .net_cmac_intc      (eth_irq)
+        
+        `endif
     `endif // PITON_FPGA_ETH_CMAC
     );
 `endif // PITON_FPGA_ETH

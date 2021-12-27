@@ -1639,6 +1639,7 @@ chipset chipset(
 		    // .eth_axi_wuser(eth_axi_wuser),
 		    .eth_axi_wvalid(eth_axi_wvalid),
 		   // SRAM Pheripheral
+		    .eth_irq(eth_irq),
 		   
 		    .sram_axi_araddr(sram_axi_araddr),
 		    .sram_axi_arburst(sram_axi_arburst),
