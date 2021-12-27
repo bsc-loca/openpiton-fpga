@@ -75,7 +75,15 @@ proc synthesis { g_root_dir g_number_of_jobs } {
         puts "Waiting for the Out Of Context IPs to be synthesized..."
         wait_on_run synth_1
         open_run synth_1
-        write_checkpoint -force $g_root_dir/dcp/synthesis.dcp
+
+	set status [get_property STATUS [get_runs synth_1]]
+
+	if { $status == "synth_design Complete!"} {
+        	write_checkpoint -force $g_root_dir/dcp/synthesis.dcp
+	} else {
+		puts "Synthesis didn't succeed"
+		exit 1
+	}	
 }
 
 
