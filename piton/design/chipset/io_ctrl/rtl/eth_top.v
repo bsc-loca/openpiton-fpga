@@ -517,10 +517,10 @@ Eth_CMAC_syst eth_cmac_syst (
   .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
 
-`endif
-
 assign core_axi_ruser  = `AXI4_USER_WIDTH'h0;
 assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
+
+`endif
 
 reg net_cmac_intc_comb;
 always @(posedge net_axi_clk) begin

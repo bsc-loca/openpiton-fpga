@@ -116,6 +116,8 @@ module openpiton_wrapper(
     input    [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input                                 eth_axi_bvalid,
     output                                eth_axi_bready,
+    
+    input  [1:0]                          eth_irq,
 
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
@@ -299,6 +301,8 @@ module openpiton_wrapper(
        .eth_axi_wstrb(eth_axi_wstrb),
 //       // .eth_axi_wuser(eth_axi_wuser),
        .eth_axi_wvalid(eth_axi_wvalid),
+       
+       .eth_irq(eth_irq),
 
         .sram_axi_araddr(sram_axi_araddr),
         .sram_axi_arburst(sram_axi_arburst),
