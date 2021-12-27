@@ -1533,6 +1533,7 @@ fake_uart fake_uart (
  sram_top sram_top(
             .sys_clk(chipset_clk),
             .sys_rst_n(chipset_rst_n),
+            .mc_axi_deadlock(mc_axi_deadlock),
             .mc_clk(mc_clk),
 
              .sram_flit_in_data(buf_sram_noc2_data),
