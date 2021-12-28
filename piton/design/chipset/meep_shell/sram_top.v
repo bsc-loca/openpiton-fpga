@@ -32,6 +32,7 @@
 module sram_top (
     input                           sys_clk,
     input                           sys_rst_n,
+    output                          sram_axi_deadlock,
     input                           mc_clk,
 
     input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
@@ -161,16 +162,20 @@ module sram_top (
                      .flit_out_data_1 (sram_flit_out_data  ),
                      .flit_out_rdy_1  (sram_flit_out_rdy   )
                    );
-
-
-
-
-  noc_axi4_bridge #(.ADDR_OFFSET(64'h00000000))
-                  (
-                    .clk                (mc_clk                    ),
-                    .rst_n              (~noc_axi4_bridge_rst     ),
+                   
+                    
+                noc_axi4_bridge #(
+                    .ADDR_OFFSET(64'h00000000),
+                    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+                    .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+                    .NUM_REQ_XTHREADS (`PITON_X_TILES)
+                )
+                 noc_axi4_bridge  (
+                    .clk                (mc_clk                    ),  
+                    .rst_n              (~noc_axi4_bridge_rst      ), 
                     .uart_boot_en       (uart_boot_en              ),
                     .phy_init_done      (ddr_ready ),
+                    .axi_id_deadlock    (sram_axi_deadlock           ),                    
 
                     .src_bridge_vr_noc2_val(fifo_trans_val),
                     .src_bridge_vr_noc2_dat(fifo_trans_data),
