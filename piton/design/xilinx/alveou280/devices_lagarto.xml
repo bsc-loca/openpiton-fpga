@@ -81,13 +81,7 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <length>0x4000000</length>
         <stream_accessible/>
     </port>
-    <!-- performance monitoring unit
-    <port>
-        <name>lagarto_pmu</name>
-        <base>0xfff5100000</base>
-        <length>0x10000</length>
-	<stream_accessible/>
-    </port>
-    <!-- end lagarto specific periphs -->
+    <!-- performance monitoring unit -->
+    <!-- Removed PMU untill it is revisited -->
 </devices>
 
