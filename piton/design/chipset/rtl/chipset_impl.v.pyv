@@ -1565,7 +1565,7 @@ fake_uart fake_uart (
             .m_axi_awready(sram_axi_awready),
 
             // AXI Write Data Channel Signals
-            .m_axi_wid(m_axi_wid),
+            .m_axi_wid(sram_axi_wid),
             .m_axi_wdata(sram_axi_wdata),
             .m_axi_wstrb(sram_axi_wstrb),
             .m_axi_wlast(sram_axi_wlast),
@@ -1755,20 +1755,20 @@ print(str)
 `endif
 
     // PMU
-    noc_pmu #(
-        .TILE_COUNT(`PITON_NUM_TILES)
-    ) pmu (
-        .noc_clk(chipset_clk),
-        .buf_noc2_data_i     ( buf_lagarto_pmu_noc2_data     ),
-        .buf_noc2_valid_i    ( buf_lagarto_pmu_noc2_valid    ),
-        .buf_noc2_ready_o    ( lagarto_pmu_buf_noc2_ready    ),
-        .buf_noc3_data_o     ( lagarto_pmu_buf_noc3_data     ),
-        .buf_noc3_valid_o    ( lagarto_pmu_buf_noc3_valid    ),
-        .buf_noc3_ready_i    ( buf_lagarto_pmu_noc3_ready    ),
+ //   noc_pmu #(
+ //       .TILE_COUNT(`PITON_NUM_TILES)
+ //   ) pmu (
+ //       .noc_clk(chipset_clk),
+ //       .buf_noc2_data_i     ( buf_lagarto_pmu_noc2_data     ),
+ //       .buf_noc2_valid_i    ( buf_lagarto_pmu_noc2_valid    ),
+ //       .buf_noc2_ready_o    ( lagarto_pmu_buf_noc2_ready    ),
+ //       .buf_noc3_data_o     ( lagarto_pmu_buf_noc3_data     ),
+ //       .buf_noc3_valid_o    ( lagarto_pmu_buf_noc3_valid    ),
+ //       .buf_noc3_ready_i    ( buf_lagarto_pmu_noc3_ready    ),
 
-        .rst(chipset_rst_n),
-        .counter_clk(pmu_clk),
-        .pmu_sig_i(pmu_sig_i));
+ //       .rst(chipset_rst_n),
+ //       .counter_clk(pmu_clk),
+ //       .pmu_sig_i(pmu_sig_i));
 
 
 <%
