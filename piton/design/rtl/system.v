@@ -444,6 +444,7 @@ module system(
     
     input chipset_clk,
     input mc_clk,
+    input vpu_clk,
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    mem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    mem_axi_awaddr,
@@ -1378,7 +1379,7 @@ chipset chipset(
 `else 
  `ifdef PITONSYS_MEEP
   .chipset_clk (core_ref_clk),
-  .mc_clk (core_ref_clk),
+  .mc_clk (mc_clk),
  `else
 
 `ifdef PITON_CHIPSET_CLKS_GEN
@@ -1915,7 +1916,7 @@ chipset chipset(
     // PMU
     .pmu_sig_i                      ( pmu_sig                    ),
     .pmu_clk                        ( core_ref_clk               ),
-    .vpu_clk                        (vpu_clk                     )
+    .vpu_clk                        ( vpu_clk                    )
 `endif
 
 );

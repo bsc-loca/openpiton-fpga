@@ -194,6 +194,7 @@ module openpiton_wrapper(
   system ACME_OP (
        .chipset_clk(chipset_clk)	,
        .mc_clk(mc_clk),
+       .vpu_clk(vpu_clk),
 	   .pcie_gpio(pcie_gpio) ,
 	   .ExtArstn(ExtArstn),
        // AXI Write Address Channel Signals
