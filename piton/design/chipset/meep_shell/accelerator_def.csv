@@ -7,6 +7,6 @@ ETHERNET,yes,eth_axi,1,CLK0,0x0,reserved,eth_irq
 BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,yes,sram_axi,1,CLK0,0x0,none
 CLK0,100000000,chipset_clk
-CLK1,400000000,mc_clk
+CLK1,200000000,mc_clk
 GPIO,5,pcie_gpio,0x00
 ARST,LOW,ExtArstn
