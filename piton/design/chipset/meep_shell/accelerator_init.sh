@@ -9,10 +9,11 @@ git submodule update --init --recursive
 
 #Use this script to call protosyn
 
-CORE=lagarto
+CORE=ariane
 
 source $ACC_DIR/piton/${CORE}_settings.sh
-make protosyn CORE=$CORE XTILES=2 YTILES=2 PROTO_OPTIONS="--meep --vpu --eth"
+source $ACC_DIR/piton/${CORE}_build_tools.sh
+make protosyn CORE=$CORE XTILES=2 YTILES=2 PROTO_OPTIONS="--meep --eth"
 
 cd $ROOT_DIR
 

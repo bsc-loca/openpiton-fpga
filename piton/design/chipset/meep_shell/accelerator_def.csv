@@ -1,4 +1,4 @@
-EANAME=acme
+EANAME=openpiton
 DDR4,no,mem_axi
 HBM,yes,mem_axi,1,CLK1,0x0,mem_calib_complete					
 AURORA,no,raw,<name>			
@@ -8,6 +8,5 @@ BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,yes,sram_axi,1,CLK0,0x0,none
 CLK0,100000000,chipset_clk
 CLK1,400000000,mc_clk
-CLK2,50000000,vpu_clk
 GPIO,5,pcie_gpio,0x00
 ARST,LOW,ExtArstn
