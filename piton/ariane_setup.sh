@@ -51,8 +51,8 @@ echo "make sure that you source this script in a bash shell in the root folder o
 
 if [ "$0" !=  "bash" ] && [ "$0" != "-bash" ]
 then
-  echo "not in bash ($0), aborting"
-  return
+  #echo "not in bash ($0), aborting"
+#  return
 
 fi
 
