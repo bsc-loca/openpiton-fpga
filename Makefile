@@ -45,6 +45,7 @@ incremental:
 
 
 $(RISCV_DIR):
+	source piton/$(CORE)_setup.sh; \
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean_project $(RISCV_DIR)
