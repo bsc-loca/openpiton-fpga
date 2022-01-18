@@ -373,11 +373,9 @@ always @(posedge clk)
 
 
 assign read_req_val  = req_val && !req_command && !req_occup && !init_outstnd_mem;
-assign read_req_header = req_header;
 assign read_req_id = req_id;
 
 assign write_req_val = req_val &&  req_command && !req_occup && !init_outstnd_mem;
-assign write_req_header = req_header;
 assign write_req_id = req_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
@@ -508,7 +506,7 @@ ila_buffer ila_buffer (
   .probe5(ser_data), // input wire [511:0]  probe5 
   .probe6(ser_val), // input wire [0:0]  probe6 
   .probe7(ser_rdy), // input wire [0:0]  probe7 
-  .probe8(read_req_header), // input wire [191:0]  probe8 
+  .probe8(req_header), // input wire [191:0]  probe8 
   .probe9(read_req_id), // input wire [1:0]  probe9 
   .probe10(read_req_val), // input wire [0:0]  probe10 
   .probe11(read_req_rdy), // input wire [0:0]  probe11 
@@ -516,7 +514,7 @@ ila_buffer ila_buffer (
   .probe13(read_resp_id), // input wire [1:0]  probe13 
   .probe14(read_resp_val), // input wire [0:0]  probe14 
   .probe15(read_resp_rdy), // input wire [0:0]  probe15 
-  .probe16(write_req_header), // input wire [191:0]  probe16 
+  .probe16(req_header), // input wire [191:0]  probe16 
   .probe17(write_req_id), // input wire [1:0]  probe17 
   .probe18(write_req_data), // input wire [511:0]  probe18 
   .probe19(write_req_val), // input wire [0:0]  probe19 

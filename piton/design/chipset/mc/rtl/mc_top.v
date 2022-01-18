@@ -112,6 +112,8 @@ module mc_top (
     input                           sys_rst_n
 );
 
+localparam MEEP_DRAM_WIDTH = 512;
+
 `ifdef PITONSYS_MC_SRAM
 wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
@@ -169,6 +171,7 @@ noc_axi4_bridge #(
     `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
+      .AXI4_DAT_WIDTH_USED (MEEP_DRAM_WIDTH),
       .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
       .NUM_REQ_YTHREADS (`PITON_Y_TILES),
       .NUM_REQ_XTHREADS (`PITON_X_TILES),
@@ -278,7 +281,7 @@ noc_axi4_bridge #(
   assign sram_axi_rid    = sram_axi_rid_reg;
   assign sram_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
   assign sram_axi_rresp  = 2'h0;
-  assign sram_axi_rlast  = 1'b1;
+  assign sram_axi_rlast  = sram_axi_rvalid;
   assign sram_axi_ruser  = `AXI4_USER_WIDTH'h0;
 
   localparam BVALID_DELAY_LOG = 0;
@@ -299,7 +302,7 @@ noc_axi4_bridge #(
              end
            end
            else if (sram_axi_bvalid_en) sram_axi_bvalid_cnt <= sram_axi_bvalid_cnt+1;
-           if (sram_axi_wvalid) begin
+           if (sram_axi_wvalid & sram_axi_wlast) begin
              sram_axi_bvalid_cnt <= {{BVALID_DELAY_LOG{1'b0}}, 1'b1};
              sram_axi_bvalid_en <= 1'b1;
              sram_axi_bid_reg <= sram_axi_wid;
@@ -988,6 +991,9 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 noc_axi4_bridge #(
+`ifdef PITONSYS_PCIE
+    .AXI4_DAT_WIDTH_USED (MEEP_DRAM_WIDTH),
+`endif
     .ADDR_OFFSET(64'h80000000),
     .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
     .NUM_REQ_YTHREADS (`PITON_Y_TILES),

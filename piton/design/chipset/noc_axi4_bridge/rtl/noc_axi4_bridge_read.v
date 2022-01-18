@@ -30,7 +30,9 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_read (
+module noc_axi4_bridge_read #(
+    parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH // actually used AXI Data width (down converted if needed)
+) (
     // Clock + Reset
     input  wire                                          clk,
     input  wire                                          rst_n,
@@ -81,9 +83,11 @@ wire [`AXI4_ADDR_WIDTH-1:0]addr_paddings = `AXI4_ADDR_WIDTH'b0;
 // Tie constant outputs in axi4
 //==============================================================================
 
-    assign m_axi_arlen    = `AXI4_LEN_WIDTH'b0; // Use only length-1 bursts
-    assign m_axi_arsize   = `AXI4_SIZE_WIDTH'b110; // Always transfer 64 bytes
-    assign m_axi_arburst  = `AXI4_BURST_WIDTH'b01; // fixed address in bursts (doesn't matter cause we use length-1 bursts)
+    localparam BURST_LEN  = `AXI4_DATA_WIDTH / AXI4_DAT_WIDTH_USED;
+    localparam BURST_WIDTH_LOG = $clog2(AXI4_DAT_WIDTH_USED);
+    assign m_axi_arlen    = clip2zer(BURST_LEN -1);
+    assign m_axi_arsize   = $clog2(AXI4_DAT_WIDTH_USED / 8);
+    assign m_axi_arburst  = `AXI4_BURST_WIDTH'b01; // INCR address in bursts
     assign m_axi_arlock   = 1'b0; // Do not use locks
     assign m_axi_arcache  = `AXI4_CACHE_WIDTH'b11; // Non-cacheable bufferable requests
     assign m_axi_arprot   = `AXI4_PROT_WIDTH'b0; // Data access, non-secure access, unpriveleged access
@@ -102,12 +106,12 @@ reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
 assign req_rdy = (req_state == IDLE);
 assign m_axi_arvalid = (req_state == GOT_REQ);
 
-always  @(posedge clk) begin
+always @(posedge clk)
     if(~rst_n) begin
         req_state <= IDLE;
         req_addr_f <= 0;
         req_id_f   <= 0;
-    end else begin
+    end else
         case (req_state)
             IDLE: if (req_go) begin
                 req_state  <= GOT_REQ;
@@ -123,8 +127,6 @@ always  @(posedge clk) begin
                 req_id_f   <= 0;
             end
         endcase
-    end
-end
 
 
 // Process information here
@@ -143,17 +145,22 @@ reg resp_state;
 assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_rready = (resp_state == IDLE);
 
-always  @(posedge clk) begin
+reg [clip2zer($clog2(BURST_LEN)-1) :0] burst_count;
+always @(posedge clk)
     if(~rst_n) begin
-        resp_state <= IDLE;
-        resp_id_f  <= 0;
-        resp_data  <= 0;
-    end else begin
+        resp_state  <= IDLE;
+        resp_id_f   <= 0;
+        resp_data   <= 0;
+        burst_count <= 0;
+    end else
         case (resp_state)
             IDLE: if (m_axi_rgo) begin
-                resp_state <= GOT_RESP;
+                if (m_axi_rlast) begin
+                  resp_state <= GOT_RESP;
+                  burst_count <= 0;
+                end else if (BURST_LEN > 1) burst_count <= burst_count + 1;
                 resp_id_f  <= m_axi_rid;
-                resp_data  <= m_axi_rdata;
+                resp_data[burst_count << BURST_WIDTH_LOG +: 1 << BURST_WIDTH_LOG] <= m_axi_rdata;
             end
             GOT_RESP: if (resp_go)
                 resp_state <= IDLE;
@@ -164,12 +171,14 @@ always  @(posedge clk) begin
                 resp_data  <= 0;
             end
         endcase
-    end
-end
 
 // process data here
 assign resp_id = resp_id_f;
 
+function integer clip2zer;
+  input integer val;
+  clip2zer = val < 0 ? 0 : val;
+endfunction
 
 /*
 ila_read ila_read(
