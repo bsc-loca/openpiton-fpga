@@ -130,7 +130,6 @@ xilinx.com:ip:xlconstant:1.1\
 xilinx.com:ip:hbm:1.0\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:qdma:4.0\
-xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:system_ila:1.1\
 xilinx.com:ip:util_ds_buf:2.1\
 xilinx.com:ip:blk_mem_gen:8.4\
@@ -203,7 +202,7 @@ proc create_root_design { parentCell } {
    CONFIG.ARUSER_WIDTH {0} \
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
-   CONFIG.DATA_WIDTH {512} \
+   CONFIG.DATA_WIDTH {256} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {1} \
    CONFIG.HAS_CACHE {1} \
@@ -213,7 +212,7 @@ proc create_root_design { parentCell } {
    CONFIG.HAS_REGION {1} \
    CONFIG.HAS_RRESP {1} \
    CONFIG.HAS_WSTRB {1} \
-   CONFIG.ID_WIDTH {6} \
+   CONFIG.ID_WIDTH {5} \
    CONFIG.MAX_BURST_LENGTH {256} \
    CONFIG.NUM_READ_OUTSTANDING {16} \
    CONFIG.NUM_READ_THREADS {16} \
@@ -420,7 +419,7 @@ set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_00]
   # Create instance: int_axi_sram_ctrl, and set properties
   set int_axi_sram_ctrl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 int_axi_sram_ctrl ]
   set_property -dict [ list \
-   CONFIG.DATA_WIDTH {512} \
+   CONFIG.DATA_WIDTH {256} \
    CONFIG.ECC_TYPE {0} \
    CONFIG.SINGLE_PORT_BRAM {1} \
  ] $int_axi_sram_ctrl
@@ -456,7 +455,6 @@ set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_00]
    CONFIG.flr_enable {true} \
    CONFIG.mode_selection {Advanced} \
    CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
-   CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.pf0_ari_enabled {true} \
    CONFIG.pf0_bar0_prefetchable_qdma {true} \
    CONFIG.pf0_bar2_prefetchable_qdma {true} \
@@ -469,22 +467,24 @@ set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_00]
    CONFIG.pf3_bar0_prefetchable_qdma {true} \
    CONFIG.pf3_bar2_prefetchable_qdma {true} \
    CONFIG.pf3_msix_enabled_qdma {false} \
+   CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0
 
   # Create instance: smartconnect_0, and set properties
-  set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
-  set_property USER_COMMENTS.comment_0 "External master connection is optimal since no extra frequency change happens and data narrowing in HBM is compensated by 64-bit width of original master (OP NOC).
+  set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 smartconnect_0 ]
+  set_property USER_COMMENTS.comment_2 "External master connection is optimal since no extra frequency change happens and data width matches with HBM data width thus saving ID passing through.
 QDMA master (Host) connection is sub-optimal for all 3 memory slaves:
 - for DDR due to lowering of Xbar freq, outside freq FIFO on both sides may help to overcome drops in transition 250-100-300MHz,
-- for HBM due to lowering of further freq and data narrowing in HBM, outside freq FIFO on master side may help for transfers with breaks,
-- for SRAM due to lowering of further freq, outside freq FIFO on master side may help for transfers with breaks.
+- for HBM due to lowering of further freq and data narrowing, outside freq FIFO on master side may help for transfers with breaks,
+- for SRAM due to lowering of further freq and data narrowing, outside freq FIFO on master side may help for transfers with breaks.
 But finally we get facilitation of routing having less high-freq domains." [get_bd_cells /smartconnect_0]
   set_property -dict [ list \
-   CONFIG.HAS_ARESETN {1} \
-   CONFIG.NUM_CLKS {3} \
+   CONFIG.ENABLE_ADVANCED_OPTIONS {1} \
    CONFIG.NUM_MI {3} \
+   CONFIG.NUM_SI {2} \
+   CONFIG.XBAR_DATA_WIDTH {256} \
  ] $smartconnect_0
 
   # Create instance: sys_rst_inv, and set properties
@@ -531,27 +531,27 @@ But finally we get facilitation of routing having less high-freq domains." [get_
 
   # Create interface connections
   connect_bd_intf_net -intf_net C0_SYS_CLK_0_1 [get_bd_intf_ports ddr_clk] [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
+  connect_bd_intf_net -intf_net S01_AXI_1 [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S01_AXI]
   connect_bd_intf_net -intf_net S_AXI_0_1 [get_bd_intf_ports axi4_sram] [get_bd_intf_pins ext_axi_sram_ctrl/S_AXI]
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports axi4_mm] [get_bd_intf_pins smartconnect_0/S00_AXI]
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins ext_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_bram_ctrl_1_BRAM_PORTA [get_bd_intf_pins int_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTB]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins hbm_0/SAXI_00] [get_bd_intf_pins smartconnect_0/M00_AXI]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M01_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins smartconnect_0/M01_AXI]
+  connect_bd_intf_net -intf_net axi_interconnect_0_M02_AXI [get_bd_intf_pins int_axi_sram_ctrl/S_AXI] [get_bd_intf_pins smartconnect_0/M02_AXI]
   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c0] [get_bd_intf_pins ddr4_0/C0_DDR4]
   connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
-  connect_bd_intf_net -intf_net qdma_0_M_AXI [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S01_AXI]
   connect_bd_intf_net -intf_net qdma_0_M_AXI_LITE [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins qdma_0/M_AXI_LITE]
   connect_bd_intf_net -intf_net qdma_0_pcie_mgt [get_bd_intf_ports pci_express_x16] [get_bd_intf_pins qdma_0/pcie_mgt]
-  connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins hbm_0/SAXI_00] [get_bd_intf_pins smartconnect_0/M00_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M01_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins smartconnect_0/M01_AXI]
-  connect_bd_intf_net -intf_net smartconnect_0_M02_AXI [get_bd_intf_pins int_axi_sram_ctrl/S_AXI] [get_bd_intf_pins smartconnect_0/M02_AXI]
 
   # Create port connections
   connect_bd_net -net axi_gpio_0_gpio_io_o [get_bd_ports pcie_gpio] [get_bd_pins axi_gpio_0/gpio_io_o] [get_bd_pins system_ila_1/probe0]
   set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets axi_gpio_0_gpio_io_o]
   connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins ddr4_0/addn_ui_clkout1] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins smartconnect_0/aclk2]
+  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins smartconnect_0/M01_ACLK]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins ddr_axi_rst_inv/Op1]
   connect_bd_net -net ddr4_0_c0_init_calib_complete [get_bd_pins ddr4_0/c0_init_calib_complete] [get_bd_pins mem_calib_sync/ext_reset_in]
-  connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res]
+  connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res] [get_bd_pins smartconnect_0/M01_ARESETN]
   connect_bd_net -net ddr_calib_comb_Res [get_bd_pins hbm_calib_comb/Res] [get_bd_pins mem_calib_sync/aux_reset_in]
   connect_bd_net -net gndx1_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_arvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_bready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_rready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wvalid] [get_bd_pins gndx1/dout]
   connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY]
@@ -562,11 +562,11 @@ But finally we get facilitation of routing having less high-freq domains." [get_
   connect_bd_net -net hbm_cattrip_comb_Res [get_bd_ports hbm_cattrip] [get_bd_pins hbm_cattrip_comb/Res]
   connect_bd_net -net mem_calib_sync_peripheral_aresetn [get_bd_ports mem_calib_complete] [get_bd_pins mem_calib_sync/peripheral_aresetn]
   connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins qdma_0/soft_reset_n] [get_bd_pins qdma_0/sys_rst_n]
-  connect_bd_net -net qdma_0_axi_aclk [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins qdma_0/axi_aclk] [get_bd_pins smartconnect_0/aclk1] [get_bd_pins system_ila_1/clk]
-  connect_bd_net -net qdma_0_axi_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins qdma_0/axi_aresetn]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins int_axi_sram_ctrl/s_axi_aclk] [get_bd_pins mem_calib_sync/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk]
+  connect_bd_net -net qdma_0_axi_aclk [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins qdma_0/axi_aclk] [get_bd_pins smartconnect_0/S01_ACLK] [get_bd_pins system_ila_1/clk]
+  connect_bd_net -net qdma_0_axi_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/S01_ARESETN]
+  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins int_axi_sram_ctrl/s_axi_aclk] [get_bd_pins mem_calib_sync/slowest_sync_clk] [get_bd_pins smartconnect_0/ACLK] [get_bd_pins smartconnect_0/M00_ACLK] [get_bd_pins smartconnect_0/M02_ACLK] [get_bd_pins smartconnect_0/S00_ACLK]
   connect_bd_net -net sys_rst_0_1 [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
-  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins sys_rst_inv/Res]
+  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins smartconnect_0/ARESETN] [get_bd_pins smartconnect_0/M00_ARESETN] [get_bd_pins smartconnect_0/M02_ARESETN] [get_bd_pins smartconnect_0/S00_ARESETN] [get_bd_pins sys_rst_inv/Res]
   connect_bd_net -net util_ds_buf_IBUF_DS_ODIV2 [get_bd_pins qdma_0/sys_clk] [get_bd_pins util_ds_buf/IBUF_DS_ODIV2]
   connect_bd_net -net util_ds_buf_IBUF_OUT [get_bd_pins qdma_0/sys_clk_gt] [get_bd_pins util_ds_buf/IBUF_OUT]
   connect_bd_net -net xlconstant_0_dout [get_bd_pins qdma_0/qsts_out_rdy] [get_bd_pins qdma_0/tm_dsc_sts_rdy] [get_bd_pins vccx1/dout]

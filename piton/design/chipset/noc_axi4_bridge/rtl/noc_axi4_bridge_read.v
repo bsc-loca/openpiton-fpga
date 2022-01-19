@@ -84,9 +84,9 @@ wire [`AXI4_ADDR_WIDTH-1:0]addr_paddings = `AXI4_ADDR_WIDTH'b0;
 //==============================================================================
 
     localparam BURST_LEN  = `AXI4_DATA_WIDTH / AXI4_DAT_WIDTH_USED;
-    localparam BURST_WIDTH_LOG = $clog2(AXI4_DAT_WIDTH_USED);
+    localparam BURST_SIZE = AXI4_DAT_WIDTH_USED / 8;
     assign m_axi_arlen    = clip2zer(BURST_LEN -1);
-    assign m_axi_arsize   = $clog2(AXI4_DAT_WIDTH_USED / 8);
+    assign m_axi_arsize   = $clog2(BURST_SIZE);
     assign m_axi_arburst  = `AXI4_BURST_WIDTH'b01; // INCR address in bursts
     assign m_axi_arlock   = 1'b0; // Do not use locks
     assign m_axi_arcache  = `AXI4_CACHE_WIDTH'b11; // Non-cacheable bufferable requests
@@ -160,7 +160,7 @@ always @(posedge clk)
                   burst_count <= 0;
                 end else if (BURST_LEN > 1) burst_count <= burst_count + 1;
                 resp_id_f  <= m_axi_rid;
-                resp_data[burst_count << BURST_WIDTH_LOG +: 1 << BURST_WIDTH_LOG] <= m_axi_rdata;
+                resp_data[{burst_count,{$clog2(AXI4_DAT_WIDTH_USED){1'b0}}} +: AXI4_DAT_WIDTH_USED] <= m_axi_rdata;
             end
             GOT_RESP: if (resp_go)
                 resp_state <= IDLE;

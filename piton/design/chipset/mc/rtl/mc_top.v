@@ -112,7 +112,7 @@ module mc_top (
     input                           sys_rst_n
 );
 
-localparam MEEP_DRAM_WIDTH = 512;
+localparam MEEP_DRAM_WIDTH = 256;
 
 `ifdef PITONSYS_MC_SRAM
 wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
