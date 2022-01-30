@@ -444,11 +444,14 @@ Eth_CMAC_syst eth_cmac_syst (
   .s_axi_awid       (core_axi_awid),
   .s_axi_rid        (core_axi_rid),
   .s_axi_bid        (core_axi_bid),
+  // .s_axi_wid        (core_axi_wid),
   // .s_axi_awuser     (core_axi_awuser),
   // .s_axi_aruser     (core_axi_aruser),
   // .s_axi_buser      (core_axi_buser),
   // .s_axi_ruser      (core_axi_ruser),
   // .s_axi_wuser      (core_axi_wuser),
+  // .s_axi_awregion   (core_axi_awregion),
+  // .s_axi_arregion   (core_axi_arregion),
 
   .intc             (net_cmac_intc),     
 

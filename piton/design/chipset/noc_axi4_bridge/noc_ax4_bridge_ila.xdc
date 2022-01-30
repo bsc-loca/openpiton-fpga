@@ -1,5 +1,6 @@
 # ------------------------------------------------------------------------
 # The current probe widths are for the case of 2x2 core tiles and RDWR_INORDER = 0
+# (commented widths are for the case of left default vals=1 for NUM_REQ_YTHREADS/NUM_REQ_XTHREADS params in noc_axi4_bridge)
 #
 # Debug property should be added accordingly to Verilog sources for each of probed below signals:
 # (* keep="TRUE" *) (* mark_debug="TRUE" *) input  deser_val,
@@ -122,19 +123,24 @@ set_property port_width 1                [get_debug_ports u_ila_0/probe32]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe33]
 set_property port_width 8                [get_debug_ports u_ila_0/probe33]
+# set_property port_width 2                [get_debug_ports u_ila_0/probe33]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe34]
 set_property port_width 8                [get_debug_ports u_ila_0/probe34]
+# set_property port_width 2                [get_debug_ports u_ila_0/probe34]
 
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe35]
 set_property port_width 3                [get_debug_ports u_ila_0/probe35]
+# set_property port_width 1                [get_debug_ports u_ila_0/probe35]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe36]
 set_property port_width 3                [get_debug_ports u_ila_0/probe36]
+# set_property port_width 1                [get_debug_ports u_ila_0/probe36]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe37]
 set_property port_width 3                [get_debug_ports u_ila_0/probe37]
+# set_property port_width 1                [get_debug_ports u_ila_0/probe37]
 
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe38]
@@ -206,6 +212,7 @@ set_property port_width 7                [get_debug_ports u_ila_0/probe58]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe59]
 set_property port_width 8                [get_debug_ports u_ila_0/probe59]
+# set_property port_width 2                [get_debug_ports u_ila_0/probe59]
 
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe60]
@@ -275,6 +282,30 @@ create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe80]
 set_property port_width 512              [get_debug_ports u_ila_0/probe80]
 
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe81]
+set_property port_width 8                [get_debug_ports u_ila_0/probe81]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe82]
+set_property port_width 6                [get_debug_ports u_ila_0/probe82]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe83]
+set_property port_width 10               [get_debug_ports u_ila_0/probe83]
+
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe84]
+set_property port_width 8                [get_debug_ports u_ila_0/probe84]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe85]
+set_property port_width 8                [get_debug_ports u_ila_0/probe85]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe86]
+set_property port_width 8                [get_debug_ports u_ila_0/probe86]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe87]
+set_property port_width 8                [get_debug_ports u_ila_0/probe87]
+
+
 
 connect_debug_port u_ila_0/probe0  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_read/m_axi_arvalid
 connect_debug_port u_ila_0/probe1  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_read/m_axi_arready
@@ -305,6 +336,14 @@ connect_debug_port u_ila_0/probe76 chipset/chipset_impl/mc_top/noc_axi4_bridge/n
 connect_debug_port u_ila_0/probe79 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_write/m_axi_wdata
 connect_debug_port u_ila_0/probe80 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_write/req_data
 
+connect_debug_port u_ila_0/probe81  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/mshrid
+connect_debug_port u_ila_0/probe82  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/lsid
+connect_debug_port u_ila_0/probe83  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/sdid
+
+connect_debug_port u_ila_0/probe84  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/src_x
+connect_debug_port u_ila_0/probe85  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/src_y
+connect_debug_port u_ila_0/probe86  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dst_x
+connect_debug_port u_ila_0/probe87  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dst_y
 
 connect_debug_port u_ila_0/probe69  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/read_req_addr
 connect_debug_port u_ila_0/probe70  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/write_req_addr
