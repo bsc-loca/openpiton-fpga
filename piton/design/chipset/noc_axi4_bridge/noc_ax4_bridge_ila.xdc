@@ -1,6 +1,7 @@
 # ------------------------------------------------------------------------
-# The current probe widths are for the case of 2x2 core tiles and RDWR_INORDER = 0
-# (commented widths are for the case of left default vals=1 for NUM_REQ_YTHREADS/NUM_REQ_XTHREADS params in noc_axi4_bridge)
+# The current probe widths are for noc_axi4_bridge case of RDWR_INORDER = 1 and
+# (NUM_REQ_MSHRID_BITS=2 or NUM_REQ_YTHREADS x NUM_REQ_XTHREADS = 2x2).
+# Commented width is for default noc_axi4_bridge parameters NUM_REQ_MSHRID_BITS/NUM_REQ_YTHREADS/NUM_REQ_XTHREADS
 #
 # Debug property should be added accordingly to Verilog sources for each of probed below signals:
 # (* keep="TRUE" *) (* mark_debug="TRUE" *) input  deser_val,
@@ -304,6 +305,12 @@ set_property port_width 8                [get_debug_ports u_ila_0/probe86]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe87]
 set_property port_width 8                [get_debug_ports u_ila_0/probe87]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe88]
+set_property port_width 8                [get_debug_ports u_ila_0/probe88]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe89]
+set_property port_width 8                [get_debug_ports u_ila_0/probe89]
 
 
 
@@ -344,6 +351,8 @@ connect_debug_port u_ila_0/probe84  chipset/chipset_impl/mc_top/noc_axi4_bridge/
 connect_debug_port u_ila_0/probe85  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/src_y
 connect_debug_port u_ila_0/probe86  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dst_x
 connect_debug_port u_ila_0/probe87  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dst_y
+connect_debug_port u_ila_0/probe88  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/ini_x
+connect_debug_port u_ila_0/probe89  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/ini_y
 
 connect_debug_port u_ila_0/probe69  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/read_req_addr
 connect_debug_port u_ila_0/probe70  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/write_req_addr

@@ -287,6 +287,8 @@ module l2_pipe1_dpath(
     output reg [`MSG_SRC_CHIPID_WIDTH-1:0] msg_send_dst_chipid_S4,
     output reg [`MSG_SRC_X_WIDTH-1:0] msg_send_dst_x_S4,
     output reg [`MSG_SRC_Y_WIDTH-1:0] msg_send_dst_y_S4,
+    output reg [`MSG_SRC_X_WIDTH-1:0] msg_send_src_x_S4,
+    output reg [`MSG_SRC_Y_WIDTH-1:0] msg_send_src_y_S4,
     output reg [`MSG_SRC_FBITS_WIDTH-1:0] msg_send_dst_fbits_S4,
     output reg [`L2_DATA_DATA_WIDTH-1:0] msg_send_data_S4,
 
@@ -1995,6 +1997,8 @@ begin
         msg_send_dst_fbits_S4 = `NOC_FBITS_L1;
     end
     endcase
+    msg_send_src_x_S4 = src_x_S4_f;
+    msg_send_src_y_S4 = src_y_S4_f;
 end
 
 always @ *

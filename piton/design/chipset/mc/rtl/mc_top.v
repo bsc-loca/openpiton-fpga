@@ -173,6 +173,8 @@ noc_axi4_bridge #(
       // applying the same parameters as for SDRAM in case it is absent
       .AXI4_DAT_WIDTH_USED (MEEP_DRAM_WIDTH),
       .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+      // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
+      // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
       .NUM_REQ_YTHREADS (`PITON_Y_TILES),
       .NUM_REQ_XTHREADS (`PITON_X_TILES),
     `endif
@@ -996,6 +998,8 @@ noc_axi4_bridge #(
 `endif
     .ADDR_OFFSET(64'h80000000),
     .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+    // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
+    // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
     .NUM_REQ_YTHREADS (`PITON_Y_TILES),
     .NUM_REQ_XTHREADS (`PITON_X_TILES)
 )

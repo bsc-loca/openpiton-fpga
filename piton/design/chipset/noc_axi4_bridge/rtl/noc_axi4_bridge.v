@@ -36,6 +36,8 @@ module noc_axi4_bridge #(
     parameter ADDR_OFFSET = 64'h0,
     parameter RDWR_INORDER = 0, // control of Rd/Wr responses order
     parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_MSHRID_LBIT = 0,
+    parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
     parameter NUM_REQ_XTHREADS = 1
 ) (
@@ -141,6 +143,8 @@ noc_axi4_bridge_buffer #(
     .ADDR_OFFSET (ADDR_OFFSET),
     .RDWR_INORDER (RDWR_INORDER),
     .NUM_REQ_OUTSTANDING (NUM_REQ_OUTSTANDING),
+    .NUM_REQ_MSHRID_LBIT (NUM_REQ_MSHRID_LBIT),
+    .NUM_REQ_MSHRID_BITS (NUM_REQ_MSHRID_BITS),
     .NUM_REQ_YTHREADS (NUM_REQ_YTHREADS),
     .NUM_REQ_XTHREADS (NUM_REQ_XTHREADS)
 ) noc_axi4_bridge_buffer (
