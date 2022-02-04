@@ -1,0 +1,56 @@
+/home/alireza/work/git/OpenPiton/openpiton_lagarto/build/quartus_piton
+/home/alireza/work/git/OpenPiton/openpiton_lagarto/build/quartus_pronoc
+***************** results *****************
+ , Fr_max
+quartus_piton_mesh_output_files,  150.74  ,  Fmax =  150.74   Mhz
+quartus_pronoc_output_files,  146.31  ,  Fmax =  146.31   Mhz
+
+
+
+
+-,     Combinational ALUTs           
+quartus_piton_mesh_output_files, 11304 , 36100 ( 31 % )                    ;  
+quartus_pronoc_output_files, 9407 , 36100 ( 26 % )                     ;  
+
+
+
+
+-,     Dedicated logic registers     
+quartus_piton_mesh_output_files, 6119 , 36100 ( 17 % )                     ;  
+quartus_pronoc_output_files, 7345 , 36100 ( 20 % )                     ;  
+
+
+
+
+-,     Memory ALUTs                  
+quartus_piton_mesh_output_files, 0 , 18050 ( 0 % )                          ;  
+quartus_pronoc_output_files, 0 , 18050 ( 0 % )                          ;  
+
+
+
+
+-, ALMs:  partially or completely used                                               
+quartus_piton_mesh_output_files, 8558 , 18050 ( 47 % )    
+quartus_pronoc_output_files, 7108 , 18050 ( 39 % )    
+
+
+
+
+-, Logic utilization                                                                 
+quartus_piton_mesh_output_files, 13802 , 36100 ( 38 % )   
+quartus_pronoc_output_files, 11174 , 36100 ( 31 % )   
+
+
+
+
+-, M9K blocks                                                                        
+quartus_piton_mesh_output_files, 138 , 319 ( 43 % )             ;  
+quartus_pronoc_output_files, 66 , 319 ( 21 % )            ;  
+
+
+
+
+-, Total block memory bits           
+quartus_piton_mesh_output_files, 22368 , 2939904 ( < 1 % )                ;  
+quartus_pronoc_output_files, 15840 , 2939904 ( < 1 % )                ;  
+
