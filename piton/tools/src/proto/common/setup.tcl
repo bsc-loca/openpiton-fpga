@@ -111,6 +111,10 @@ if  {$::env(PITON_LAGARTO) != "0"} {
 
 }
 
+if  {$::env(PITON_PRONOC) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_PRONOC"
+}
+
 for {set k 0} {$k < $::env(PITON_LAGARTO)} {incr k} {
   if {[info exists "::env(RTL_LAGARTO$k)"]} {
     append ALL_DEFAULT_VERILOG_MACROS " RTL_LAGARTO$k"
