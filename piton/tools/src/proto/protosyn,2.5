@@ -789,9 +789,9 @@ def main():
     os.environ['PITON_NUM_TILES'] = str(options.num_tiles)
     
     # ProNoC
-    os.environ['PITON_PRONOC']     = "0"
+    os.environ['PITON_PRONOC'] = "0"
     if options.pronoc:
-		os.environ['PITON_PRONOC']     = "1"
+        os.environ['PITON_PRONOC']     = "1"
 		
     # Supported cores, initialize env variables.
     os.environ['PITON_PICO']     = "0"
