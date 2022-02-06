@@ -3,7 +3,7 @@ DDR4,no,mem_axi
 HBM,yes,mem_axi,1,CLK1,0x0,mem_calib_complete					
 AURORA,no,raw,<name>			
 UART,yes,uart_axi,1,CLK0,0x0,normal,uart_irq
-ETHERNET,yes,eth_axi,1,CLK0,0x0,reserved,eth_irq
+ETHERNET,no,eth_axi,1,CLK0,0x0,reserved,eth_irq
 BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,yes,sram_axi,1,CLK0,0x0,none
 CLK0,100000000,chipset_clk
