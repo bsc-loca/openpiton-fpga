@@ -166,6 +166,9 @@ set_property "verilog_define" "${ALL_VERILOG_MACROS}" $fileset_obj
 
 update_compile_order -fileset $fileset_obj
 
+report_ip_status -name ip_status
+upgrade_ip [get_ips * ] -log ip_upgrade.log
+
 puts "INFO: OpenPiton tcl options added."
 
 }
