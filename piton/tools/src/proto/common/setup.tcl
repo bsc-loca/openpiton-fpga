@@ -86,6 +86,15 @@ if  {$::env(PITON_LAGARTO) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
   puts "Add Lagarto include directories"
 }
+
+
+if  {$::env(PITON_PRONOC) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
+  puts "Add ProNoC include directories"
+}
+
+
+
 #
 #########################################################
 

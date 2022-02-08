@@ -31,7 +31,7 @@ fi
 
 # set root directory
 export PITON_ROOT=`pwd`
-export PRONOC_ROOT=${PITON_ROOT}/piton/design/chip/tile/noc/pronoc
+export PRONOC_ROOT=${PITON_ROOT}/piton/design/chip/tile/noc
 
 
 
