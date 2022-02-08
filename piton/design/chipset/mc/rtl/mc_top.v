@@ -112,7 +112,7 @@ module mc_top (
     input                           sys_rst_n
 );
 
-localparam MEEP_DRAM_WIDTH = 256;
+localparam HBM_WIDTH = 256;
 
 `ifdef PITONSYS_MC_SRAM
 wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
@@ -171,7 +171,9 @@ noc_axi4_bridge #(
     `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
-      .AXI4_DAT_WIDTH_USED (MEEP_DRAM_WIDTH),
+      `ifdef PITON_FPGA_MC_HBM
+      .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+      `endif
       .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
       // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
       // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
@@ -993,9 +995,9 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 noc_axi4_bridge #(
-`ifdef PITONSYS_PCIE
-    .AXI4_DAT_WIDTH_USED (MEEP_DRAM_WIDTH),
-`endif
+  `ifdef PITON_FPGA_MC_HBM
+    .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+  `endif
     .ADDR_OFFSET(64'h80000000),
     .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
     // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),

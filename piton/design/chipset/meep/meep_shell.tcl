@@ -204,7 +204,7 @@ proc create_root_design { parentCell } {
    CONFIG.ARUSER_WIDTH {0} \
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
-   CONFIG.DATA_WIDTH {256} \
+   CONFIG.DATA_WIDTH {512} \
    CONFIG.HAS_BRESP {1} \
    CONFIG.HAS_BURST {1} \
    CONFIG.HAS_CACHE {0} \
@@ -228,6 +228,9 @@ proc create_root_design { parentCell } {
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $axi4_mm
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
+set_property -dict [list CONFIG.DATA_WIDTH {256}] [get_bd_intf_ports axi4_mm]
+}
 
   set axi4_sram [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 axi4_sram ]
   set_property -dict [ list \
