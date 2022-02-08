@@ -61,13 +61,13 @@ synthesis-ariane:
             - echo "VIVADO = $VIVADO_BIN"
             - make protosyn $DESIGN_OPTIONS CORE=ariane
         after_script:
-            - cp -rf build/alveou280/system/protosyn_logs ariane
-            - cp -rf dcp ariane
+            - cp -rf build/alveou280/system/protosyn_logs ariane           
 
         artifacts:
             when: always
             paths:        
                 - ariane
+                - dcp/synthesis.dcp
 
 synthesis-lagarto:
         stage: protosyn
@@ -91,12 +91,12 @@ synthesis-lagarto:
         after_script:
             - mkdir -p lagarto
             - cp -rf build/alveou280/system/protosyn_logs lagarto
-            - cp -rf dcp lagarto
 
         artifacts:
             when: always
             paths:
                 - lagarto
+                - dcp/synthesis.dcp
 
 ###################################
 # Implementation
@@ -113,14 +113,10 @@ implementation-ariane:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
-            - cp -rf ariane/dcp .
         script:
             - make implementation
-        after_script:
-            - cp -rf dcp/implementation.dcp ariane/dcp
+        after_script:            
             - cp -rf reports ariane            
-            - ls ariane/dcp
-
         dependencies:
             - synthesis-ariane
 
@@ -128,7 +124,7 @@ implementation-ariane:
             when: on_success
             expire_in: 20 days
             paths:
-                - ariane/dcp/implementation.dcp
+                - dcp/implementation.dcp
                 - ariane/reports
 
 implementation-lagarto:
@@ -142,13 +138,10 @@ implementation-lagarto:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
-            - cp -rf lagarto/dcp .
         script:
             - make implementation
-        after_script:
-            - cp -rf dcp/implementation.dcp lagarto/dcp
+        after_script:            
             - cp -rf reports lagarto
-            - ls lagarto/dcp
 
         dependencies:
             - synthesis-lagarto
@@ -157,7 +150,7 @@ implementation-lagarto:
             when: on_success
             expire_in: 20 days
             paths:
-                - lagarto/dcp/implementation.dcp
+                - dcp/implementation.dcp
                 - lagarto/reports
 
 ###################################
@@ -174,7 +167,6 @@ bitstream-ariane:
         tags:
             - MEEP_FPGA
         before_script:
-            - cp -rf ariane/dcp .
             - mkdir -p ariane/bitstream
         script:
             - make bitstream
@@ -199,7 +191,6 @@ bitstream-lagarto:
         tags:
             - MEEP_FPGA
         before_script:            
-            - cp -rf lagarto/dcp .
             - mkdir -p lagarto/bitstream
         script:
             - make bitstream
@@ -321,8 +312,9 @@ deploy-ariane:
         rules:
             - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
         before_script:
-            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
+            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA            
         script:
+            - cp -rf dcp $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
             - date >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/date.txt
             - cp -r ariane/* $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
             - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/commit_message.txt
@@ -346,6 +338,7 @@ deploy-lagarto:
         before_script:
             - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
+            - cp -rf dcp $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA
             - date >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/date.txt
             - cp -r lagarto/* $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
             - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/commit_message.txt
