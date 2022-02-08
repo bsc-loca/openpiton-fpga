@@ -30,11 +30,14 @@
 `include "noc_axi4_bridge_define.vh"
 
 module noc_axi4_bridge #(
+    parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NOC2AXI_DESER_ORDER = 0, // NOC words to AXI word deserialization order
     parameter ADDR_OFFSET = 64'h0,
     parameter RDWR_INORDER = 0, // control of Rd/Wr responses order
     parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_MSHRID_LBIT = 0,
+    parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
     parameter NUM_REQ_XTHREADS = 1
 ) (
@@ -140,6 +143,8 @@ noc_axi4_bridge_buffer #(
     .ADDR_OFFSET (ADDR_OFFSET),
     .RDWR_INORDER (RDWR_INORDER),
     .NUM_REQ_OUTSTANDING (NUM_REQ_OUTSTANDING),
+    .NUM_REQ_MSHRID_LBIT (NUM_REQ_MSHRID_LBIT),
+    .NUM_REQ_MSHRID_BITS (NUM_REQ_MSHRID_BITS),
     .NUM_REQ_YTHREADS (NUM_REQ_YTHREADS),
     .NUM_REQ_XTHREADS (NUM_REQ_XTHREADS)
 ) noc_axi4_bridge_buffer (
@@ -197,7 +202,9 @@ noc_axi4_bridge_deser #(
     .out_rdy(deser_rdy)
 );
 
-noc_axi4_bridge_read noc_axi4_bridge_read (
+noc_axi4_bridge_read #(
+    .AXI4_DAT_WIDTH_USED (AXI4_DAT_WIDTH_USED)
+) noc_axi4_bridge_read (
     .clk(clk), 
     .rst_n(rst_n), 
 
@@ -236,7 +243,9 @@ noc_axi4_bridge_read noc_axi4_bridge_read (
     .m_axi_rready(m_axi_rready)
 );
 
-noc_axi4_bridge_write noc_axi4_bridge_write (
+noc_axi4_bridge_write #(
+    .AXI4_DAT_WIDTH_USED (AXI4_DAT_WIDTH_USED)
+) noc_axi4_bridge_write (
     // Clock + Reset
     .clk(clk),
     .rst_n(rst_n),

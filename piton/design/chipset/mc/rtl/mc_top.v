@@ -112,6 +112,8 @@ module mc_top (
     input                           sys_rst_n
 );
 
+localparam HBM_WIDTH = 256;
+
 `ifdef PITONSYS_MC_SRAM
 wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
@@ -169,7 +171,12 @@ noc_axi4_bridge #(
     `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
+      `ifdef PITON_FPGA_MC_HBM
+      .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+      `endif
       .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+      // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
+      // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
       .NUM_REQ_YTHREADS (`PITON_Y_TILES),
       .NUM_REQ_XTHREADS (`PITON_X_TILES),
     `endif
@@ -278,7 +285,7 @@ noc_axi4_bridge #(
   assign sram_axi_rid    = sram_axi_rid_reg;
   assign sram_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
   assign sram_axi_rresp  = 2'h0;
-  assign sram_axi_rlast  = 1'b1;
+  assign sram_axi_rlast  = sram_axi_rvalid;
   assign sram_axi_ruser  = `AXI4_USER_WIDTH'h0;
 
   localparam BVALID_DELAY_LOG = 0;
@@ -299,7 +306,7 @@ noc_axi4_bridge #(
              end
            end
            else if (sram_axi_bvalid_en) sram_axi_bvalid_cnt <= sram_axi_bvalid_cnt+1;
-           if (sram_axi_wvalid) begin
+           if (sram_axi_wvalid & sram_axi_wlast) begin
              sram_axi_bvalid_cnt <= {{BVALID_DELAY_LOG{1'b0}}, 1'b1};
              sram_axi_bvalid_en <= 1'b1;
              sram_axi_bid_reg <= sram_axi_wid;
@@ -988,8 +995,13 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 noc_axi4_bridge #(
+  `ifdef PITON_FPGA_MC_HBM
+    .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+  `endif
     .ADDR_OFFSET(64'h80000000),
     .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+    // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
+    // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
     .NUM_REQ_YTHREADS (`PITON_Y_TILES),
     .NUM_REQ_XTHREADS (`PITON_X_TILES)
 )
@@ -1177,12 +1189,13 @@ axi4_zeroer axi4_zeroer(
 meep_shell meep_shell
        (.axi4_mm_araddr(m_axi_araddr),
         .axi4_mm_arburst(m_axi_arburst),
-        .axi4_mm_arcache(m_axi_arcache),
+        // .axi4_mm_arcache(m_axi_arcache),
         .axi4_mm_arid(m_axi_arid),
         .axi4_mm_arlen(m_axi_arlen),
-        .axi4_mm_arlock(m_axi_arlock),
-        .axi4_mm_arprot(m_axi_arprot),
-        .axi4_mm_arqos(m_axi_arqos),
+        // .axi4_mm_arlock(m_axi_arlock),
+        // .axi4_mm_arprot(m_axi_arprot),
+        // .axi4_mm_arqos(m_axi_arqos),
+        // .axi4_mm_arregion(m_axi_arregion),
         .axi4_mm_arready(m_axi_arready),
         .axi4_mm_arsize(m_axi_arsize),
         //.axi4_mm_aruser(m_axi_aruser),
@@ -1190,12 +1203,13 @@ meep_shell meep_shell
         
         .axi4_mm_awaddr(m_axi_awaddr),
         .axi4_mm_awburst(m_axi_awburst),
-        .axi4_mm_awcache(m_axi_awcache),
+        // .axi4_mm_awcache(m_axi_awcache),
         .axi4_mm_awid(m_axi_awid),
         .axi4_mm_awlen(m_axi_awlen),
-        .axi4_mm_awlock(m_axi_awlock),
-        .axi4_mm_awprot(m_axi_awprot),
-        .axi4_mm_awqos(m_axi_awqos),
+        // .axi4_mm_awlock(m_axi_awlock),
+        // .axi4_mm_awprot(m_axi_awprot),
+        // .axi4_mm_awqos(m_axi_awqos),
+        // .axi4_mm_awregion(m_axi_awregion),
         .axi4_mm_awready(m_axi_awready),
         .axi4_mm_awsize(m_axi_awsize),
         //.axi4_mm_awuser(m_axi_awuser),
@@ -1216,6 +1230,7 @@ meep_shell meep_shell
         .axi4_mm_rvalid(m_axi_rvalid),
         
         .axi4_mm_wdata(m_axi_wdata),
+        // .axi4_mm_wid(m_axi_wid),
         .axi4_mm_wlast(m_axi_wlast),
         .axi4_mm_wready(m_axi_wready),
         .axi4_mm_wstrb(m_axi_wstrb),
@@ -1231,6 +1246,7 @@ meep_shell meep_shell
         .axi4_sram_arlock(sram_axi_arlock),
         .axi4_sram_arprot(sram_axi_arprot),
         // .axi4_sram_arqos(sram_axi_arqos),
+        // .axi4_sram_arregion(sram_axi_arregion),
         .axi4_sram_arready(sram_axi_arready),
         .axi4_sram_arsize(sram_axi_arsize),
         // .axi4_sram_aruser(sram_axi_aruser),
@@ -1244,6 +1260,7 @@ meep_shell meep_shell
         .axi4_sram_awlock(sram_axi_awlock),
         .axi4_sram_awprot(sram_axi_awprot),
         // .axi4_sram_awqos(sram_axi_awqos),
+        // .axi4_sram_awregion(sram_axi_awregion),
         .axi4_sram_awready(sram_axi_awready),
         .axi4_sram_awsize(sram_axi_awsize),
         // .axi4_sram_awuser(sram_axi_awuser),
@@ -1264,6 +1281,7 @@ meep_shell meep_shell
         .axi4_sram_rvalid(sram_axi_rvalid),
 
         .axi4_sram_wdata(sram_axi_wdata),
+        // .axi4_sram_wid(sram_axi_wid),
         .axi4_sram_wlast(sram_axi_wlast),
         .axi4_sram_wready(sram_axi_wready),
         .axi4_sram_wstrb(sram_axi_wstrb),

@@ -40,6 +40,8 @@ module noc_axi4_bridge_buffer #(
     // HBM/DDR/BRAM/URAM memories before the above bug fix and after.
     parameter RDWR_INORDER = 0,
     parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_MSHRID_LBIT = 0,
+    parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
     parameter NUM_REQ_XTHREADS = 1
 ) (
@@ -178,6 +180,8 @@ wire [`MSG_SRC_CHIPID_WIDTH-1:0] src_chipid = req_header[`MSG_SRC_CHIPID];
 wire [`MSG_SRC_X_WIDTH     -1:0] src_x      = req_header[`MSG_SRC_X];
 wire [`MSG_SRC_Y_WIDTH     -1:0] src_y      = req_header[`MSG_SRC_Y];
 wire [`MSG_SRC_FBITS_WIDTH -1:0] src_fbits  = req_header[`MSG_SRC_FBITS];
+wire [`MSG_SRC_X_WIDTH     -1:0] ini_x      = req_header[`MSG_INI_X];
+wire [`MSG_SRC_Y_WIDTH     -1:0] ini_y      = req_header[`MSG_INI_Y];
 
 wire [`MSG_DST_CHIPID_WIDTH-1:0] dst_chipid = req_header[`MSG_DST_CHIPID];
 wire [`MSG_DST_X_WIDTH     -1:0] dst_x      = req_header[`MSG_DST_X];
@@ -240,8 +244,8 @@ assign write_req_strb = wstrb         <<    wr_offset;
 localparam NUM_REQ_OUTSTANDING_LOG2 = $clog2(NUM_REQ_OUTSTANDING);
 localparam NUM_REQ_YTHREADS_LOG2    = $clog2(NUM_REQ_YTHREADS);
 localparam NUM_REQ_XTHREADS_LOG2    = $clog2(NUM_REQ_XTHREADS);
-localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 + NUM_REQ_XTHREADS_LOG2;
-localparam NUM_REQ_THREADS = NUM_REQ_YTHREADS * NUM_REQ_XTHREADS * (RDWR_INORDER ? 1:2); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
+localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 + NUM_REQ_XTHREADS_LOG2 + NUM_REQ_MSHRID_BITS;
+localparam NUM_REQ_THREADS = NUM_REQ_YTHREADS * NUM_REQ_XTHREADS * (1<<NUM_REQ_MSHRID_BITS) * (RDWR_INORDER ? 1:2); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
 localparam FULL_NUM_REQ_THREADS_LOG2 = $clog2(NUM_REQ_THREADS);
 
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
@@ -314,19 +318,27 @@ always @(posedge clk)
 
 
 wire req_command = pkt_command[fifo_out];
-wire [`MSG_SRC_X_WIDTH-1:0] req_src_x = req_header[`MSG_SRC_X];
-wire [`MSG_SRC_Y_WIDTH-1:0] req_src_y = req_header[`MSG_SRC_Y];
-wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] req_id = ((req_src_y & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) << NUM_REQ_XTHREADS_LOG2) |
-                                                    (req_src_x & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+wire [`MSG_SRC_X_WIDTH -1:0] req_ini_x  = req_header[`MSG_INI_X];
+wire [`MSG_SRC_Y_WIDTH -1:0] req_ini_y  = req_header[`MSG_INI_Y];
+wire [`MSG_MSHRID_WIDTH-1:0] req_mshrid = req_header[`MSG_MSHRID];
+wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] req_id = (((req_mshrid >> NUM_REQ_MSHRID_LBIT)
+                                                                & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
+                                                                                                       NUM_REQ_XTHREADS_LOG2)) |
+                                                   ((req_ini_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
+                                                   ( req_ini_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_req_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{req_command}}} << NUM_REQ_THREADS_LOG2) | req_id;
 
 wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
                     (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-wire [`MSG_SRC_X_WIDTH-1:0] stor_src_x = stor_header[`MSG_SRC_X];
-wire [`MSG_SRC_Y_WIDTH-1:0] stor_src_y = stor_header[`MSG_SRC_Y];
-wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] stor_id = ((stor_src_y & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) << NUM_REQ_XTHREADS_LOG2) |
-                                                     (stor_src_x & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+wire [`MSG_SRC_X_WIDTH -1:0] stor_ini_x  = stor_header[`MSG_INI_X];
+wire [`MSG_SRC_Y_WIDTH -1:0] stor_ini_y  = stor_header[`MSG_INI_Y];
+wire [`MSG_MSHRID_WIDTH-1:0] stor_mshrid = stor_header[`MSG_MSHRID];
+wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] stor_id = (((stor_mshrid >> NUM_REQ_MSHRID_LBIT)
+                                                                  & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
+                                                                                                         NUM_REQ_XTHREADS_LOG2)) |
+                                                    ((stor_ini_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
+                                                    ( stor_ini_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_stor_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{stor_command}}} << NUM_REQ_THREADS_LOG2) | stor_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
@@ -373,11 +385,9 @@ always @(posedge clk)
 
 
 assign read_req_val  = req_val && !req_command && !req_occup && !init_outstnd_mem;
-assign read_req_header = req_header;
 assign read_req_id = req_id;
 
 assign write_req_val = req_val &&  req_command && !req_occup && !init_outstnd_mem;
-assign write_req_header = req_header;
 assign write_req_id = req_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
@@ -508,7 +518,7 @@ ila_buffer ila_buffer (
   .probe5(ser_data), // input wire [511:0]  probe5 
   .probe6(ser_val), // input wire [0:0]  probe6 
   .probe7(ser_rdy), // input wire [0:0]  probe7 
-  .probe8(read_req_header), // input wire [191:0]  probe8 
+  .probe8(req_header), // input wire [191:0]  probe8 
   .probe9(read_req_id), // input wire [1:0]  probe9 
   .probe10(read_req_val), // input wire [0:0]  probe10 
   .probe11(read_req_rdy), // input wire [0:0]  probe11 
@@ -516,7 +526,7 @@ ila_buffer ila_buffer (
   .probe13(read_resp_id), // input wire [1:0]  probe13 
   .probe14(read_resp_val), // input wire [0:0]  probe14 
   .probe15(read_resp_rdy), // input wire [0:0]  probe15 
-  .probe16(write_req_header), // input wire [191:0]  probe16 
+  .probe16(req_header), // input wire [191:0]  probe16 
   .probe17(write_req_id), // input wire [1:0]  probe17 
   .probe18(write_req_data), // input wire [511:0]  probe18 
   .probe19(write_req_val), // input wire [0:0]  probe19 
