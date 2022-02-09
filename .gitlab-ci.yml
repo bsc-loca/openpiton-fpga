@@ -74,7 +74,7 @@ synthesis-lagarto:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
+            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule" || CI_COMMIT_BRANCH == "fix/production") 
         retry: 1
         timeout: 6h        
         before_script:
@@ -113,6 +113,7 @@ implementation-ariane:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
+            - echo -e "List dcps:"; ls dcp
         script:
             - make implementation
         after_script:            
@@ -138,6 +139,7 @@ implementation-lagarto:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
+            - echo -e "List dcps:"; ls dcp
         script:
             - make implementation
         after_script:            
@@ -168,6 +170,7 @@ bitstream-ariane:
             - MEEP_FPGA
         before_script:
             - mkdir -p ariane/bitstream
+            - echo -e "List dcps:"; ls dcp
         script:
             - make bitstream
         after_script:
@@ -192,6 +195,7 @@ bitstream-lagarto:
             - MEEP_FPGA
         before_script:            
             - mkdir -p lagarto/bitstream
+            - echo -e "List dcps:"; ls dcp
         script:
             - make bitstream
         after_script:

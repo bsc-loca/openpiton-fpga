@@ -34,11 +34,11 @@ test:
 
 initialize: $(RISCV_DIR)
 
-synthesis: $(SYNTH_DCP)
+synthesis: | $(SYNTH_DCP)
 
-implementation: $(IMPL_DCP)
+implementation: | $(IMPL_DCP)
 
-bitstream: $(BIT_FILE)
+bitstream: | $(BIT_FILE)
 
 incremental:
 	@echo "Source a tcl so Vivado takes the latest dcp file to configure incremental implementaiton"
