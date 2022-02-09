@@ -3,17 +3,20 @@
 
 This repository is a fork from OpenPiton: https://github.com/PrincetonUniversity/openpiton
 
-We keep the two original branch (openpiton, openpiton-dev) with all the history.
+We are using openpiton-dev as our stable main branch.
 
-We have created two new branches, feature/lagarto_ariane_cache and feature/lagarto_node
+All new feature will be develop using feature branch. Like feature/lagarto_ari
 
-The branch feature/lagarto_ariane_cache will connect Lagaro M20 to the Ariane Cache subsystem.
-
-The branch feature/lagarto_node will design a new cache infraestructure using the L1.5 as L1 Data cache, use the L1 ICache from Drac, the TLB and PTW from lowrisc and create a custom addres translation for the new l1 d-cache.
+All new bug will be investigated and resolved using bug branch. like bug/1232
 
 ### Cloning the repo
     
-    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b feature/lagarto_ariane_cache
+    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b <BRANCH NAME>
+
+### Set env for EDA tools
+
+    source /home/tools/riscv_vector_toolchain/set_env.sh
+    source /eda/env.sh
 
 ### Setup and submodules initialization
 
