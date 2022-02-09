@@ -28,6 +28,11 @@ variables:
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
   DEPLOY_DIR: /home/fpga-runnerMEEP/ACME_deploy
 
+
+.default_rules:
+  rules:
+    if: ($CI_COMMIT_BRANCH =~ /^production/ || $CI_COMMIT_MESSAGE =~ /^#CICDtest/ || $CI_PIPELINE_SOURCE == "schedule")
+
 stages:
   - protosyn
   - implementation
@@ -45,7 +50,7 @@ synthesis-ariane:
         tags: 
             - MEEP_FPGA 
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
+            - !reference [.default_rules, rules]
         retry: 1
         timeout: 6h
         
@@ -74,7 +79,7 @@ synthesis-lagarto:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule" || CI_COMMIT_BRANCH == "fix/production") 
+            - !reference [.default_rules, rules]
         retry: 1
         timeout: 6h        
         before_script:
@@ -107,7 +112,7 @@ implementation-ariane:
         needs:
             - synthesis-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -133,7 +138,7 @@ implementation-lagarto:
         needs:
             - synthesis-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -165,7 +170,7 @@ bitstream-ariane:
             - synthesis-ariane
             - implementation-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:
@@ -190,7 +195,7 @@ bitstream-lagarto:
             - synthesis-lagarto
             - implementation-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:            
@@ -218,7 +223,7 @@ validation-ariane:
         needs: 
             - implementation-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:            
@@ -235,7 +240,7 @@ validation-lagarto:
         needs: 
             - implementation-lagarto        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:
@@ -258,7 +263,7 @@ fpga-test-ariane:
             - implementation-ariane
             - bitstream-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
               #when: manual         
         retry: 2
         tags:
@@ -287,7 +292,7 @@ fpga-test-lagarto:
             - implementation-lagarto
             - bitstream-lagarto  
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
               #when: manual      
         retry: 2
         tags:
@@ -314,7 +319,7 @@ deploy-ariane:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+            - !reference [.default_rules, rules]
         before_script:
             - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA            
         script:
@@ -338,7 +343,7 @@ deploy-lagarto:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+            - !reference [.default_rules, rules]
         before_script:
             - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
