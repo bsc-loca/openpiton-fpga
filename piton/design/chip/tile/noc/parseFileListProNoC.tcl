@@ -1,7 +1,5 @@
 #set_param project.singleFileAddWarning.Threshold 500 
 
-set PRONOC_ROOT "/home/alireza/work/git/OpenPiton/meep_openpiton/piton/design/chip/tile/noc"
-
 set fp [open "${PRONOC_ROOT}/Flist.pronoc" r]
 puts "$PRONOC_ROOT/Flist.pronoc"
 

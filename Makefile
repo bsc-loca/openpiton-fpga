@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 #SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= --vpu --vnpm --eth  --pronoc
+PROTO_OPTIONS ?= --vpu --vnpm --eth
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -49,6 +49,9 @@ $(RISCV_DIR):
 
 protosyn: clean_project $(RISCV_DIR)
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
+
+protosyn_pronoc: clean_project $(RISCV_DIR)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) --pronoc
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
