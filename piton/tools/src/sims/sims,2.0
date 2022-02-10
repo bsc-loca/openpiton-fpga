@@ -353,6 +353,7 @@ GetOptions (\%opt,
             'build_id=s',
             'board=s',
             'eth!',
+            'hbm!',
             'uart_dmw!',
            ) ;
 
@@ -381,6 +382,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
 push (@{$opt{config_cpp_args}}, "-DALVEO280")       if ($opt{board} eq "alveou280") ;
 push (@{$opt{config_cpp_args}}, "-DUART_BOOT")      if ($opt{uart_dmw}) ;
 push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth}) ;
+push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 
 ################################################################################
 # define $result_dir
@@ -3044,6 +3046,7 @@ OPENPITON ARGUMENTS
             X=1 and Y=1. The maximum value for both X and Y is 1024.
             -board=<board_type> enables board specific definitions.
             -eth enables ethernet related hardware.
+            -hbm enables HBM related definitions.
 
     -ed_enable
             enable Execution Drafting in each core.

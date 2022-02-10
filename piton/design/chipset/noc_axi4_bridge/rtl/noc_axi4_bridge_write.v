@@ -30,7 +30,9 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_write (
+module noc_axi4_bridge_write #(
+    parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH // actually used AXI Data width (down converted if needed)
+) (
     // Clock + Reset
     input  wire                                                    clk,
     input  wire                                                    rst_n,
@@ -88,9 +90,11 @@ localparam GOT_RESP = 1'b1;
 // Tie constant outputs in axi4
 //==============================================================================
 
-    assign m_axi_awlen    = `AXI4_LEN_WIDTH'b0; // Use only length-1 bursts
-    assign m_axi_awsize   = `AXI4_SIZE_WIDTH'b110; // Always transfer 64 bytes
-    assign m_axi_awburst  = `AXI4_BURST_WIDTH'b01; // fixed address in bursts (doesn't matter cause we use length-1 bursts)
+    localparam BURST_LEN  = `AXI4_DATA_WIDTH / AXI4_DAT_WIDTH_USED;
+    localparam BURST_SIZE = AXI4_DAT_WIDTH_USED / 8;
+    assign m_axi_awlen    = clip2zer(BURST_LEN -1);
+    assign m_axi_awsize   = $clog2(BURST_SIZE);
+    assign m_axi_awburst  = `AXI4_BURST_WIDTH'b01; // INCR address in bursts
     assign m_axi_awlock   = 1'b0; // Do not use locks
     assign m_axi_awcache  = `AXI4_CACHE_WIDTH'b11; // Non-cacheable bufferable requests
     assign m_axi_awprot   = `AXI4_PROT_WIDTH'b0; // Data access, non-secure access, unpriveleged access
@@ -104,8 +108,8 @@ wire [`AXI4_ADDR_WIDTH-1:0] addr_paddings = `AXI4_ADDR_WIDTH'b0;
 // outbound requests
 wire m_axi_awgo = m_axi_awvalid & m_axi_awready;
 wire m_axi_wgo = m_axi_wvalid & m_axi_wready;
+wire m_axi_lwgo = m_axi_wgo & m_axi_wlast;
 wire req_go = req_val & req_rdy;
-assign m_axi_wlast = m_axi_wvalid;
 
 reg [1:0] req_state;
 reg [`AXI4_ADDR_WIDTH -1:0] req_addr_f;
@@ -119,27 +123,23 @@ assign m_axi_awvalid = (req_state == GOT_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
 
 
-always  @(posedge clk) begin
+always @(posedge clk)
     if(~rst_n) begin
         req_state  <= IDLE;
         req_addr_f <= 0;
         req_id_f   <= 0;
-        req_data_f <= 0;
-        req_strb_f <= 0;
-    end else begin
+    end else
         case (req_state)
             IDLE: if (req_go) begin
                 req_state  <= GOT_REQ;
                 req_addr_f <= req_addr;
                 req_id_f   <= req_id;
-                req_data_f <= req_data;
-                req_strb_f <= req_strb;
             end
             GOT_REQ:
-                req_state <= (m_axi_awgo & m_axi_wgo) ? IDLE :
-                              m_axi_awgo              ? SENT_AW :
-                                           m_axi_wgo  ? SENT_W : req_state;
-            SENT_AW: if (m_axi_wgo)
+                req_state <= (m_axi_awgo & m_axi_lwgo) ? IDLE :
+                              m_axi_awgo               ? SENT_AW :
+                                           m_axi_lwgo  ? SENT_W : req_state;
+            SENT_AW: if (m_axi_lwgo)
                 req_state <= IDLE;
             SENT_W: if (m_axi_awgo)
                 req_state <= IDLE;
@@ -147,12 +147,32 @@ always  @(posedge clk) begin
                 req_state  <= IDLE;
                 req_addr_f <= 0;
                 req_id_f   <= 0;
-                req_data_f <= 0;
-                req_strb_f <= 0;
             end
         endcase
+
+// making a burst on data and strobe buses
+reg [clip2zer($clog2(BURST_LEN)-1) :0] burst_count;
+assign m_axi_wlast = !burst_count;
+always @(posedge clk)
+  if(~rst_n) begin
+    burst_count <= 0;
+    req_data_f  <= 0;
+    req_strb_f  <= 0;
+  end else begin
+    if (req_go) begin
+      burst_count <= m_axi_awlen;
+      req_data_f  <= req_data;
+      req_strb_f  <= req_strb;
     end
-end
+    if (BURST_LEN > 1 && m_axi_wgo && ~m_axi_wlast) begin
+      burst_count <= burst_count-1;
+      // down shifting data and strobe buses every burst cycle (high part is don't care, left unchanged for optimization)
+      req_data_f <= {req_data_f[`AXI4_DATA_WIDTH -1 : `AXI4_DATA_WIDTH - AXI4_DAT_WIDTH_USED],
+                     req_data_f[`AXI4_DATA_WIDTH -1 :   (BURST_LEN > 1 ? AXI4_DAT_WIDTH_USED : 0)]};
+      req_strb_f <= {req_strb_f[`AXI4_STRB_WIDTH -1 : `AXI4_STRB_WIDTH - BURST_SIZE],
+                     req_strb_f[`AXI4_STRB_WIDTH -1 :   (BURST_LEN > 1 ? BURST_SIZE          : 0)]};
+    end
+  end
 
 
 // Process information here
@@ -173,11 +193,11 @@ assign resp_val = (resp_state == GOT_RESP);
 assign m_axi_bready = (resp_state == IDLE);
 
 
-always  @(posedge clk) begin
+always @(posedge clk)
     if(~rst_n) begin
         resp_state <= IDLE;
         resp_id_f  <= 0;
-    end else begin
+    end else
         case (resp_state)
             IDLE: if (m_axi_bgo) begin
                 resp_state <= GOT_RESP;
@@ -190,11 +210,14 @@ always  @(posedge clk) begin
                 resp_id_f  <= 0;
             end
         endcase
-    end
-end
 
 // process data here
 assign resp_id = resp_id_f;
+
+function integer clip2zer;
+  input integer val;
+  clip2zer = val < 0 ? 0 : val;
+endfunction
 
 /*
 ila_write ila_write (

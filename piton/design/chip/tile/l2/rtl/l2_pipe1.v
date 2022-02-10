@@ -196,6 +196,8 @@ wire [`PHY_ADDR_WIDTH-1:0] msg_addr;
 wire [`MSG_SRC_CHIPID_WIDTH-1:0] msg_src_chipid;
 wire [`MSG_SRC_X_WIDTH-1:0] msg_src_x;
 wire [`MSG_SRC_Y_WIDTH-1:0] msg_src_y;
+wire [`MSG_SRC_X_WIDTH-1:0] msg_ini_x;
+wire [`MSG_SRC_Y_WIDTH-1:0] msg_ini_y;
 wire [`MSG_SRC_FBITS_WIDTH-1:0] msg_src_fbits;
 wire [`MSG_SDID_WIDTH-1:0] msg_sdid;
 wire [`MSG_LSID_WIDTH-1:0] msg_lsid;
@@ -377,6 +379,8 @@ wire [`PHY_ADDR_WIDTH-1:0] msg_send_addr;
 wire [`MSG_SRC_CHIPID_WIDTH-1:0] msg_send_dst_chipid;
 wire [`MSG_SRC_X_WIDTH-1:0] msg_send_dst_x;
 wire [`MSG_SRC_Y_WIDTH-1:0] msg_send_dst_y;
+wire [`MSG_SRC_X_WIDTH-1:0] msg_send_ini_x;
+wire [`MSG_SRC_Y_WIDTH-1:0] msg_send_ini_y;
 wire [`MSG_SRC_FBITS_WIDTH-1:0] msg_send_dst_fbits;
 wire [`NOC_DATA_WIDTH*2-1:0] msg_send_data;
 wire [`NOC_DATA_WIDTH*3-1:0] msg_send_header;
@@ -418,6 +422,8 @@ l2_decoder decoder(
     .msg_src_chipid     (msg_src_chipid),
     .msg_src_x          (msg_src_x),
     .msg_src_y          (msg_src_y),
+    .msg_ini_x          (msg_ini_x),
+    .msg_ini_y          (msg_ini_y),
     .msg_src_fbits      (msg_src_fbits),
     .msg_sdid           (msg_sdid),
     .msg_lsid           (msg_lsid)
@@ -786,6 +792,8 @@ l2_pipe1_dpath dpath(
     .msg_src_chipid_S1          (msg_src_chipid),
     .msg_src_x_S1               (msg_src_x),
     .msg_src_y_S1               (msg_src_y),
+    .msg_ini_x_S1               (msg_ini_x),
+    .msg_ini_y_S1               (msg_ini_y),
     .msg_src_fbits_S1           (msg_src_fbits),
     .msg_sdid_S1                (msg_sdid),
     .msg_lsid_S1                (msg_lsid),
@@ -927,6 +935,8 @@ l2_pipe1_dpath dpath(
     .msg_send_dst_chipid_S4     (msg_send_dst_chipid),
     .msg_send_dst_x_S4          (msg_send_dst_x),
     .msg_send_dst_y_S4          (msg_send_dst_y),
+    .msg_send_ini_x_S4          (msg_send_ini_x),
+    .msg_send_ini_y_S4          (msg_send_ini_y),
     .msg_send_dst_fbits_S4      (msg_send_dst_fbits),
     .msg_send_data_S4           (msg_send_data),
     .mshr_data_in_S4            (mshr_data_in),
@@ -962,6 +972,8 @@ l2_encoder encoder(
     .msg_src_x                  (my_nodeid[`NOC_NODEID_X]),
     .msg_src_y                  (my_nodeid[`NOC_NODEID_Y]),
     .msg_src_fbits              (my_nodeid[`NOC_NODEID_FBITS]),
+    .msg_ini_x                  (msg_send_ini_x),
+    .msg_ini_y                  (msg_send_ini_y),
     .msg_sdid                   ({`MSG_SDID_WIDTH{1'b0}}),
     .msg_lsid                   ({`MSG_LSID_WIDTH{1'b0}}),
     .msg_header                 (msg_send_header)

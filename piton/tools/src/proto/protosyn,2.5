@@ -539,6 +539,9 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
 
+    if (options.hbm == True):
+        defines.append("PITON_FPGA_MC_HBM")
+
     # --axi4_mem option
     if (options.axi4_mem == True):
         if (options.board not in {"vc707", "xupp3r"}):
@@ -916,12 +919,14 @@ def main():
         if options.core == 'lagarto':
             config += ' -lagarto'
 
-        # Alex Kropotov: passing board and ethernet option to simulation
         if options.board:
             config += ' -board=' + options.board
 
         if options.eth:
             config += ' -eth'
+
+        if options.hbm:
+            config += ' -hbm'
 
         if options.uart_dmw:
             config += ' -uart_dmw'
