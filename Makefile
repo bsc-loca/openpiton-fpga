@@ -34,11 +34,11 @@ test:
 
 initialize: $(RISCV_DIR)
 
-synthesis: | $(SYNTH_DCP)
+synthesis: $(SYNTH_DCP)
 
-implementation: | $(IMPL_DCP)
+implementation: $(IMPL_DCP)
 
-bitstream: | $(BIT_FILE)
+bitstream: $(BIT_FILE)
 
 incremental:
 	@echo "Source a tcl so Vivado takes the latest dcp file to configure incremental implementaiton"
@@ -58,6 +58,16 @@ $(IMPL_DCP): $(SYNTH_DCP)
 	
 $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+
+### Create targets to be used only in the CI/CD environment. They do not have requirements 
+
+ci_implementation:
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
+
+ci_bitstream:
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+
+### Cleaning calls ###
 	
 clean_all: clean_project
 	rm -rf $(PROJECT_SUBDIR)
