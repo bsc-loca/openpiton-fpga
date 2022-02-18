@@ -1,0 +1,26 @@
+
+/users/amonemi/openpiton_lagarto/build/asic_piton
+/users/amonemi/openpiton_lagarto/build/asic_pronoc
+***************** results *****************
+
+
+
+
+-,Total Dynamic Power
+noc_top_report,  296.3138 mW (100%)  
+piton_mesh_report,  247.5929 mW (100%)  
+
+
+
+
+-,Total cell area:
+noc_top_report,  192726.838710  
+piton_mesh_report,  182378.108435  
+
+
+
+
+-,data arrival time                                                 -
+noc_top_report, 0.95  
+piton_mesh_report, 0.93  
+

@@ -446,6 +446,221 @@ module chip(
            print("wire offchip_out_E_noc%d_yummy;" % (k))
 %>
 
+
+
+
+ `ifdef PITON_PRONOC 
+	
+`define NOC_LOCAL_PARAM
+`include "noc_localparam.v"
+
+`define  INCLUDE_TOPOLOGY_LOCALPARAM
+`include "topology_localparam.v"
+ 
+ localparam CONGw= (CONGESTION_INDEX==3)?  3:
+                      (CONGESTION_INDEX==5)?  3:
+                      (CONGESTION_INDEX==7)?  3:
+                      (CONGESTION_INDEX==9)?  3:
+                      (CONGESTION_INDEX==10)? 4:
+                      (CONGESTION_INDEX==12)? 3:2;
+                      
+localparam 
+	SMART_EN = (SMART_MAX !=0),
+	SMART_NUM= (SMART_EN) ? SMART_MAX : 1,	
+	CRDTw = (B>LB) ? log2(B+1) : log2(LB+1),
+	SMARTFLIT_CHANEL_w = 
+	    3 + //status
+		1 + //bit hdr_flag;
+		1 + //bit tail_flag;
+		V + //logic [V-1 : 0] vc;
+		Fpay + //Fpalogic [FPAYw-1 : 0] payload;
+		1 + //logic  flit_wr;
+		V + //logic  [V-1 :  0]  credit;
+		CONGw + //logic  [CONGw-1 :  0]  congestion;	
+		V +	//logic [V-1   	: 0] ovc;
+		SMART_NUM + //logic [SMART_NUM-1: 0] requests;
+		EAw + //logic [EAw-1 	: 0] dest_e_addr;
+		1+  //bit   hdr_flit;			
+		RAw + //logic  [RAw-1:  0]  neighbors_r_addr;
+		V * CRDTw; //	[V-1  :0] [CRDTw-1: 0] credit_init_val
+localparam CHIP_SET_ID = T1*T2*T3+2*T1; // endp connected  of west port of router 0-0
+localparam CHIP_SET_PORT = 3; //west port of first router
+
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_i1 [NE-1 : 0];
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_i2 [NE-1 : 0];
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_i3 [NE-1 : 0];
+	                                                
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_o1 [NE-1 : 0];
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_o2 [NE-1 : 0];
+	wire [SMARTFLIT_CHANEL_w-1 : 0] tile_chan_o3 [NE-1 : 0];
+	
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_i1_packed; 
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_i2_packed; 
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_i3_packed; 
+	                                                     
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_o1_packed; 
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_o2_packed; 
+	wire [SMARTFLIT_CHANEL_w*NE-1 : 0] tile_chan_o3_packed; 
+                                                          
+  
+
+	noc_top_packed noc1 (
+	    .reset (~rst_n_inter_sync),
+	    .clk(clk_muxed),    
+	    .chan_in_all(tile_chan_o1_packed),
+	    .chan_out_all(tile_chan_i1_packed)  
+	);
+	
+	
+	noc_top_packed noc2 (
+	    .reset (~rst_n_inter_sync),
+	    .clk(clk_muxed),    
+	    .chan_in_all(tile_chan_o2_packed),
+	    .chan_out_all(tile_chan_i2_packed)  
+	);
+	
+	noc_top_packed noc3 (
+	    .reset (~rst_n_inter_sync),
+	    .clk(clk_muxed),    
+	    .chan_in_all(tile_chan_o3_packed),
+	    .chan_out_all(tile_chan_i3_packed)  
+	);
+
+//off chip connection 
+
+	//NOC1
+	wire [RAw-1 : 0] tile_0_0_current_r_addr1;
+	
+    piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1),.TILE_NUM(CHIP_SET_ID),.CHIP_SET_PORT(CHIP_SET_PORT)) pi2pr_wrapper1
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataIn(offchip_out_E_noc1_data),
+    .validIn(offchip_out_E_noc1_valid),
+    .yummyIn(offchip_out_E_noc1_yummy),
+	.chan_out(tile_chan_o1[CHIP_SET_ID]),
+	.current_r_addr_i(tile_0_0_current_r_addr1)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1),.TILE_NUM(CHIP_SET_ID),.PORT_NUM(CHIP_SET_PORT)) pr2pi_wrapper1
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataOut(tile_0_0_out_W_noc1_data),
+	.validOut(tile_0_0_out_W_noc1_valid),
+	.yummyOut(tile_0_0_out_W_noc1_yummy),
+	.chan_in(tile_chan_i1[CHIP_SET_ID]),
+	.current_r_addr_o(tile_0_0_current_r_addr1)
+	);	
+
+//NOC2
+     wire [RAw-1 : 0] tile_0_0_current_r_addr2;
+    
+     piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2),.TILE_NUM(CHIP_SET_ID),.CHIP_SET_PORT(CHIP_SET_PORT)) pi2pr_wrapper2
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataIn(offchip_out_E_noc2_data),
+    .validIn(offchip_out_E_noc2_valid),
+    .yummyIn(offchip_out_E_noc2_yummy),
+	.chan_out(tile_chan_o2[CHIP_SET_ID]),
+	.current_r_addr_i(tile_0_0_current_r_addr2)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2),.TILE_NUM(CHIP_SET_ID),.PORT_NUM(CHIP_SET_PORT)) pr2pi_wrapper2
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataOut(tile_0_0_out_W_noc2_data),
+	.validOut(tile_0_0_out_W_noc2_valid),
+	.yummyOut(tile_0_0_out_W_noc2_yummy),
+	.chan_in(tile_chan_i2[CHIP_SET_ID]),
+	.current_r_addr_o(tile_0_0_current_r_addr2)
+	);	
+
+
+//NOC3
+
+	wire [RAw-1 : 0] tile_0_0_current_r_addr3;
+
+     piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3),.TILE_NUM(CHIP_SET_ID),.CHIP_SET_PORT(CHIP_SET_PORT))  pi2pr_wrapper3
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataIn(offchip_out_E_noc3_data),
+    .validIn(offchip_out_E_noc3_valid),
+    .yummyIn(offchip_out_E_noc3_yummy),
+	.chan_out(tile_chan_o3[CHIP_SET_ID]),
+	.current_r_addr_i(tile_0_0_current_r_addr3)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3),.TILE_NUM(CHIP_SET_ID),.PORT_NUM(CHIP_SET_PORT)) pr2pi_wrapper3
+	(
+	.default_chipid({`NOC_CHIPID_WIDTH{1'b0}}), .default_coreid_x({`NOC_X_WIDTH{1'b0}}), .default_coreid_y({`NOC_Y_WIDTH{1'b0}}), .flat_tileid({`JTAG_FLATID_WIDTH{1'b0}}),	
+	.reset(~rst_n_inter_sync),
+    .clk (clk_muxed),
+	.dataOut(tile_0_0_out_W_noc3_data),
+	.validOut(tile_0_0_out_W_noc3_valid),
+	.yummyOut(tile_0_0_out_W_noc3_yummy),
+	.chan_in(tile_chan_i3[CHIP_SET_ID]),
+	.current_r_addr_o(tile_0_0_current_r_addr3)
+	);	
+
+	//grounded ports
+	genvar i;
+	generate
+	for (i=0;i<NE;i=i+1) begin : END_
+		assign tile_chan_o1_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w] = tile_chan_o1 [i];
+		assign tile_chan_o2_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w] = tile_chan_o2 [i];
+		assign tile_chan_o3_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w] = tile_chan_o3 [i];
+	
+		assign tile_chan_i1 [i] =  tile_chan_i1_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w];
+		assign tile_chan_i2 [i] =  tile_chan_i2_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w];
+		assign tile_chan_i3 [i] =  tile_chan_i3_packed[(i+1)*SMARTFLIT_CHANEL_w-1 : i*SMARTFLIT_CHANEL_w];
+	end
+	for (i=T1*T2*T3;i<NE;i=i+1) begin : gnd_
+		if(i!=CHIP_SET_ID) begin
+		ground_pronoc_end_port #(.TILE_NUM(i), .NOC(1)) gnd1
+		(
+			.clk(clk_muxed),
+			.reset(~rst_n_inter_sync),
+			.chan_in (tile_chan_i1[i]),
+			.chan_out(tile_chan_o1[i])		
+	    );
+	    
+	    ground_pronoc_end_port #(.TILE_NUM(i),.NOC(2)) gnd2
+		(
+			.clk(clk_muxed),
+			.reset(~rst_n_inter_sync),
+			.chan_in (tile_chan_i2[i]),
+			.chan_out(tile_chan_o2[i])		
+	    );
+	    
+	    ground_pronoc_end_port #(.TILE_NUM(i),.NOC(3)) gnd3
+		(
+			.clk(clk_muxed),
+			.reset(~rst_n_inter_sync),
+			.chan_in (tile_chan_i3[i]),
+			.chan_out(tile_chan_o3[i])		
+	    );
+	   end 
+	    
+	end
+	endgenerate
+
+`else 
+  localparam 
+    CHIP_SET_PORT=3,
+  	SMARTFLIT_CHANEL_w=1,
+  	RAw=1;
+`endif
+
+
    //////////////////////
    // Sequential logic
    //////////////////////
@@ -1046,7 +1261,7 @@ module chip(
     // Generate tile instances
 <%
     template = r'''
-    tile #(.TILE_TYPE(TYPE_OF_TILE))
+    tile #(.TILE_TYPE(TYPE_OF_TILE),.TILE_NUM(_FLAT_ID_),.SMARTFLIT_CHANEL_w(SMARTFLIT_CHANEL_w), .CHIP_SET_PORT(CHIP_SET_PORT),.RAw(RAw))
     tile0 (
         .clk                (clk_muxed),
         .rst_n              (rst_n_inter_sync),
@@ -1076,6 +1291,14 @@ module chip(
         // ucb from jtag to tiles
         .jtag_tiles_ucb_val  ( jtag_tiles_ucb_val      ),
         .jtag_tiles_ucb_data ( jtag_tiles_ucb_data     ),
+     `ifdef PITON_PRONOC 
+        .tile_chan_i1		 ( tile_chan_i1[_FLAT_ID_]),
+        .tile_chan_i2		 ( tile_chan_i2[_FLAT_ID_]),
+        .tile_chan_i3		 ( tile_chan_i3[_FLAT_ID_]),
+        .tile_chan_o1		 ( tile_chan_o1[_FLAT_ID_]),
+        .tile_chan_o2		 ( tile_chan_o2[_FLAT_ID_]),
+        .tile_chan_o3		 ( tile_chan_o3[_FLAT_ID_])
+    `else
     '''
 
     subtemplate = r'''
@@ -1120,6 +1343,7 @@ module chip(
 
     template += subtemplate + sub2 + sub3;
     template = template[:-1] + r'''
+    `endif
     );
     '''
 
