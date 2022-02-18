@@ -5,7 +5,7 @@
 #  $ protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 #             --eth                     # adding Ethernet unit
 #             --bram-test hello_world.c # adding VCS-based simulation
-#             --verdi-dbg               # creating Verdi compliant simulation database for above test (verdi run: verdi -sx -ssf ./novas.fsdb)
+#             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
 
 
 script=${BASH_SOURCE[0]}

@@ -4,6 +4,5 @@
 
 CORE=lagarto
 
-source $ACC_DIR/piton/${CORE}_settings.sh
-make protosyn CORE=$CORE XTILES=2 YTILES=2 PROTO_OPTIONS="--meep --vpu --eth"
+make protosyn CORE=$CORE XTILES=2 YTILES=2 PROTO_OPTIONS="--meep --eth --hbm"
 

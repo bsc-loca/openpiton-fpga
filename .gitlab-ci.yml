@@ -28,6 +28,11 @@ variables:
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
   DEPLOY_DIR: /home/fpga-runnerMEEP/ACME_deploy
 
+
+.default_rules:
+  rules:
+    if: ($CI_COMMIT_BRANCH =~ /^production/ || $CI_COMMIT_MESSAGE =~ /^#CICDtest/ || $CI_PIPELINE_SOURCE == "schedule")
+
 stages:
   - protosyn
   - implementation
@@ -45,7 +50,7 @@ synthesis-ariane:
         tags: 
             - MEEP_FPGA 
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
+            - !reference [.default_rules, rules]
         retry: 1
         timeout: 6h
         
@@ -61,20 +66,20 @@ synthesis-ariane:
             - echo "VIVADO = $VIVADO_BIN"
             - make protosyn $DESIGN_OPTIONS CORE=ariane
         after_script:
-            - cp -rf build/alveou280/system/protosyn_logs ariane
-            - cp -rf dcp ariane
+            - cp -rf build/alveou280/system/protosyn_logs ariane           
 
         artifacts:
             when: always
             paths:        
                 - ariane
+                - dcp/synthesis.dcp
 
 synthesis-lagarto:
         stage: protosyn
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule") 
+            - !reference [.default_rules, rules]
         retry: 1
         timeout: 6h        
         before_script:
@@ -91,12 +96,12 @@ synthesis-lagarto:
         after_script:
             - mkdir -p lagarto
             - cp -rf build/alveou280/system/protosyn_logs lagarto
-            - cp -rf dcp lagarto
 
         artifacts:
             when: always
             paths:
                 - lagarto
+                - dcp/synthesis.dcp
 
 ###################################
 # Implementation
@@ -107,20 +112,17 @@ implementation-ariane:
         needs:
             - synthesis-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         timeout: 12h
         tags:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
-            - cp -rf ariane/dcp .
+            - echo -e "List dcps:"; ls dcp
         script:
-            - make implementation
-        after_script:
-            - cp -rf dcp/implementation.dcp ariane/dcp
+            - make ci_implementation
+        after_script:            
             - cp -rf reports ariane            
-            - ls ariane/dcp
-
         dependencies:
             - synthesis-ariane
 
@@ -128,7 +130,7 @@ implementation-ariane:
             when: on_success
             expire_in: 20 days
             paths:
-                - ariane/dcp/implementation.dcp
+                - dcp/implementation.dcp
                 - ariane/reports
 
 implementation-lagarto:
@@ -136,19 +138,17 @@ implementation-lagarto:
         needs:
             - synthesis-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         timeout: 12h
         tags:
             - MEEP_FPGA
         before_script:
             - echo -e "Implementation stage"
-            - cp -rf lagarto/dcp .
+            - echo -e "List dcps:"; ls dcp
         script:
-            - make implementation
-        after_script:
-            - cp -rf dcp/implementation.dcp lagarto/dcp
+            - make ci_implementation
+        after_script:            
             - cp -rf reports lagarto
-            - ls lagarto/dcp
 
         dependencies:
             - synthesis-lagarto
@@ -157,7 +157,7 @@ implementation-lagarto:
             when: on_success
             expire_in: 20 days
             paths:
-                - lagarto/dcp/implementation.dcp
+                - dcp/implementation.dcp
                 - lagarto/reports
 
 ###################################
@@ -170,14 +170,14 @@ bitstream-ariane:
             - synthesis-ariane
             - implementation-ariane
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:
-            - cp -rf ariane/dcp .
             - mkdir -p ariane/bitstream
+            - echo -e "List dcps:"; ls dcp
         script:
-            - make bitstream
+            - make ci_bitstream
         after_script:
             - mv bitstream/*.bit ariane/bitstream/ariane_$BITSTREAM
         dependencies:
@@ -195,14 +195,14 @@ bitstream-lagarto:
             - synthesis-lagarto
             - implementation-lagarto
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:            
-            - cp -rf lagarto/dcp .
             - mkdir -p lagarto/bitstream
+            - echo -e "List dcps:"; ls dcp
         script:
-            - make bitstream
+            - make ci_bitstream
         after_script:
             - mv bitstream/*.bit lagarto/bitstream/lagarto_$BITSTREAM
         dependencies:
@@ -223,7 +223,7 @@ validation-ariane:
         needs: 
             - implementation-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:            
@@ -240,7 +240,7 @@ validation-lagarto:
         needs: 
             - implementation-lagarto        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
         tags:
             - MEEP_FPGA
         before_script:
@@ -263,7 +263,7 @@ fpga-test-ariane:
             - implementation-ariane
             - bitstream-ariane        
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
               #when: manual         
         retry: 2
         tags:
@@ -292,7 +292,7 @@ fpga-test-lagarto:
             - implementation-lagarto
             - bitstream-lagarto  
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")            
+            - !reference [.default_rules, rules]
               #when: manual      
         retry: 2
         tags:
@@ -319,10 +319,11 @@ deploy-ariane:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+            - !reference [.default_rules, rules]
         before_script:
-            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
+            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA            
         script:
+            - cp -rf dcp $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
             - date >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/date.txt
             - cp -r ariane/* $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
             - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/commit_message.txt
@@ -342,10 +343,11 @@ deploy-lagarto:
         tags:
             - MEEP_FPGA
         rules:
-            - if: ($CI_COMMIT_BRANCH == "production" || $CI_PIPELINE_SOURCE == "schedule")
+            - !reference [.default_rules, rules]
         before_script:
             - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
+            - cp -rf dcp $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA
             - date >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/date.txt
             - cp -r lagarto/* $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
             - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/commit_message.txt

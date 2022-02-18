@@ -4,7 +4,6 @@
 module openpiton_wrapper(    
     input            chipset_clk,
     input            mc_clk,
-    input            vpu_clk,
     input   [4:0]    pcie_gpio ,
     output           ExtArstn,
 
@@ -195,9 +194,8 @@ module openpiton_wrapper(
   system ACME_OP (
        .chipset_clk(chipset_clk)	,
        .mc_clk(mc_clk),
-       .vpu_clk(vpu_clk),
-	   .pcie_gpio(pcie_gpio) ,
-	   .ExtArstn(ExtArstn),
+       .pcie_gpio(pcie_gpio) ,
+       .ExtArstn(ExtArstn),
        // AXI Write Address Channel Signals
        .mem_axi_awid(mem_axi_awid),
        .mem_axi_awaddr(mem_axi_awaddr),
