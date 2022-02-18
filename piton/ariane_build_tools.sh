@@ -47,6 +47,7 @@ echo "building RISCV toolchain and tests (if not existing)"
 echo "----------------------------------------------------------------------"
 echo
 
+
 if [[ "${RISCV}" == "" ]]
 then
     echo "Please source ariane_setup.sh first, while being in the root folder."

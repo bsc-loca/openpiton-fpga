@@ -432,6 +432,8 @@ begin
    msg_options_2[`MSG_CACHE_TYPE_] = msg_cache_type;
    msg_options_2[`MSG_SUBLINE_VECTOR_] = msg_subline_vector;
 
+   msg_options_3[`MSG_INI_X_] = coreid_x;
+   msg_options_3[`MSG_INI_Y_] = coreid_y;
    msg_options_3[`MSG_SDID_] = req_csm_sdid;
    msg_options_3[`MSG_LSID_] = req_csm_lsid;
 end

@@ -18,7 +18,7 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= --eth --vpu --vnpm --meep
+PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -45,13 +45,14 @@ incremental:
 
 
 $(RISCV_DIR):
+	source piton/$(CORE)_setup.sh; \
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean_project $(RISCV_DIR)
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
 
-$(SYNTH_DCP): $(PROJECT_FILE)
+$(SYNTH_DCP):
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
 
 $(IMPL_DCP): $(SYNTH_DCP)
@@ -59,6 +60,16 @@ $(IMPL_DCP): $(SYNTH_DCP)
 	
 $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+
+### Create targets to be used only in the CI/CD environment. They do not have requirements 
+
+ci_implementation:
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
+
+ci_bitstream:
+	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+
+### Cleaning calls ###
 	
 clean_all: clean_project
 	rm -rf $(PROJECT_SUBDIR)

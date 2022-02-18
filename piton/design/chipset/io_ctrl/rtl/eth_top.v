@@ -501,11 +501,14 @@ Eth_CMAC_syst eth_cmac_syst (
   .s_axi_awid       (core_axi_awid),
   .s_axi_rid        (core_axi_rid),
   .s_axi_bid        (core_axi_bid),
+  // .s_axi_wid        (core_axi_wid),
   // .s_axi_awuser     (core_axi_awuser),
   // .s_axi_aruser     (core_axi_aruser),
   // .s_axi_buser      (core_axi_buser),
   // .s_axi_ruser      (core_axi_ruser),
   // .s_axi_wuser      (core_axi_wuser),
+  // .s_axi_awregion   (core_axi_awregion),
+  // .s_axi_arregion   (core_axi_arregion),
 
   .intc             (net_cmac_intc),     
 
@@ -552,7 +555,7 @@ assign unsync_net_int = net_cmac_intc_comb;
   assign core_axi_rid    = core_axi_rid_reg;
   assign core_axi_rdata  = {(`AXI4_DATA_WIDTH/64/2+1){64'hDEADBEEFFEEDC0DE}};
   assign core_axi_rresp  = 2'h0;
-  assign core_axi_rlast  = 1'b1;
+  assign core_axi_rlast  = core_axi_rvalid;
   assign core_axi_ruser  = `AXI4_USER_WIDTH'h0;
 
   reg core_axi_bvalid_reg;
@@ -562,7 +565,7 @@ assign unsync_net_int = net_cmac_intc_comb;
       core_axi_bvalid_reg <= 1'b0;
       core_axi_bid_reg <= `AXI4_ID_WIDTH'h0;
     end
-    else if (core_axi_wvalid) begin
+    else if (core_axi_wvalid & core_axi_wlast) begin
       core_axi_bvalid_reg <= 1'b1;
       core_axi_bid_reg <= core_axi_wid;
     end
