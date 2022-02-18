@@ -436,6 +436,8 @@ localparam STORE_ACK = 1'd1;
    wire [`MSG_SRC_X_WIDTH     -1:0] r_req_src_x      = r_req_buf_header2_f[`MSG_SRC_X_];
    wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_src_y      = r_req_buf_header2_f[`MSG_SRC_Y_];
    wire [`MSG_SRC_FBITS_WIDTH -1:0] r_req_src_fbits  = r_req_buf_header2_f[`MSG_SRC_FBITS_];
+   wire [`MSG_SRC_X_WIDTH     -1:0] r_req_ini_x      = r_req_buf_header2_f[`MSG_INI_X_];
+   wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_ini_y      = r_req_buf_header2_f[`MSG_INI_Y_];
 
    wire [`MSG_DST_CHIPID_WIDTH-1:0] r_req_dst_chipid = r_req_buf_header0_f[`MSG_DST_CHIPID];
    wire [`MSG_DST_X_WIDTH     -1:0] r_req_dst_x      = r_req_buf_header0_f[`MSG_DST_X];
@@ -446,6 +448,8 @@ localparam STORE_ACK = 1'd1;
    wire [`MSG_SRC_X_WIDTH     -1:0] w_req_src_x      = w_req_buf_header2_f[`MSG_SRC_X_];
    wire [`MSG_SRC_Y_WIDTH     -1:0] w_req_src_y      = w_req_buf_header2_f[`MSG_SRC_Y_];
    wire [`MSG_SRC_FBITS_WIDTH -1:0] w_req_src_fbits  = w_req_buf_header2_f[`MSG_SRC_FBITS_];
+   wire [`MSG_SRC_X_WIDTH     -1:0] w_req_ini_x      = w_req_buf_header2_f[`MSG_INI_X_];
+   wire [`MSG_SRC_Y_WIDTH     -1:0] w_req_ini_y      = w_req_buf_header2_f[`MSG_INI_Y_];
 
    wire [`MSG_DST_CHIPID_WIDTH-1:0] w_req_dst_chipid = w_req_buf_header0_f[`MSG_DST_CHIPID];
    wire [`MSG_DST_X_WIDTH     -1:0] w_req_dst_x      = w_req_buf_header0_f[`MSG_DST_X];
