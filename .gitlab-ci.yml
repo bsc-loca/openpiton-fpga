@@ -150,7 +150,7 @@ regression:
 ## Torture tests                                           ###
 ##############################################################
 
-regression:
+torture:
   stage: torture
   tags: 
     - test
