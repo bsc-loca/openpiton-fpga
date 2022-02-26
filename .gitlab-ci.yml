@@ -160,6 +160,6 @@ torture:
     - . ./piton/lagarto_setup.sh
     - . ./piton/lagarto_build_tools.sh 
     - cd build
-    - source ci/lagarto_build_torture.sh small_fp 1
-    - source ci/lagarto_run_torture.sh small_fp 1 > small_fp_torture.log
-    - "grep 'TEST PASSED' small_fp_torture.log"
+    - source ci/lagarto_build_torture.sh medium_fp 100
+    - source ci/lagarto_run_torture.sh medium_fp 100 > medium_fp_torture.log
+    - "grep 'TEST PASSED' medium_fp_torture.log"
