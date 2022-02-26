@@ -28,6 +28,7 @@ before_script:
 stages:
   - build
   - regression
+  - torture
 
 ###################################
 # Build                           #
@@ -143,3 +144,22 @@ regression:
     - "cd .."
     - "rm -rf 2*"
     - "cat final_report.log"
+
+
+##############################################################
+## Torture tests                                           ###
+##############################################################
+
+regression:
+  stage: torture
+  tags: 
+    - test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+  script:
+    - . ./piton/lagarto_setup.sh
+    - . ./piton/lagarto_build_tools.sh 
+    - cd build
+    - source ci/lagarto_build_torture.sh small_fp 1
+    - source ci/lagarto_run_torture.sh small_fp 1 > small_fp_torture.log
+    - "grep 'TEST PASSED' small_fp_torture.log"
