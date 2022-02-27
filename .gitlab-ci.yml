@@ -161,5 +161,9 @@ torture:
     - . ./piton/lagarto_build_tools.sh 
     - cd build
     - . ./ci/lagarto_build_torture.sh medium_fp 100
-    - . ./ci/lagarto_run_torture.sh medium_fp 100 > medium_fp_torture.log
-    - "grep 'TEST PASSED' medium_fp_torture.log"
+    - . ./ci/lagarto_run_torture.sh medium_fp 100
+  artifacts:
+    expire_in: 1 month
+    when: always
+    paths:
+      - piton/design/chip/tile/vas_tile_core/tmp/riscv-torture/artifacts/torture

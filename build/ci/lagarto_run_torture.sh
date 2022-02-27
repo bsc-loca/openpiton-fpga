@@ -41,6 +41,7 @@ TORTURE_SIZE=$2
 sims clean
 rm -rf manycore/
 rm signature.txt 
+rm $TORTURE_CONFIG.report
 
 sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG > compilation.log
 
@@ -68,14 +69,27 @@ do
   rm lagartotmp spiketmp
 
   result=$(diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig)
-
+ 
+  echo -n "* $TORTURE_CONFIG-$i: " 
   if [ $? -eq 0 ]
   then
-    echo -e "${green}[pass]${clear} $TORTURE_CONFIG-$i"
-    let COUNTER_PASS_TEST++
+    echo -e -n "${green} Signatures match. ${clear}"
   else
-    echo -e "${red}[fail]${clear} $TORTURE_CONFIG-$i"
+    echo -e -n "${red} Signatures mmissmatch ${clear}"
   fi
+
+  echo -n "$TORTURE_CONFIG-$i " >> $TORTURE_CONFIG.report
+
+  if  cat simulation.log | grep "Simulation -> PASS (HIT GOOD TRAP)"  >> $TORTURE_CONFIG.report; then
+    echo -e "${green} Simulation -> PASS (HIT GOOD TRAP)${clear}"
+    let COUNTER_PASS_TEST++
+  elif cat simulation.log | grep "Simulation -> FAIL (HIT BAD TRAP)" >> $TORTURE_CONFIG.report; then 
+    echo -e "${red} Simulation -> FAIL (HIT BAD TRAP)${clear}"
+  else 
+    echo -e "${red} TIMEOUT${clear}"
+    echo "Test $TORTURE_CONFIG-$i: Timeout" >> $TORTURE_CONFIG.report
+  fi
+
 
 done
 
