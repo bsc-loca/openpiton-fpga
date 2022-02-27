@@ -38,7 +38,7 @@ COUNTER_PASS_TEST=0
 TORTURE_CONFIG=$1 
 TORTURE_SIZE=$2
 
-sims clean
+#sims clean
 [ -d manycore ] && rm -rf manycore/
 [ -f signature.txt ] && rm signature.txt 
 [ -f $TORTURE_CONFIG.report ] && rm $TORTURE_CONFIG.report
