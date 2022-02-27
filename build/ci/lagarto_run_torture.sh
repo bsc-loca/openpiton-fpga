@@ -1,7 +1,7 @@
 #!/bin/bash
-#TOOLS=/home/tools/drac/bin
+TOOLS=/home/tools/drac_fp/bin
 #TOOLS=/home/fcano/tools/drac/bin
-TOOLS=/home/ivan/tools/drac_fp2/bin
+#TOOLS=/home/ivan/tools/drac_fp2/bin
 
 echo "make sure that you source this script in a bash shell in the root folder of OpenPiton"
 
@@ -39,11 +39,11 @@ TORTURE_CONFIG=$1
 TORTURE_SIZE=$2
 
 sims clean
-rm -rf manycore/
-rm signature.txt 
-rm $TORTURE_CONFIG.report
+[ -d manycore ] && rm -rf manycore/
+[ -f signature.txt ] && rm signature.txt 
+[ -f $TORTURE_CONFIG.report ] && rm $TORTURE_CONFIG.report
 
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG > compilation.log
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
 echo -e "${green}**********************************************${clear}"
 echo -e "${green}*           Running Torture Tests            *${clear}"
