@@ -164,7 +164,7 @@ torture:
     - . ./ci/lagarto_run_torture.sh medium_fp 100
   artifacts:
     expire_in: 1 week
-    when: always
+    when: on_failure
     paths:
       - piton/design/chip/tile/vas_tile_core/tmp/riscv-torture/artifacts/torture
       - piton/build
