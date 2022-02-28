@@ -55,6 +55,8 @@ regression:
   stage: regression
   tags: 
     - test
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
   script:
     - . ./piton/lagarto_setup.sh
     - . ./piton/lagarto_build_tools.sh 
