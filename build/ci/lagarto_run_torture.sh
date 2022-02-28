@@ -74,7 +74,8 @@ do
     echo -e -n "${green} Signatures match. ${clear}"
   else
     echo -e -n "${red} Signatures mmissmatch ${clear}"
-    diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig
+    cp lagarto-$TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
+    cp $TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
   fi
 
   echo -n "$TORTURE_CONFIG-$i " >> $TORTURE_CONFIG.report
