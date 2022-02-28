@@ -20,7 +20,7 @@ variables:
   BOOT_SCRIPT: piton/tools/src/proto/alveou280/boot_linux.sh
   TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
   QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
-  DESIGN_OPTIONS: "XTILES=2 YTILES=2"
+  DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
   GOLDEN_MESSAGE: "Welcome to the Fedora/RISC-V disk image"
   ## Temp variables while lagarto+Fedora is developed
   GOLDEN_MESSAGE_LAGARTO: "io scheduler kyber registered" 
@@ -64,7 +64,7 @@ synthesis-ariane:
             - make initialize CORE=ariane
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
-            - make protosyn $DESIGN_OPTIONS CORE=ariane
+            - make protosyn_pronoc $DESIGN_OPTIONS CORE=ariane
         after_script:
             - cp -rf build/alveou280/system/protosyn_logs ariane           
 
