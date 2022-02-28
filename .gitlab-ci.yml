@@ -156,6 +156,7 @@ torture:
   stage: torture
   tags: 
     - test
+  timeout: 12h
   rules:
     - if: $CI_PIPELINE_SOURCE == "schedule"
   script:
