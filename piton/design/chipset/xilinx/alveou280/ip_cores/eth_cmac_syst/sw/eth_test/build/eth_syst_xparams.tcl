@@ -1,9 +1,9 @@
 
 # Script to generate C-header containing hardware definitions for Ethernet core
 
-set dv_xml [open $DV_ROOT/design/xilinx/alveou280/devices_ariane.xml                                                   r]
-set bd_tcl [open $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl                     r]
-set bd_hdr [open $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/xparameters.h w]
+set dv_xml [open ../../../../../../../../xilinx/alveou280/devices_ariane.xml r]
+set bd_tcl [open ../../../eth_cmac_syst.tcl                                  r]
+set bd_hdr [open ./xparameters.h                                             w]
 
 puts $bd_hdr "#ifndef XPARAMETERS_H  // prevent circular inclusions"
 puts $bd_hdr "#define XPARAMETERS_H  // by using protection macros"
