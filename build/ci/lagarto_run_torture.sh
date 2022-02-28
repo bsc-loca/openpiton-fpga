@@ -82,7 +82,7 @@ do
 
   if  cat simulation.log | grep "Simulation -> PASS (HIT GOOD TRAP)"  >> $TORTURE_CONFIG.report; then
     echo -e "${green} Simulation -> PASS (HIT GOOD TRAP)${clear}"
-    let COUNTER_PASS_TEST++
+    COUNTER_PASS_TEST=$((COUNTER_PASS_TEST+1))
   elif cat simulation.log | grep "Simulation -> FAIL (HIT BAD TRAP)" >> $TORTURE_CONFIG.report; then 
     echo -e "${red} Simulation -> FAIL (HIT BAD TRAP)${clear}"
   else 
