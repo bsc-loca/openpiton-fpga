@@ -68,7 +68,7 @@ do
 
   rm lagartotmp spiketmp
  
-  echo "* $TORTURE_CONFIG-$i: " 
+  echo -e -n "- $TORTURE_CONFIG-$i: "  
 
   result=$(diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig)
   if [ $? -eq 0 ]
@@ -82,16 +82,17 @@ do
 
   echo -n "$TORTURE_CONFIG-$i " >> $TORTURE_CONFIG.report
 
-  if  cat simulation.log | grep "Simulation -> PASS (HIT GOOD TRAP)"  >> $TORTURE_CONFIG.report; then
+  if  cat simulation.log | grep "Simulation -> PASS (HIT GOOD TRAP)"  >> $TORTURE_CONFIG.report
+  then
     echo -e "\tSimulation: ${green}PASS${clear}"
     COUNTER_PASS_TEST=$((COUNTER_PASS_TEST+1))
-  elif cat simulation.log | grep "Simulation -> FAIL (HIT BAD TRAP)" >> $TORTURE_CONFIG.report; then 
+  elif cat simulation.log | grep "Simulation -> FAIL (HIT BAD TRAP)" >> $TORTURE_CONFIG.report
+  then 
     echo -e "\tSimulation: ${red}FAIL${clear}"
   else 
     echo -e "\tSimulation: ${red}TIMEOUT${clear}"
     echo "Test $TORTURE_CONFIG-$i: Timeout" >> $TORTURE_CONFIG.report
   fi
-
 
 done
 
