@@ -89,10 +89,6 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
   add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
   #Use this script to save BD after editing
   # source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
-
-  # extracting hw definitions from BD tcl script to create C-header file
-  source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_syst_xparams.tcl
-  
 }
 
 # Set 'sources_1' fileset file properties for local files
