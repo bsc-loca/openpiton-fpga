@@ -67,15 +67,14 @@ do
   head -n-13 spiketmp > $TORTURE_CONFIG-$i.sig
 
   rm lagartotmp spiketmp
-
-  result=$(diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig)
  
   echo -n "* $TORTURE_CONFIG-$i: " 
-  if [ $? -eq 0 ]
+  if diff -q lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig;
   then
     echo -e -n "${green} Signatures match. ${clear}"
   else
     echo -e -n "${red} Signatures mmissmatch ${clear}"
+    diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig
   fi
 
   echo -n "$TORTURE_CONFIG-$i " >> $TORTURE_CONFIG.report
