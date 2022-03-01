@@ -70,7 +70,11 @@ if PITON_LAGARTO:
 %>
 
 module tile #(
-     parameter TILE_TYPE = `SPARC_TILE
+	 parameter SMARTFLIT_CHANEL_w = 72, //Pronoc channek width
+	 parameter RAw =3, // pronoc router address width
+     parameter TILE_TYPE = `SPARC_TILE,
+     parameter TILE_NUM  = 0,
+	 parameter CHIP_SET_PORT =3
 ) (
     input                               clk,
     input                               rst_n,    // trin: assumed to be synchronous
@@ -87,6 +91,21 @@ module tile #(
     output [`UCB_BUS_WIDTH-1:0]         tile_jtag_ucb_data,
 <%
 s = '''
+
+
+`ifdef PITON_PRONOC
+	
+	
+	
+	input  [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_i1,
+	input  [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_i2,
+	input  [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_i3,
+	
+	output [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_o1,
+	output [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_o2,
+	output [SMARTFLIT_CHANEL_w-1 : 0]  tile_chan_o3	
+	
+`else
     // Dynamic Network Inputs 0 (User Dynamic Network)
     input [`NOC_DATA_WIDTH-1:0]         dyn0_dataIn_N,
     input [`NOC_DATA_WIDTH-1:0]         dyn0_dataIn_E,
@@ -172,6 +191,9 @@ s = '''
     output                              dyn2_yummyOut_E,
     output                              dyn2_yummyOut_W,
     output                              dyn2_yummyOut_S
+    
+ `endif   
+    
     //output [4:0]                        ec_dyn2\
 '''
 if (PITON_NETWORK_CONFIG == "xbar_config"):
@@ -444,6 +466,103 @@ print(s)
     // Configuration Registers Needing to be Hooked Up //
     /////////////////////////////////////////////////////
 
+always @ (posedge clk) begin 
+	if(router_buffer_data_val_noc1) $display("%t:rsv Tile%d, noc1, D=%h",$time,TILE_NUM, router_buffer_data_noc1);		
+	if(router_buffer_data_val_noc2) $display("%t:rsv Tile%d, noc2, D=%h",$time,TILE_NUM, router_buffer_data_noc2);		
+	if(router_buffer_data_val_noc3) $display("%t:rsv Tile%d, noc3, D=%h",$time,TILE_NUM, router_buffer_data_noc3);		
+	if(buffer_router_valid_noc1) $display("%t:snd Tile%d, noc1, D=%h",$time,TILE_NUM, buffer_router_data_noc1);	
+	if(buffer_router_valid_noc2) $display("%t:snd Tile%d, noc2, D=%h",$time,TILE_NUM, buffer_router_data_noc2);		
+	if(buffer_router_valid_noc3) $display("%t:snd Tile%d, noc3, D=%h",$time,TILE_NUM, buffer_router_data_noc3);			
+end
+
+
+`ifdef PITON_PRONOC
+//NOC1
+    wire [RAw-1 : 0] current_r_addr_o1;
+   
+    piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1),.TILE_NUM(TILE_NUM),.CHIP_SET_PORT(CHIP_SET_PORT)) pi2pr_wrapper1
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataIn(buffer_router_data_noc1),
+    .validIn(buffer_router_valid_noc1),
+    .yummyIn(buffer_router_yummy_noc1),
+	.chan_out(tile_chan_o1),
+	.current_r_addr_i(current_r_addr_o1)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1),.TILE_NUM(TILE_NUM)) pr2pi_wrapper1
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataOut(router_buffer_data_noc1),
+	.validOut(router_buffer_data_val_noc1),
+	.yummyOut(router_buffer_consumed_noc1),
+	.chan_in(tile_chan_i1),
+	.current_r_addr_o(current_r_addr_o1)
+	);	
+
+//NOC2
+
+	 wire [RAw-1 : 0] current_r_addr_o2;
+	 
+     piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2),.TILE_NUM(TILE_NUM),.CHIP_SET_PORT(CHIP_SET_PORT)) pi2pr_wrapper2
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataIn(buffer_router_data_noc2),
+    .validIn(buffer_router_valid_noc2),
+    .yummyIn(buffer_router_yummy_noc2),
+	.chan_out(tile_chan_o2),
+	.current_r_addr_i(current_r_addr_o2)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2),.TILE_NUM(TILE_NUM)) pr2pi_wrapper2
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataOut(router_buffer_data_noc2),
+	.validOut(router_buffer_data_val_noc2),
+	.yummyOut(router_buffer_consumed_noc2),
+	.chan_in(tile_chan_i2),
+	.current_r_addr_o(current_r_addr_o2)
+	);	
+
+
+//NOC3
+	 wire [RAw-1 : 0] current_r_addr_o3;
+
+     piton_to_pronoc_wrapper #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3),.TILE_NUM(TILE_NUM),.CHIP_SET_PORT(CHIP_SET_PORT))  pi2pr_wrapper3
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataIn(buffer_router_data_noc3),
+    .validIn(buffer_router_valid_noc3),
+    .yummyIn(buffer_router_yummy_noc3),
+	.chan_out(tile_chan_o3),
+	.current_r_addr_i(current_r_addr_o3)
+	);	
+
+	pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3),.TILE_NUM(TILE_NUM)) pr2pi_wrapper3
+	(
+	.default_chipid(default_chipid), .default_coreid_x(default_coreid_x), .default_coreid_y(default_coreid_y), .flat_tileid(flat_tileid),	
+	.reset(~rst_n_f),
+    .clk (clk_gated),
+	.dataOut(router_buffer_data_noc3),
+	.validOut(router_buffer_data_val_noc3),
+	.yummyOut(router_buffer_consumed_noc3),
+	.chan_in(tile_chan_i3),
+	.current_r_addr_o(current_r_addr_o3)
+	);	
+
+
+`else
+
     /////////////
     // Routers //
     // //////////
@@ -607,6 +726,9 @@ s = '''
        //.store_meter_ack_partner(),
        //.store_meter_ack_non_partner(),
        //.ec_out(ec_dyn2));
+
+`endif
+
 '''
 if (PITON_NETWORK_CONFIG == "xbar_config"):
   s = '''

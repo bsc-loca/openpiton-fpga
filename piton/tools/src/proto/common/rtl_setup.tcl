@@ -810,4 +810,7 @@ set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep
 # Set the path for the lagarto FList parser. This needs to be thought further.
 set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
 
+set PRONOC_ROOT "${DV_ROOT}/design/chip/tile/noc"
+
+
 set MEEP_VPU_FILES {}

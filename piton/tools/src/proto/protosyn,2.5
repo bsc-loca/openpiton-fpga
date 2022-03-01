@@ -57,7 +57,7 @@ FLOW_STEP_OPTIONS = ["project", "impl"]
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--pronoc] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -151,7 +151,9 @@ def usage():
     print("\n       --swait", file=sys.stderr)
     print("\n            Wait for slurm jobs to finish", file=sys.stderr)
     print("\n       -j, --jobs", file=sys.stderr)
-    print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)
+    print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
+    print("\n       --pronoc", file=sys.stderr)
+    print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr)   
     print("\n       -h, --help", file=sys.stderr)
     print("              Display this help message and exit", file=sys.stderr)
     print("\n", file=sys.stderr)
@@ -538,6 +540,7 @@ def setParserOptions(parser):
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
     parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
+    parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
     parser.add_option("--asic-rtl", dest="asic_rtl", action="store_true", default=False)
@@ -660,7 +663,7 @@ def makeDefList(options):
     # Define for  UART16550 required (so for all except Piton Board)
     if options.board != "piton_board":
         defines.append("PITON_UART16550")
-
+     
     # --eth CL options is default for chipset
     os.environ['ALVEO_ETH'] = "0"
 
@@ -837,7 +840,13 @@ def main():
     os.environ['PITON_X_TILES']   = str(options.x_tiles)
     os.environ['PITON_Y_TILES']   = str(options.y_tiles)
     os.environ['PITON_NUM_TILES'] = str(options.num_tiles)
-
+    
+    # ProNoC
+    os.environ['PITON_PRONOC'] = "0"
+    if options.pronoc:
+        os.environ['PITON_PRONOC']     = "1"
+        print_info('setenv PITON_PRONOC')
+		
     # Supported cores, initialize env variables.
     os.environ['PITON_PICO']     = "0"
     os.environ['PITON_ARIANE']   = "0"

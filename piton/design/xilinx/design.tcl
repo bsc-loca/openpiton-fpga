@@ -53,6 +53,12 @@ if {$::env(PITON_LAGARTO) != "0" } {
     puts "Including Lagarto RTL files"
 }
 
+if {$::env(PITON_PRONOC) != "0" } {
+	source $PRONOC_ROOT/parseFileListProNoC.tcl
+	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${PRONOC_RTL_FILES}]	
+  	puts "Add ProNoC RTL files"	
+}
+
 
 set DESIGN_RTL_IMPL_FILES [concat \
     ${SYSTEM_RTL_IMPL_FILES} \
