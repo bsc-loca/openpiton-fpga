@@ -70,8 +70,7 @@ do
  
   echo -e -n "- $TORTURE_CONFIG-$i: "  
 
-  result=$(diff lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig)
-  if [ $? -eq 0 ]
+  if diff -q  lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig &>/dev/null;
   then
     echo -e -n "\tSignature: ${green}MATCH${clear}"
   else
