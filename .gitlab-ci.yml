@@ -163,8 +163,6 @@ torture:
     - . ./piton/lagarto_setup.sh
     - . ./piton/lagarto_build_tools.sh 
     - cd build
-    - . ./ci/lagarto_build_torture.sh medium_fp 500
-    - . ./ci/lagarto_run_torture.sh medium_fp 500
     - . ./ci/lagarto_build_torture.sh large_fp 500
     - . ./ci/lagarto_run_torture.sh large_fp 500
   artifacts:
