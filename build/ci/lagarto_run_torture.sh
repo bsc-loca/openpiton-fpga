@@ -51,7 +51,7 @@ echo -e "${green}**********************************************${clear}"
 
 for i in $( seq 1 $TORTURE_SIZE )
 do
-  timeout 1m sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TORTURE_CONFIG-$i.riscv -lagarto -precompiled > simulation.log 
+  sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TORTURE_CONFIG-$i.riscv -lagarto -precompiled > simulation.log 
 
   $TOOLS/spike -l ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture/$TORTURE_CONFIG-$i.riscv 2> $TORTURE_CONFIG-$i.sig
 
