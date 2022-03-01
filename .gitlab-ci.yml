@@ -19,7 +19,7 @@ before_script:
   - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
   - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
   - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
-  - export CI_NUM_JOBS=8
+  #- export CI_NUM_JOBS=8
   #- . ./piton/lagarto_setup.sh
   #- . ./piton/lagarto_build_tools.sh 
 
