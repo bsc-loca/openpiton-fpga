@@ -27,26 +27,25 @@ before_script:
   #GIT_SUBMODULE_STRATEGY: recursive
 
 stages:
-  - build
   - regression
   - torture
 
 ###################################
 # Build                           #
 ###################################
- 
-build:
-  stage: build
-  tags: 
-    - test
-  script:
-    - . ./piton/lagarto_setup.sh
-    - . ./piton/lagarto_build_tools.sh 
-    - cd build
-    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
-    - "grep 'Errors: 0' sims.log"
-    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
-    - "grep 'Errors: 0' sims.log"
+# 
+#build:
+#  stage: build
+#  tags: 
+#    - test
+#  script:
+#    - . ./piton/lagarto_setup.sh
+#    - . ./piton/lagarto_build_tools.sh 
+#    - cd build
+#    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+#    - "grep 'Errors: 0' sims.log"
+#    - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+#    - "grep 'Errors: 0' sims.log"
 
 ##############################################################
 ## Regression tests                                        ###
