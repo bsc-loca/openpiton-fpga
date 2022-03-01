@@ -26,6 +26,7 @@ export PITON_ROOT=`pwd`/..
 # Color variables
 red='\033[0;31m'
 green='\033[0;32m'
+BCyan='\033[1;36m'  
 # Clear the color after that
 clear='\033[0m'
 
@@ -68,15 +69,16 @@ do
 
   rm lagartotmp spiketmp
  
-  echo -e -n "- $TORTURE_CONFIG-$i: "  
+  echo -e "${BCyan}- $TORTURE_CONFIG-$i: ${clear}"  
 
-  if diff -q  lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig &>/dev/null;
+  if diff --unified --color lagarto-$TORTURE_CONFIG-$i.sig $TORTURE_CONFIG-$i.sig;
   then
     echo -e -n "\tSignature: ${green}MATCH${clear}"
   else
+    echo ""
     echo -e -n "\tSignature: ${red}MISSMATCH${clear}"
-    cp lagarto-$TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
-    cp $TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
+    #cp lagarto-$TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
+    #cp $TORTURE_CONFIG-$i.sig ${BUILD_TMP_PATH}/riscv-torture/artifacts/torture
   fi
 
   echo -n "$TORTURE_CONFIG-$i " >> $TORTURE_CONFIG.report
@@ -92,6 +94,8 @@ do
     echo -e "\tSimulation: ${red}TIMEOUT${clear}"
     echo "Test $TORTURE_CONFIG-$i: Timeout" >> $TORTURE_CONFIG.report
   fi
+  
+  echo ""
 
 done
 
