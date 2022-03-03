@@ -1,3 +1,4 @@
+// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 
 //  Xilinx Simple Dual Port Single Clock RAM
 //  This code implements a parameterizable SDP single clock memory.

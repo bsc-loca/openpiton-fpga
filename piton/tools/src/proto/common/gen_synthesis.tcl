@@ -1,3 +1,4 @@
+// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 set g_project_dir ""
 set g_root_dir $env::PITON_ROOT
 set g_number_of_jobs $env::NUMBER_JOBS

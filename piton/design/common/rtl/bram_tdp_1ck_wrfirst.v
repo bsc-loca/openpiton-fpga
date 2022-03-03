@@ -1,3 +1,4 @@
+// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 
 //  Xilinx True Dual Port RAM, Write First with Single Clock
 //  This code implements a parameterizable true dual port memory (both ports can read and write).
