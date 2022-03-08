@@ -104,7 +104,7 @@ echo -e "test cases: $TORTURE_SIZE total (${green} $COUNTER_PASS_TEST passed${cl
 
   if [ $COUNTER_PASS_TEST -eq $TORTURE_SIZE ]
   then
-    echo -e "${green}TEST PASSED${clear}"
+    echo -e "${green}TEST PASSED${clear}" >> $TORTURE_CONFIG.report
   else
-    echo -e "${red}TEST FAILS${clear}"
+    echo -e "${red}TEST FAILS${clear}" >> $TORTURE_CONFIG.report
   fi
