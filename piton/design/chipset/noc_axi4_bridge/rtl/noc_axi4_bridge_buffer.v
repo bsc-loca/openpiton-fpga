@@ -349,10 +349,11 @@ wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_mem = outstnd_abs_rdptr 
                                                                                    (~ outstnd_vrt_empt &
                                                                                     ~(outstnd_vrt_rdptr_val |
                                                                                       outstnd_abs_rdptr_val))};
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrreq_cnt;
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdreq_cnt;
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrrsp_cnt;
-reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdrsp_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrreq_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdreq_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrrsp_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdrsp_cnt;
+wire [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rsp_cnt = stor_header[NUM_REQ_OUTSTANDING_LOG2 + `MSG_HEADER_WIDTH+1 +: NUM_REQ_OUTSTANDING_LOG2+1];
 reg dbg_wr_reorder;
 reg dbg_rd_reorder;
 reg [FULL_NUM_REQ_THREADS_LOG2 : 0] itr_ptr;
@@ -394,11 +395,11 @@ always @(posedge clk)
       outstnd_vrt_rdptrs    [full_resp_id] <= outstnd_vrt_rdptrs[full_resp_id] + 1;
       outstnd_abs_rdptrs_val[full_resp_id] <= 1'b0;
       if (stor_command) begin
-        dbg_wr_reorder <= outstnd_wrrsp_cnt != stor_header[(NUM_REQ_OUTSTANDING_LOG2 + `MSG_HEADER_WIDTH) +: NUM_REQ_OUTSTANDING_LOG2+1];
+        dbg_wr_reorder <= outstnd_wrrsp_cnt != outstnd_rsp_cnt;
         outstnd_wrrsp_cnt <= outstnd_wrrsp_cnt + 1;
       end
       else begin
-        dbg_rd_reorder <= outstnd_rdrsp_cnt != stor_header[(NUM_REQ_OUTSTANDING_LOG2 + `MSG_HEADER_WIDTH) +: NUM_REQ_OUTSTANDING_LOG2+1];
+        dbg_rd_reorder <= outstnd_rdrsp_cnt != outstnd_rsp_cnt;
         outstnd_rdrsp_cnt <= outstnd_rdrsp_cnt + 1;
       end
     end
