@@ -25,7 +25,7 @@ module openpiton_wrapper(
 
     // AXI Write Data Channel Signals
     output  [5:0]   mem_axi_wid,
-    output  [511:0] mem_axi_wdata,
+    output  [255:0] mem_axi_wdata,
     output  [63:0]  mem_axi_wstrb,
     output          mem_axi_wlast,
     output  [10:0]  mem_axi_wuser,
@@ -49,7 +49,7 @@ module openpiton_wrapper(
 
     // AXI Read Data Channel Signals
     input   [5:0]    mem_axi_rid,
-    input   [511:0]  mem_axi_rdata,
+    input   [255:0]  mem_axi_rdata,
     input   [1:0]    mem_axi_rresp,
     input            mem_axi_rlast,
     input   [10:0]   mem_axi_ruser,
@@ -215,7 +215,7 @@ module openpiton_wrapper(
 
        // AXI Write Data Channel Signals
        .mem_axi_wid(mem_axi_wid),
-       .mem_axi_wdata(mem_axi_wdata),
+       .mem_axi_wdata(mem_axi_wdata[255:0]),
        .mem_axi_wstrb(mem_axi_wstrb),
        .mem_axi_wlast(mem_axi_wlast),
        .mem_axi_wuser(mem_axi_wuser),
@@ -239,7 +239,7 @@ module openpiton_wrapper(
 
        // AXI Read Data Channel Signals
        .mem_axi_rid(mem_axi_rid),
-       .mem_axi_rdata(mem_axi_rdata),
+       .mem_axi_rdata(mem_axi_rdata[255:0]),
        .mem_axi_rresp(mem_axi_rresp),
        .mem_axi_rlast(mem_axi_rlast),
        .mem_axi_ruser(mem_axi_ruser),
