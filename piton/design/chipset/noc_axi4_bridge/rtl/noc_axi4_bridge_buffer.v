@@ -407,6 +407,24 @@ always @(posedge clk)
     if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr + 1;
   end
 
+reg dbg_rd_reorder_ff;
+reg dbg_wr_reorder_ff;
+localparam REORDER_NUM_LOG = 5;
+reg [REORDER_NUM_LOG-1 : 0] rd_reorder_cnt;
+reg [REORDER_NUM_LOG-1 : 0] wr_reorder_cnt;
+always @(posedge clk)
+  if(~rst_n) begin
+    dbg_rd_reorder_ff <= 1'b0;
+    dbg_wr_reorder_ff <= 1'b0;
+    rd_reorder_cnt <= 0;
+    wr_reorder_cnt <= 0;
+  end
+  else begin
+    dbg_rd_reorder_ff <= dbg_rd_reorder;
+    dbg_wr_reorder_ff <= dbg_wr_reorder;
+    if (dbg_rd_reorder & ~dbg_rd_reorder_ff) rd_reorder_cnt <= rd_reorder_cnt+1;
+    if (dbg_wr_reorder & ~dbg_wr_reorder_ff) wr_reorder_cnt <= wr_reorder_cnt+1;
+  end
 
 assign read_req_val  = req_val && !req_command && !req_occup && !init_outstnd_mem;
 assign read_req_id = req_id;

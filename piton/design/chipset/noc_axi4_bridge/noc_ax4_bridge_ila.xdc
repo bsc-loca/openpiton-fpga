@@ -336,6 +336,12 @@ set_property port_width 1                [get_debug_ports u_ila_0/probe96]
 create_debug_port u_ila_0 probe
 set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe97]
 set_property port_width 1                [get_debug_ports u_ila_0/probe97]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe98]
+set_property port_width 5                [get_debug_ports u_ila_0/probe98]
+create_debug_port u_ila_0 probe
+set_property PROBE_TYPE DATA_AND_TRIGGER [get_debug_ports u_ila_0/probe99]
+set_property port_width 5                [get_debug_ports u_ila_0/probe99]
 
 
 connect_debug_port u_ila_0/probe0  chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_read/m_axi_arvalid
@@ -448,6 +454,8 @@ connect_debug_port u_ila_0/probe94 chipset/chipset_impl/mc_top/noc_axi4_bridge/n
 connect_debug_port u_ila_0/probe95 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/outstnd_rsp_cnt
 connect_debug_port u_ila_0/probe96 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dbg_wr_reorder
 connect_debug_port u_ila_0/probe97 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/dbg_rd_reorder
+connect_debug_port u_ila_0/probe98 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/rd_reorder_cnt
+connect_debug_port u_ila_0/probe99 chipset/chipset_impl/mc_top/noc_axi4_bridge/noc_axi4_bridge_buffer/wr_reorder_cnt
 
 set_property C_CLK_INPUT_FREQ_HZ 300000000 [get_debug_cores dbg_hub]
 set_property C_ENABLE_CLK_DIVIDER false [get_debug_cores dbg_hub]
