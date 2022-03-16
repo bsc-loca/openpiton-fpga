@@ -1,3 +1,4 @@
+// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 // ========== Copyright Header Begin ============================================
 // Copyright (c) 2019 Princeton University
 // All rights reserved.
@@ -305,7 +306,7 @@ always @(posedge clk)
   end
 
 
-localparam OUTSTND_HDR_WIDTH = NUM_REQ_OUTSTANDING_LOG2 + 1 + `MSG_HEADER_WIDTH;
+localparam OUTSTND_HDR_WIDTH = (NUM_REQ_OUTSTANDING_LOG2+1) + NUM_REQ_OUTSTANDING_LOG2 + 1 + `MSG_HEADER_WIDTH;
 wire [OUTSTND_HDR_WIDTH-1 : 0] clean_header;
 wire req_occup = clean_header[`MSG_HEADER_WIDTH];
 
@@ -342,12 +343,19 @@ wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] stor_id = (((stor_mshrid >> NUM_REQ_MS
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_stor_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{stor_command}}} << NUM_REQ_THREADS_LOG2) | stor_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
-wire outstnd_vrt_rdptr_val = (outstnd_vrt_rdptr == stor_header[OUTSTND_HDR_WIDTH-1 : `MSG_HEADER_WIDTH+1] &&
+wire outstnd_vrt_rdptr_val = (outstnd_vrt_rdptr == stor_header[`MSG_HEADER_WIDTH+1 +: NUM_REQ_OUTSTANDING_LOG2] &&
                               full_resp_id == full_stor_id && stor_header[`MSG_HEADER_WIDTH]);
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_abs_rdptr_mem = outstnd_abs_rdptr + {{(NUM_REQ_OUTSTANDING_LOG2-1){1'b0}},
                                                                                    (~ outstnd_vrt_empt &
                                                                                     ~(outstnd_vrt_rdptr_val |
                                                                                       outstnd_abs_rdptr_val))};
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrreq_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdreq_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_wrrsp_cnt;
+reg  [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rdrsp_cnt;
+wire [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_rsp_cnt = stor_header[NUM_REQ_OUTSTANDING_LOG2 + `MSG_HEADER_WIDTH+1 +: NUM_REQ_OUTSTANDING_LOG2+1];
+reg dbg_wr_reorder;
+reg dbg_rd_reorder;
 reg [FULL_NUM_REQ_THREADS_LOG2 : 0] itr_ptr;
 always @(posedge clk)
   if(~rst_n) begin
@@ -356,6 +364,12 @@ always @(posedge clk)
       outstnd_vrt_rdptrs[itr_ptr] <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
       outstnd_abs_rdptrs[itr_ptr] <= { NUM_REQ_OUTSTANDING_LOG2   {1'b0}};
       outstnd_abs_rdptrs_val[itr_ptr] <= 1'b0;
+      outstnd_wrreq_cnt <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      outstnd_rdreq_cnt <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      outstnd_wrrsp_cnt <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      outstnd_rdrsp_cnt <= {(NUM_REQ_OUTSTANDING_LOG2+1){1'b0}};
+      dbg_wr_reorder <= 1'b0;
+      dbg_rd_reorder <= 1'b0;
     end
   end
   else begin
@@ -366,6 +380,8 @@ always @(posedge clk)
         outstnd_abs_rdptrs_val[full_req_id] <= 1'b1;
         outstnd_command       [full_req_id] <= req_command;
       end
+      if (req_command) outstnd_wrreq_cnt <= outstnd_wrreq_cnt + 1;
+      else             outstnd_rdreq_cnt <= outstnd_rdreq_cnt + 1;
     end
     if (!outstnd_vrt_empt) begin
       if (!outstnd_abs_rdptr_val && outstnd_vrt_rdptr_val) begin 
@@ -378,6 +394,14 @@ always @(posedge clk)
     if (ser_go) begin 
       outstnd_vrt_rdptrs    [full_resp_id] <= outstnd_vrt_rdptrs[full_resp_id] + 1;
       outstnd_abs_rdptrs_val[full_resp_id] <= 1'b0;
+      if (stor_command) begin
+        dbg_wr_reorder <= outstnd_wrrsp_cnt != outstnd_rsp_cnt;
+        outstnd_wrrsp_cnt <= outstnd_wrrsp_cnt + 1;
+      end
+      else begin
+        dbg_rd_reorder <= outstnd_rdrsp_cnt != outstnd_rsp_cnt;
+        outstnd_rdrsp_cnt <= outstnd_rdrsp_cnt + 1;
+      end
     end
     // Initialization of Outstanding requests memory
     if (init_outstnd_mem) outstnd_abs_rdptrs[full_resp_id] <= outstnd_abs_rdptr + 1;
@@ -391,17 +415,19 @@ assign write_req_val = req_val &&  req_command && !req_occup && !init_outstnd_me
 assign write_req_id = req_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
+wire [NUM_REQ_OUTSTANDING_LOG2   : 0] outstnd_req_cnt = req_command ? outstnd_wrreq_cnt :
+                                                                      outstnd_rdreq_cnt;
 
 // Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
     .RAM_DEPTH(NUM_REQ_OUTSTANDING),  // Specify RAM depth (number of entries)
-    .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
+    .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
 ) outstnd_req_mem (
     .addra(outstnd_abs_rdptr_mem),    // Port A address bus, width determined from RAM_DEPTH
     .addrb(outstnd_abs_wrptr_mem),    // Port B address bus, width determined from RAM_DEPTH
     .dina({OUTSTND_HDR_WIDTH{1'b0}}), // Port A RAM input data, width determined from RAM_WIDTH
-    .dinb({outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
+    .dinb({outstnd_req_cnt,outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
     .clka(clk),                       // Clock
     .wea(ser_go | init_outstnd_mem),  // Port A write enable
     .web(req_go),                     // Port B write enable
