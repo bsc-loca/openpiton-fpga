@@ -373,8 +373,10 @@ module system(
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
     `ifdef ALVEOU280_BOARD
         // GTY quads connected to QSFP unit on Alveo board
-        input          qsfp_ref_clk_n,
-        input          qsfp_ref_clk_p,
+        input          qsfp0_ref_clk_n,
+        input          qsfp0_ref_clk_p,
+        input          qsfp1_ref_clk_n,
+        input          qsfp1_ref_clk_p,
         input   [3:0]  qsfp_4x_grx_n,
         input   [3:0]  qsfp_4x_grx_p,
         output  [3:0]  qsfp_4x_gtx_n,
@@ -1358,8 +1360,13 @@ chipset chipset(
         .net_phy_mdc        (net_phy_mdc),
     `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
          // GTY quads connected to QSFP unit on Alveo board
-        .qsfp_ref_clk_n     (qsfp_ref_clk_n),
-        .qsfp_ref_clk_p     (qsfp_ref_clk_p),
+      `ifdef PITON_FPGA_ETH_PORT1
+        .qsfp_ref_clk_n     (qsfp1_ref_clk_n),
+        .qsfp_ref_clk_p     (qsfp1_ref_clk_p),
+      `else
+        .qsfp_ref_clk_n     (qsfp0_ref_clk_n),
+        .qsfp_ref_clk_p     (qsfp0_ref_clk_p),
+      `endif
         .qsfp_4x_grx_n      (qsfp_4x_grx_n),
         .qsfp_4x_grx_p      (qsfp_4x_grx_p),
         .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),

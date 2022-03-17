@@ -1,3 +1,22 @@
+# Copyright 2022 Barcelona Supercomputing Center-Centro Nacional de Supercomputación
+
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Author: Alexander Kropotov, BSC-CNS
+# Date: 22.02.2022
+# Description: 
+
+
 # Proc to create BD Eth_CMAC_syst
 proc cr_bd_Eth_CMAC_syst { parentCell } {
 
@@ -142,11 +161,6 @@ current_bd_design $design_name
 
   # Create interface ports
   set qsfp_4x [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:gt_rtl:1.0 qsfp_4x ]
-
-  set qsfp_refck [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 qsfp_refck ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {156250000} \
-   ] $qsfp_refck
 
   set s_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 s_axi ]
   set_property -dict [ list \
@@ -320,27 +334,67 @@ current_bd_design $design_name
  ] $dma_loopback_fifo
 
   # Create instance: eth100gb, and set properties
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou280"} {
+    set g_eth100gb_freq "156.25"
+      # QSFP0 definitions
+      set g_cmac_loc      "CMACE4_X0Y6"
+      set g_gt_grp_loc    "X0Y40~X0Y43"
+      set g_lane1_loc     "X0Y40"
+      set g_lane2_loc     "X0Y41"
+      set g_lane3_loc     "X0Y42"
+      set g_lane4_loc     "X0Y43"
+    if {[info exists ::env(PROTOSYN_RUNTIME_ETHPORT)] && $::env(PROTOSYN_RUNTIME_ETHPORT)=="1"} {
+      # QSFP1 definitions
+      # set g_cmac_loc      "CMACE4_X0Y7"
+      # using non defualt for QSFP1 CMAC provides better timing
+      set g_cmac_loc      "CMACE4_X0Y6"
+      set g_gt_grp_loc    "X0Y44~X0Y47"
+      set g_lane1_loc     "X0Y44"
+      set g_lane2_loc     "X0Y45"
+      set g_lane3_loc     "X0Y46"
+      set g_lane4_loc     "X0Y47"
+    }
+  }
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou55c"} {
+    set g_eth100gb_freq "161.1328125"
+      # QSFP0 definitions
+      set g_cmac_loc      "CMACE4_X0Y3"
+      set g_gt_grp_loc    "X0Y24~X0Y27"
+      set g_lane1_loc     "X0Y24"
+      set g_lane2_loc     "X0Y25"
+      set g_lane3_loc     "X0Y26"
+      set g_lane4_loc     "X0Y27"
+    if {[info exists ::env(PROTOSYN_RUNTIME_ETHPORT)] && $::env(PROTOSYN_RUNTIME_ETHPORT)=="1"} {
+      # QSFP1 definitions
+      set g_cmac_loc      "CMACE4_X0Y4"
+      set g_gt_grp_loc    "X0Y28~X0Y31"
+      set g_lane1_loc     "X0Y28"
+      set g_lane2_loc     "X0Y29"
+      set g_lane3_loc     "X0Y30"
+      set g_lane4_loc     "X0Y31"
+    }
+  }
   set eth100gb [ create_bd_cell -type ip -vlnv xilinx.com:ip:cmac_usplus:3.1 eth100gb ]
   set_property -dict [ list \
    CONFIG.ADD_GT_CNRL_STS_PORTS {0} \
    CONFIG.CMAC_CAUI4_MODE {1} \
-   CONFIG.CMAC_CORE_SELECT {CMACE4_X0Y6} \
+   CONFIG.CMAC_CORE_SELECT $g_cmac_loc \
    CONFIG.DIFFCLK_BOARD_INTERFACE {Custom} \
    CONFIG.ENABLE_AXI_INTERFACE {1} \
    CONFIG.ENABLE_PIPELINE_REG {0} \
    CONFIG.ENABLE_TIME_STAMPING {0} \
    CONFIG.ETHERNET_BOARD_INTERFACE {Custom} \
-   CONFIG.GT_GROUP_SELECT {X0Y44~X0Y47} \
-   CONFIG.GT_REF_CLK_FREQ {156.25} \
+   CONFIG.GT_GROUP_SELECT $g_gt_grp_loc \
+   CONFIG.GT_REF_CLK_FREQ $g_eth100gb_freq \
    CONFIG.GT_RX_BUFFER_BYPASS {0} \
    CONFIG.INCLUDE_AUTO_NEG_LT_LOGIC {0} \
    CONFIG.INCLUDE_RS_FEC {1} \
    CONFIG.INCLUDE_STATISTICS_COUNTERS {1} \
    CONFIG.LANE10_GT_LOC {NA} \
-   CONFIG.LANE1_GT_LOC {X0Y44} \
-   CONFIG.LANE2_GT_LOC {X0Y45} \
-   CONFIG.LANE3_GT_LOC {X0Y46} \
-   CONFIG.LANE4_GT_LOC {X0Y47} \
+   CONFIG.LANE1_GT_LOC $g_lane1_loc \
+   CONFIG.LANE2_GT_LOC $g_lane2_loc \
+   CONFIG.LANE3_GT_LOC $g_lane3_loc \
+   CONFIG.LANE4_GT_LOC $g_lane4_loc \
    CONFIG.LANE5_GT_LOC {NA} \
    CONFIG.LANE6_GT_LOC {NA} \
    CONFIG.LANE7_GT_LOC {NA} \
@@ -365,6 +419,13 @@ current_bd_design $design_name
   set_property USER_COMMENTS.comment_1 "http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=117
 http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88" [get_bd_pins /eth100gb/gt_loopback_in]
   set_property USER_COMMENTS.comment_4 "https://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88" [get_bd_pins /eth100gb/gt_loopback_in]
+
+  set g_refport_freq [format {%0.0f} [expr {$g_eth100gb_freq*1000000}] ]
+  puts "PORT FREQUENCY: $g_refport_freq"
+  set qsfp_refck [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 qsfp_refck ]
+  set_property -dict [ list \
+   CONFIG.FREQ_HZ $g_refport_freq \
+   ] $qsfp_refck
 
   # Create instance: eth_dma, and set properties
   set eth_dma [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_dma:7.1 eth_dma ]
@@ -538,7 +599,7 @@ http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-tra
   # Create instance: sg_mem_dma, and set properties
   set sg_mem_dma [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 sg_mem_dma ]
   set_property -dict [ list \
-   CONFIG.ECC_TYPE {Hamming} \
+   CONFIG.ECC_TYPE {0} \
    CONFIG.PROTOCOL {AXI4} \
    CONFIG.SINGLE_PORT_BRAM {1} \
  ] $sg_mem_dma

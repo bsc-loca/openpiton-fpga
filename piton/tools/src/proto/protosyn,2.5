@@ -57,7 +57,7 @@ FLOW_STEP_OPTIONS = ["project", "impl"]
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--pronoc] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--pronoc] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -109,6 +109,8 @@ def usage():
     print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
+    print("\n       --ethport <number>", file=sys.stderr)
+    print("              Define board-level Ethernet port number", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -286,7 +288,7 @@ def runImplF1(board, design_data, src_dir, work_dir, log_dir, def_list, slurm, d
     return jid
 
 
-def makeProject(board, hbm, design_data, work_dir, log_dir, slurm, dep_list):
+def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_list):
     prev_dir = os.getcwd()
 
     os.chdir(work_dir)
@@ -304,6 +306,8 @@ def makeProject(board, hbm, design_data, work_dir, log_dir, slurm, dep_list):
     if board == "alveou280" and hbm:
         os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
         print_info("HBM is defined as primary system RAM")
+    if int(ethport) > 0:
+        os.environ['PROTOSYN_RUNTIME_ETHPORT'] = "1"
     jid = None
     if (tool == "vivado"):
         print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
@@ -499,6 +503,7 @@ def setParserOptions(parser):
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
     parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
+    parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
@@ -637,6 +642,8 @@ def makeDefList(options):
             defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETH_CMAC")
             os.environ['ALVEO_ETH'] = "1"
+            if int(options.ethport) > 0:
+              defines.append("PITON_FPGA_ETH_PORT1")
         else:
             print_info("--eth option is ignored for %s" % options.board)
 
@@ -997,7 +1004,7 @@ def main():
     dep_list = []
 
     if run_make_project:
-        jid = makeProject(options.board, options.hbm, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
+        jid = makeProject(options.board, options.hbm, options.ethport, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
         if jid != None:
             dep_list.append(jid)
 
