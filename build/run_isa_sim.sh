@@ -20,7 +20,7 @@ echo "[MEEP] Running simulation..."
 sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled 
 
 echo "[MEEP] Running spike. Getting golden reference..."
-$TOOLS/spike -l --isa rv64ima /home/tools/openpiton/open-piton/piton/design/chip/tile/ariane/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
+$TOOLS/spike -l --isa rv64g ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
 
 echo "[MEEP] Formating lagarto signature for comparation..."
 cat signature.txt |  $TOOLS/spike-dasm > lagarto.sig
