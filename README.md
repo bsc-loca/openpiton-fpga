@@ -9,9 +9,9 @@ All new feature will be develop using feature branch. Like feature/lagarto_ari
 
 All new bug will be investigated and resolved using bug branch. like bug/1232
 
-### Cloning the repo
+### Cloning the repo and move to the stable branch
     
-    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b <BRANCH NAME>
+    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b openpiton-dev
 
 ### Set env for EDA tools
 
