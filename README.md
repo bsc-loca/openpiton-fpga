@@ -16,7 +16,7 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
 ### Set env for EDA tools
 
     source /home/tools/riscv_vector_toolchain/set_env.sh
-    source /eda/env.sh
+    source /apps/env.sh
 
 ### Setup and submodules initialization
 
