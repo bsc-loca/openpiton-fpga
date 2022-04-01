@@ -28,7 +28,8 @@
 # Not intended to be run standalone
 #
 
-set BOARD_PART "xilinx.com:au280:part0:1.1"
+# set BOARD_PART "xilinx.com:au280:part0:1.1"
+set BOARD_PART ""
 set FPGA_PART "xcu280-fsvh2892-2L-e"
 set VIVADO_FLOW_PERF_OPT 0
 set BOARD_DEFAULT_VERILOG_MACROS "ALVEOU280_BOARD"

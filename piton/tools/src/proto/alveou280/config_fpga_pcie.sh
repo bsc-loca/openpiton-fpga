@@ -16,6 +16,7 @@ if [ $script == $0 ]; then
 fi
 
 #Load PCIe bitstream to FPGA and setup host PCIe environment
+hw_server -d
 source /home/tools/scripts/load-bitstream.sh qdma ../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
 
 #Some sanity checks

@@ -20,7 +20,7 @@ set script_folder [_tcl::get_script_folder]
 ################################################################
 # Check if script is running in correct Vivado version.
 ################################################################
-set scripts_vivado_version 2020.1
+set scripts_vivado_version 2021.2
 set current_vivado_version [version -short]
 
 if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
@@ -44,7 +44,6 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
    create_project project_1 myproj -part xcu280-fsvh2892-2L-e
-   set_property BOARD_PART xilinx.com:au280:part0:1.1 [current_project]
 }
 
 
@@ -133,7 +132,7 @@ xilinx.com:ip:qdma:4.0\
 xilinx.com:ip:rama:1.1\
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:system_ila:1.1\
-xilinx.com:ip:util_ds_buf:2.1\
+xilinx.com:ip:util_ds_buf:2.2\
 xilinx.com:ip:blk_mem_gen:8.4\
 "
 
@@ -303,8 +302,24 @@ set_property -dict [list CONFIG.DATA_WIDTH {256}] [get_bd_intf_ports axi4_mm]
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
-   CONFIG.C0_CLOCK_BOARD_INTERFACE {sysclk0} \
-   CONFIG.C0_DDR4_BOARD_INTERFACE {ddr4_sdram_c0} \
+   CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
+   CONFIG.C0.DDR4_AxiAddressWidth {34} \
+   CONFIG.C0.DDR4_AxiDataWidth {512} \
+   CONFIG.C0.DDR4_CLKFBOUT_MULT {15} \
+   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+   CONFIG.C0.DDR4_CasLatency {17} \
+   CONFIG.C0.DDR4_CasWriteLatency {12} \
+   CONFIG.C0.DDR4_DataMask {NONE} \
+   CONFIG.C0.DDR4_DataWidth {72} \
+   CONFIG.C0.DDR4_EN_PARITY {true} \
+   CONFIG.C0.DDR4_Ecc {true} \
+   CONFIG.C0.DDR4_InputClockPeriod {9996} \
+   CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
+   CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
+   CONFIG.C0.DDR4_MemoryType {RDIMMs} \
+   CONFIG.C0.DDR4_TimePeriod {833} \
+   CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
+   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
    CONFIG.RESET_BOARD_INTERFACE {Custom} \
  ] $ddr4_0
 
@@ -354,6 +369,22 @@ set_property -dict [list CONFIG.DATA_WIDTH {256}] [get_bd_intf_ports axi4_mm]
    CONFIG.USER_HBM_LOCK_REF_DLY_1 {31} \
    CONFIG.USER_HBM_RES_1 {10} \
    CONFIG.USER_HBM_STACK {2} \
+   CONFIG.USER_MC0_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC10_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC11_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC12_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC13_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC14_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC15_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC1_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC2_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC3_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC4_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC5_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC6_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC7_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC8_REF_TEMP_COMP {false} \
+   CONFIG.USER_MC9_REF_TEMP_COMP {false} \
    CONFIG.USER_MC_ENABLE_08 {TRUE} \
    CONFIG.USER_MC_ENABLE_09 {TRUE} \
    CONFIG.USER_MC_ENABLE_10 {TRUE} \
@@ -481,6 +512,8 @@ set_property CONFIG.NUM_WRITE_THREADS 16 [get_bd_intf_pins /hbm_0/SAXI_01]
    CONFIG.pf3_bar0_prefetchable_qdma {true} \
    CONFIG.pf3_bar2_prefetchable_qdma {true} \
    CONFIG.pf3_msix_enabled_qdma {false} \
+   CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
+   CONFIG.pl_link_cap_max_link_width {X16} \
    CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
@@ -518,16 +551,16 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_H
   # Create instance: system_ila_1, and set properties
   set system_ila_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_1 ]
   set_property -dict [ list \
+   CONFIG.C_BRAM_CNT {0.0} \
    CONFIG.C_MON_TYPE {NATIVE} \
    CONFIG.C_NUM_OF_PROBES {1} \
    CONFIG.C_PROBE0_TYPE {0} \
  ] $system_ila_1
 
   # Create instance: util_ds_buf, and set properties
-  set util_ds_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.1 util_ds_buf ]
+  set util_ds_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf ]
   set_property -dict [ list \
-   CONFIG.DIFF_CLK_IN_BOARD_INTERFACE {pcie_refclk} \
-   CONFIG.USE_BOARD_FLOW {true} \
+   CONFIG.C_BUF_TYPE {IBUFDSGTE} \
  ] $util_ds_buf
 
   # Create instance: vccx1, and set properties
@@ -603,7 +636,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_H
 }
 
   # Create address segments
-  assign_bd_address -offset 0x00000000 -range 0x00000200 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
