@@ -2,7 +2,8 @@
 
 echo ""
 echo "Extracting hw definitions from BD tcl script by Vivado to create C-header file"
-vivado -mode batch -nolog -nojournal -notrace -source ./eth_syst_xparams.tcl
+# vivado -mode batch -nolog -nojournal -notrace -source ./eth_syst_xparams.tcl
+tclsh ./eth_syst_xparams.tcl
 
 echo ""
 # Taking some DMA driver sources
