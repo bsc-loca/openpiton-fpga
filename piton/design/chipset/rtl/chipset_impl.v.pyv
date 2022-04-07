@@ -421,6 +421,48 @@ wire                   buf_%s_noc3_ready;
        devices[i]["name"], devices[i]["name"], devices[i]["name"],
        devices[i]["name"], devices[i]["name"], devices[i]["name"],
        devices[i]["name"], devices[i]["name"], devices[i]["name"]))
+
+    if (devices[i]["name"] == "mem"):
+      for idx in range (PITON_EXTRA_MEMS):
+        print("""
+wire [`DATA_WIDTH-1:0] %s%d_buf_xbar_noc2_data;
+wire                   %s%d_buf_xbar_noc2_valid;
+wire                   %s%d_buf_xbar_noc2_yummy;
+wire [`DATA_WIDTH-1:0] xbar_buf_%s%d_noc2_data;
+wire                   xbar_buf_%s%d_noc2_valid;
+wire                   xbar_buf_%s%d_noc2_yummy;
+
+wire [`DATA_WIDTH-1:0] buf_%s%d_noc2_data;
+wire                   buf_%s%d_noc2_valid;
+wire                   %s%d_buf_noc2_ready;
+
+wire [`DATA_WIDTH-1:0] %s%d_buf_noc2_data;
+wire                   %s%d_buf_noc2_valid;
+wire                   buf_%s%d_noc2_ready;
+""" % (devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1))
+        print("""
+wire [`DATA_WIDTH-1:0] %s%d_buf_xbar_noc3_data;
+wire                   %s%d_buf_xbar_noc3_valid;
+wire                   %s%d_buf_xbar_noc3_yummy;
+wire [`DATA_WIDTH-1:0] xbar_buf_%s%d_noc3_data;
+wire                   xbar_buf_%s%d_noc3_valid;
+wire                   xbar_buf_%s%d_noc3_yummy;
+
+wire [`DATA_WIDTH-1:0] buf_%s%d_noc3_data;
+wire                   buf_%s%d_noc3_valid;
+wire                   %s%d_buf_noc3_ready;
+
+wire [`DATA_WIDTH-1:0] %s%d_buf_noc3_data;
+wire                   %s%d_buf_noc3_valid;
+wire                   buf_%s%d_noc3_ready;
+""" % (devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1,
+       devices[i]["name"], idx+1, devices[i]["name"], idx+1, devices[i]["name"], idx+1))
+
     # if the device doesn't have a noc2 input, tie off unused wires
     if not (devices[i]["noc2_in"]):
         print("""
@@ -638,6 +680,15 @@ for i in range(len(devices)):
             xbartemplate += "    .validOut_%d(xbar_buf_%s_noc2_valid),\n"  % (devices[i]["portnum"], devices[i]["name"])
             xbartemplate += "    .yummyOut_%d(xbar_buf_%s_noc2_yummy),\n\n" % (devices[i]["portnum"], devices[i]["name"])
 
+            if (devices[i]["name"] == "mem"):
+              for idx in range (PITON_EXTRA_MEMS):
+                xbartemplate += "    .dataIn_%d_%d  (%s%d_buf_xbar_noc2_data),\n"    % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .validIn_%d_%d (%s%d_buf_xbar_noc2_valid),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .yummyIn_%d_%d (%s%d_buf_xbar_noc2_yummy),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .dataOut_%d_%d (xbar_buf_%s%d_noc2_data),\n"    % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .validOut_%d_%d(xbar_buf_%s%d_noc2_valid),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .yummyOut_%d_%d(xbar_buf_%s%d_noc2_yummy),\n\n" % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+
 xbartemplate = xbartemplate[:-3] + r'''
 );'''
 
@@ -664,6 +715,15 @@ for i in range(len(devices)):
             xbartemplate += "    .dataOut_%d(xbar_buf_%s_noc3_data),\n"  % (devices[i]["portnum"], devices[i]["name"])
             xbartemplate += "    .validOut_%d(xbar_buf_%s_noc3_valid),\n"  % (devices[i]["portnum"], devices[i]["name"])
             xbartemplate += "    .yummyOut_%d(xbar_buf_%s_noc3_yummy),\n\n" % (devices[i]["portnum"], devices[i]["name"])
+
+            if (devices[i]["name"] == "mem"):
+              for idx in range (PITON_EXTRA_MEMS):
+                xbartemplate += "    .dataIn_%d_%d  (%s%d_buf_xbar_noc3_data),\n"    % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .validIn_%d_%d (%s%d_buf_xbar_noc3_valid),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .yummyIn_%d_%d (%s%d_buf_xbar_noc3_yummy),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .dataOut_%d_%d (xbar_buf_%s%d_noc3_data),\n"    % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .validOut_%d_%d(xbar_buf_%s%d_noc3_valid),\n"   % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
+                xbartemplate += "    .yummyOut_%d_%d(xbar_buf_%s%d_noc3_yummy),\n\n" % (devices[i]["portnum"], idx+1, devices[i]["name"], idx+1)
 
 xbartemplate = xbartemplate[:-3] + r'''
     ,

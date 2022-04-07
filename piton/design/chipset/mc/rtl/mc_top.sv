@@ -182,7 +182,7 @@ noc_axi4_bridge #(
       .NUM_REQ_XTHREADS (`PITON_X_TILES),
     `endif
     .NOC2AXI_DESER_ORDER (1)
-) sram_noc_axi4_bridge (
+) noc_axi4_bridge_sram (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
     .uart_boot_en       (1'b0),
@@ -1073,6 +1073,148 @@ noc_axi4_bridge #(
 
 );
 
+
+`define MC_BRIDGE(idx) \
+\
+wire [`AXI4_ID_WIDTH     -1:0]     m_axi``idx``_awid; \
+wire [`AXI4_ADDR_WIDTH   -1:0]     m_axi``idx``_awaddr; \
+wire [`AXI4_LEN_WIDTH    -1:0]     m_axi``idx``_awlen; \
+wire [`AXI4_SIZE_WIDTH   -1:0]     m_axi``idx``_awsize; \
+wire [`AXI4_BURST_WIDTH  -1:0]     m_axi``idx``_awburst; \
+wire                               m_axi``idx``_awlock; \
+wire [`AXI4_CACHE_WIDTH  -1:0]     m_axi``idx``_awcache; \
+wire [`AXI4_PROT_WIDTH   -1:0]     m_axi``idx``_awprot; \
+wire [`AXI4_QOS_WIDTH    -1:0]     m_axi``idx``_awqos; \
+wire [`AXI4_REGION_WIDTH -1:0]     m_axi``idx``_awregion; \
+wire [`AXI4_USER_WIDTH   -1:0]     m_axi``idx``_awuser; \
+wire                               m_axi``idx``_awvalid; \
+wire                               m_axi``idx``_awready; \
+\
+wire  [`AXI4_ID_WIDTH     -1:0]    m_axi``idx``_wid; \
+wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi``idx``_wdata; \
+wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi``idx``_wstrb; \
+wire                               m_axi``idx``_wlast; \
+wire  [`AXI4_USER_WIDTH   -1:0]    m_axi``idx``_wuser; \
+wire                               m_axi``idx``_wvalid; \
+wire                               m_axi``idx``_wready; \
+\
+wire  [`AXI4_ID_WIDTH     -1:0]    m_axi``idx``_arid; \
+wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi``idx``_araddr; \
+wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi``idx``_arlen; \
+wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi``idx``_arsize; \
+wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi``idx``_arburst; \
+wire                               m_axi``idx``_arlock; \
+wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi``idx``_arcache; \
+wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi``idx``_arprot; \
+wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi``idx``_arqos; \
+wire  [`AXI4_REGION_WIDTH -1:0]    m_axi``idx``_arregion; \
+wire  [`AXI4_USER_WIDTH   -1:0]    m_axi``idx``_aruser; \
+wire                               m_axi``idx``_arvalid; \
+wire                               m_axi``idx``_arready; \
+\
+wire  [`AXI4_ID_WIDTH     -1:0]    m_axi``idx``_rid; \
+wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi``idx``_rdata; \
+wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi``idx``_rresp; \
+wire                               m_axi``idx``_rlast; \
+wire  [`AXI4_USER_WIDTH   -1:0]    m_axi``idx``_ruser; \
+wire                               m_axi``idx``_rvalid; \
+wire                               m_axi``idx``_rready; \
+\
+wire  [`AXI4_ID_WIDTH     -1:0]    m_axi``idx``_bid; \
+wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi``idx``_bresp; \
+wire  [`AXI4_USER_WIDTH   -1:0]    m_axi``idx``_buser; \
+wire                               m_axi``idx``_bvalid; \
+wire                               m_axi``idx``_bready; \
+\
+noc_axi4_bridge #( \
+    .AXI4_DAT_WIDTH_USED(HBM_WIDTH), \
+    .ADDR_OFFSET(64'h80000000) \
+) noc_axi4_bridge_mc``idx ( \
+    .clk                (core_ref_clk), \
+    .rst_n              (sys_rst_n), \
+    .uart_boot_en       (1'b0), \
+    .phy_init_done      (noc_axi4_bridge_init_done ), \
+    .axi_id_deadlock    (), \
+\
+    .src_bridge_vr_noc2_val(mc``idx``_flit_in_val), \
+    .src_bridge_vr_noc2_dat(mc``idx``_flit_in_data), \
+    .src_bridge_vr_noc2_rdy(mc``idx``_flit_in_rdy), \
+\
+    .bridge_dst_vr_noc3_val(mc``idx``_flit_out_val), \
+    .bridge_dst_vr_noc3_dat(mc``idx``_flit_out_data), \
+    .bridge_dst_vr_noc3_rdy(mc``idx``_flit_out_rdy), \
+\
+    .m_axi_awid      (m_axi``idx``_awid), \
+    .m_axi_awaddr    (m_axi``idx``_awaddr), \
+    .m_axi_awlen     (m_axi``idx``_awlen), \
+    .m_axi_awsize    (m_axi``idx``_awsize), \
+    .m_axi_awburst   (m_axi``idx``_awburst), \
+    .m_axi_awlock    (m_axi``idx``_awlock), \
+    .m_axi_awcache   (m_axi``idx``_awcache), \
+    .m_axi_awprot    (m_axi``idx``_awprot), \
+    .m_axi_awqos     (m_axi``idx``_awqos), \
+    .m_axi_awregion  (m_axi``idx``_awregion), \
+    .m_axi_awuser    (m_axi``idx``_awuser), \
+    .m_axi_awvalid   (m_axi``idx``_awvalid), \
+    .m_axi_awready   (m_axi``idx``_awready), \
+\
+    .m_axi_wid       (m_axi``idx``_wid), \
+    .m_axi_wdata     (m_axi``idx``_wdata), \
+    .m_axi_wstrb     (m_axi``idx``_wstrb), \
+    .m_axi_wlast     (m_axi``idx``_wlast), \
+    .m_axi_wuser     (m_axi``idx``_wuser), \
+    .m_axi_wvalid    (m_axi``idx``_wvalid), \
+    .m_axi_wready    (m_axi``idx``_wready), \
+\
+    .m_axi_bid       (m_axi``idx``_bid), \
+    .m_axi_bresp     (m_axi``idx``_bresp), \
+    .m_axi_buser     (m_axi``idx``_buser), \
+    .m_axi_bvalid    (m_axi``idx``_bvalid), \
+    .m_axi_bready    (m_axi``idx``_bready), \
+\
+    .m_axi_arid      (m_axi``idx``_arid), \
+    .m_axi_araddr    (m_axi``idx``_araddr), \
+    .m_axi_arlen     (m_axi``idx``_arlen), \
+    .m_axi_arsize    (m_axi``idx``_arsize), \
+    .m_axi_arburst   (m_axi``idx``_arburst), \
+    .m_axi_arlock    (m_axi``idx``_arlock), \
+    .m_axi_arcache   (m_axi``idx``_arcache), \
+    .m_axi_arprot    (m_axi``idx``_arprot), \
+    .m_axi_arqos     (m_axi``idx``_arqos), \
+    .m_axi_arregion  (m_axi``idx``_arregion), \
+    .m_axi_aruser    (m_axi``idx``_aruser), \
+    .m_axi_arvalid   (m_axi``idx``_arvalid), \
+    .m_axi_arready   (m_axi``idx``_arready), \
+\
+    .m_axi_rid       (m_axi``idx``_rid), \
+    .m_axi_rdata     (m_axi``idx``_rdata), \
+    .m_axi_rresp     (m_axi``idx``_rresp), \
+    .m_axi_rlast     (m_axi``idx``_rlast), \
+    .m_axi_ruser     (m_axi``idx``_ruser), \
+    .m_axi_rvalid    (m_axi``idx``_rvalid), \
+    .m_axi_rready    (m_axi``idx``_rready) \
+);
+
+`define MC_BRIDGES_0
+`define MC_BRIDGES_1  `MC_BRIDGE(1)
+`define MC_BRIDGES_2  `MC_BRIDGES_1  `MC_BRIDGE(2)
+`define MC_BRIDGES_3  `MC_BRIDGES_2  `MC_BRIDGE(3)
+`define MC_BRIDGES_4  `MC_BRIDGES_3  `MC_BRIDGE(4)
+`define MC_BRIDGES_5  `MC_BRIDGES_4  `MC_BRIDGE(5)
+`define MC_BRIDGES_6  `MC_BRIDGES_5  `MC_BRIDGE(6)
+`define MC_BRIDGES_7  `MC_BRIDGES_6  `MC_BRIDGE(7)
+`define MC_BRIDGES_8  `MC_BRIDGES_7  `MC_BRIDGE(8)
+`define MC_BRIDGES_9  `MC_BRIDGES_8  `MC_BRIDGE(9)
+`define MC_BRIDGEs_10 `MC_BRIDGES_9  `MC_BRIDGE(10)
+`define MC_BRIDGEs_11 `MC_BRIDGES_10 `MC_BRIDGE(11)
+`define MC_BRIDGEs_12 `MC_BRIDGES_11 `MC_BRIDGE(12)
+`define MC_BRIDGEs_13 `MC_BRIDGES_12 `MC_BRIDGE(13)
+`define MC_BRIDGEs_14 `MC_BRIDGES_13 `MC_BRIDGE(14)
+`define MC_BRIDGEs_15 `MC_BRIDGES_14 `MC_BRIDGE(15)
+`define MC_BRIDGES(n) `MC_BRIDGES_``n
+
+`MC_BRIDGES(`PITON_EXTRA_MEMS)
+
 `ifdef PITONSYS_MEM_ZEROER
 axi4_zeroer axi4_zeroer(
   .clk                    (ui_clk),
@@ -1188,107 +1330,8 @@ axi4_zeroer axi4_zeroer(
 `ifdef PITONSYS_PCIE
 
 meep_shell meep_shell
-       (.axi4_mm_araddr(m_axi_araddr),
-        .axi4_mm_arburst(m_axi_arburst),
-        // .axi4_mm_arcache(m_axi_arcache),
-        .axi4_mm_arid(m_axi_arid),
-        .axi4_mm_arlen(m_axi_arlen),
-        // .axi4_mm_arlock(m_axi_arlock),
-        // .axi4_mm_arprot(m_axi_arprot),
-        // .axi4_mm_arqos(m_axi_arqos),
-        // .axi4_mm_arregion(m_axi_arregion),
-        .axi4_mm_arready(m_axi_arready),
-        .axi4_mm_arsize(m_axi_arsize),
-        //.axi4_mm_aruser(m_axi_aruser),
-        .axi4_mm_arvalid(m_axi_arvalid),
-        
-        .axi4_mm_awaddr(m_axi_awaddr),
-        .axi4_mm_awburst(m_axi_awburst),
-        // .axi4_mm_awcache(m_axi_awcache),
-        .axi4_mm_awid(m_axi_awid),
-        .axi4_mm_awlen(m_axi_awlen),
-        // .axi4_mm_awlock(m_axi_awlock),
-        // .axi4_mm_awprot(m_axi_awprot),
-        // .axi4_mm_awqos(m_axi_awqos),
-        // .axi4_mm_awregion(m_axi_awregion),
-        .axi4_mm_awready(m_axi_awready),
-        .axi4_mm_awsize(m_axi_awsize),
-        //.axi4_mm_awuser(m_axi_awuser),
-        .axi4_mm_awvalid(m_axi_awvalid),
-        
-        .axi4_mm_bid(m_axi_bid),
-        .axi4_mm_bready(m_axi_bready),
-        .axi4_mm_bresp(m_axi_bresp),
-        //.axi4_mm_buser(m_axi_buser),
-        .axi4_mm_bvalid(m_axi_bvalid),
-        
-        .axi4_mm_rdata(m_axi_rdata),
-        .axi4_mm_rid(m_axi_rid),
-        .axi4_mm_rlast(m_axi_rlast),
-        .axi4_mm_rready(m_axi_rready),
-        .axi4_mm_rresp(m_axi_rresp),
-        //.axi4_mm_ruser(m_axi_ruser),
-        .axi4_mm_rvalid(m_axi_rvalid),
-        
-        .axi4_mm_wdata(m_axi_wdata),
-        // .axi4_mm_wid(m_axi_wid),
-        .axi4_mm_wlast(m_axi_wlast),
-        .axi4_mm_wready(m_axi_wready),
-        .axi4_mm_wstrb(m_axi_wstrb),
-        //.axi4_mm_wuser(m_axi_wuser),
-        .axi4_mm_wvalid(m_axi_wvalid),
-
-
-        .axi4_sram_araddr(sram_axi_araddr),
-        .axi4_sram_arburst(sram_axi_arburst),
-        .axi4_sram_arcache(sram_axi_arcache),
-        .axi4_sram_arid(sram_axi_arid),
-        .axi4_sram_arlen(sram_axi_arlen),
-        .axi4_sram_arlock(sram_axi_arlock),
-        .axi4_sram_arprot(sram_axi_arprot),
-        // .axi4_sram_arqos(sram_axi_arqos),
-        // .axi4_sram_arregion(sram_axi_arregion),
-        .axi4_sram_arready(sram_axi_arready),
-        .axi4_sram_arsize(sram_axi_arsize),
-        // .axi4_sram_aruser(sram_axi_aruser),
-        .axi4_sram_arvalid(sram_axi_arvalid),
-
-        .axi4_sram_awaddr(sram_axi_awaddr),
-        .axi4_sram_awburst(sram_axi_awburst),
-        .axi4_sram_awcache(sram_axi_awcache),
-        .axi4_sram_awid(sram_axi_awid),
-        .axi4_sram_awlen(sram_axi_awlen),
-        .axi4_sram_awlock(sram_axi_awlock),
-        .axi4_sram_awprot(sram_axi_awprot),
-        // .axi4_sram_awqos(sram_axi_awqos),
-        // .axi4_sram_awregion(sram_axi_awregion),
-        .axi4_sram_awready(sram_axi_awready),
-        .axi4_sram_awsize(sram_axi_awsize),
-        // .axi4_sram_awuser(sram_axi_awuser),
-        .axi4_sram_awvalid(sram_axi_awvalid),
-
-        .axi4_sram_bid(sram_axi_bid),
-        .axi4_sram_bready(sram_axi_bready),
-        .axi4_sram_bresp(sram_axi_bresp),
-        // .axi4_sram_buser(sram_axi_buser),
-        .axi4_sram_bvalid(sram_axi_bvalid),
-
-        .axi4_sram_rdata(sram_axi_rdata),
-        .axi4_sram_rid(sram_axi_rid),
-        .axi4_sram_rlast(sram_axi_rlast),
-        .axi4_sram_rready(sram_axi_rready),
-        .axi4_sram_rresp(sram_axi_rresp),
-        // .axi4_sram_ruser(sram_axi_ruser),
-        .axi4_sram_rvalid(sram_axi_rvalid),
-
-        .axi4_sram_wdata(sram_axi_wdata),
-        // .axi4_sram_wid(sram_axi_wid),
-        .axi4_sram_wlast(sram_axi_wlast),
-        .axi4_sram_wready(sram_axi_wready),
-        .axi4_sram_wstrb(sram_axi_wstrb),
-        // .axi4_sram_wuser(sram_axi_wuser),
-        .axi4_sram_wvalid(sram_axi_wvalid),
-
+       (
+         .*, // connecting all AXI's at once 
 
         .mem_calib_complete(init_calib_complete),
         
