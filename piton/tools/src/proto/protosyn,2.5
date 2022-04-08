@@ -107,7 +107,7 @@ def usage():
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
     print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
-    print("\n       --multimem", file=sys.stderr)
+    print("\n       --multimc", file=sys.stderr)
     print("              Implement design with multiple connections to system memory", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
@@ -503,7 +503,7 @@ def setParserOptions(parser):
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
-    parser.add_option("--multimem", dest="multimem", action="store_true", default=False)
+    parser.add_option("--multimc", dest="multimc", action="store_true", default=False)
     parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
@@ -803,9 +803,9 @@ def main():
     os.environ['PITON_NUM_TILES'] = str(options.num_tiles)
 
     os.environ['PITON_EXTRA_MEMS'] = "0"
-    if options.multimem:
+    if options.multimc:
       if not options.hbm:
-        print_info("--multimem option is ignored without --hbm option")
+        print_info("--multimc option is ignored without --hbm option")
       else:
         print_info("Multiple connections to HBM (one per tile) will be used")
         os.environ['PITON_EXTRA_MEMS'] = str(options.num_tiles-1)
