@@ -122,6 +122,17 @@ module chipset_impl(
     output                                      intf_chipset_rdy_noc2,
     output                                      intf_chipset_rdy_noc3
 
+  `ifdef PITON_EXTRA_MEMS
+    ,
+    input  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] intf_mcx_data_noc2,
+    input  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_val_noc2,
+    output [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_rdy_noc2,
+
+    output [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_intf_data_noc3,
+    output [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_val_noc3,
+    input  [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_rdy_noc3
+  `endif
+
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
@@ -838,6 +849,16 @@ credit_to_valrdy noc3_xbar_to_%s(
             .mc_flit_out_val(mem_buf_noc3_valid),
             .mc_flit_out_data(mem_buf_noc3_data),
             .mc_flit_out_rdy(buf_mem_noc3_ready),
+
+          `ifdef PITON_EXTRA_MEMS
+            .mcx_flit_in_val (intf_mcx_val_noc2 ),
+            .mcx_flit_in_data(intf_mcx_data_noc2),
+            .mcx_flit_in_rdy (intf_mcx_rdy_noc2 ),
+
+            .mcx_flit_out_val (mcx_intf_val_noc3 ),
+            .mcx_flit_out_data(mcx_intf_data_noc3),
+            .mcx_flit_out_rdy (mcx_intf_rdy_noc3 ),
+           `endif
 
             .uart_boot_en(uart_boot_en),
             .init_calib_complete_out(init_calib_complete),

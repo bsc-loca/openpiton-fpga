@@ -1344,6 +1344,17 @@ chipset_impl_noc_power_test  chipset_impl (
     .intf_chipset_rdy_noc2(intf_chipset_rdy_noc2),
     .intf_chipset_rdy_noc3(intf_chipset_rdy_noc3)
 
+  `ifdef PITON_EXTRA_MEMS
+    ,
+    .intf_mcx_data_noc2(0),
+    .intf_mcx_val_noc2(0),
+    .intf_mcx_rdy_noc2(),
+
+    .mcx_intf_data_noc3(),
+    .mcx_intf_val_noc3(),
+    .mcx_intf_rdy_noc3(0)
+  `endif
+
     // DRAM and I/O interfaces
     `ifndef PITONSYS_NO_MC
         `ifdef PITON_FPGA_MC_DDR3 

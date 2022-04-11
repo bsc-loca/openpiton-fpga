@@ -43,6 +43,16 @@ module mc_top (
     output                          mc_flit_out_val,
     input                           mc_flit_out_rdy,
 
+  `ifdef PITON_EXTRA_MEMS
+    input   [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_flit_in_data,
+    input   [`PITON_EXTRA_MEMS-1:0]                    mcx_flit_in_val,
+    output  [`PITON_EXTRA_MEMS-1:0]                    mcx_flit_in_rdy,
+
+    output  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_flit_out_data,
+    output  [`PITON_EXTRA_MEMS-1:0]                    mcx_flit_out_val,
+    input   [`PITON_EXTRA_MEMS-1:0]                    mcx_flit_out_rdy,
+  `endif
+
     input                           uart_boot_en,
     
 `ifdef PITONSYS_DDR4
@@ -1128,7 +1138,10 @@ wire                               m_axi``idx``_bready; \
 \
 noc_axi4_bridge #( \
     .AXI4_DAT_WIDTH_USED(HBM_WIDTH), \
-    .ADDR_OFFSET(64'h80000000) \
+    .ADDR_OFFSET(64'h80000000), \
+    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4), \
+    .NUM_REQ_YTHREADS (`PITON_Y_TILES), \
+    .NUM_REQ_XTHREADS (`PITON_X_TILES) \
 ) noc_axi4_bridge_mc``idx ( \
     .clk                (core_ref_clk), \
     .rst_n              (sys_rst_n), \
@@ -1136,13 +1149,13 @@ noc_axi4_bridge #( \
     .phy_init_done      (noc_axi4_bridge_init_done ), \
     .axi_id_deadlock    (), \
 \
-    .src_bridge_vr_noc2_val(mc``idx``_flit_in_val), \
-    .src_bridge_vr_noc2_dat(mc``idx``_flit_in_data), \
-    .src_bridge_vr_noc2_rdy(mc``idx``_flit_in_rdy), \
+    .src_bridge_vr_noc2_rdy(mcx_flit_in_rdy [ ``idx-1]), \
+    .src_bridge_vr_noc2_val(mcx_flit_in_val [ ``idx-1]), \
+    .src_bridge_vr_noc2_dat(mcx_flit_in_data[(``idx-1) * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
 \
-    .bridge_dst_vr_noc3_val(mc``idx``_flit_out_val), \
-    .bridge_dst_vr_noc3_dat(mc``idx``_flit_out_data), \
-    .bridge_dst_vr_noc3_rdy(mc``idx``_flit_out_rdy), \
+    .bridge_dst_vr_noc3_rdy(mcx_flit_out_rdy [ ``idx-1]), \
+    .bridge_dst_vr_noc3_val(mcx_flit_out_val [ ``idx-1]), \
+    .bridge_dst_vr_noc3_dat(mcx_flit_out_data[(``idx-1) * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
 \
     .m_axi_awid      (m_axi``idx``_awid), \
     .m_axi_awaddr    (m_axi``idx``_awaddr), \
@@ -1205,15 +1218,17 @@ noc_axi4_bridge #( \
 `define MC_BRIDGES_7  `MC_BRIDGES_6  `MC_BRIDGE(7)
 `define MC_BRIDGES_8  `MC_BRIDGES_7  `MC_BRIDGE(8)
 `define MC_BRIDGES_9  `MC_BRIDGES_8  `MC_BRIDGE(9)
-`define MC_BRIDGEs_10 `MC_BRIDGES_9  `MC_BRIDGE(10)
-`define MC_BRIDGEs_11 `MC_BRIDGES_10 `MC_BRIDGE(11)
-`define MC_BRIDGEs_12 `MC_BRIDGES_11 `MC_BRIDGE(12)
-`define MC_BRIDGEs_13 `MC_BRIDGES_12 `MC_BRIDGE(13)
-`define MC_BRIDGEs_14 `MC_BRIDGES_13 `MC_BRIDGE(14)
-`define MC_BRIDGEs_15 `MC_BRIDGES_14 `MC_BRIDGE(15)
+`define MC_BRIDGES_10 `MC_BRIDGES_9  `MC_BRIDGE(10)
+`define MC_BRIDGES_11 `MC_BRIDGES_10 `MC_BRIDGE(11)
+`define MC_BRIDGES_12 `MC_BRIDGES_11 `MC_BRIDGE(12)
+`define MC_BRIDGES_13 `MC_BRIDGES_12 `MC_BRIDGE(13)
+`define MC_BRIDGES_14 `MC_BRIDGES_13 `MC_BRIDGE(14)
+`define MC_BRIDGES_15 `MC_BRIDGES_14 `MC_BRIDGE(15)
 `define MC_BRIDGES(n) `MC_BRIDGES_``n
 
-`MC_BRIDGES(`PITON_EXTRA_MEMS)
+`ifdef PITON_EXTRA_MEMS
+  `MC_BRIDGES(`PITON_EXTRA_MEMS)
+`endif
 
 `ifdef PITONSYS_MEM_ZEROER
 axi4_zeroer axi4_zeroer(
