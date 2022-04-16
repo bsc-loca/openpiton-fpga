@@ -1083,7 +1083,7 @@ noc_axi4_bridge #(
 
 );
 
-
+//"define" metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
 `define MC_BRIDGE(idx) \
 \
 wire [`AXI4_ID_WIDTH     -1:0]     m_axi``idx``_awid; \
@@ -1209,7 +1209,7 @@ noc_axi4_bridge #( \
 );
 
 `define MC_BRIDGES_0
-`define MC_BRIDGES_1  `MC_BRIDGE(1)
+`define MC_BRIDGES_1                 `MC_BRIDGE(1)
 `define MC_BRIDGES_2  `MC_BRIDGES_1  `MC_BRIDGE(2)
 `define MC_BRIDGES_3  `MC_BRIDGES_2  `MC_BRIDGE(3)
 `define MC_BRIDGES_4  `MC_BRIDGES_3  `MC_BRIDGE(4)

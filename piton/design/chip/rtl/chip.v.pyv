@@ -138,6 +138,18 @@ module chip(
    input                                        offchip_processor_noc3_valid,
    input  [`NOC_DATA_WIDTH-1:0]                 offchip_processor_noc3_data,
    output                                       offchip_processor_noc3_yummy
+
+  `ifdef PITON_EXTRA_MEMS
+    ,
+    output [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data,
+    output [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid,
+    input  [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy,
+
+    input  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data,
+    input  [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid,
+    output [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy
+  `endif
+
 `endif // endif PITON_NO_CHIP_BRIDGE
 
 `ifdef PITON_ARIANE
@@ -778,6 +790,11 @@ localparam CHIP_SET_PORT = 3; //west port of first router
 %>
    assign processor_offchip_noc2_valid = oram_offchip_valid;
    assign processor_offchip_noc2_data = oram_offchip_data;
+
+   `ifdef PITON_EXTRA_MEMS
+     assign processor_mcx_noc2_data  = 0;
+     assign processor_mcx_noc2_valid = 0;
+  `endif
 <%
    s = r'''
    assign offchip_processor_noc2_yummy = tile_0_0_out_W_noc2_yummy;
@@ -791,6 +808,9 @@ localparam CHIP_SET_PORT = 3; //west port of first router
    print(s.replace("X_TILES", str(PITON_X_TILES)))
 %>
    assign offchip_processor_noc3_yummy = offchip_oram_yummy;
+   `ifdef PITON_EXTRA_MEMS
+     assign mcx_processor_noc3_yummy = 0;
+   `endif
 <%
    s = r'''
    assign offchip_out_E_noc1_data = offchip_processor_noc1_data;
