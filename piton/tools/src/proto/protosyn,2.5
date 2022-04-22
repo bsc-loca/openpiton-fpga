@@ -804,11 +804,17 @@ def main():
 
     os.environ['PITON_EXTRA_MEMS'] = "0"
     if options.multimc:
+      options.edge_tiles = 2 * (int(options.x_tiles)-1 + int(options.y_tiles)-1)
+      if int(options.edge_tiles) > int(options.num_tiles) or int(options.edge_tiles) < 1:
+         options.edge_tiles = options.num_tiles
       if not options.hbm:
         print_info("--multimc option is ignored without --hbm option")
+      elif int(options.edge_tiles) > 31:
+        print_info("Multiple (" + str(options.edge_tiles) + ") connections to HBM (one per edge tile) are limited to 31.")
+        os.environ['PITON_EXTRA_MEMS'] = str(31 - 1)
       else:
-        print_info("Multiple connections to HBM (one per tile) will be used")
-        os.environ['PITON_EXTRA_MEMS'] = str(options.num_tiles-1)
+        print_info("Multiple (" + str(options.edge_tiles) + ") connections to HBM (one per edge tile) will be used.")
+        os.environ['PITON_EXTRA_MEMS'] = str(options.edge_tiles - 1)
 
     # ProNoC
     os.environ['PITON_PRONOC'] = "0"

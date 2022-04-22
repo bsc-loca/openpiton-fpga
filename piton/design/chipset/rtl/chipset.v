@@ -1307,7 +1307,7 @@ credit_to_valrdy processor_offchip_noc3_c2v(
   wire  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_rdy_noc2;
 `endif
 
-//"define" metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
+//Verilog macro metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
 `define MC_VALRDY_CONV(idx) \
 \
 valrdy_to_credit #(4, 3) mc``idx``_processor_noc3_v2c( \
@@ -1335,8 +1335,9 @@ credit_to_valrdy processor_mc``idx``_noc2_c2v( \
     .ready_out(intf_mcx_rdy_noc2 [ ``idx-1]) \
 );
 
+`define MC_VALRDY_CONVS(n) `MC_VALRDY_CONVS_``n
 `define MC_VALRDY_CONVS_0
-`define MC_VALRDY_CONVS_1                      `MC_VALRDY_CONV(1)
+`define MC_VALRDY_CONVS_1  `MC_VALRDY_CONVS_0  `MC_VALRDY_CONV(1)
 `define MC_VALRDY_CONVS_2  `MC_VALRDY_CONVS_1  `MC_VALRDY_CONV(2)
 `define MC_VALRDY_CONVS_3  `MC_VALRDY_CONVS_2  `MC_VALRDY_CONV(3)
 `define MC_VALRDY_CONVS_4  `MC_VALRDY_CONVS_3  `MC_VALRDY_CONV(4)
@@ -1351,7 +1352,21 @@ credit_to_valrdy processor_mc``idx``_noc2_c2v( \
 `define MC_VALRDY_CONVS_13 `MC_VALRDY_CONVS_12 `MC_VALRDY_CONV(13)
 `define MC_VALRDY_CONVS_14 `MC_VALRDY_CONVS_13 `MC_VALRDY_CONV(14)
 `define MC_VALRDY_CONVS_15 `MC_VALRDY_CONVS_14 `MC_VALRDY_CONV(15)
-`define MC_VALRDY_CONVS(n) `MC_VALRDY_CONVS_``n
+`define MC_VALRDY_CONVS_16 `MC_VALRDY_CONVS_15 `MC_VALRDY_CONV(16)
+`define MC_VALRDY_CONVS_17 `MC_VALRDY_CONVS_16 `MC_VALRDY_CONV(17)
+`define MC_VALRDY_CONVS_18 `MC_VALRDY_CONVS_17 `MC_VALRDY_CONV(18)
+`define MC_VALRDY_CONVS_19 `MC_VALRDY_CONVS_18 `MC_VALRDY_CONV(19)
+`define MC_VALRDY_CONVS_20 `MC_VALRDY_CONVS_19 `MC_VALRDY_CONV(20)
+`define MC_VALRDY_CONVS_21 `MC_VALRDY_CONVS_20 `MC_VALRDY_CONV(21)
+`define MC_VALRDY_CONVS_22 `MC_VALRDY_CONVS_21 `MC_VALRDY_CONV(22)
+`define MC_VALRDY_CONVS_23 `MC_VALRDY_CONVS_22 `MC_VALRDY_CONV(23)
+`define MC_VALRDY_CONVS_24 `MC_VALRDY_CONVS_23 `MC_VALRDY_CONV(24)
+`define MC_VALRDY_CONVS_25 `MC_VALRDY_CONVS_24 `MC_VALRDY_CONV(25)
+`define MC_VALRDY_CONVS_26 `MC_VALRDY_CONVS_25 `MC_VALRDY_CONV(26)
+`define MC_VALRDY_CONVS_27 `MC_VALRDY_CONVS_26 `MC_VALRDY_CONV(27)
+`define MC_VALRDY_CONVS_28 `MC_VALRDY_CONVS_27 `MC_VALRDY_CONV(28)
+`define MC_VALRDY_CONVS_29 `MC_VALRDY_CONVS_28 `MC_VALRDY_CONV(29)
+`define MC_VALRDY_CONVS_30 `MC_VALRDY_CONVS_29 `MC_VALRDY_CONV(30)
 
 `ifdef PITON_EXTRA_MEMS
   `MC_VALRDY_CONVS(`PITON_EXTRA_MEMS)

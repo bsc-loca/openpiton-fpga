@@ -1083,7 +1083,7 @@ noc_axi4_bridge #(
 
 );
 
-//"define" metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
+//Verilog macro metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
 `define MC_BRIDGE(idx) \
 \
 wire [`AXI4_ID_WIDTH     -1:0]     m_axi``idx``_awid; \
@@ -1208,8 +1208,9 @@ noc_axi4_bridge #( \
     .m_axi_rready    (m_axi``idx``_rready) \
 );
 
+`define MC_BRIDGES(n) `MC_BRIDGES_``n
 `define MC_BRIDGES_0
-`define MC_BRIDGES_1                 `MC_BRIDGE(1)
+`define MC_BRIDGES_1  `MC_BRIDGES_0  `MC_BRIDGE(1)
 `define MC_BRIDGES_2  `MC_BRIDGES_1  `MC_BRIDGE(2)
 `define MC_BRIDGES_3  `MC_BRIDGES_2  `MC_BRIDGE(3)
 `define MC_BRIDGES_4  `MC_BRIDGES_3  `MC_BRIDGE(4)
@@ -1224,7 +1225,21 @@ noc_axi4_bridge #( \
 `define MC_BRIDGES_13 `MC_BRIDGES_12 `MC_BRIDGE(13)
 `define MC_BRIDGES_14 `MC_BRIDGES_13 `MC_BRIDGE(14)
 `define MC_BRIDGES_15 `MC_BRIDGES_14 `MC_BRIDGE(15)
-`define MC_BRIDGES(n) `MC_BRIDGES_``n
+`define MC_BRIDGES_16 `MC_BRIDGES_15 `MC_BRIDGE(16)
+`define MC_BRIDGES_17 `MC_BRIDGES_16 `MC_BRIDGE(17)
+`define MC_BRIDGES_18 `MC_BRIDGES_17 `MC_BRIDGE(18)
+`define MC_BRIDGES_19 `MC_BRIDGES_18 `MC_BRIDGE(19)
+`define MC_BRIDGES_20 `MC_BRIDGES_19 `MC_BRIDGE(20)
+`define MC_BRIDGES_21 `MC_BRIDGES_20 `MC_BRIDGE(21)
+`define MC_BRIDGES_22 `MC_BRIDGES_21 `MC_BRIDGE(22)
+`define MC_BRIDGES_23 `MC_BRIDGES_22 `MC_BRIDGE(23)
+`define MC_BRIDGES_24 `MC_BRIDGES_23 `MC_BRIDGE(24)
+`define MC_BRIDGES_25 `MC_BRIDGES_24 `MC_BRIDGE(25)
+`define MC_BRIDGES_26 `MC_BRIDGES_25 `MC_BRIDGE(26)
+`define MC_BRIDGES_27 `MC_BRIDGES_26 `MC_BRIDGE(27)
+`define MC_BRIDGES_28 `MC_BRIDGES_27 `MC_BRIDGE(28)
+`define MC_BRIDGES_29 `MC_BRIDGES_28 `MC_BRIDGE(29)
+`define MC_BRIDGES_30 `MC_BRIDGES_29 `MC_BRIDGE(30)
 
 `ifdef PITON_EXTRA_MEMS
   `MC_BRIDGES(`PITON_EXTRA_MEMS)
