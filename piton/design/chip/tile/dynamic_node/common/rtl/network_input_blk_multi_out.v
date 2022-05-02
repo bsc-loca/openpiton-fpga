@@ -40,8 +40,8 @@ module network_input_blk_multi_out
    output wire yummy_out, 
    // data_val and data_val1 are the same, this is just done for buffering to
    // convince the synthesis tool to buffer up these high fanout nets
-   output wire [`DATA_WIDTH-1:0] data_val, 
-   output wire [`DATA_WIDTH-1:0] data_val1, 
+   output wire [`DATA_WIDTH  -1:0] data_val, 
+   output wire [`DATA_WIDTH*2-1:0] data_val1, 
    output wire data_avail 
 );
 
@@ -50,6 +50,8 @@ reg [`DATA_WIDTH-1:0] storage_data_f [0:(1<<LOG2_NUMBER_FIFO_ELEMENTS)-1];
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_f;
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] tail_ptr_f;
 reg [LOG2_NUMBER_FIFO_ELEMENTS:0] elements_in_array_f;
+reg [`MSG_LENGTH_WIDTH-1:0] flit_cnt;
+reg wait_2nd_flit;
 
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_next;
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] tail_ptr_next;
@@ -61,8 +63,10 @@ assign yummy_out = yummy_out_f;
 
 // data_val and data_val1 are the same, just done for buffering
 assign data_val = storage_data_f[head_ptr_f];
-assign data_val1 = storage_data_f[head_ptr_f];
-assign data_avail = elements_in_array_f != 0;
+assign data_val1 = {storage_data_f[head_ptr_f+1],
+                    storage_data_f[head_ptr_f  ]};
+assign data_avail = (elements_in_array_f != 0 && !wait_2nd_flit) ||
+                    (elements_in_array_f > 1);
 
 always @ *
 begin
@@ -107,6 +111,8 @@ begin
       head_ptr_f <= 0;
       tail_ptr_f <= 0;
       elements_in_array_f <= 0;
+      flit_cnt <= 0;
+      wait_2nd_flit <= 0;
    end
    else
    begin
@@ -117,6 +123,16 @@ begin
       if(valid_in)
       begin
          storage_data_f[tail_ptr_f] <= data_in;
+         if (!flit_cnt) begin
+           flit_cnt      <=  data_in[`MSG_LENGTH];
+           `ifdef PITON_EXTRA_MEMS // address contained in 2nd flit is needed in case of extra-routing
+             wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
+           `endif
+         end
+         else begin
+           flit_cnt      <= flit_cnt-1;
+           wait_2nd_flit <= 0;
+         end
       end
    end
 end

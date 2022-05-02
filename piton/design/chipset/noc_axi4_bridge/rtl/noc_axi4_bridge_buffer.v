@@ -192,6 +192,9 @@ wire [`MSG_DST_FBITS_WIDTH -1:0] dst_fbits  = req_header[`MSG_DST_FBITS];
 wire [`MSG_MSHRID_WIDTH    -1:0] mshrid     = req_header[`MSG_MSHRID];
 wire [`MSG_LSID_WIDTH      -1:0] lsid       = req_header[`MSG_LSID];
 wire [`MSG_SDID_WIDTH      -1:0] sdid       = req_header[`MSG_SDID];
+wire [`MSG_TYPE_WIDTH      -1:0] msg_type   = req_header[`MSG_TYPE];
+wire [`MSG_DATA_SIZE_WIDTH -1:0] data_size  = req_header[`MSG_DATA_SIZE];
+wire [`MSG_LENGTH_WIDTH    -1:0] msg_length = req_header[`MSG_LENGTH];
 
 
 wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];

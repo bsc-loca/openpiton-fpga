@@ -40,7 +40,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module dynamic_input_route_request_calc(route_req_n, route_req_e, route_req_s, route_req_w, route_req_p, 
                                         default_ready_n, default_ready_e, default_ready_s, default_ready_w, default_ready_p, 
-                                        my_loc_x_in, my_loc_y_in, my_chip_id_in, abs_x, abs_y, abs_chip_id, final_bits, length, header_in);
+                                        my_loc_x_in, my_loc_y_in, my_chip_id_in, abs_x, abs_y, abs_chip_id, abs_addr, final_bits, length, header_in);
 
 // begin port declarations
 
@@ -61,6 +61,7 @@ input [`CHIP_ID_WIDTH-1:0] my_chip_id_in;
 input [`XY_WIDTH-1:0] abs_x;
 input [`XY_WIDTH-1:0] abs_y;
 input [`CHIP_ID_WIDTH-1:0] abs_chip_id;
+input [`PHY_ADDR_WIDTH-1:0] abs_addr;
 
 input [2:0] final_bits;
 input [`PAYLOAD_LEN-1:0] length;
@@ -121,8 +122,10 @@ assign north_calc = done_x & less_y;
 assign south_calc = done_x & more_y;
 
 assign north = north_calc | ((final_bits == `FINAL_NORTH) & done);
+// assign south = south_calc | ((final_bits == `FINAL_SOUTH || !abs_addr[`PHY_ADDR_WIDTH-1]) & done);
 assign south = south_calc | ((final_bits == `FINAL_SOUTH) & done);
 assign east = more_x | ((final_bits == `FINAL_EAST) & done);
+// assign west = less_x | ((final_bits == `FINAL_WEST) & done & abs_addr[`PHY_ADDR_WIDTH-1]);
 assign west = less_x | ((final_bits == `FINAL_WEST) & done);
 assign proc = ((final_bits == `FINAL_NONE) & done);
 
