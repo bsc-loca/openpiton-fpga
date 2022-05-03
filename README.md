@@ -127,8 +127,11 @@ If you would like to get an overview of the exit status of a regression batch, s
 
 Some automatic scripts have been created to speed-up local checks. The following command runs the regression tests and saves the trace in a new folder with the current time. To be launched in the following way:
 
+    # set environment if not
+    source /home/tools/riscv_vector_toolchain/set_env.sh
+    source /apps/env.sh
     cd build
-    source /run_all_isa_groups.sh
+    source run_all_isa_groups.sh
 
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # script located IN: one folder above root folder of OpenPiton
-# example in build: source /run_all_isa_groups.sh
+# example: cd build && source run_all_isa_groups.sh
 # Results will be saved in build/date_folder
 
 FOLDER_NAME=$(date +%y%m%d_%H%M_%S)
