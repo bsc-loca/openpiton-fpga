@@ -32,9 +32,13 @@ Compiling Openpiton with Lagarto
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
 
+Compiling Openpiton with Lagarto and FPU from Zagreb
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
+
 Compiling with torture (to generate signature file for spike):
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB
 
 You can clean the files before to compile for lagarto by doing:
     sims clean
@@ -119,6 +123,12 @@ If you would like to get an overview of the exit status of a regression batch, s
 
     regreport . -summary
 
+#### Automatic scripts for regression
+
+Some automatic scripts have been created to speed-up local checks. The following command runs the regression tests and saves the trace in a new folder with the current time. To be launched in the following way:
+
+    cd build
+    source /run_all_isa_groups.sh
 
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
