@@ -980,6 +980,7 @@ chip chip(
     .offchip_processor_noc3_valid   (offchip_processor_noc3_valid),
     .offchip_processor_noc3_data    (offchip_processor_noc3_data),
     .offchip_processor_noc3_yummy   (offchip_processor_noc3_yummy)
+`endif // endif PITON_NO_CHIP_BRIDGE
 
   `ifdef PITON_EXTRA_MEMS
     ,
@@ -992,7 +993,6 @@ chip chip(
     .mcx_processor_noc3_yummy(mcx_processor_noc3_yummy)
   `endif
 
-`endif // endif PITON_NO_CHIP_BRIDGE
 `ifdef PITON_ARIANE
     ,
     // Debug
@@ -1214,17 +1214,6 @@ chipset chipset(
     .offchip_processor_noc3_valid   (offchip_processor_noc3_valid),
     .offchip_processor_noc3_data    (offchip_processor_noc3_data),
     .offchip_processor_noc3_yummy   (offchip_processor_noc3_yummy),
-
-  `ifdef PITON_EXTRA_MEMS
-    .processor_mcx_noc2_data (processor_mcx_noc2_data),
-    .processor_mcx_noc2_valid(processor_mcx_noc2_valid),
-    .processor_mcx_noc2_yummy(processor_mcx_noc2_yummy),
-
-    .mcx_processor_noc3_data (mcx_processor_noc3_data),
-    .mcx_processor_noc3_valid(mcx_processor_noc3_valid),
-    .mcx_processor_noc3_yummy(mcx_processor_noc3_yummy),
-  `endif
-
 `elsif PITONSYS_INC_PASSTHRU
     // Source synchronous differential interface with virtual channels
     .chipset_passthru_clk_p(chipset_passthru_clk_p),
@@ -1255,6 +1244,16 @@ chipset chipset(
     .chip_intf_channel(chip_intf_channel),
     .chip_intf_credit_back(chip_intf_credit_back),
 `endif // endif PITON_NO_CHIP_BRIDGE PITON_SYS_INC_PASSTHRU
+
+  `ifdef PITON_EXTRA_MEMS
+    .processor_mcx_noc2_data (processor_mcx_noc2_data),
+    .processor_mcx_noc2_valid(processor_mcx_noc2_valid),
+    .processor_mcx_noc2_yummy(processor_mcx_noc2_yummy),
+
+    .mcx_processor_noc3_data (mcx_processor_noc3_data),
+    .mcx_processor_noc3_valid(mcx_processor_noc3_valid),
+    .mcx_processor_noc3_yummy(mcx_processor_noc3_yummy),
+  `endif
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC

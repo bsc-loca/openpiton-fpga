@@ -124,7 +124,7 @@ begin
       begin
          storage_data_f[tail_ptr_f] <= data_in;
          if (!flit_cnt) begin
-           flit_cnt      <=  data_in[`MSG_LENGTH];
+           flit_cnt        <=  data_in[`MSG_LENGTH];
            `ifdef PITON_EXTRA_MEMS // address contained in 2nd flit is needed in case of extra-routing
              wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
            `endif

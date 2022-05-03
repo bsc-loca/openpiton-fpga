@@ -122,10 +122,10 @@ assign north_calc = done_x & less_y;
 assign south_calc = done_x & more_y;
 
 assign north = north_calc | ((final_bits == `FINAL_NORTH) & done);
-// assign south = south_calc | ((final_bits == `FINAL_SOUTH || !abs_addr[`PHY_ADDR_WIDTH-1]) & done);
+// assign south = south_calc | ((final_bits == `FINAL_SOUTH || (~abs_addr[`PHY_ADDR_WIDTH-1] & off_chip)) & done);
 assign south = south_calc | ((final_bits == `FINAL_SOUTH) & done);
 assign east = more_x | ((final_bits == `FINAL_EAST) & done);
-// assign west = less_x | ((final_bits == `FINAL_WEST) & done & abs_addr[`PHY_ADDR_WIDTH-1]);
+// assign west = less_x | ((final_bits == `FINAL_WEST) & done & (abs_addr[`PHY_ADDR_WIDTH-1] | ~off_chip));
 assign west = less_x | ((final_bits == `FINAL_WEST) & done);
 assign proc = ((final_bits == `FINAL_NONE) & done);
 

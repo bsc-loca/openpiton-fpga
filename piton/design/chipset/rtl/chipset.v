@@ -181,17 +181,6 @@ module chipset(
     output                                      offchip_processor_noc3_valid,
     output [`NOC_DATA_WIDTH-1:0]                offchip_processor_noc3_data,
     input                                       offchip_processor_noc3_yummy,
-
-  `ifdef PITON_EXTRA_MEMS
-    input   [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data,
-    input   [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid,
-    output  [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy,
-
-    output  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data,
-    output  [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid,
-    input   [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy,
-  `endif
-
 `elsif PITONSYS_INC_PASSTHRU
     // Source synchronous differential interface with virtual channels
     `ifdef PITON_CHIPSET_CLKS_GEN
@@ -228,6 +217,16 @@ module chipset(
     input  [1:0]                                chip_intf_channel,
     output [2:0]                                chip_intf_credit_back,
 `endif // endif PITON_NO_CHIP_BRIDGE PITONSYS_INC_PASSTHRU
+
+  `ifdef PITON_EXTRA_MEMS
+    input   [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data,
+    input   [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid,
+    output  [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy,
+
+    output  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data,
+    output  [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid,
+    input   [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy,
+  `endif
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
@@ -660,16 +659,6 @@ wire                                            offchip_processor_noc2_yummy;
 wire                                            offchip_processor_noc3_valid;
 wire  [`NOC_DATA_WIDTH-1:0]                     offchip_processor_noc3_data;
 wire                                            offchip_processor_noc3_yummy;
-
-  `ifdef PITON_EXTRA_MEMS
-    wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data  = 0;
-    wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid = 0;
-    wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy;
-
-    wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data;
-    wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid;
-    wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy = 0;
-  `endif
 `endif // endif PITON_NO_CHIP_BRIDGE
 
 // Val/rdy version of aboive signals (renamed from chipset point of view)
