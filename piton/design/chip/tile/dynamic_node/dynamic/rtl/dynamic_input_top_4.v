@@ -89,7 +89,11 @@ wire valid_out_internal;
 assign valid_out = valid_out_internal;
 
 //instantiations
-network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(2)) NIB(.clk(clk),
+network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(2)
+                              `ifdef PITON_EXTRA_MEMS
+                                ,.EN_2ND_FLIT(1) // address contained in 2nd flit is needed in case of extra-routing
+                              `endif
+                             ) NIB (  .clk(clk),
                                       .reset(reset),
                                       .data_in(data_in),
                                       .valid_in(valid_in),
