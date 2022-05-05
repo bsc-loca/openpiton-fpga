@@ -1139,9 +1139,7 @@ wire                               m_axi``idx``_bready; \
 noc_axi4_bridge #( \
     .AXI4_DAT_WIDTH_USED(HBM_WIDTH), \
     .ADDR_OFFSET(64'h80000000), \
-    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4), \
-    .NUM_REQ_YTHREADS (`PITON_Y_TILES), \
-    .NUM_REQ_XTHREADS (`PITON_X_TILES) \
+    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4) \
 ) noc_axi4_bridge_mc``idx ( \
     .clk                (core_ref_clk), \
     .rst_n              (sys_rst_n), \

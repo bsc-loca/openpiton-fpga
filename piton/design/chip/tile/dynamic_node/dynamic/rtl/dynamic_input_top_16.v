@@ -89,7 +89,7 @@ assign valid_out = valid_out_internal;
 //instantiations
 network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(4)
                               `ifdef PITON_EXTRA_MEMS
-                                ,.EN_2ND_FLIT(1) // address contained in 2nd flit is needed in case of extra-routing
+                                ,.OUT_2FLITS(1) // address contained in 2nd flit is needed in case of extra-routing
                               `endif
                              ) NIB(.clk(clk), .reset(reset), .data_in(data_in), .valid_in(valid_in), .yummy_out(yummy_out), .thanks_in(thanks_all_temp), .data_val(data_out), .data_val1(data_out_internal), .data_avail(valid_out_internal));
 

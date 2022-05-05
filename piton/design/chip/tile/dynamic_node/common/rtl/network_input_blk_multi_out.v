@@ -30,7 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `include "network_define.v"
 module network_input_blk_multi_out 
    #(parameter LOG2_NUMBER_FIFO_ELEMENTS = 2,
-     parameter EN_2ND_FLIT = 0
+     parameter OUT_2FLITS = 0 // enables output of 2 deserialized flits, adds 1 clock latency if input fifo was empty
     )
 (
    input wire clk, 
@@ -128,7 +128,7 @@ begin
          storage_data_f[tail_ptr_f] <= data_in;
          if (!flit_cnt) begin
            flit_cnt        <=  data_in[`MSG_LENGTH];
-           if (EN_2ND_FLIT)
+           if (OUT_2FLITS)
              wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
          end
          else begin
