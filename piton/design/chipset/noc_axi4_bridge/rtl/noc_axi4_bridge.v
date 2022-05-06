@@ -40,7 +40,8 @@ module noc_axi4_bridge #(
     parameter NUM_REQ_MSHRID_LBIT = 0,
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
-    parameter NUM_REQ_XTHREADS = 1
+    parameter NUM_REQ_XTHREADS = 1,
+    parameter SRCXY_AS_AXIID   = 0
 ) (
     // Clock + Reset
     input  wire                                   clk,
@@ -147,7 +148,8 @@ noc_axi4_bridge_buffer #(
     .NUM_REQ_MSHRID_LBIT (NUM_REQ_MSHRID_LBIT),
     .NUM_REQ_MSHRID_BITS (NUM_REQ_MSHRID_BITS),
     .NUM_REQ_YTHREADS (NUM_REQ_YTHREADS),
-    .NUM_REQ_XTHREADS (NUM_REQ_XTHREADS)
+    .NUM_REQ_XTHREADS (NUM_REQ_XTHREADS),
+    .SRCXY_AS_AXIID   (SRCXY_AS_AXIID  )
 ) noc_axi4_bridge_buffer (
     .clk(clk),
     .rst_n(rst_n),
