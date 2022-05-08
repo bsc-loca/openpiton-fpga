@@ -1141,7 +1141,8 @@ noc_axi4_bridge #( \
     .ADDR_OFFSET(64'h80000000), \
     .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4), \
     .NUM_REQ_YTHREADS (`PITON_Y_TILES), \
-    .NUM_REQ_XTHREADS (`PITON_X_TILES) \
+    .NUM_REQ_XTHREADS (`PITON_X_TILES), \
+    .SRCXY_AS_AXIID   (1) \
 ) noc_axi4_bridge_mc``idx ( \
     .clk                (core_ref_clk), \
     .rst_n              (sys_rst_n), \
@@ -1149,13 +1150,13 @@ noc_axi4_bridge #( \
     .phy_init_done      (noc_axi4_bridge_init_done ), \
     .axi_id_deadlock    (), \
 \
-    .src_bridge_vr_noc2_rdy(mcx_flit_in_rdy [ ``idx-1]), \
-    .src_bridge_vr_noc2_val(mcx_flit_in_val [ ``idx-1]), \
-    .src_bridge_vr_noc2_dat(mcx_flit_in_data[(``idx-1) * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
+    .src_bridge_vr_noc2_rdy(mcx_flit_in_rdy [``idx]), \
+    .src_bridge_vr_noc2_val(mcx_flit_in_val [``idx]), \
+    .src_bridge_vr_noc2_dat(mcx_flit_in_data[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
 \
-    .bridge_dst_vr_noc3_rdy(mcx_flit_out_rdy [ ``idx-1]), \
-    .bridge_dst_vr_noc3_val(mcx_flit_out_val [ ``idx-1]), \
-    .bridge_dst_vr_noc3_dat(mcx_flit_out_data[(``idx-1) * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
+    .bridge_dst_vr_noc3_rdy(mcx_flit_out_rdy [``idx]), \
+    .bridge_dst_vr_noc3_val(mcx_flit_out_val [``idx]), \
+    .bridge_dst_vr_noc3_dat(mcx_flit_out_data[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
 \
     .m_axi_awid      (m_axi``idx``_awid), \
     .m_axi_awaddr    (m_axi``idx``_awaddr), \
@@ -1210,36 +1211,36 @@ noc_axi4_bridge #( \
 
 `define MC_BRIDGES(n) `MC_BRIDGES_``n
 `define MC_BRIDGES_0
-`define MC_BRIDGES_1  `MC_BRIDGES_0  `MC_BRIDGE(1)
-`define MC_BRIDGES_2  `MC_BRIDGES_1  `MC_BRIDGE(2)
-`define MC_BRIDGES_3  `MC_BRIDGES_2  `MC_BRIDGE(3)
-`define MC_BRIDGES_4  `MC_BRIDGES_3  `MC_BRIDGE(4)
-`define MC_BRIDGES_5  `MC_BRIDGES_4  `MC_BRIDGE(5)
-`define MC_BRIDGES_6  `MC_BRIDGES_5  `MC_BRIDGE(6)
-`define MC_BRIDGES_7  `MC_BRIDGES_6  `MC_BRIDGE(7)
-`define MC_BRIDGES_8  `MC_BRIDGES_7  `MC_BRIDGE(8)
-`define MC_BRIDGES_9  `MC_BRIDGES_8  `MC_BRIDGE(9)
-`define MC_BRIDGES_10 `MC_BRIDGES_9  `MC_BRIDGE(10)
-`define MC_BRIDGES_11 `MC_BRIDGES_10 `MC_BRIDGE(11)
-`define MC_BRIDGES_12 `MC_BRIDGES_11 `MC_BRIDGE(12)
-`define MC_BRIDGES_13 `MC_BRIDGES_12 `MC_BRIDGE(13)
-`define MC_BRIDGES_14 `MC_BRIDGES_13 `MC_BRIDGE(14)
-`define MC_BRIDGES_15 `MC_BRIDGES_14 `MC_BRIDGE(15)
-`define MC_BRIDGES_16 `MC_BRIDGES_15 `MC_BRIDGE(16)
-`define MC_BRIDGES_17 `MC_BRIDGES_16 `MC_BRIDGE(17)
-`define MC_BRIDGES_18 `MC_BRIDGES_17 `MC_BRIDGE(18)
-`define MC_BRIDGES_19 `MC_BRIDGES_18 `MC_BRIDGE(19)
-`define MC_BRIDGES_20 `MC_BRIDGES_19 `MC_BRIDGE(20)
-`define MC_BRIDGES_21 `MC_BRIDGES_20 `MC_BRIDGE(21)
-`define MC_BRIDGES_22 `MC_BRIDGES_21 `MC_BRIDGE(22)
-`define MC_BRIDGES_23 `MC_BRIDGES_22 `MC_BRIDGE(23)
-`define MC_BRIDGES_24 `MC_BRIDGES_23 `MC_BRIDGE(24)
-`define MC_BRIDGES_25 `MC_BRIDGES_24 `MC_BRIDGE(25)
-`define MC_BRIDGES_26 `MC_BRIDGES_25 `MC_BRIDGE(26)
-`define MC_BRIDGES_27 `MC_BRIDGES_26 `MC_BRIDGE(27)
-`define MC_BRIDGES_28 `MC_BRIDGES_27 `MC_BRIDGE(28)
-`define MC_BRIDGES_29 `MC_BRIDGES_28 `MC_BRIDGE(29)
-`define MC_BRIDGES_30 `MC_BRIDGES_29 `MC_BRIDGE(30)
+`define MC_BRIDGES_1  `MC_BRIDGES_0  `MC_BRIDGE(0)
+`define MC_BRIDGES_2  `MC_BRIDGES_1  `MC_BRIDGE(1)
+`define MC_BRIDGES_3  `MC_BRIDGES_2  `MC_BRIDGE(2)
+`define MC_BRIDGES_4  `MC_BRIDGES_3  `MC_BRIDGE(3)
+`define MC_BRIDGES_5  `MC_BRIDGES_4  `MC_BRIDGE(4)
+`define MC_BRIDGES_6  `MC_BRIDGES_5  `MC_BRIDGE(5)
+`define MC_BRIDGES_7  `MC_BRIDGES_6  `MC_BRIDGE(6)
+`define MC_BRIDGES_8  `MC_BRIDGES_7  `MC_BRIDGE(7)
+`define MC_BRIDGES_9  `MC_BRIDGES_8  `MC_BRIDGE(8)
+`define MC_BRIDGES_10 `MC_BRIDGES_9  `MC_BRIDGE(9)
+`define MC_BRIDGES_11 `MC_BRIDGES_10 `MC_BRIDGE(10)
+`define MC_BRIDGES_12 `MC_BRIDGES_11 `MC_BRIDGE(11)
+`define MC_BRIDGES_13 `MC_BRIDGES_12 `MC_BRIDGE(12)
+`define MC_BRIDGES_14 `MC_BRIDGES_13 `MC_BRIDGE(13)
+`define MC_BRIDGES_15 `MC_BRIDGES_14 `MC_BRIDGE(14)
+`define MC_BRIDGES_16 `MC_BRIDGES_15 `MC_BRIDGE(15)
+`define MC_BRIDGES_17 `MC_BRIDGES_16 `MC_BRIDGE(16)
+`define MC_BRIDGES_18 `MC_BRIDGES_17 `MC_BRIDGE(17)
+`define MC_BRIDGES_19 `MC_BRIDGES_18 `MC_BRIDGE(18)
+`define MC_BRIDGES_20 `MC_BRIDGES_19 `MC_BRIDGE(19)
+`define MC_BRIDGES_21 `MC_BRIDGES_20 `MC_BRIDGE(20)
+`define MC_BRIDGES_22 `MC_BRIDGES_21 `MC_BRIDGE(21)
+`define MC_BRIDGES_23 `MC_BRIDGES_22 `MC_BRIDGE(22)
+`define MC_BRIDGES_24 `MC_BRIDGES_23 `MC_BRIDGE(23)
+`define MC_BRIDGES_25 `MC_BRIDGES_24 `MC_BRIDGE(24)
+`define MC_BRIDGES_26 `MC_BRIDGES_25 `MC_BRIDGE(25)
+`define MC_BRIDGES_27 `MC_BRIDGES_26 `MC_BRIDGE(26)
+`define MC_BRIDGES_28 `MC_BRIDGES_27 `MC_BRIDGE(27)
+`define MC_BRIDGES_29 `MC_BRIDGES_28 `MC_BRIDGE(28)
+`define MC_BRIDGES_30 `MC_BRIDGES_29 `MC_BRIDGE(29)
 
 `ifdef PITON_EXTRA_MEMS
   `MC_BRIDGES(`PITON_EXTRA_MEMS)

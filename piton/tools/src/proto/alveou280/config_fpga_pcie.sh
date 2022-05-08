@@ -30,3 +30,5 @@ dmesg | grep tty
 
 #Applying both resets to the design
 dma-ctl qdma08000 reg write bar 2 0x0 0x0
+
+#To setup UART on Nanu after reboot: sudo modprobe ftdi_sio

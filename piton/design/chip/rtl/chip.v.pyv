@@ -138,6 +138,7 @@ module chip(
    input                                        offchip_processor_noc3_valid,
    input  [`NOC_DATA_WIDTH-1:0]                 offchip_processor_noc3_data,
    output                                       offchip_processor_noc3_yummy
+`endif // endif PITON_NO_CHIP_BRIDGE
 
   `ifdef PITON_EXTRA_MEMS
     ,
@@ -149,8 +150,6 @@ module chip(
     input  [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid,
     output [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy
   `endif
-
-`endif // endif PITON_NO_CHIP_BRIDGE
 
 `ifdef PITON_ARIANE
     ,
@@ -330,16 +329,6 @@ module chip(
    wire                                         offchip_processor_noc3_valid;
    wire [`NOC_DATA_WIDTH-1:0]                   offchip_processor_noc3_data;
    wire                                         offchip_processor_noc3_yummy;
-
-  `ifdef PITON_EXTRA_MEMS
-    wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data;
-    wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid;
-    wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy = 0;
-
-    wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data  = 0;
-    wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid = 0;
-    wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy;
-  `endif
 `endif // endif PITON_NO_CHIP_BRIDGE
 
    // ORAM muxed outputs
@@ -1380,7 +1369,7 @@ localparam CHIP_SET_PORT = 3; //west port of first router
             currenttile = template.replace("tile0", "tile%d" % (flatid));
 
             if (PITON_NETWORK_CONFIG != "xbar_config" and edge_idx < PITON_EXTRA_MEMS):
-              if (i == 0 and j != PITON_Y_TILES-1 and j != 0): # Tile 0 west port is busy with "offchip" connection
+              if (i == 0 and j != 0): # Tile 0 west port is occupied by "offchip" connection
                 currenttile = currenttile.replace("out_W_noc2_data" , "processor_mcx_noc2_data [%d * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]" % edge_idx);
                 currenttile = currenttile.replace("out_W_noc2_valid", "processor_mcx_noc2_valid[%d]" % edge_idx);
                 currenttile = currenttile.replace("in_W_noc2_yummy" , "processor_mcx_noc2_yummy[%d]" % edge_idx);
@@ -1389,7 +1378,7 @@ localparam CHIP_SET_PORT = 3; //west port of first router
                 currenttile = currenttile.replace("out_W_noc3_yummy", "mcx_processor_noc3_yummy[%d]" % edge_idx);
                 edge_idx += 1
 
-              if (j == PITON_Y_TILES-1 and i != PITON_X_TILES-1 ):
+              elif (j == PITON_Y_TILES-1): #  and i != 0
                 currenttile = currenttile.replace("out_S_noc2_data" , "processor_mcx_noc2_data [%d * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]" % edge_idx);
                 currenttile = currenttile.replace("out_S_noc2_valid", "processor_mcx_noc2_valid[%d]" % edge_idx);
                 currenttile = currenttile.replace("in_S_noc2_yummy" , "processor_mcx_noc2_yummy[%d]" % edge_idx);
@@ -1398,7 +1387,7 @@ localparam CHIP_SET_PORT = 3; //west port of first router
                 currenttile = currenttile.replace("out_S_noc3_yummy", "mcx_processor_noc3_yummy[%d]" % edge_idx);
                 edge_idx += 1
 
-              if (i == PITON_X_TILES-1 and j != 0):
+              elif (i == PITON_X_TILES-1): # and j != PITON_Y_TILES-1
                 currenttile = currenttile.replace("out_E_noc2_data" , "processor_mcx_noc2_data [%d * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]" % edge_idx);
                 currenttile = currenttile.replace("out_E_noc2_valid", "processor_mcx_noc2_valid[%d]" % edge_idx);
                 currenttile = currenttile.replace("in_E_noc2_yummy" , "processor_mcx_noc2_yummy[%d]" % edge_idx);
@@ -1407,7 +1396,7 @@ localparam CHIP_SET_PORT = 3; //west port of first router
                 currenttile = currenttile.replace("out_E_noc3_yummy", "mcx_processor_noc3_yummy[%d]" % edge_idx);
                 edge_idx += 1
 
-              if (j == 0 and i != 0 ):
+              elif (j == 0): # and i != PITON_X_TILES-1
                 currenttile = currenttile.replace("out_N_noc2_data" , "processor_mcx_noc2_data [%d * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]" % edge_idx);
                 currenttile = currenttile.replace("out_N_noc2_valid", "processor_mcx_noc2_valid[%d]" % edge_idx);
                 currenttile = currenttile.replace("in_N_noc2_yummy" , "processor_mcx_noc2_yummy[%d]" % edge_idx);
