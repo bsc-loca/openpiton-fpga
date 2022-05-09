@@ -40,7 +40,7 @@ module noc_axi4_bridge_buffer #(
     // "Rd/Wr AXI ID thread deadlock" if multiple IDs are used. A detection of such event is implemented, but was never met from connected
     // HBM/DDR/BRAM/URAM memories before the above bug fix and after.
     parameter RDWR_INORDER = 0,
-    parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
     parameter NUM_REQ_MSHRID_LBIT = 0,
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
@@ -246,12 +246,11 @@ assign write_req_strb = wstrb         <<    wr_offset;
 // GET_RESPONSE
 //
 
-localparam NUM_REQ_OUTSTANDING_LOG2 = $clog2(NUM_REQ_OUTSTANDING);
 localparam NUM_REQ_YTHREADS_LOG2    = $clog2(NUM_REQ_YTHREADS);
 localparam NUM_REQ_XTHREADS_LOG2    = $clog2(NUM_REQ_XTHREADS);
 localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 + NUM_REQ_XTHREADS_LOG2 + NUM_REQ_MSHRID_BITS;
-localparam NUM_REQ_THREADS = NUM_REQ_YTHREADS * NUM_REQ_XTHREADS * (1<<NUM_REQ_MSHRID_BITS) * (RDWR_INORDER ? 1:2); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
-localparam FULL_NUM_REQ_THREADS_LOG2 = $clog2(NUM_REQ_THREADS);
+localparam FULL_NUM_REQ_THREADS_LOG2 = NUM_REQ_THREADS_LOG2 + (RDWR_INORDER ? 0:1); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0
+localparam NUM_REQ_THREADS = 1 << FULL_NUM_REQ_THREADS_LOG2;
 
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS-1 : 0];
@@ -443,7 +442,7 @@ wire [NUM_REQ_OUTSTANDING_LOG2   : 0] outstnd_req_cnt = req_command ? outstnd_wr
 // Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
-    .RAM_DEPTH(NUM_REQ_OUTSTANDING),  // Specify RAM depth (number of entries)
+    .RAM_DEPTH(1 << NUM_REQ_OUTSTANDING_LOG2),  // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
 ) outstnd_req_mem (
     .addra(outstnd_abs_rdptr_mem),    // Port A address bus, width determined from RAM_DEPTH
