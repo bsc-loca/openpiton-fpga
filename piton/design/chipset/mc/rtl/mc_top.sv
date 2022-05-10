@@ -1139,9 +1139,10 @@ wire                               m_axi``idx``_bready; \
 noc_axi4_bridge #( \
     .AXI4_DAT_WIDTH_USED(HBM_WIDTH), \
     .ADDR_OFFSET(64'h80000000), \
-    .NUM_REQ_OUTSTANDING_LOG2 (3), \
-    .NUM_REQ_YTHREADS (`PITON_Y_TILES), \
-    .NUM_REQ_XTHREADS (`PITON_X_TILES), \
+    .NUM_REQ_OUTSTANDING_LOG2 (4), \
+    /* for 2d-mesh having pure internal tiles (like 3x3) usage of either SRC_X/Y or INI_X/Y NOC fields as AXI ID results in Fedora kernel panic */ \
+    .NUM_REQ_YTHREADS (`PITON_EXTRA_MEMS == `PITON_NUM_TILES ? `PITON_Y_TILES : 1), \
+    .NUM_REQ_XTHREADS (`PITON_EXTRA_MEMS == `PITON_NUM_TILES ? `PITON_X_TILES : 1), \
     .SRCXY_AS_AXIID   (1) \
 ) noc_axi4_bridge_mc``idx ( \
     .clk                (core_ref_clk), \
