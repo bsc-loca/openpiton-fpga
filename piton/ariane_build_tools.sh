@@ -89,8 +89,8 @@ else
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/util.h
   cd -
 
-  cd build
-  ../configure --prefix=${ARIANE_ROOT}/tmp/riscv-tests/build
+  #cd build
+  #../configure --prefix=${ARIANE_ROOT}/tmp/riscv-tests/build
 
   make clean
   make isa        -j${NUM_JOBS} > /dev/null
