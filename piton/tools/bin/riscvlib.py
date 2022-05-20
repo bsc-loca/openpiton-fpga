@@ -296,32 +296,14 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
-        eth: ethernet@%08x {
-            compatible = "xlnx,xps-ethernetlite-1.00.a";
-            device_type = "network";
-            reg = <%s>;
+            eth: eth0@%08x {
+            compatible = "riscv,axi-ethernet-1.0";
+            reg = <%s 0x80000>;
+            phy-mode = "10gbase-r";
+            local-mac-address = [00 0a 35 00 00 00];
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            local-mac-address = [ 00 18 3E 02 E3 E5 ];
-            phy-handle = <&phy0>;
-            xlnx,duplex = <0x1>;
-            xlnx,include-global-buffers = <0x1>;
-            xlnx,include-internal-loopback = <0x0>;
-            xlnx,include-mdio = <0x1>;
-            xlnx,rx-ping-pong = <0x1>;
-            xlnx,s-axi-id-width = <0x1>;
-            xlnx,tx-ping-pong = <0x1>;
-            xlnx,use-internal = <0x0>;
-            axi_ethernetlite_0_mdio: mdio {
-                #address-cells = <1>;
-                #size-cells = <0>;
-                phy0: phy@1 {
-                    compatible = "ethernet-phy-id001C.C915";
-                    device_type = "ethernet-phy";
-                    reg = <1>;
-                };
             };
-        };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr)
             ioDeviceNr+=1
 
