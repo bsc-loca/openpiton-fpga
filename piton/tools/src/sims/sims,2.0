@@ -176,6 +176,8 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'ost1' => 0,
         'ariane' => 0,
         'pronoc' => 0,
+        'mgui_build' => 0,
+        'mgui_run' => 0,
         'lagarto' => 0,
         'pico' => 0,
         'pico_het' => 0,
@@ -338,6 +340,8 @@ GetOptions (\%opt,
             'ost1!',
             'ariane!',
             'pronoc!',
+            'mgui_build!',
+            'mgui_run!',
             'lagarto!',
             'pico!',
             'pico_het!',
@@ -1210,8 +1214,11 @@ sub gen_flist
       } else {
         my $linepyv = (split(' ',substr($line, 0, -1)))[-1] . ".pyv";
         # print("\$linepyv is $linepyv\n");
-        my $linetmp = substr($line, 0, -3) . ".tmp.". substr($line, -2, 1);
-        my $linetmpout = (split(' ',substr($line, 0, -3)))[-1] . ".tmp." . substr($line, -2, 1);
+        my $ext = substr($line, -4, -1);
+        # print("\$ext=$ext\n");
+        my $linetmp    = ($ext eq '.sv')?            substr($line, 0, -4) .       ".tmp.sv"  :              substr($line, 0, -3) .        ".tmp.". substr($line, -2, 1);
+        my $linetmpout = ($ext eq '.sv')? (split(' ',substr($line, 0, -4)))[-1] . ".tmp.sv"  :   (split(' ',substr($line, 0, -3)))[-1]  . ".tmp.". substr($line, -2, 1);
+        # print("\$linetmp is $linetmp\n");
         if (-e $linepyv) {
           # print("original is $line\n");
           system("pyhp.py $linepyv > $linetmpout");
@@ -2869,6 +2876,7 @@ sub parse_args
   $ENV{PITON_LAGARTO}  = $opt{lagarto};
   push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   $ENV{PITON_PRONOC}   = $opt{pronoc};
+  $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico});
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
@@ -2877,6 +2885,45 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   #push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
+  push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
+  
+   
+  if ($opt{mgui_build}){
+  	# create the debug directory where monitoring data are stored for manyGUI
+  	system ("mkdir -p $launch_dir/debug") ;
+  	die  ("DIE. Could not create result area for regression") if ($?) ;
+  	# create platform.cfg file
+  	open (cfg_file, "> $launch_dir/debug/platform.cfg") or die ("DIE. Could not create platform.cfg file") ;
+  	print cfg_file "mpsoc_x $opt{x_tiles}
+mpsoc_y $opt{y_tiles}
+manager_position_x 0
+manager_position_y 0
+chipset_position WEST
+chipset_id 8192
+flit_size 64
+clock_period_ns 1
+throughput_mon_window_ms 0.0005
+BEGIN_task_name_relation
+cons 0
+prod 1
+END_task_name_relation
+BEGIN_app_name_relation
+prod_cons	0
+mpeg	1
+END_app_name_relation
+";  
+
+	#copy services.cfg file
+	system ("cp $ENV{DV_ROOT}/../utils/debug_model/services.cfg  $launch_dir/debug/services.cfg");
+	die  ("DIE. Could not copy services.cfg") if ($?) ;
+	
+  }
+
+if($opt{mgui_run}){
+	#run MANY_GUI
+	system ("java -jar $ENV{DV_ROOT}/../utils/OpenPiton_Debugger.jar $launch_dir/debug/platform.cfg &");
+}
+
 
 
   my $pton_x_tiles="";
@@ -3215,6 +3262,12 @@ VERILOG COMPILATION RELATED
            this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.
            in this case, programs are compiled and assembled using the RISCV GCC toolchain.
 
+    -mgui_build
+    	   this specifies that the simulator creates additional traffic monitoring files that can
+    	   be used for traffic visualization using ManyGUI tool (https://github.com/kevinjohnmartin/manyGUI)
+    
+
+
 VERILOG RUNTIME RELATED
 
     -vcd/-novcd
@@ -3250,6 +3303,10 @@ VERILOG RUNTIME RELATED
 
     -pre_process_cmd=COMMAND
            pre processing command to be run before vcs (simv) run starts
+           
+    -mgui_run 
+    	   this run the ManyGUI traffic visualizor (https://github.com/kevinjohnmartin/manyGUI) on last simulated results.
+         The last simulation must be build and run using -mgui_build argumnet
 
 MIDAS
 

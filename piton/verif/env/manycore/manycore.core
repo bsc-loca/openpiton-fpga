@@ -81,6 +81,8 @@ generate:
                           [lsu_mon2.v.pyv, lsu_mon2.tmp.v],
                           [manycore_network_mon.v.pyv, manycore_network_mon.tmp.v],
                           [monitor.v.pyv, monitor.tmp.v],
+                          [my_mon.sv.pyv, my_mon.tmp.sv],
+                          [my_network_mon.sv.pyv, my_network_mon.tmp.sv],
                           [multicycle_mon.v.pyv, multicycle_mon.tmp.v],
                           [pc_cmp.v.pyv, pc_cmp.tmp.v],
                           [sas_tasks.v.pyv, sas_tasks.tmp.v],
