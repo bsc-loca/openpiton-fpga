@@ -64,10 +64,10 @@ else
   # not all tools are required at the moment
   ci/make-tmp.sh
   ci/build-riscv-gcc.sh
-  ci/install-fesvr.sh
+  #ci/install-fesvr.sh
   # ci/build-riscv-tests.sh
   # ci/install-dtc.sh
-  ci/install-spike.sh
+  #ci/install-spike.sh
   # ci/get-torture.sh
   #ci/install-verilator.sh
 
@@ -89,8 +89,8 @@ else
   ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/ariane/util.h
   cd -
 
-  cd build
-  ../configure --prefix=${ARIANE_ROOT}/tmp/riscv-tests/build
+  #cd build
+  #../configure --prefix=${ARIANE_ROOT}/tmp/riscv-tests/build
 
   make clean
   make isa        -j${NUM_JOBS} > /dev/null
