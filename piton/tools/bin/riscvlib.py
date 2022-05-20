@@ -298,7 +298,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             tmpStr += '''
             eth: eth0@%08x {
             compatible = "riscv,axi-ethernet-1.0";
-            reg = <%s 0x80000>;
+            reg = <%s>;
             phy-mode = "10gbase-r";
             local-mac-address = [00 0a 35 00 00 00];
             interrupt-parent = <&PLIC0>;
