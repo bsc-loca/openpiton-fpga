@@ -56,7 +56,7 @@ integer    counter = 0;
 integer    target;
 integer    chipID;
 
-parameter HEADER = 0, PAYLOAD = 1;
+parameter HEADER = 0, PAYLD_ADR_SIZE = 1, PAYLOAD = 2;
 
 initial begin
     fd = $fopen("debug/traffic_router.txt", "w");
@@ -172,10 +172,10 @@ for y in range (PITON_Y_TILES):
             flatid = x + (y * PITON_X_TILES);
             for nocid in [0,1,2]:
                 for dir in ['L', 'N', 'S', 'E', 'W']:
-                    print ("integer tile%d_noc%d_in%s_packet_state = 0;" % (flatid, nocid, dir))
+                    print ("integer tile%d_noc%d_in%s_packet_state = HEADER;" % (flatid, nocid, dir))
                     print ("integer tile%d_noc%d_in%s_bdw_allocation = 0;" % (flatid, nocid, dir))
                     print ("integer tile%d_noc%d_in%s_payload_counter = 0;" % (flatid, nocid, dir))
-                    print ("reg [`NOC_DATA_WIDTH-1:0] tile%d_noc%d_in%s_header = 0;" % (flatid, nocid, dir))
+                    print ("reg [1:0][`NOC_DATA_WIDTH-1:0] tile%d_noc%d_in%s_header = '0;" % (flatid, nocid, dir))
                     
 %>
 
@@ -204,19 +204,19 @@ begin
                     print ("             tile%d_noc%d_in%s_bdw_allocation = counter;" % (flatid, nocid,dir))
                     if dir == 'L':
                         print ("`ifdef PITON_PRONOC")                        
-                        print ("             tile%d_noc%d_in%s_payload_counter = router_buffer_data_noc%d[%d][%s][29:22];" % (flatid, nocid, dir, nocid+1,flatid, dir))
-                        print ("             tile%d_noc%d_in%s_header = router_buffer_data_noc%d[%d][%s];" % (flatid, nocid, dir, nocid+1, flatid, dir))
+                        print ("             tile%d_noc%d_in%s_payload_counter = router_buffer_data_noc%d[%d][%s][`MSG_LENGTH];" % (flatid, nocid, dir, nocid+1,flatid, dir))
+                        print ("             tile%d_noc%d_in%s_header[0] = router_buffer_data_noc%d[%d][%s];" % (flatid, nocid, dir, nocid+1, flatid, dir))
                         print ("`else")
-                        print ("             tile%d_noc%d_in%s_payload_counter = `TILE%d.buffer_router_data_noc%d[29:22];" % (flatid, nocid, dir, flatid, nocid+1))
-                        print ("             tile%d_noc%d_in%s_header = `TILE%d.buffer_router_data_noc%d;" % (flatid, nocid, dir, flatid, nocid+1))
+                        print ("             tile%d_noc%d_in%s_payload_counter = `TILE%d.buffer_router_data_noc%d[`MSG_LENGTH];" % (flatid, nocid, dir, flatid, nocid+1))
+                        print ("             tile%d_noc%d_in%s_header[0] = `TILE%d.buffer_router_data_noc%d;" % (flatid, nocid, dir, flatid, nocid+1))
                         print ("`endif")
                     else: 
                         print ("`ifdef PITON_PRONOC") 
-                        print ("             tile%d_noc%d_in%s_payload_counter = router_buffer_data_noc%d[%d][%s][29:22];" % (flatid, nocid, dir, nocid+1,flatid, dir))
-                        print ("             tile%d_noc%d_in%s_header = router_buffer_data_noc%d[%d][%s];" % (flatid, nocid, dir, nocid+1, flatid, dir))
+                        print ("             tile%d_noc%d_in%s_payload_counter = router_buffer_data_noc%d[%d][%s][`MSG_LENGTH];" % (flatid, nocid, dir, nocid+1,flatid, dir))
+                        print ("             tile%d_noc%d_in%s_header[0] = router_buffer_data_noc%d[%d][%s];" % (flatid, nocid, dir, nocid+1, flatid, dir))
                         print ("`else")
-                        print ("             tile%d_noc%d_in%s_payload_counter = `TILE%d.dyn%d_dataIn_%s[29:22];" % (flatid, nocid, dir, flatid, nocid, dir))
-                        print ("             tile%d_noc%d_in%s_header = `TILE%d.dyn%d_dataIn_%s;" % (flatid, nocid, dir, flatid, nocid, dir))
+                        print ("             tile%d_noc%d_in%s_payload_counter = `TILE%d.dyn%d_dataIn_%s[`MSG_LENGTH];" % (flatid, nocid, dir, flatid, nocid, dir))
+                        print ("             tile%d_noc%d_in%s_header[0] = `TILE%d.dyn%d_dataIn_%s;" % (flatid, nocid, dir, flatid, nocid, dir))
                         print ("`endif")                        
                     print ("             tile%d_noc%d_in%s_packet_state = PAYLOAD;" % (flatid, nocid, dir))
                     print ("         end")
@@ -225,31 +225,31 @@ begin
                     print ("              tile%d_noc%d_in%s_payload_counter = tile%d_noc%d_in%s_payload_counter - 1;" % (flatid, nocid, dir, flatid, nocid, dir))
                     print ("             if (tile%d_noc%d_in%s_payload_counter == 0)" % (flatid, nocid, dir))
                     print ("             begin")
-                    print ("                 chipID = tile%d_noc%d_in%s_header[63:50];" % (flatid, nocid, dir))
+                    print ("                 chipID = tile%d_noc%d_in%s_header[0][`MSG_DST_CHIPID];" % (flatid, nocid, dir))
                     print ("                 if (chipID != 0)")
                     print ("                 begin")
                     print ("                     target = chipID;")
                     print ("                 end else begin ")
-                    print ("                     target = tile%d_noc%d_in%s_header[49:42];" % (flatid, nocid, dir))
-                    print ("                     target = (target << 8) | tile%d_noc%d_in%s_header[41:34];" % (flatid, nocid, dir))
+                    print ("                     target = tile%d_noc%d_in%s_header[0][`MSG_DST_X];" % (flatid, nocid, dir))
+                    print ("                     target = (target << 8) | tile%d_noc%d_in%s_header[0][`MSG_DST_Y];" % (flatid, nocid, dir))
                     print ("                 end")
                     print ("                 fd = $fopen(\"debug/traffic_router.txt\", \"a\");")
-                    
+
                     sys.stdout.write("                 $fwrite(fd,\"%0d\\t%0d\\t%0d\\t%0d\\t%0d\\t%0d\\t%s\\t%0d\\n\", ") #Without header at end
                     #Uncomment line above and comment line below to remove fulleheader
                     #sys.stdout.write("                 $fwrite(fd,\"%0d\\t%0d\\t%0d\\t%0d\\t%0d\\t%0d\\t%s\\t%0d\\t%064x\\n\", ")
                     
                     sys.stdout.write(" tile%d_noc%d_in%s_bdw_allocation," % (flatid, nocid, dir))   #Time that packet enter in the input
                     sys.stdout.write(" %d," % (x << 8 | y))                                         #Current router Address
-                    sys.stdout.write(" tile%d_noc%d_in%s_header[21:14]," % (flatid, nocid, dir))    #Service
-                    sys.stdout.write(" tile%d_noc%d_in%s_header[29:22]," % (flatid, nocid, dir))    #Payload
+                    sys.stdout.write(" tile%d_noc%d_in%s_header[0][`MSG_TYPE],"   % (flatid, nocid, dir))    #Service
+                    sys.stdout.write(" tile%d_noc%d_in%s_header[0][`MSG_LENGTH]," % (flatid, nocid, dir))    #Payload
                     sys.stdout.write(" (counter - tile%d_noc%d_in%s_bdw_allocation)," % (flatid, nocid, dir))    #Time that packet spent to be transmitted
                     sys.stdout.write(" %d," % (nocid+1))    #Subnoc
                     sys.stdout.write(" \"%s\"," % (dir))    #Input port
                     
                     sys.stdout.write(" target);\n")   #Target Router
                     #Uncomment line above and comment line below to remove fulleheader
-                    #sys.stdout.write(" target, tile%d_noc%d_in%s_header);\n" % (flatid, nocid, dir)) #Target Router + full header
+                    #sys.stdout.write(" target, tile%d_noc%d_in%s_header[0]);\n" % (flatid, nocid, dir)) #Target Router + full header
                     
                     print ("                 $fclose(fd);")
                     print ("                 tile%d_noc%d_in%s_packet_state = HEADER;" % (flatid, nocid, dir))
