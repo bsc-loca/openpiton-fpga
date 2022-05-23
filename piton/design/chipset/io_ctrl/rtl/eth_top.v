@@ -83,6 +83,7 @@ module eth_top #(
     output  [3:0]  qsfp_4x_gtx_n,
     output  [3:0]  qsfp_4x_gtx_p
     `else
+     input                                net_axi_arstn,
      output [`AXI4_ID_WIDTH     -1:0]     core_axi_awid,
      output [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr,
      output [`AXI4_LEN_WIDTH    -1:0]     core_axi_awlen,
