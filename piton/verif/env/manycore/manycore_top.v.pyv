@@ -311,12 +311,10 @@ system system(
 `ifndef VERILATOR
 `ifdef PITON_EXTRA_MEMS
     .chipset_clk(core_ref_clk),
-`else
-  `ifdef PITON_MANYGUI
+`elsif PITON_MANYGUI
     .chipset_clk(core_ref_clk),
-  `else
+`else
     .chipset_clk(chipset_clk),
-  `endif
 `endif
 `else
     .chipset_clk(core_ref_clk),
