@@ -103,6 +103,8 @@ def usage():
     print("              Name of the test to be simulated and mapped into BRAM/DRAM", file=sys.stderr)
     print("\n       --verdi-dbg", file=sys.stderr)
     print("              Create Verdi compliant simulation database of test specified by --bram-test option", file=sys.stderr)
+    print("\n       --mgui", file=sys.stderr)
+    print("              Run ManyGUI traffic visualizer while simulating test specified by --bram-test option", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
@@ -498,6 +500,7 @@ def setParserOptions(parser):
     parser.add_option("--config_l2_associativity", dest="config_l2_associativity",   action="store", default=4)
     parser.add_option("--bram-test", dest="test_name", action="store")
     parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
+    parser.add_option("--mgui", dest="mgui", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--vnpm", dest="vivado_mode", action="store_true", default=False)
     parser.add_option("--to", dest="to_step", action="store", default=None)
@@ -971,11 +974,18 @@ def main():
                       ' -vcs_build_args=-debug_access+all'          + \
                       ' -vcs_build_args=-debug_region=cell+encrypt' + \
                       ' -vcs_build_args=-LDFLAGS'                   + \
-                      ' -vcs_build_args=-Wl,--no-as-needed'
+                      ' -vcs_build_args=-Wl,--no-as-needed'         + \
+                      ' -vcs_build_args=+vcs+lic+wait'
+
+        mgui_build = '' 
+        mgui_run   = '' 
+        if options.mgui:
+            mgui_build = ' -mgui_build'
+            mgui_run   = ' -mgui_run'
 
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
-        ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
+        ret_val = os.system('sims -sys=manycore' + config + mgui_build + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
         if ret_val != 0:
             print_error("Compilation didn't finish successfully!")
             print_info("See for Errors in %s/compilation.log" % rc_dir.log)
@@ -983,7 +993,7 @@ def main():
         print_info("Simulation started")
         print_info("Using core clock frequency: %s MHz" % design_data["BOARDS"][options.board]["FREQ"])
         div = calcUARTLatch(design_data, options.board)
-        os.system('sims -sys=manycore ' + config + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
+        os.system('sims -sys=manycore ' + config + mgui_run + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
 
         f = open('%s/simulation.log' % rc_dir.log, 'r')
         cont = f.read()

@@ -311,6 +311,8 @@ system system(
 `ifndef VERILATOR
 `ifdef PITON_EXTRA_MEMS
     .chipset_clk(core_ref_clk),
+`elsif PITON_MANYGUI
+    .chipset_clk(core_ref_clk),
 `else
     .chipset_clk(chipset_clk),
 `endif
@@ -570,6 +572,11 @@ system system(
 `endif
 
     manycore_network_mon network_mon (`CHIP_INT_CLK);
+
+    my_network_mon my_network_monitor (`CHIP_INT_CLK);
+    
+    my_mon #(`PITON_NUM_TILES) my_monitor (
+        .clk (`CHIP_INT_CLK));//,
 
 `endif // MINIMAL_MONITORING
 `endif // DISABLE_ALL_MONITORS
