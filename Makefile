@@ -8,14 +8,14 @@ SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp
 IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp 
 BIT_FILE    =  $(ROOT_DIR)/bitstream/system.bit
 TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
-VIVADO_VER  := 2021.2
+VIVADO_VER  := "2021.2"
 VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/
 VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
 RISCV_DIR   := $(ROOT_DIR)/riscv
-#SHELL := /bin/bash
+SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
 PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
@@ -45,9 +45,15 @@ incremental:
 
 
 $(RISCV_DIR):
+	git clone https://github.com/riscv/riscv-gnu-toolchain; \
+	cd riscv-gnu-toolchain; \
+	./configure --prefix=$@ && make -j8; \
+	cd $(ROOT_DIR); \
+	source piton/$(CORE)_setup.sh; \
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean_project $(RISCV_DIR)
+	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
 
 protosyn_pronoc: clean_project $(RISCV_DIR)

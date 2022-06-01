@@ -272,7 +272,7 @@ fpga-test-ariane:
             - export PATH=$PATH:$QDMA_DRIVERS
             - sudo $TOOLS_DIR/givememyuart
         script:
-            - $TOOLS_DIR/load-bitstream.sh qdma ariane/bitstream/ariane_$BITSTREAM
+            - $TOOLS_DIR/load-bitstream-beta.sh qdma ariane/bitstream/ariane_$BITSTREAM
             - source $BOOT_SCRIPT
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
@@ -301,7 +301,7 @@ fpga-test-lagarto:
             - export PATH=$PATH:$QDMA_DRIVERS
             - sudo $TOOLS_DIR/givememyuart
         script:
-            - $TOOLS_DIR/load-bitstream.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
+            - $TOOLS_DIR/load-bitstream-beta.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
             - source $BOOT_SCRIPT_LAGARTO $OPENSBI_BIN
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE_LAGARTO
