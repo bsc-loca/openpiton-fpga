@@ -242,7 +242,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   set PITON_EXTRA_MEMS $::env(PITON_EXTRA_MEMS)
 }
 
-for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
+for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   set m_axi$idx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi$idx ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {36} \
@@ -314,7 +314,7 @@ for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
    ] $sram_axi
 
 set axi_ports "m_axi:sram_axi"
-for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
+for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   append axi_ports ":m_axi" $idx
 }
   # Create ports
@@ -489,8 +489,8 @@ for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   set_property CONFIG.USER_SAXI_01 {true} [get_bd_cells hbm_0]
 }
-for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
-  set_property CONFIG.USER_SAXI_[format {%02d} [expr {$idx+1}]] {true} [get_bd_cells hbm_0]
+for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+  set_property CONFIG.USER_SAXI_[format {%02d} [expr {$idx+2}]] {true} [get_bd_cells hbm_0]
 }
 
   # Create instance: hbm_calib_comb, and set properties
@@ -646,8 +646,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_H
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins rama_0/s_axi]
   connect_bd_intf_net -intf_net rama_0_m_axi [get_bd_intf_pins hbm_0/SAXI_01] [get_bd_intf_pins rama_0/m_axi]
-  for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
-    connect_bd_intf_net -intf_net m_axi_net$idx [get_bd_intf_ports m_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr {$idx+1}]]]
+  for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+    connect_bd_intf_net -intf_net m_axi_net$idx [get_bd_intf_ports m_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr {$idx+2}]]]
   }
 } else {
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins smartconnect_0/S01_AXI]
@@ -680,8 +680,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_H
   connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY]
   connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_01_ACLK] [get_bd_pins mem_calib_sync/slowest_sync_clk] [get_bd_pins rama_0/axi_aclk]
   connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_01_ARESET_N] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins rama_0/axi_aresetn] [get_bd_pins sys_rst_inv/Res]
-  for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
-    set hbm_port [format {%02d} [expr {$idx+1}]]
+  for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+    set hbm_port [format {%02d} [expr {$idx+2}]]
     connect_bd_net -net gndx32_dout     [get_bd_pins hbm_0/AXI_${hbm_port}_WDATA_PARITY]
     connect_bd_net -net s_axi_aclk_0_1  [get_bd_pins hbm_0/AXI_${hbm_port}_ACLK]
     connect_bd_net -net sys_rst_inv_Res [get_bd_pins hbm_0/AXI_${hbm_port}_ARESET_N]
@@ -760,8 +760,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] && $::env(PROTOSYN_RUNTIME_H
   assign_bd_address -offset 0x0001D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_01/HBM_MEM29] -force
   assign_bd_address -offset 0x0001E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_01/HBM_MEM30] -force
   assign_bd_address -offset 0x0001F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_01/HBM_MEM31] -force
-  for {set idx 1} {$idx <= $PITON_EXTRA_MEMS} {incr idx} {
-  set hbm_port [format {%02d} [expr {$idx+1}]]
+  for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+  set hbm_port [format {%02d} [expr {$idx+2}]]
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port/HBM_MEM00] -force
   assign_bd_address -offset 0x10000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port/HBM_MEM01] -force
   assign_bd_address -offset 0x20000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port/HBM_MEM02] -force

@@ -40,11 +40,12 @@ module noc_axi4_bridge_buffer #(
     // "Rd/Wr AXI ID thread deadlock" if multiple IDs are used. A detection of such event is implemented, but was never met from connected
     // HBM/DDR/BRAM/URAM memories before the above bug fix and after.
     parameter RDWR_INORDER = 0,
-    parameter NUM_REQ_OUTSTANDING = 4,
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
     parameter NUM_REQ_MSHRID_LBIT = 0,
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
-    parameter NUM_REQ_XTHREADS = 1
+    parameter NUM_REQ_XTHREADS = 1,
+    parameter SRCXY_AS_AXIID   = 0 // defines NOC tile x/y field to use for forming AXI ID (INI_X/Y by default)
 ) (
   input clk,
   input rst_n,
@@ -192,6 +193,9 @@ wire [`MSG_DST_FBITS_WIDTH -1:0] dst_fbits  = req_header[`MSG_DST_FBITS];
 wire [`MSG_MSHRID_WIDTH    -1:0] mshrid     = req_header[`MSG_MSHRID];
 wire [`MSG_LSID_WIDTH      -1:0] lsid       = req_header[`MSG_LSID];
 wire [`MSG_SDID_WIDTH      -1:0] sdid       = req_header[`MSG_SDID];
+wire [`MSG_TYPE_WIDTH      -1:0] msg_type   = req_header[`MSG_TYPE];
+wire [`MSG_DATA_SIZE_WIDTH -1:0] data_size  = req_header[`MSG_DATA_SIZE];
+wire [`MSG_LENGTH_WIDTH    -1:0] msg_length = req_header[`MSG_LENGTH];
 
 
 wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];
@@ -242,12 +246,11 @@ assign write_req_strb = wstrb         <<    wr_offset;
 // GET_RESPONSE
 //
 
-localparam NUM_REQ_OUTSTANDING_LOG2 = $clog2(NUM_REQ_OUTSTANDING);
 localparam NUM_REQ_YTHREADS_LOG2    = $clog2(NUM_REQ_YTHREADS);
 localparam NUM_REQ_XTHREADS_LOG2    = $clog2(NUM_REQ_XTHREADS);
 localparam NUM_REQ_THREADS_LOG2 = NUM_REQ_YTHREADS_LOG2 + NUM_REQ_XTHREADS_LOG2 + NUM_REQ_MSHRID_BITS;
-localparam NUM_REQ_THREADS = NUM_REQ_YTHREADS * NUM_REQ_XTHREADS * (1<<NUM_REQ_MSHRID_BITS) * (RDWR_INORDER ? 1:2); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0 
-localparam FULL_NUM_REQ_THREADS_LOG2 = $clog2(NUM_REQ_THREADS);
+localparam FULL_NUM_REQ_THREADS_LOG2 = NUM_REQ_THREADS_LOG2 + (RDWR_INORDER ? 0:1); // read/write request type goes as an extension to thread ID if RDWR_INORDER=0
+localparam NUM_REQ_THREADS = 1 << FULL_NUM_REQ_THREADS_LOG2;
 
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_wrptrs[NUM_REQ_THREADS-1 : 0];
 reg [NUM_REQ_OUTSTANDING_LOG2 : 0] outstnd_vrt_rdptrs[NUM_REQ_THREADS-1 : 0];
@@ -319,27 +322,27 @@ always @(posedge clk)
 
 
 wire req_command = pkt_command[fifo_out];
-wire [`MSG_SRC_X_WIDTH -1:0] req_ini_x  = req_header[`MSG_INI_X];
-wire [`MSG_SRC_Y_WIDTH -1:0] req_ini_y  = req_header[`MSG_INI_Y];
+wire [`MSG_SRC_X_WIDTH -1:0] req_tile_x  = SRCXY_AS_AXIID ? req_header[`MSG_SRC_X] : req_header[`MSG_INI_X];
+wire [`MSG_SRC_Y_WIDTH -1:0] req_tile_y  = SRCXY_AS_AXIID ? req_header[`MSG_SRC_Y] : req_header[`MSG_INI_Y];
 wire [`MSG_MSHRID_WIDTH-1:0] req_mshrid = req_header[`MSG_MSHRID];
 wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] req_id = (((req_mshrid >> NUM_REQ_MSHRID_LBIT)
-                                                                & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
-                                                                                                       NUM_REQ_XTHREADS_LOG2)) |
-                                                   ((req_ini_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
-                                                   ( req_ini_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+                                                                 & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
+                                                                                                        NUM_REQ_XTHREADS_LOG2)) |
+                                                   ((req_tile_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
+                                                   ( req_tile_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_req_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{req_command}}} << NUM_REQ_THREADS_LOG2) | req_id;
 
 wire [OUTSTND_HDR_WIDTH-1 : 0] stor_header;
 wire stor_command = (stor_header[`MSG_TYPE] == `MSG_TYPE_STORE_MEM) ||
                     (stor_header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-wire [`MSG_SRC_X_WIDTH -1:0] stor_ini_x  = stor_header[`MSG_INI_X];
-wire [`MSG_SRC_Y_WIDTH -1:0] stor_ini_y  = stor_header[`MSG_INI_Y];
+wire [`MSG_SRC_X_WIDTH -1:0] stor_tile_x  = SRCXY_AS_AXIID ? stor_header[`MSG_SRC_X] : stor_header[`MSG_INI_X];
+wire [`MSG_SRC_Y_WIDTH -1:0] stor_tile_y  = SRCXY_AS_AXIID ? stor_header[`MSG_SRC_Y] : stor_header[`MSG_INI_Y];
 wire [`MSG_MSHRID_WIDTH-1:0] stor_mshrid = stor_header[`MSG_MSHRID];
 wire [clip2zer(NUM_REQ_THREADS_LOG2-1):0] stor_id = (((stor_mshrid >> NUM_REQ_MSHRID_LBIT)
-                                                                  & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
-                                                                                                         NUM_REQ_XTHREADS_LOG2)) |
-                                                    ((stor_ini_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
-                                                    ( stor_ini_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
+                                                                   & ((1<< NUM_REQ_MSHRID_BITS  )-1)) << (NUM_REQ_YTHREADS_LOG2+
+                                                                                                          NUM_REQ_XTHREADS_LOG2)) |
+                                                    ((stor_tile_y  & ((1<< NUM_REQ_YTHREADS_LOG2)-1)) <<  NUM_REQ_XTHREADS_LOG2)  |
+                                                    ( stor_tile_x  & ((1<< NUM_REQ_XTHREADS_LOG2)-1));
 wire [clip2zer(FULL_NUM_REQ_THREADS_LOG2-1) : 0] full_stor_id = ({1'b0,{FULL_NUM_REQ_THREADS_LOG2{stor_command}}} << NUM_REQ_THREADS_LOG2) | stor_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_rdptr = outstnd_vrt_rdptrs[full_resp_id];
@@ -439,7 +442,7 @@ wire [NUM_REQ_OUTSTANDING_LOG2   : 0] outstnd_req_cnt = req_command ? outstnd_wr
 // Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
-    .RAM_DEPTH(NUM_REQ_OUTSTANDING),  // Specify RAM depth (number of entries)
+    .RAM_DEPTH(1 << NUM_REQ_OUTSTANDING_LOG2),  // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
 ) outstnd_req_mem (
     .addra(outstnd_abs_rdptr_mem),    // Port A address bus, width determined from RAM_DEPTH

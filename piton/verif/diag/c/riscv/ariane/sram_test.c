@@ -21,6 +21,10 @@ int main(int argc, char ** argv) {
     RTL_SIMUL = 0,
     SRAM_BASEADDR = 0xfff0400000,
     SRAM_ADRRANGE = RTL_SIMUL ? 512 : 0x00080000
+
+    // SDRAM access; to exclude UART access read check below should be changed to "=="
+    // SRAM_BASEADDR = 0x1ADD0000,
+    // SRAM_ADRRANGE = 0x4000
   };
 
   uint8_t volatile* memPtr8 = (uint8_t*)SRAM_BASEADDR;

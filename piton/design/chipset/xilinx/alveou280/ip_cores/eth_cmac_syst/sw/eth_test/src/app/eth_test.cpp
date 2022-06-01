@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <algorithm>
+#include <time.h>
 // #include <vector>
 // #include <string>
 // #include <xil_sleeptimer.h>
@@ -215,6 +216,57 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
+
+        ethSyst.timerCntInit(); // initializing Timer
+        printf("------- Measuring Tx/Rx memory memcpy() bandwidth with size %ld -------\n", txrxMemSize);
+        timespec sysStart, sysFin;
+
+        // Tx mem to Rx mem
+        srand(1);
+        for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
+
+        clock_gettime(CLOCK_REALTIME, &sysStart);
+        XTmrCtr_Start(&ethSyst.timerCnt, 0); // Start Timer 0
+        memcpy((void*)(ethSyst.rxMem), (const void*)(ethSyst.txMem), txrxMemSize);
+        float ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
+        clock_gettime(CLOCK_REALTIME, &sysFin);
+        float sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
+                        (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
+
+        srand(1);
+        for (size_t addr = 0; addr < rxMemWords; ++addr)
+         if (ethSyst.rxMem[addr] != uint32_t(rand())) {
+            printf("\nERROR: Incorrect readback of word-32 at addr %lx from Rx Mem after memcpy(): %x \n", addr, ethSyst.rxMem[addr]);
+            exit(1);
+          }
+        float ownSpeed = txrxMemSize / ownTime * 1024;
+        float sysSpeed = txrxMemSize / sysTime * 1024;
+        printf("Tx mem to Rx mem own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
+        printf("Tx mem to Rx mem sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
+
+        // Rx mem to Tx mem
+        srand(1);
+        for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = ~rand();
+
+        clock_gettime(CLOCK_REALTIME, &sysStart);
+        XTmrCtr_Start(&ethSyst.timerCnt, 1); // Start Timer 1
+        memcpy((void*)(ethSyst.txMem), (const void*)(ethSyst.rxMem), txrxMemSize);
+        ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
+        clock_gettime(CLOCK_REALTIME, &sysFin);
+        sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
+                  (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
+
+        srand(1);
+        for (size_t addr = 0; addr < txMemWords; ++addr)
+         if (ethSyst.txMem[addr] != uint32_t(~rand())) {
+            printf("\nERROR: Incorrect readback of word-32 at addr %lx from Tx Mem after memcpy(): %x \n", addr, ethSyst.txMem[addr]);
+            exit(1);
+          }
+        ownSpeed = txrxMemSize / ownTime * 1024;
+        sysSpeed = txrxMemSize / sysTime * 1024;
+        printf("Rx mem to Tx mem own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
+        printf("Rx mem to Tx mem sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
+
         printf("------- DMA Tx/Rx/SG memory test PASSED -------\n\n");
 
         ethSyst.axiDmaInit();
