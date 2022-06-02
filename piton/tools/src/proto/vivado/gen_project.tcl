@@ -32,6 +32,7 @@
 set DV_ROOT $::env(DV_ROOT)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
 
+
 # Create project
 create_project -force ${PROJECT_NAME} ${PROJECT_DIR}
 

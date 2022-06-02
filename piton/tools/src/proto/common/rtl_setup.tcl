@@ -30,9 +30,7 @@
 #
 
 set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include
-        ${DV_ROOT}/design/chipset/include
-        ${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
-#        ${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
+        ${DV_ROOT}/design/chipset/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -430,6 +428,7 @@ set SPARC_RTL_FILES [list \
 
 
 #set ARIANE_RTL_FILES // To be parsed
+set ARIANE_ROOT "${DV_ROOT}/design/chip/tile/ariane"
 
 
 set CHIP_INCLUDE_FILES [list \
@@ -671,6 +670,9 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_0/mig_a.prj" \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
+
+set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
+
 
 set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
 
