@@ -100,9 +100,9 @@ After the execution of the benchmark you can display the result with:
 #### Regressions
 
 The RISC-V ISA tests, benchmarks and some additonal simple example programs have been added to the regression suite of OpenPiton, and can be invoked as described below.
-RISC-V ISA tests are grouped into the following four batches, where the last two are the regressions for atomic memory operations (AMOs):
+RISC-V ISA tests are grouped into physical (ending with p) and virtual addresses (ending with v)):
 
-    sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+    sims -group=lagarto_tile1_rv64ui_tests_p -sim_type=msm
 
 List of regression tests supported:
 
