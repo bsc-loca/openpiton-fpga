@@ -3,4 +3,4 @@
 	url = https://github.com/pulp-platform/ariane.git
 [submodule "piton/design/chip/tile/vas_tile_core"]
 	path = piton/design/chip/tile/vas_tile_core
-	url = ../vas_tile_core
+	url = ../vas_tile_core.git
