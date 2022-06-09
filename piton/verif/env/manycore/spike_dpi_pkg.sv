@@ -1,3 +1,5 @@
+`ifdef MEEP_COSIM
+
 package spike_dpi_pkg;
 
     import EPI_pkg::*;
@@ -88,3 +90,5 @@ typedef struct
   import "DPI-C" function void spike_set_external_interrupt(input longint mip_val);
 
 endpackage
+
+`endif
