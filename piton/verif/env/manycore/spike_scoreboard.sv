@@ -79,10 +79,8 @@ always @(posedge clk) begin
       do_comparison <= 1;
       get_spike_commit_info(spike_commit_log, hart_id);
 
-      $display("[MEEP-COSIM] ################## Lagarto Instruction Commit Log: ##########################");
       $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d]", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid);
       $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h]", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data);
-      $display("[MEEP-COSIM] #----------------------------------------------------------------------------#");
 
       if (is_exception) begin
           $display("[MEEP-COSIM] Exception - mcause[%16h]", csr_excep.cause);

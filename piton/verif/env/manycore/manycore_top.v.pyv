@@ -436,7 +436,7 @@ for core_id in range(PITON_NUM_TILES) :
                                              .rst            (sys_rst_n),
                                              .commit         (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_valid),
                                              .pc             (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_pc),
-                                             .instr          (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.inst_orig),
+                                             .instr          (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.inst),
                                              .xreg_dest      (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_addr_reg),
                                              .cu_rr_int      (`CORE_{coreid}.lagarto_m20.datapath_inst.cu_rr_int),
                                              .commit_data    (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_data),
