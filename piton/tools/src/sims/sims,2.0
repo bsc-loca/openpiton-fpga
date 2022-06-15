@@ -1816,7 +1816,7 @@ sub generic_sim_run
       	$cmd .= " -wlfcompress -wlf all-waves.wlf -do \"log -r /*\" ";
       }
       if ($opt{cosim}) {
-        $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";
+        $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";  # Spike's binary used for cosimulation
       }
       if ($opt{cov}) {
         $cmd .= "-coverage ";
@@ -2566,7 +2566,7 @@ sub find_diag_path
 
   chomp $full_path[0];
   print "$prg: Found diag under $full_path[0]\n" ;
-  if ($opt{cosim}) { push (@{$opt{sim_run_args}}, "+SPIKE_BIN=$full_path[0]") ; }
+  if ($opt{cosim}) { push (@{$opt{sim_run_args}}, "+SPIKE_BIN=$full_path[0]") ; }  # Test binary for Spike cosimulation
   return $full_path[0] ;
 }
 
