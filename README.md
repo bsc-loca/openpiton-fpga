@@ -133,6 +133,22 @@ Some automatic scripts have been created to speed-up local checks. The following
     cd build
     source run_all_isa_groups.sh
 
+#### Cosimulation - Generating Spike.so
+
+As part of cosimulation support, Spike.so is added to the repository. It is added for purpose of ease and, if needed, it can be generated:
+```
+git clone -b spike_multicore https://gitlab.bsc.es/meep/meep-design-verification/spike_repo_meep.git
+mkdir compile_meep
+cd compile_meep
+../compile.sh -b dpi -t meep -c '--enable-commitlog'
+```
+
+To run cosimulation, the -cosim flag is appended:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB -cosim
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim -gui
+
+
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
 # OpenPiton Research Platform   [![Build Status](https://jenkins.princeton.edu/buildStatus/icon?job=cloud/piton_git_push_master)](https://jenkins.princeton.edu/job/cloud/job/piton_git_push_master/)
