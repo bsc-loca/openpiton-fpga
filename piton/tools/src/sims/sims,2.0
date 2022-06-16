@@ -1370,6 +1370,10 @@ sub generic_sim_build
 
     push (@{$opt{sim_build_args}}, "-f flist") ;
 
+    if ($opt{cosim}) {
+      push (@{$opt{sim_build_args}}, "+define+MEEP_COSIM")
+    }
+
     if ($opt{vcs_build}) {
       $lib_path = "-L$ENV{DV_ROOT}/tools/";
       $lib_path .= $os_cpu_slash;
@@ -1810,6 +1814,9 @@ sub generic_sim_run
       	# this logs everything such that the sim can be inspected later on
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");
       	$cmd .= " -wlfcompress -wlf all-waves.wlf -do \"log -r /*\" ";
+      }
+      if ($opt{cosim}) {
+        $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";  # Spike's binary used for cosimulation
       }
       if ($opt{cov}) {
         $cmd .= "-coverage ";
@@ -2559,6 +2566,7 @@ sub find_diag_path
 
   chomp $full_path[0];
   print "$prg: Found diag under $full_path[0]\n" ;
+  if ($opt{cosim}) { push (@{$opt{sim_run_args}}, "+SPIKE_BIN=$full_path[0]") ; }  # Test binary for Spike cosimulation
   return $full_path[0] ;
 }
 
@@ -2704,6 +2712,7 @@ sub parse_args
             'y_tiles=s',
             'dynamic_csm=s',
             'gui!',
+            'cosim!',
             'cov!',
             'log_all!',
             'debug_all!',
@@ -3074,6 +3083,10 @@ OPENPITON ARGUMENTS
             model specified by the -sys option, the -debug_all argument
             must have been passed to sims.
 
+    -cosim
+            enable cosimulation with Spike. Using Spike DPI, testbench will get
+            instruction commit information from Spike and match it with RTL after
+            every committed instruction.
     -cov
             enable coverage. For now, enabling branch, statement and toggle
             for code coverage. Also enabling functional coverage.
