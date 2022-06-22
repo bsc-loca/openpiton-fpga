@@ -297,12 +297,22 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrLen  = devices[i]["length"]
             tmpStr += '''
             eth: eth0@%08x {
-            compatible = "riscv,axi-ethernet-1.0";
+            compatible = "xlnx,xps-ethernetlite-1.00.a";
+            device_type = "network";
             reg = <%s>;
             phy-mode = "10gbase-r";
             local-mac-address = [00 0a 35 00 00 00];
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
+            xlnx,duplex = <0x1>;
+            xlnx,include-global-buffers = <0x0>;
+            xlnx,include-internal-loopback = <0x1>;
+            xlnx,include-mdio = <0x0>;
+            xlnx,rx-ping-pong = <0x1>;
+            xlnx,s-axi-id-width = <0x1>;
+            xlnx,select-xpm = <0x1>;
+            xlnx,tx-ping-pong = <0x1>;
+            xlnx,use-internal = <0x0>;
             };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr)
             ioDeviceNr+=1

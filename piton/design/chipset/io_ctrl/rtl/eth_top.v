@@ -76,6 +76,7 @@ module eth_top #(
                    ,
     input          net_axi_clk,
     `ifndef PITONSYS_MEEP
+    input   [1:0]  net_cmac_intc,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -130,9 +131,9 @@ module eth_top #(
      input  [`AXI4_RESP_WIDTH   -1:0]    core_axi_bresp,
      input  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser,
      input                               core_axi_bvalid,
-     output                              core_axi_bready,
+     output                              core_axi_bready
      
-     input   [1:0]                         net_cmac_intc
+     //input   [1:0]                         net_cmac_intc
     
     
     `endif
@@ -251,7 +252,7 @@ noc_bidir_afifo  net_afifo  (
     .rst_1           (~rst_n                ),
 
     .clk_2           (net_axi_clk           ),
-    .rst_2           (~rst_n                ),
+    .rst_2           (~net_axi_arstn        ),
 
     // CPU --> EMACLITE
     .flit_in_val_1   (noc_in_val      ),
@@ -331,8 +332,8 @@ noc_axi4_bridge #(
     .SWAP_ENDIANESS (SWAP_ENDIANESS),
     .NOC2AXI_DESER_ORDER (1)
 ) noc_ethernet_bridge (
-    .clk                (net_axi_clk),  
-    .rst_n              (rst_n      ), 
+    .clk                (net_axi_clk     ),  
+    .rst_n              (net_axi_arstn   ), 
     .uart_boot_en       (1'b0       ),
     .phy_init_done      (1'b1       ),
     .axi_id_deadlock    (           ),
@@ -397,6 +398,9 @@ noc_axi4_bridge #(
 );
 `endif
 
+
+`ifndef PITONSYS_MEEP
+
 net_int_sync net_int_sync(
   .clk_emac(net_axi_clk),
   .clk_ciop(chipset_clk),
@@ -404,6 +408,8 @@ net_int_sync net_int_sync(
   .net_int(unsync_net_int),
   .sync_int(net_interrupt)
 );
+
+`endif
 
 
 `ifdef PITON_FPGA_ETHERNETLITE
@@ -527,12 +533,15 @@ assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
 
 `endif
 
+`ifndef PITONSYS_MEEP
+
 reg net_cmac_intc_comb;
 always @(posedge net_axi_clk) begin
   if (~rst_n) net_cmac_intc_comb <= 1'b0;
   else        net_cmac_intc_comb <= |net_cmac_intc; // combining Tx/Rx events to single event going to NOC
 end
 assign unsync_net_int = net_cmac_intc_comb;
+`endif
 
 `else // PITON_FPGA_ETH_CMAC
   // Ethernet core stub for simulation
@@ -563,7 +572,7 @@ assign unsync_net_int = net_cmac_intc_comb;
   reg core_axi_bvalid_reg;
   reg [`AXI4_ID_WIDTH-1:0] core_axi_bid_reg;
   always @(posedge net_axi_clk) begin
-    if (~rst_n) begin 
+    if (~net_axi_arstn) begin 
       core_axi_bvalid_reg <= 1'b0;
       core_axi_bid_reg <= `AXI4_ID_WIDTH'h0;
     end
