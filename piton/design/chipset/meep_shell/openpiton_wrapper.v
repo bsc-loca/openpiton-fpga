@@ -259,7 +259,7 @@ module openpiton_wrapper(
 
       // Ethernet
        .eth_axi_aclk  (eth_axi_aclk),
-       .eth_axi_arstn (eth_axi_arestn),
+       .eth_axi_arstn (eth_axi_arstn),
 
        .eth_axi_araddr(eth_axi_araddr),
        .eth_axi_arburst(eth_axi_arburst),
