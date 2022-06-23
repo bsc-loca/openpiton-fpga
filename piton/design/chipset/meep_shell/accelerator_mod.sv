@@ -64,6 +64,8 @@ module openpiton_wrapper (
     input mem_calib_complete,
 
     // Ethernet
+    input             eth_axi_aclk,
+    input             eth_axi_arstn,	    
 
     // AXI interface
     output  [5:0]     eth_axi_awid ,
