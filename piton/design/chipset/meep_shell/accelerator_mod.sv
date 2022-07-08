@@ -61,7 +61,7 @@ module openpiton_wrapper (
     input            mem_axi_bvalid ,
     output           mem_axi_bready ,
 
-    input mem_calib_complete,
+    input mem_calib_complete ,
 
     // Ethernet
     input             eth_axi_aclk ,
