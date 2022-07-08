@@ -1397,6 +1397,10 @@ sub generic_sim_build
 
     push (@{$opt{sim_build_args}}, "-f flist") ;
 
+    if ($opt{cosim}) {
+      push (@{$opt{sim_build_args}}, "+define+MEEP_COSIM")
+    }
+
     if ($opt{vcs_build}) {
       $lib_path = "-L$ENV{DV_ROOT}/tools/";
       $lib_path .= $os_cpu_slash;
@@ -1580,6 +1584,10 @@ sub generic_sim_build
       # always_comb blocks that operate on arrays inside a generate statement.
       # [SVCHK] - Some checking for conflicts with always_comb and always_latch variables not yet supported.
       $build_cmd .= " -suppress 2583 ";
+
+      if ($opt{cov}) {
+        $build_cmd .= " -cover bst +fcover " ;
+      }
     }
     if ($opt{riv_build}) {
       $build_cmd = "vlib work; vlog " ;
@@ -1834,9 +1842,19 @@ sub generic_sim_run
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");
       	$cmd .= " -wlfcompress -wlf all-waves.wlf -do \"log -r /*\" ";
       }
+      if ($opt{cosim}) {
+        $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";  # Spike's binary used for cosimulation
+      }
+      if ($opt{cov}) {
+        $cmd .= "-coverage ";
+      }
       $cmd .= "-lib ";
       $cmd .= "$model_path/work ";
-      $cmd .= "-do \"run -all\" ";
+      if ($opt{cov}) {
+        $cmd .= "-do \"coverage save -onexit $opt{asm_diag_name}.ucdb; run -all\" ";
+      } else {
+        $cmd .= "-do \"run -all\" ";
+      }
 
       foreach my $top_n (@{$opt{toplevel}}) {
         $cmd .= "$top_n ";
@@ -2272,6 +2290,15 @@ sub assemble_diag
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/isa";
       push @{$opt{asm_diag_root}}, "$ENV{ARIANE_ROOT}/tmp/riscv-tests/build/benchmarks";
     }
+    # add default path to look for precompiled RISCV 64bit assembly tests diags in case of lagarto
+    if ($opt{lagarto} and $opt{precompiled}) {
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/isa";
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-tests/build/benchmarks";
+      push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-torture/artifacts/torture";
+    }
+
+
+
 
     # find diagnostic
     my $diag_full_path = &find_diag_path ($opt{asm_diag_name}, $opt{asm_diag_path}, $opt{asm_diag_root}) ;
@@ -2369,7 +2396,7 @@ sub assemble_diag
           $ENV{RV64_MARCH} = "rv64imafdc" ;
         }
         if ($opt{lagarto}) {
-          $ENV{RV64_MARCH} = "rv64ima" ;
+          $ENV{RV64_MARCH} = "rv64imafd" ;
         }
       } else {
         $ENV{RV64_MARCH} = $opt{rv64_march} ;
@@ -2379,7 +2406,7 @@ sub assemble_diag
           $ENV{RV64_MABI} = "lp64d" ;
         }
         if ($opt{lagarto}) {
-          $ENV{RV64_MABI} = "lp64" ;
+          $ENV{RV64_MABI} = "lp64d" ;
         }
       } else {
         $ENV{RV64_MABI} = $opt{rv64_mabi} ;
@@ -2566,6 +2593,7 @@ sub find_diag_path
 
   chomp $full_path[0];
   print "$prg: Found diag under $full_path[0]\n" ;
+  if ($opt{cosim}) { push (@{$opt{sim_run_args}}, "+SPIKE_BIN=$full_path[0]") ; }  # Test binary for Spike cosimulation
   return $full_path[0] ;
 }
 
@@ -2712,6 +2740,8 @@ sub parse_args
             'board=s',
             'dynamic_csm=s',
             'gui!',
+            'cosim!',
+            'cov!',
             'log_all!',
             'debug_all!',
             'ibm!',
@@ -3091,6 +3121,14 @@ OPENPITON ARGUMENTS
             for waveform viewing and debugging.  When building the simulation
             model specified by the -sys option, the -debug_all argument
             must have been passed to sims.
+
+    -cosim
+            enable cosimulation with Spike. Using Spike DPI, testbench will get
+            instruction commit information from Spike and match it with RTL after
+            every committed instruction.
+    -cov
+            enable coverage. For now, enabling branch, statement and toggle
+            for code coverage. Also enabling functional coverage.
 
     -log_all
             in a msm_run, this command logs all signals and dumps them to the "all-waves.wlf" file for later inspection with a wave viewer.

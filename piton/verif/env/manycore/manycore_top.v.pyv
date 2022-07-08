@@ -430,7 +430,32 @@ system system(
 ////////////////////////////////////////////////////////
 // MONITOR STUFF
 ////////////////////////////////////////////////////////
+<%
+for core_id in range(PITON_NUM_TILES) :
+    print("`define CORE_%d system.chip.tile%d.g_lagarto_m20_core.core" %(core_id, core_id))
+%>
+`ifdef MEEP_COSIM
+<%
+print("    spike_setup #(.NUM_CORES(%d)) spike_cosim_setup();" %(PITON_NUM_TILES))
 
+for core_id in range(PITON_NUM_TILES) :
+    print("""
+    spike_scoreboard spike_scoreboard_core{coreid} (.clk            (core_ref_clk),
+                                             .rst            (sys_rst_n),
+                                             .commit         (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_valid),
+                                             .pc             (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_pc),
+                                             .instr          (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.inst),
+                                             .xreg_dest      (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_addr_reg),
+                                             .cu_rr_int      (`CORE_{coreid}.lagarto_m20.datapath_inst.cu_rr_int),
+                                             .commit_data    (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_data),
+                                             .excep          (`CORE_{coreid}.lagarto_m20.datapath_inst.wb_xcpt),
+                                             .csr_excep      (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
+                                             .control_intf   (`CORE_{coreid}.lagarto_m20.datapath_inst.control_int),
+                                             .hart_id        (`CORE_{coreid}.hart_id_i),
+                                             .ref_hart_id    (64'd{coreid}));
+    """.format(coreid = core_id))
+%>
+`endif
 
 `ifndef DISABLE_ALL_MONITORS
 

@@ -77,9 +77,11 @@ export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
 export CXX=g++ CC=gcc
 # customize this to a fast local disk
 export RISCV=/home/tools/openpiton/riscv_install
+#export RISCV=/home/`whoami`/tools/riscv_install
+export VERILATOR_ROOT=$LAGARTO_ROOT/tmp/verilator-4.014/
 
 # setup paths
-export PATH=$RISCV/bin:$PATH
+export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
 export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
@@ -104,6 +106,7 @@ then
     echo
     echo "----------------------------------------------------------------------"
     echo "setup complete. do not forget to run the following script             "
+    echo "if you run the setup for the first time: ./piton/lagarto_build_tools.sh"
     echo "----------------------------------------------------------------------"
     echo
 else
