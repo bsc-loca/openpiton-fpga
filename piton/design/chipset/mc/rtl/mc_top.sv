@@ -125,7 +125,7 @@ module mc_top (
 
 localparam HBM_WIDTH = 256;
 localparam HBM_SIZE_LOG2 = 33; // 8GB
-localparam HBM_MCS_LOG2  = 5;  // 32 MC channels
+localparam HBM_MCS_LOG2  = 5;  // 32 MC channels to participate in "interleaving", set 0 to disable "interleaving"
 localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels in AXI address
 
 `ifdef PITONSYS_MC_SRAM
@@ -1407,15 +1407,24 @@ wire [`AXI4_STRB_WIDTH  -1:0]  pci2hbm_maxi_wstrb;
 wire                           pci2hbm_maxi_wvalid;
 
 // making address swapping for interleaving of HBM MC channels
-wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_raddr = {pci2hbm_maxi_araddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
-                                               pci2hbm_maxi_araddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
-                                               pci2hbm_maxi_araddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
-                                               pci2hbm_maxi_araddr[HBM_MCS_ADDR -1    : 0]};
-
-wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_waddr = {pci2hbm_maxi_awaddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
-                                               pci2hbm_maxi_awaddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
-                                               pci2hbm_maxi_awaddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
-                                               pci2hbm_maxi_awaddr[HBM_MCS_ADDR -1    : 0]};
+wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_raddr;
+wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_waddr;
+generate
+  if (HBM_MCS_LOG2) begin
+    assign pci2hbm_raddr = {pci2hbm_maxi_araddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_araddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR -1    : 0]};
+    assign pci2hbm_waddr = {pci2hbm_maxi_awaddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_awaddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR -1    : 0]};
+  end
+  else begin
+    assign pci2hbm_raddr =  pci2hbm_maxi_araddr;
+    assign pci2hbm_waddr =  pci2hbm_maxi_awaddr;
+  end
+endgenerate
 
 meep_shell meep_shell
        (
