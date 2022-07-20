@@ -1285,6 +1285,7 @@ localparam CHIP_SET_PORT = 3; //west port of first router
         .ipi_i               ( ipi_i[_FLAT_ID_]         ),
         .irq_i               ( irq_i[_FLAT_ID_*2 +: 2]  ),
         .pmu_sig_o           ( pmu_sig_o[23*_FLAT_ID_+:23]),
+        .vpu_clk             ( vpu_clk                  ),
     `endif
         // ucb from tiles to jtag
         .tile_jtag_ucb_val   ( tile0_jtag_ucb_val      ),

@@ -33,6 +33,12 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <noc2in/>
     </port>
     <port>
+	<name>sram</name>
+        <base>0xfff0400000</base>
+	<length>0x100000</length>
+	<stream_accessible/>
+    </port>
+    <port>
         <name>uart</name>
         <base>0xfff0c2c000</base>
         <!-- Just give it all the space up to the network device? -->
@@ -76,12 +82,6 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <stream_accessible/>
     </port>
     <!-- performance monitoring unit -->
-    <port>
-        <name>lagarto_pmu</name>
-        <base>0xfff5100000</base>
-        <length>0x10000</length>
-	<stream_accessible/>
-    </port>
-    <!-- end lagarto specific periphs -->
+    <!-- Removed PMU untill it is revisited -->
 </devices>
 

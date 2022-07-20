@@ -15,7 +15,7 @@ VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
 RISCV_DIR   := $(ROOT_DIR)/riscv
-#SHELL := /bin/bash
+SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
 PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
@@ -45,9 +45,11 @@ incremental:
 
 
 $(RISCV_DIR):
+	source piton/$(CORE)_setup.sh; \
 	piton/$(CORE)_build_tools.sh	
 
 protosyn: clean_project $(RISCV_DIR)
+	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
 
 protosyn_pronoc: clean_project $(RISCV_DIR)

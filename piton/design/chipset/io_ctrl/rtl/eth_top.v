@@ -75,12 +75,66 @@ module eth_top #(
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
     input          net_axi_clk,
+    `ifndef PITONSYS_MEEP
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
     input   [3:0]  qsfp_4x_grx_p,
     output  [3:0]  qsfp_4x_gtx_n,
     output  [3:0]  qsfp_4x_gtx_p
+    `else
+     output [`AXI4_ID_WIDTH     -1:0]     core_axi_awid,
+     output [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr,
+     output [`AXI4_LEN_WIDTH    -1:0]     core_axi_awlen,
+     output [`AXI4_SIZE_WIDTH   -1:0]     core_axi_awsize,
+     output [`AXI4_BURST_WIDTH  -1:0]     core_axi_awburst,
+     output                               core_axi_awlock,
+     output [`AXI4_CACHE_WIDTH  -1:0]     core_axi_awcache,
+     output [`AXI4_PROT_WIDTH   -1:0]     core_axi_awprot,
+     output [`AXI4_QOS_WIDTH    -1:0]     core_axi_awqos,
+     output [`AXI4_USER_WIDTH   -1:0]     core_axi_awuser,
+     output                               core_axi_awvalid,
+     input                                core_axi_awready,
+     
+     output  [`AXI4_DATA_WIDTH   -1:0]    core_axi_wdata,
+     output  [`AXI4_STRB_WIDTH   -1:0]    core_axi_wstrb,
+     output                               core_axi_wlast,
+     output  [`AXI4_USER_WIDTH   -1:0]    core_axi_wuser,
+     output                               core_axi_wvalid,
+     input                                core_axi_wready,
+     
+     output  [`AXI4_ID_WIDTH     -1:0]    core_axi_arid,
+     output  [`AXI4_ADDR_WIDTH   -1:0]    core_axi_araddr,
+     output  [`AXI4_LEN_WIDTH    -1:0]    core_axi_arlen,
+     output  [`AXI4_SIZE_WIDTH   -1:0]    core_axi_arsize,
+     output  [`AXI4_BURST_WIDTH  -1:0]    core_axi_arburst,
+     output                               core_axi_arlock,
+     output  [`AXI4_CACHE_WIDTH  -1:0]    core_axi_arcache,
+     output  [`AXI4_PROT_WIDTH   -1:0]    core_axi_arprot,
+     output  [`AXI4_QOS_WIDTH    -1:0]    core_axi_arqos,
+     output  [`AXI4_REGION_WIDTH -1:0]    core_axi_arregion,
+     output  [`AXI4_USER_WIDTH   -1:0]    core_axi_aruser,
+     output                               core_axi_arvalid,
+     input                                core_axi_arready,
+     
+     input   [`AXI4_ID_WIDTH     -1:0]    core_axi_rid,
+     input   [`AXI4_DATA_WIDTH   -1:0]    core_axi_rdata,
+     input   [`AXI4_RESP_WIDTH   -1:0]    core_axi_rresp,
+     input                                core_axi_rlast,
+     input   [`AXI4_USER_WIDTH   -1:0]    core_axi_ruser,
+     input                                core_axi_rvalid,
+     output                               core_axi_rready,
+     
+     input  [`AXI4_ID_WIDTH     -1:0]    core_axi_bid,
+     input  [`AXI4_RESP_WIDTH   -1:0]    core_axi_bresp,
+     input  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser,
+     input                               core_axi_bvalid,
+     output                              core_axi_bready,
+     
+     input   [1:0]                         net_cmac_intc
+    
+    
+    `endif
 `endif // PITON_FPGA_ETH_CMAC
 );
 
@@ -129,6 +183,7 @@ wire net_phy_col = 1'b0;
 
 
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
+ `ifndef PITONSYS_MEEP
 wire [`AXI4_ID_WIDTH     -1:0]     core_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr;
 wire [`AXI4_LEN_WIDTH    -1:0]     core_axi_awlen;
@@ -178,6 +233,7 @@ wire  [`AXI4_RESP_WIDTH   -1:0]    core_axi_bresp;
 wire  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser;
 wire                               core_axi_bvalid;
 wire                               core_axi_bready;
+ `endif
 `endif
 
 (* dont_touch = "true" *) wire unsync_net_int;
@@ -401,6 +457,7 @@ IOBUF u_iobuf_dq (
 );
 
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+`ifndef PITONSYS_MEEP
 wire [1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
 Eth_CMAC_syst eth_cmac_syst (
   .s_axi_clk        (net_axi_clk),          // input wire s_axi_aclk
@@ -463,8 +520,11 @@ Eth_CMAC_syst eth_cmac_syst (
   .qsfp_4x_gtx_n      (qsfp_4x_gtx_n),
   .qsfp_4x_gtx_p      (qsfp_4x_gtx_p)
 );
+
 assign core_axi_ruser  = `AXI4_USER_WIDTH'h0;
 assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
+
+`endif
 
 reg net_cmac_intc_comb;
 always @(posedge net_axi_clk) begin

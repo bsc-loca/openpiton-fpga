@@ -48,6 +48,7 @@ echo "building RISCV toolchain and tests (if not existing)"
 echo "----------------------------------------------------------------------"
 echo
 
+
 if [[ "${RISCV}" == "" ]]
 then
     echo "Please source ariane_setup.sh first, while being in the root folder."
@@ -56,7 +57,7 @@ else
   git submodule update --init --recursive piton/design/chip/tile/ariane
 
   # parallel compilation
-  export NUM_JOBS=4
+  export NUM_JOBS=8
 
   cd piton/design/chip/tile/ariane/
 
@@ -89,7 +90,7 @@ else
   cd -
 
   cd build
-  ../configure --prefix=$ROOT/tmp/riscv-tests/build
+  ../configure --prefix=${ARIANE_ROOT}/tmp/riscv-tests/build
 
   make clean
   make isa        -j${NUM_JOBS} > /dev/null
