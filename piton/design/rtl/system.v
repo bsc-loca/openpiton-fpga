@@ -1247,8 +1247,7 @@ chip chip(
     // PLIC
     .irq_i                          ( irq                        ), // level sensitive IR lines, mip & sip (async)
     // PMU
-    .pmu_sig_o                      ( pmu_sig                    ),
-    .vpu_clk                        (vpu_clk                     )
+    .pmu_sig_o                      ( pmu_sig                    )
 `endif
 
 );
