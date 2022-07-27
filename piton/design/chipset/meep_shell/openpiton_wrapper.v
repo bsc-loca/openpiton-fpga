@@ -66,7 +66,9 @@ module openpiton_wrapper(
     input mem_calib_complete,
 
     // Ethernet
-
+    input                                eth_axi_aclk,
+    input                                eth_axi_arstn,
+    
     // AXI interface
     output  [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output  [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,
@@ -256,6 +258,8 @@ module openpiton_wrapper(
        .mem_calib_complete(mem_calib_complete),
 
       // Ethernet
+       .eth_axi_aclk  (eth_axi_aclk),
+       .eth_axi_arstn (eth_axi_arstn),
 
        .eth_axi_araddr(eth_axi_araddr),
        .eth_axi_arburst(eth_axi_arburst),

@@ -506,7 +506,8 @@ module system(
     input  wire                                   ddr_ready,
 	
 	    //Ethernet
-    
+    input wire                               eth_axi_aclk,
+    input wire                               eth_axi_arstn,
          // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,
@@ -1594,6 +1595,8 @@ chipset chipset(
             .m_axi_bready    (mem_axi_bready   ),
 			
 			      // Ethernet
+			.eth_axi_aclk    (eth_axi_aclk   ),
+			.eth_axi_arstn   (eth_axi_arstn  ),
 
 		    .eth_axi_araddr(eth_axi_araddr),
 		    .eth_axi_arburst(eth_axi_arburst),
