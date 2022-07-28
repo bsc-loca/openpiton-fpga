@@ -34,17 +34,21 @@
 module noc_axi4_bridge_buffer #(
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter ADDR_OFFSET = 64'h0,
+    parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
+    parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
+    parameter ADDR_SWAP_LSB   = 6,                  // low position of moved bits in AXI address
     // Control of Rd/Wr responses order. Being enabled, enforces Rd/Wr response order to the NOC the same as Rd/Wr requests came from the NOC.
     // The feature was implemented because of bug not yet discovered in noc_axi4_brodge_ser. It made looking OP as not tolerant to Rd/Wr reordering,
     // what became not true after bug fix. Anyway the feature is left as fully tested and functionable but assumes the possibility of 
     // "Rd/Wr AXI ID thread deadlock" if multiple IDs are used. A detection of such event is implemented, but was never met from connected
     // HBM/DDR/BRAM/URAM memories before the above bug fix and after.
     parameter RDWR_INORDER = 0,
-    parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
-    parameter NUM_REQ_MSHRID_LBIT = 0,
+    // "Outstanding requests" queue parameters
+    parameter NUM_REQ_OUTSTANDING_LOG2 = 2, // "Outstanding requests" queue size
+    parameter NUM_REQ_MSHRID_LBIT = 0, // particular NOC fields to participate in AXI ID
     parameter NUM_REQ_MSHRID_BITS = 0,
-    parameter NUM_REQ_YTHREADS = 1,
-    parameter NUM_REQ_XTHREADS = 1,
+    parameter NUM_REQ_YTHREADS = 1, // high component of number of "Outstanding requests" threads
+    parameter NUM_REQ_XTHREADS = 1, // low  component of number of "Outstanding requests" threads
     parameter SRCXY_AS_AXIID   = 0 // defines NOC tile x/y field to use for forming AXI ID (INI_X/Y by default)
 ) (
   input clk,
@@ -214,7 +218,16 @@ storage_addr_trans #(
 );
 
 wire [`AXI4_ADDR_WIDTH-1:0] addr = uart_boot_en ? {phys_addr[`AXI4_ADDR_WIDTH-4:0], 3'b0} : virt_addr - ADDR_OFFSET;
-wire [`AXI4_ADDR_WIDTH-1:0] req_addr = {addr[`AXI4_ADDR_WIDTH-1:6], 6'b0};
+wire [`AXI4_ADDR_WIDTH-1:0] req_addr;
+generate
+  if (ADDR_SWAP_LBITS)
+    assign req_addr = {addr[`AXI4_ADDR_WIDTH-1 : ADDR_SWAP_MSB                  ],
+                       addr[ADDR_SWAP_LSB     +: ADDR_SWAP_LBITS                ], // Low address part moved up
+                       addr[ADDR_SWAP_MSB-1    : ADDR_SWAP_LSB + ADDR_SWAP_LBITS], // High address part shifted down
+                       addr[ADDR_SWAP_LSB-1    : 6], 6'b0};
+  else
+    assign req_addr = {addr[`AXI4_ADDR_WIDTH-1 : 6], 6'b0};
+endgenerate
 
 assign read_req_addr  = req_addr;
 assign write_req_addr = req_addr;

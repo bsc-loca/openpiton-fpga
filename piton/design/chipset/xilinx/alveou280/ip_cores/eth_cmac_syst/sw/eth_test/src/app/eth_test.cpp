@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <algorithm>
 #include <time.h>
+#include <fcntl.h>
+#include <sys/mman.h>
 // #include <vector>
 // #include <string>
 // #include <xil_sleeptimer.h>
@@ -239,8 +241,8 @@ int main(int argc, char *argv[])
             printf("\nERROR: Incorrect readback of word-32 at addr %lx from Rx Mem after memcpy(): %x \n", addr, ethSyst.rxMem[addr]);
             exit(1);
           }
-        float ownSpeed = txrxMemSize / ownTime * 1024;
-        float sysSpeed = txrxMemSize / sysTime * 1024;
+        float ownSpeed = txrxMemSize / ownTime * 1e9/(1024*1024);
+        float sysSpeed = txrxMemSize / sysTime * 1e9/(1024*1024);
         printf("Tx mem to Rx mem own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
         printf("Tx mem to Rx mem sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
 
@@ -262,12 +264,72 @@ int main(int argc, char *argv[])
             printf("\nERROR: Incorrect readback of word-32 at addr %lx from Tx Mem after memcpy(): %x \n", addr, ethSyst.txMem[addr]);
             exit(1);
           }
-        ownSpeed = txrxMemSize / ownTime * 1024;
-        sysSpeed = txrxMemSize / sysTime * 1024;
+        ownSpeed = txrxMemSize / ownTime * 1e9/(1024*1024);
+        sysSpeed = txrxMemSize / sysTime * 1e9/(1024*1024);
         printf("Rx mem to Tx mem own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
         printf("Rx mem to Tx mem sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
 
         printf("------- DMA Tx/Rx/SG memory test PASSED -------\n\n");
+
+
+        printf("------- System SRAM memcpy() bandwidth at addr 0x%lX", SRAM_SYST_BASEADDR);
+        int fid = open("/dev/mem", O_RDWR);
+        if( fid < 0 ) {
+          printf("Could not open /dev/mem.\n");
+          exit(1);
+        }
+        uint32_t volatile* sramSys = reinterpret_cast<uint32_t*>(mmap(0, SRAM_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, SRAM_SYST_BASEADDR));
+        printf("(virt: 0x%lX) with size %ld -------\n", size_t(sramSys), SRAM_SYST_ADRRANGE);
+        size_t const sramWords = SRAM_SYST_ADRRANGE / sizeof(uint32_t);
+
+        // Low to High SRAM
+        srand(1);
+        for (size_t addr = 0; addr < sramWords/2; ++addr) sramSys[addr] = rand();
+
+        clock_gettime(CLOCK_REALTIME, &sysStart);
+        XTmrCtr_Start(&ethSyst.timerCnt, 0); // Start Timer 0
+        memcpy((void*)(sramSys + sramWords/2), (const void*)(sramSys), SRAM_SYST_ADRRANGE/2);
+        ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
+        clock_gettime(CLOCK_REALTIME, &sysFin);
+        sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
+                  (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
+
+        srand(1);
+        for (size_t addr = sramWords/2; addr < sramWords; ++addr)
+         if (sramSys[addr] != uint32_t(rand())) {
+            printf("\nERROR: Incorrect readback of word-32 at addr %lx from High system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
+            exit(1);
+          }
+        ownSpeed = SRAM_SYST_ADRRANGE/2 / ownTime * 1e9/(1024*1024);
+        sysSpeed = SRAM_SYST_ADRRANGE/2 / sysTime * 1e9/(1024*1024);
+        printf("Low to High SRAM own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
+        printf("Low to High SRAM sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
+
+        // High to Low SRAM
+        srand(1);
+        for (size_t addr = sramWords/2; addr < sramWords; ++addr) sramSys[addr] = ~rand();
+
+        clock_gettime(CLOCK_REALTIME, &sysStart);
+        XTmrCtr_Start(&ethSyst.timerCnt, 1); // Start Timer 1
+        memcpy((void*)(sramSys), (const void*)(sramSys + sramWords/2), SRAM_SYST_ADRRANGE/2);
+        ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
+        clock_gettime(CLOCK_REALTIME, &sysFin);
+        sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
+                  (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
+
+        srand(1);
+        for (size_t addr = 0; addr < sramWords/2; ++addr)
+         if (sramSys[addr] != uint32_t(~rand())) {
+            printf("\nERROR: Incorrect readback of word-32 at addr %lx from Low system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
+            exit(1);
+          }
+        ownSpeed = SRAM_SYST_ADRRANGE/2 / ownTime * 1e9/(1024*1024);
+        sysSpeed = SRAM_SYST_ADRRANGE/2 / sysTime * 1e9/(1024*1024);
+        printf("High to Low SRAM own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
+        printf("High to Low SRAM sys time: %f ns, Speed: %f MB/s \n", sysTime, sysSpeed);
+
+        printf("------- System SRAM memcpy() bandwidth measurement PASSED -------\n\n");
+
 
         ethSyst.axiDmaInit();
 

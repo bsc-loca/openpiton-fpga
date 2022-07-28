@@ -1425,9 +1425,100 @@ axi4_zeroer axi4_zeroer(
 
 `ifdef PITONSYS_PCIE
 
-      meep_shell meep_shell
+wire [`AXI4_ADDR_WIDTH  -1:0]  pci2hbm_maxi_araddr;
+wire [`AXI4_BURST_WIDTH -1:0]  pci2hbm_maxi_arburst;
+wire [`AXI4_CACHE_WIDTH -1:0]  pci2hbm_maxi_arcache;
+wire [`AXI4_LEN_WIDTH   -1:0]  pci2hbm_maxi_arlen;
+wire                           pci2hbm_maxi_arlock;
+wire [`AXI4_PROT_WIDTH  -1:0]  pci2hbm_maxi_arprot;
+wire [`AXI4_QOS_WIDTH   -1:0]  pci2hbm_maxi_arqos;
+wire                           pci2hbm_maxi_arready;
+wire [`AXI4_SIZE_WIDTH  -1:0]  pci2hbm_maxi_arsize;
+wire [`AXI4_USER_WIDTH  -1:0]  pci2hbm_maxi_aruser;
+wire                           pci2hbm_maxi_arvalid;
+wire [`AXI4_ADDR_WIDTH  -1:0]  pci2hbm_maxi_awaddr;
+wire [`AXI4_BURST_WIDTH -1:0]  pci2hbm_maxi_awburst;
+wire [`AXI4_CACHE_WIDTH -1:0]  pci2hbm_maxi_awcache;
+wire [`AXI4_LEN_WIDTH   -1:0]  pci2hbm_maxi_awlen;
+wire                           pci2hbm_maxi_awlock;
+wire [`AXI4_PROT_WIDTH  -1:0]  pci2hbm_maxi_awprot;
+wire [`AXI4_QOS_WIDTH   -1:0]  pci2hbm_maxi_awqos;
+wire                           pci2hbm_maxi_awready;
+wire [`AXI4_SIZE_WIDTH  -1:0]  pci2hbm_maxi_awsize;
+wire [`AXI4_USER_WIDTH  -1:0]  pci2hbm_maxi_awuser;
+wire                           pci2hbm_maxi_awvalid;
+wire                           pci2hbm_maxi_bready;
+wire [`AXI4_RESP_WIDTH  -1:0]  pci2hbm_maxi_bresp;
+wire                           pci2hbm_maxi_bvalid;
+wire [`AXI4_DATA_WIDTH  -1:0]  pci2hbm_maxi_rdata;
+wire                           pci2hbm_maxi_rlast;
+wire                           pci2hbm_maxi_rready;
+wire [`AXI4_RESP_WIDTH  -1:0]  pci2hbm_maxi_rresp;
+wire                           pci2hbm_maxi_rvalid;
+wire [`AXI4_DATA_WIDTH  -1:0]  pci2hbm_maxi_wdata;
+wire                           pci2hbm_maxi_wlast;
+wire                           pci2hbm_maxi_wready;
+wire [`AXI4_STRB_WIDTH  -1:0]  pci2hbm_maxi_wstrb;
+wire                           pci2hbm_maxi_wvalid;
+
+// making address swapping for interleaving of HBM MC channels
+wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_raddr;
+wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_waddr;
+generate
+  if (HBM_MCS_LOG2) begin
+    assign pci2hbm_raddr = {pci2hbm_maxi_araddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_araddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR -1    : 0]};
+    assign pci2hbm_waddr = {pci2hbm_maxi_awaddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_awaddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR -1    : 0]};
+  end
+  else begin
+    assign pci2hbm_raddr =  pci2hbm_maxi_araddr;
+    assign pci2hbm_waddr =  pci2hbm_maxi_awaddr;
+  end
+endgenerate
+
+meep_shell meep_shell
        (
-         .*, // connecting all AXI's at once
+         .*, // implicit connection of all AXI's at once
+
+  `ifdef PITON_FPGA_MC_HBM
+        .pci2hbm_saxi_araddr  (pci2hbm_raddr),
+        .pci2hbm_saxi_awaddr  (pci2hbm_waddr),
+  `else
+        .pci2hbm_saxi_araddr  (pci2hbm_maxi_araddr),
+        .pci2hbm_saxi_awaddr  (pci2hbm_maxi_awaddr),
+  `endif
+        .pci2hbm_saxi_arburst (pci2hbm_maxi_arburst),
+        .pci2hbm_saxi_arid    ('0),
+        .pci2hbm_saxi_arlen   (pci2hbm_maxi_arlen),
+        .pci2hbm_saxi_arready (pci2hbm_maxi_arready),
+        .pci2hbm_saxi_arsize  (pci2hbm_maxi_arsize),
+        .pci2hbm_saxi_arvalid (pci2hbm_maxi_arvalid),
+        .pci2hbm_saxi_awburst (pci2hbm_maxi_awburst),
+        .pci2hbm_saxi_awid    ('0),
+        .pci2hbm_saxi_awlen   (pci2hbm_maxi_awlen),
+        .pci2hbm_saxi_awready (pci2hbm_maxi_awready),
+        .pci2hbm_saxi_awsize  (pci2hbm_maxi_awsize),
+        .pci2hbm_saxi_awvalid (pci2hbm_maxi_awvalid),
+        .pci2hbm_saxi_bid     (),
+        .pci2hbm_saxi_bready  (pci2hbm_maxi_bready),
+        .pci2hbm_saxi_bresp   (pci2hbm_maxi_bresp),
+        .pci2hbm_saxi_bvalid  (pci2hbm_maxi_bvalid),
+        .pci2hbm_saxi_rdata   (pci2hbm_maxi_rdata),
+        .pci2hbm_saxi_rid     (),
+        .pci2hbm_saxi_rlast   (pci2hbm_maxi_rlast),
+        .pci2hbm_saxi_rready  (pci2hbm_maxi_rready),
+        .pci2hbm_saxi_rresp   (pci2hbm_maxi_rresp),
+        .pci2hbm_saxi_rvalid  (pci2hbm_maxi_rvalid),
+        .pci2hbm_saxi_wdata   (pci2hbm_maxi_wdata),
+        .pci2hbm_saxi_wlast   (pci2hbm_maxi_wlast),
+        .pci2hbm_saxi_wready  (pci2hbm_maxi_wready),
+        .pci2hbm_saxi_wstrb   (pci2hbm_maxi_wstrb),
+        .pci2hbm_saxi_wvalid  (pci2hbm_maxi_wvalid),
 
         .mem_calib_complete(init_calib_complete),
 
@@ -1457,12 +1548,12 @@ axi4_zeroer axi4_zeroer(
         .pci_express_x16_rxp(pci_express_x16_rxp),
         .pci_express_x16_txn(pci_express_x16_txn),
         .pci_express_x16_txp(pci_express_x16_txp),
+
         .pcie_gpio(pcie_gpio),
         .pcie_perstn(pcie_perstn),
         .pcie_refclk_clk_n( pcie_refclk_n),
         .pcie_refclk_clk_p( pcie_refclk_p)
         );
-
 
   assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
   assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
