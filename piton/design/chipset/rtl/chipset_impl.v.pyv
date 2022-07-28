@@ -126,6 +126,17 @@ module chipset_impl(
     output                                      intf_chipset_rdy_noc2,
     output                                      intf_chipset_rdy_noc3
 
+  `ifdef PITON_EXTRA_MEMS
+    ,
+    input  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] intf_mcx_data_noc2,
+    input  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_val_noc2,
+    output [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_rdy_noc2,
+
+    output [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_intf_data_noc3,
+    output [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_val_noc3,
+    input  [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_rdy_noc3
+  `endif
+
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
@@ -1021,6 +1032,16 @@ credit_to_valrdy noc3_xbar_to_%s(
             .mc_flit_out_data(mem_buf_noc3_data),
             .mc_flit_out_rdy(buf_mem_noc3_ready),
 
+          `ifdef PITON_EXTRA_MEMS
+            .mcx_flit_in_val (intf_mcx_val_noc2 ),
+            .mcx_flit_in_data(intf_mcx_data_noc2),
+            .mcx_flit_in_rdy (intf_mcx_rdy_noc2 ),
+
+            .mcx_flit_out_val (mcx_intf_val_noc3 ),
+            .mcx_flit_out_data(mcx_intf_data_noc3),
+            .mcx_flit_out_rdy (mcx_intf_rdy_noc3 ),
+           `endif
+
             .uart_boot_en(uart_boot_en),
             .init_calib_complete_out(init_calib_complete),
             .mc_axi_deadlock(mc_axi_deadlock),
@@ -1157,6 +1178,59 @@ fake_mem_ctrl fake_mem_ctrl(
     .noc_data_out       ( mem_buf_noc3_data  ),
     .noc_ready_out      ( buf_mem_noc3_ready )
 );
+
+
+//Verilog macro metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
+`define FAKE_MC(idx) \
+\
+fake_mem_ctrl fake_mc``idx( \
+    .clk                ( chipset_clk        ), \
+    .rst_n              ( chipset_rst_n      ), \
+    .noc_valid_in       ( intf_mcx_val_noc2 [``idx] ), \
+    .noc_data_in        ( intf_mcx_data_noc2[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]  ), \
+    .noc_ready_in       ( intf_mcx_rdy_noc2 [``idx] ), \
+    .noc_valid_out      ( mcx_intf_val_noc3 [``idx] ), \
+    .noc_data_out       ( mcx_intf_data_noc3[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]  ), \
+    .noc_ready_out      ( mcx_intf_rdy_noc3 [``idx] ) \
+);
+
+`define FAKE_MCS(n) `FAKE_MCS_``n
+`define FAKE_MCS_0
+`define FAKE_MCS_1  `FAKE_MCS_0  `FAKE_MC(0)
+`define FAKE_MCS_2  `FAKE_MCS_1  `FAKE_MC(1)
+`define FAKE_MCS_3  `FAKE_MCS_2  `FAKE_MC(2)
+`define FAKE_MCS_4  `FAKE_MCS_3  `FAKE_MC(3)
+`define FAKE_MCS_5  `FAKE_MCS_4  `FAKE_MC(4)
+`define FAKE_MCS_6  `FAKE_MCS_5  `FAKE_MC(5)
+`define FAKE_MCS_7  `FAKE_MCS_6  `FAKE_MC(6)
+`define FAKE_MCS_8  `FAKE_MCS_7  `FAKE_MC(7)
+`define FAKE_MCS_9  `FAKE_MCS_8  `FAKE_MC(8)
+`define FAKE_MCS_10 `FAKE_MCS_9  `FAKE_MC(9)
+`define FAKE_MCS_11 `FAKE_MCS_10 `FAKE_MC(10)
+`define FAKE_MCS_12 `FAKE_MCS_11 `FAKE_MC(11)
+`define FAKE_MCS_13 `FAKE_MCS_12 `FAKE_MC(12)
+`define FAKE_MCS_14 `FAKE_MCS_13 `FAKE_MC(13)
+`define FAKE_MCS_15 `FAKE_MCS_14 `FAKE_MC(14)
+`define FAKE_MCS_16 `FAKE_MCS_15 `FAKE_MC(15)
+`define FAKE_MCS_17 `FAKE_MCS_16 `FAKE_MC(16)
+`define FAKE_MCS_18 `FAKE_MCS_17 `FAKE_MC(17)
+`define FAKE_MCS_19 `FAKE_MCS_18 `FAKE_MC(18)
+`define FAKE_MCS_20 `FAKE_MCS_19 `FAKE_MC(19)
+`define FAKE_MCS_21 `FAKE_MCS_20 `FAKE_MC(20)
+`define FAKE_MCS_22 `FAKE_MCS_21 `FAKE_MC(21)
+`define FAKE_MCS_23 `FAKE_MCS_22 `FAKE_MC(22)
+`define FAKE_MCS_24 `FAKE_MCS_23 `FAKE_MC(23)
+`define FAKE_MCS_25 `FAKE_MCS_24 `FAKE_MC(24)
+`define FAKE_MCS_26 `FAKE_MCS_25 `FAKE_MC(25)
+`define FAKE_MCS_27 `FAKE_MCS_26 `FAKE_MC(26)
+`define FAKE_MCS_28 `FAKE_MCS_27 `FAKE_MC(27)
+`define FAKE_MCS_29 `FAKE_MCS_28 `FAKE_MC(28)
+`define FAKE_MCS_30 `FAKE_MCS_29 `FAKE_MC(29)
+
+`ifdef PITON_EXTRA_MEMS
+  `FAKE_MCS(`PITON_EXTRA_MEMS)
+`endif
+
 
 // Just instantiating SRAM part of whole MC
 `ifdef PITONSYS_MC_SRAM

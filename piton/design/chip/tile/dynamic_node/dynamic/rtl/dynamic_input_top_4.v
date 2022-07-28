@@ -80,7 +80,7 @@ input thanks_p;
 
 //wires
 wire thanks_all_temp;
-wire [`DATA_WIDTH-1:0] data_internal;
+wire [`DATA_WIDTH*2-1:0] data_internal;
 wire valid_out_internal;
 
 //wire regs
@@ -89,7 +89,11 @@ wire valid_out_internal;
 assign valid_out = valid_out_internal;
 
 //instantiations
-network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(2)) NIB(.clk(clk),
+network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(2)
+                              `ifdef PITON_EXTRA_MEMS
+                                ,.OUT_2FLITS(1) // address contained in 2nd flit is needed in case of extra-routing
+                              `endif
+                             ) NIB (  .clk(clk),
                                       .reset(reset),
                                       .data_in(data_in),
                                       .valid_in(valid_in),
@@ -118,6 +122,7 @@ dynamic_input_control control(.thanks_all_temp_out(thanks_all_temp),
                               .abs_x(data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH-`XY_WIDTH]), 
                               .abs_y(data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-`XY_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH]), 
                               .abs_chip_id(data_internal[`DATA_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH]),
+                              .abs_addr(data_internal[`MSG_ADDR]),
                               .final_bits(data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-2:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4]),
                               .valid_in(valid_out_internal),
                               .thanks_n(thanks_n), .thanks_e(thanks_e), .thanks_s(thanks_s), .thanks_w(thanks_w), .thanks_p(thanks_p),

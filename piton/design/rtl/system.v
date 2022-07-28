@@ -711,6 +711,16 @@ wire                         offchip_processor_noc3_valid;
 wire [`NOC_DATA_WIDTH-1:0]   offchip_processor_noc3_data;
 wire                         offchip_processor_noc3_yummy;
 
+`ifdef PITON_EXTRA_MEMS
+  wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] processor_mcx_noc2_data;
+  wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_valid;
+  wire [`PITON_EXTRA_MEMS-1:0]                    processor_mcx_noc2_yummy;
+
+  wire [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_processor_noc3_data;
+  wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_valid;
+  wire [`PITON_EXTRA_MEMS-1:0]                    mcx_processor_noc3_yummy;
+`endif
+
 // Passthru<->chipset source synchronous differential clocks
 `ifdef PITON_CHIPSET_CLKS_GEN
 wire                chipset_passthru_clk_p;
@@ -1223,6 +1233,18 @@ chip chip(
     .offchip_processor_noc3_data    (offchip_processor_noc3_data),
     .offchip_processor_noc3_yummy   (offchip_processor_noc3_yummy)
 `endif // endif PITON_NO_CHIP_BRIDGE
+
+  `ifdef PITON_EXTRA_MEMS
+    ,
+    .processor_mcx_noc2_data (processor_mcx_noc2_data),
+    .processor_mcx_noc2_valid(processor_mcx_noc2_valid),
+    .processor_mcx_noc2_yummy(processor_mcx_noc2_yummy),
+
+    .mcx_processor_noc3_data (mcx_processor_noc3_data),
+    .mcx_processor_noc3_valid(mcx_processor_noc3_valid),
+    .mcx_processor_noc3_yummy(mcx_processor_noc3_yummy)
+  `endif
+
 `ifdef PITON_ARIANE
     ,
     // Debug
@@ -1509,6 +1531,16 @@ chipset chipset(
     .chip_intf_channel(chip_intf_channel),
     .chip_intf_credit_back(chip_intf_credit_back),
 `endif // endif PITON_NO_CHIP_BRIDGE PITON_SYS_INC_PASSTHRU
+
+  `ifdef PITON_EXTRA_MEMS
+    .processor_mcx_noc2_data (processor_mcx_noc2_data),
+    .processor_mcx_noc2_valid(processor_mcx_noc2_valid),
+    .processor_mcx_noc2_yummy(processor_mcx_noc2_yummy),
+
+    .mcx_processor_noc3_data (mcx_processor_noc3_data),
+    .mcx_processor_noc3_valid(mcx_processor_noc3_valid),
+    .mcx_processor_noc3_yummy(mcx_processor_noc3_yummy),
+  `endif
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC

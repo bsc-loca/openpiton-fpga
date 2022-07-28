@@ -349,8 +349,6 @@ void EthSyst::axiDmaInit() {
     printf("Initial DMA Tx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DEVICE_TO_DMA));
     printf("Initial DMA Rx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DMA_TO_DEVICE));
   }
-
-  timerCntInit(); // initializing Timer as we use it in DMA transfer measurements
 }
 
 
