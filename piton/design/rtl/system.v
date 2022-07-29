@@ -1822,8 +1822,7 @@ chipset chipset(
               .uart_axi_rvalid(uart_axi_rvalid),
               .uart_axi_rready(uart_axi_rready),
               .uart_irq(uart_irq),
-             `else
-             ,
+             `else             
               .uart_tx(uart_tx),
               .uart_rx(uart_rx),
              `endif
@@ -1911,10 +1910,9 @@ chipset chipset(
     .sw(sw),
 `endif
 `endif
-    .leds(leds)
+    .leds(leds),
 
-`ifdef PITON_ARIANE
-    ,
+`ifdef PITON_ARIANE    
     // Debug
     .ndmreset_o                     ( ndmreset                   ), // non-debug module reset
     .dmactive_o                     ( dmactive                   ), // debug module is active
@@ -1935,8 +1933,7 @@ chipset chipset(
     .irq_o                          ( irq                        )  // level sensitive IR lines, mip & sip (async)
 `endif
 
-`ifdef PITON_LAGARTO
-    ,
+`ifdef PITON_LAGARTO    
     // Debug
     .ndmreset_o                     ( ndmreset                   ), // non-debug module reset
     .dmactive_o                     ( dmactive                   ), // debug module is active
