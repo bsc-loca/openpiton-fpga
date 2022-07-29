@@ -238,7 +238,7 @@ noc_axilite_bridge #(
     
 );
 // control of loopback
-`ifndef ALVEOU280_BOARD
+`ifndef PITONSYS_MEEP
 assign uart_tx        = uart_lb_sw ? uart_rx  : uart16550_tx;
 assign uart16550_rx   = uart_rx;
 `endif 

@@ -124,33 +124,29 @@ module chipset_impl(
     input                                       intf_chipset_val_noc3,
     output                                      intf_chipset_rdy_noc1,
     output                                      intf_chipset_rdy_noc2,
-    output                                      intf_chipset_rdy_noc3
+    output                                      intf_chipset_rdy_noc3,
 
-  `ifdef PITON_EXTRA_MEMS
-    ,
+  `ifdef PITON_EXTRA_MEMS    
     input  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] intf_mcx_data_noc2,
     input  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_val_noc2,
     output [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_rdy_noc2,
 
     output [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] mcx_intf_data_noc3,
     output [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_val_noc3,
-    input  [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_rdy_noc3
+    input  [`PITON_EXTRA_MEMS-1:0]                    mcx_intf_rdy_noc3,
   `endif
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
-`ifdef PITON_FPGA_MC_DDR3
-    ,
-    output                                      init_calib_complete
+`ifdef PITON_FPGA_MC_DDR3    
+    output                                      init_calib_complete,
 `ifndef F1_BOARD
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
-`ifdef PITONSYS_DDR4
-    ,
+`ifdef PITONSYS_DDR4    
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
-`else // PITONSYS_DDR4
-    ,
+`else // PITONSYS_DDR4   
     output                                      ddr_cas_n,
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
@@ -369,10 +365,9 @@ module chipset_impl(
 `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
 `endif // PITONSYS_DDR4
-    output [`DDR3_ODT_WIDTH-1:0]                ddr_odt
+    output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
 `else // ifndef F1_BOARD
-    // AXI Write Address Channel Signals
-    ,
+    // AXI Write Address Channel Signals    
     input                                        mc_clk,
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
@@ -428,7 +423,7 @@ module chipset_impl(
     input  wire                                   m_axi_bvalid,
     output wire                                   m_axi_bready, 
 
-    input  wire                                   ddr_ready
+    input  wire                                   ddr_ready,
 `endif // ifndef F1_BOARD
 `endif // ifdef PITON_FPGA_MC_DDR3
 `endif // endif PITONSYS_NO_MC
@@ -436,28 +431,25 @@ module chipset_impl(
 `ifdef PITONSYS_IOCTRL
 `ifdef PITONSYS_UART
 
-`ifdef PITONSYS_UART_BOOT
-    ,
+`ifdef PITONSYS_UART_BOOT    
     input                                       uart_boot_en,
-    input                                       uart_timeout_en
+    input                                       uart_timeout_en,
     `ifdef ALVEOU280_BOARD
-    ,
-    input bootrom_linux_en
+    
+    input bootrom_linux_en,
     `endif
 `endif // endif PITONSYS_UART_BOOT
 `endif // endif PITONSYS_UART
 
-`ifdef PITONSYS_SPI
-    ,
+`ifdef PITONSYS_SPI    
     input                                       sd_clk,
     input                                       sd_cd,
     output                                      sd_reset,
     output                                      sd_clk_out,
     inout                                       sd_cmd,
-    inout   [3:0]                               sd_dat
+    inout   [3:0]                               sd_dat,
 `endif // endif PITONSYS_SPI
-`ifdef PITON_FPGA_ETHERNETLITE
-    ,
+`ifdef PITON_FPGA_ETHERNETLITE    
     input                                       net_axi_clk,
     output                                      net_phy_rst_n,
 
@@ -471,20 +463,18 @@ module chipset_impl(
     input                                       net_phy_rx_er,
 
     inout                                       net_phy_mdio_io,
-    output                                      net_phy_mdc
-`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
-    ,
+    output                                      net_phy_mdc,
+`elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE    
     input          net_axi_clk,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
     input   [3:0]  qsfp_4x_grx_p,
     output  [3:0]  qsfp_4x_gtx_n,
-    output  [3:0]  qsfp_4x_gtx_p
+    output  [3:0]  qsfp_4x_gtx_p,
 `endif // PITON_FPGA_ETH_CMAC
 `endif // endif PITONSYS_IOCTRL
-`ifdef PITON_ARIANE
-    ,
+`ifdef PITON_ARIANE    
     // Debug
     output                                      ndmreset_o,    // non-debug module reset
     output                                      dmactive_o,    // debug module is active

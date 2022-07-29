@@ -230,12 +230,15 @@ module system(
     
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
+   
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
+     `ifndef ALVEOU280_BOARD
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+    `endif
 
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
@@ -248,9 +251,12 @@ module system(
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-                                     ddr_parity,
     `else
-    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
+    `ifndef ALVEOU280_BOARD
+    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,   
+    `else
+     output                                      ddr_parity,
+    `endif //ALVEO
     `endif // XUPP3R_BOARD
     `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
@@ -366,11 +372,13 @@ module system(
     `endif
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
     `ifdef ALVEOU280_BOARD
-        // GTY quads connected to QSFP unit on Alveo board
+        // GTY quads connected to QSFP unit on Alveo board     
         input          qsfp0_ref_clk_n,
         input          qsfp0_ref_clk_p,
-        input          qsfp1_ref_clk_n,
-        input          qsfp1_ref_clk_p,
+    `ifdef PITON_FPGA_ETH_PORT1
+    input          qsfp1_ref_clk_n,
+    input          qsfp1_ref_clk_p,
+    `endif
         input   [3:0]  qsfp_4x_grx_n,
         input   [3:0]  qsfp_4x_grx_p,
         output  [3:0]  qsfp_4x_gtx_n,
@@ -417,8 +425,7 @@ module system(
 `elsif XUPP3R_BOARD
     // no switches :(
 `elsif ALVEOU280_BOARD
-    // no switches :(
-    input resetn,
+    // no switches :(    
 `else
     input  [7:0]                                sw,
 `endif
@@ -1960,159 +1967,6 @@ chipset chipset(
 
 );
 
-
- /*       meep_shell meep_shell
-       (.axi4_mm_araddr(m_axi_araddr),
-        .axi4_mm_arburst(m_axi_arburst),
-        .axi4_mm_arcache(m_axi_arcache),
-        .axi4_mm_arid(m_axi_arid),
-        .axi4_mm_arlen(m_axi_arlen),
-        .axi4_mm_arlock(m_axi_arlock),
-        .axi4_mm_arprot(m_axi_arprot),
-        .axi4_mm_arqos(m_axi_arqos),
-        .axi4_mm_arready(m_axi_arready),
-        .axi4_mm_arsize(m_axi_arsize),
-        //.axi4_mm_aruser(m_axi_aruser),
-        .axi4_mm_arvalid(m_axi_arvalid),
-        
-        .axi4_mm_awaddr(m_axi_awaddr),
-        .axi4_mm_awburst(m_axi_awburst),
-        .axi4_mm_awcache(m_axi_awcache),
-        .axi4_mm_awid(m_axi_awid),
-        .axi4_mm_awlen(m_axi_awlen),
-        .axi4_mm_awlock(m_axi_awlock),
-        .axi4_mm_awprot(m_axi_awprot),
-        .axi4_mm_awqos(m_axi_awqos),
-        .axi4_mm_awready(m_axi_awready),
-        .axi4_mm_awsize(m_axi_awsize),
-        //.axi4_mm_awuser(m_axi_awuser),
-        .axi4_mm_awvalid(m_axi_awvalid),
-        
-        .axi4_mm_bid(m_axi_bid),
-        .axi4_mm_bready(m_axi_bready),
-        .axi4_mm_bresp(m_axi_bresp),
-        //.axi4_mm_buser(m_axi_buser),
-        .axi4_mm_bvalid(m_axi_bvalid),
-        
-        .axi4_mm_rdata(m_axi_rdata),
-        .axi4_mm_rid(m_axi_rid),
-        .axi4_mm_rlast(m_axi_rlast),
-        .axi4_mm_rready(m_axi_rready),
-        .axi4_mm_rresp(m_axi_rresp),
-        //.axi4_mm_ruser(m_axi_ruser),
-        .axi4_mm_rvalid(m_axi_rvalid),
-        
-        .axi4_mm_wdata(m_axi_wdata),
-        .axi4_mm_wlast(m_axi_wlast),
-        .axi4_mm_wready(m_axi_wready),
-        .axi4_mm_wstrb(m_axi_wstrb),
-        //.axi4_mm_wuser(m_axi_wuser),
-        .axi4_mm_wvalid(m_axi_wvalid),
-
-
-        .mem_calib_complete(mem_calib_complete),
-
-        
-        .hbm_cattrip(hbm_cattrip),
-        
-        .sysclk0_clk_n(mc_clk_n),
-        .sysclk0_clk_p(mc_clk_p),
-        .sysclk1_clk_n(chipset_clk_osc_n),
-        .sysclk1_clk_p(chipset_clk_osc_p),
-        .sys_rst_n(chipset_rst_n),
-        .chipset_clk(chipset_clk),
-        .resetn(resetn),
-        
-        .pci_express_x16_rxn(pci_express_x16_rxn),
-        .pci_express_x16_rxp(pci_express_x16_rxp),
-        .pci_express_x16_txn(pci_express_x16_txn),
-        .pci_express_x16_txp(pci_express_x16_txp),
-        .pcie_gpio(pcie_gpio),
-        .pcie_perstn(pcie_perstn),
-        .pcie_refclk_clk_n( pcie_refclk_n),
-        .pcie_refclk_clk_p( pcie_refclk_p),
-        
-        .uart_rx(uart_rx),
-        .uart_tx(uart_tx),
-                // write address channel
-        .uart_axi_awaddr     (uart_axi_awaddr     ),  // input wire [12 : 0] s_axi_awaddr
-        .uart_axi_awvalid    (uart_axi_awvalid    ),  // input wire s_axi_awvalid
-        .uart_axi_awready    (uart_axi_awready    ),  // output wire s_axi_awready
-        
-        // write data channel
-        .uart_axi_wdata      (uart_axi_wdata      ),  // input wire [31 : 0] s_axi_wdata
-        .uart_axi_wstrb      (uart_axi_wstrb      ),  // input wire [3 : 0] s_axi_wstrb
-        .uart_axi_wvalid     (uart_axi_wvalid     ),  // input wire s_axi_wvalid
-        .uart_axi_wready     (uart_axi_wready     ),  // output wire s_axi_wready
-        
-        // write responce channel
-        .uart_axi_bresp      (uart_axi_bresp      ),  // output wire [1 : 0] s_axi_bresp
-        .uart_axi_bvalid     (uart_axi_bvalid     ),  // output wire s_axi_bvalid
-        .uart_axi_bready     (uart_axi_bready     ),  // input wire s_axi_bready
-        
-        // read adress channel
-        .uart_axi_araddr     (uart_axi_araddr     ),  // input wire [12 : 0] s_axi_araddr
-        .uart_axi_arvalid    (uart_axi_arvalid    ),  // input wire s_axi_arvalid
-        .uart_axi_arready    (uart_axi_arready    ),  // output wire s_axi_arready
-        
-        // read data channel
-        .uart_axi_rdata      (uart_axi_rdata      ),  // output wire [31 : 0] s_axi_rdata
-        .uart_axi_rresp      (uart_axi_rresp      ),  // output wire [1 : 0] s_axi_rresp
-        .uart_axi_rvalid     (uart_axi_rvalid     ),  // output wire s_axi_rvalid
-        .uart_axi_rready     (uart_axi_rready     )  // input wire s_axi_rready
-        
-        );*/
-        
-        
-//              uart_16550   uart_16550 (
-//        .s_axi_aclk       (core_ref_clk          ),  // input wire s_axi_aclk
-//        .s_axi_aresetn    (chipset_rst_n            ),  // input wire s_axi_aresetn
-//        .ip2intc_irpt     (uart_interrupt   ),  // output wire ip2intc_irpt
-//        .freeze           (1'b0             ),  // input wire freeze
-
-//        // write address channel
-//        .s_axi_awaddr     (uart_axi_awaddr     ),  // input wire [12 : 0] s_axi_awaddr
-//        .s_axi_awvalid    (uart_axi_awvalid    ),  // input wire s_axi_awvalid
-//        .s_axi_awready    (uart_axi_awready    ),  // output wire s_axi_awready
-        
-//        // write data channel
-//        .s_axi_wdata      (uart_axi_wdata      ),  // input wire [31 : 0] s_axi_wdata
-//        .s_axi_wstrb      (uart_axi_wstrb      ),  // input wire [3 : 0] s_axi_wstrb
-//        .s_axi_wvalid     (uart_axi_wvalid     ),  // input wire s_axi_wvalid
-//        .s_axi_wready     (uart_axi_wready     ),  // output wire s_axi_wready
-        
-//        // write responce channel
-//        .s_axi_bresp      (uart_axi_bresp      ),  // output wire [1 : 0] s_axi_bresp
-//        .s_axi_bvalid     (uart_axi_bvalid     ),  // output wire s_axi_bvalid
-//        .s_axi_bready     (uart_axi_bready     ),  // input wire s_axi_bready
-        
-//        // read adress channel
-//        .s_axi_araddr     (uart_axi_araddr     ),  // input wire [12 : 0] s_axi_araddr
-//        .s_axi_arvalid    (uart_axi_arvalid    ),  // input wire s_axi_arvalid
-//        .s_axi_arready    (uart_axi_arready    ),  // output wire s_axi_arready
-        
-//        // read data channel
-//        .s_axi_rdata      (uart_axi_rdata      ),  // output wire [31 : 0] s_axi_rdata
-//        .s_axi_rresp      (uart_axi_rresp      ),  // output wire [1 : 0] s_axi_rresp
-//        .s_axi_rvalid     (uart_axi_rvalid     ),  // output wire s_axi_rvalid
-//        .s_axi_rready     (uart_axi_rready     ),  // input wire s_axi_rready
-        
-
-//        .baudoutn         (),   
-//        .ctsn             (1'b0),  
-//        .dcdn             (1'b0),  
-//        .ddis             (),   
-//        .dsrn             (1'b0),  
-//        .dtrn             (),   
-//        .out1n            (),   
-//        .out2n            (),   
-//        .rin              (1'b0),  
-//        .rtsn             (),   
-//        .rxrdyn           (),   
-//        .sin              (uart_rx),  
-//        .sout             (uart_tx),  
-//        .txrdyn           ()    
-//      );
         
 
 endmodule
