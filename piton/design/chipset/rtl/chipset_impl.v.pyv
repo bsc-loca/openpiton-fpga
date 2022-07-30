@@ -1445,9 +1445,9 @@ uart_top        uart_top (
 `ifdef PITON_FPGA_ETH
 
  `ifdef PITONSYS_MEEP
-   localparam NUM_INT_ETH = 2;
+   localparam integer NUM_INT_ETH = 2;
  `else
-   localparam NUM_INT_ETH = 1;
+   localparam integer NUM_INT_ETH = 1;
  `endif
 
     eth_top #(
@@ -1694,7 +1694,7 @@ fake_uart fake_uart (
     wire [NUM_INT_ETH+1-1:0] irq_sources, irq_le;
     // 0:level 1:edge
     // Eth is edge, Uart is level
-    wire [NUM_INT_ETH-1:0] irq_eth_le = NUM_INT_ETH'b0;
+    wire [NUM_INT_ETH-1:0] irq_eth_le = 0;
 
     assign irq_le      = {irq_eth_le, 1'b0};
     assign irq_sources = {net_interrupt, uart_interrupt};
@@ -1809,7 +1809,7 @@ print(str)
     wire [NUM_INT_ETH+1-1:0] irq_sources, irq_le;
     // 0:level 1:edge
     // Eth is edge, Uart is level
-    wire [NUM_INT_ETH-1:0] irq_eth_le = NUM_INT_ETH'b0;
+    wire [NUM_INT_ETH-1:0] irq_eth_le = 0;
 
     assign irq_le      = {irq_eth_le, 1'b0};
     assign irq_sources = {net_interrupt, uart_interrupt};
