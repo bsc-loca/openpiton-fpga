@@ -166,7 +166,7 @@ module sram_top (
                     
                 noc_axi4_bridge #(
                     .ADDR_OFFSET(64'h00000000),
-                    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+                    .NUM_REQ_OUTSTANDING_LOG2 (`PITON_NUM_TILES * 4),
                     .NUM_REQ_YTHREADS (`PITON_Y_TILES),
                     .NUM_REQ_XTHREADS (`PITON_X_TILES)
                 )

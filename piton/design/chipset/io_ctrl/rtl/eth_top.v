@@ -40,13 +40,14 @@
 `endif
 
 module eth_top #(
-  parameter SWAP_ENDIANESS = 0
+  parameter SWAP_ENDIANESS = 0,
+  parameter NUM_INT        = 1
 ) (
     input                                   chipset_clk,
 
     input                                   rst_n,
 
-    output                                  net_interrupt,
+    output      [NUM_INT-1:0]               net_interrupt,
 
     input                                   noc_in_val,
     input       [`NOC_DATA_WIDTH-1:0]       noc_in_data,
@@ -131,9 +132,9 @@ module eth_top #(
      input  [`AXI4_RESP_WIDTH   -1:0]    core_axi_bresp,
      input  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser,
      input                               core_axi_bvalid,
-     output                              core_axi_bready
+     output                              core_axi_bready,
      
-     //input   [1:0]                         net_cmac_intc
+     input   [NUM_INT-1:0]               net_cmac_intc
     
     
     `endif
@@ -600,5 +601,28 @@ assign unsync_net_int = net_cmac_intc_comb;
     assign net_phy_mdc          = 1'b0;
 
 `endif  // PITON_FPGA_ETH
+
+// CDC for the afifo_netbridge_data
+`ifdef PITONSYS_MEEP 
+
+reg [3:0] long_intr [NUM_INT-1:0]; 
+
+generate 
+    genvar i;
+
+ for (genvar i=0; i<NUM_INT ; i = i +1) begin
+  
+   always @(posedge chipset_clk) begin
+     long_intr[i]  <= {long_intr[i][2:0],net_cmac_intc[i]};   
+   end
+   
+   assign net_interrupt [i] = long_intr[i][3];
+   
+  end
+ endgenerate    
+
+
+`endif
+
 
 endmodule
