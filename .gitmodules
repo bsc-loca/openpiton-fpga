@@ -5,3 +5,6 @@
 [submodule "piton/design/chip/tile/noc/pronoc"]
 	path = piton/design/chip/tile/noc/pronoc
 	url = ../meep-pronoc.git
+[submodule "piton/design/chip/tile/vas_tile_core"]
+	path = piton/design/chip/tile/vas_tile_core
+	url = ../../../rtl_designs/vas_tile_core.git
