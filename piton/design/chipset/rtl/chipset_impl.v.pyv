@@ -494,8 +494,7 @@ module chipset_impl(
     // PLIC
     output [`PITON_NUM_TILES*2-1:0]                   irq_o          // level sensitive IR lines, mip & sip (async)
 `endif
-`ifdef PITON_LAGARTO
-    ,
+`ifdef PITON_LAGARTO 
     // Debug
     output                                      ndmreset_o,    // non-debug module reset
     output                                      dmactive_o,    // debug module is active
