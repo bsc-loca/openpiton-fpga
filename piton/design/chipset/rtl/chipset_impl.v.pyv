@@ -430,14 +430,18 @@ module chipset_impl(
 
 `ifdef PITONSYS_IOCTRL
 `ifdef PITONSYS_UART
+   `ifndef PITONSYS_MEEP
+       input uart_rx,
+       output uart_tx,
+    `endif
 
 `ifdef PITONSYS_UART_BOOT    
     input                                       uart_boot_en,
     input                                       uart_timeout_en,
     `ifdef ALVEOU280_BOARD
     
-    input bootrom_linux_en,
-    `endif
+          input bootrom_linux_en,
+    `endif // ALVEO
 `endif // endif PITONSYS_UART_BOOT
 `endif // endif PITONSYS_UART
 
@@ -494,8 +498,7 @@ module chipset_impl(
     // PLIC
     output [`PITON_NUM_TILES*2-1:0]                   irq_o          // level sensitive IR lines, mip & sip (async)
 `endif
-`ifdef PITON_LAGARTO
-    ,
+`ifdef PITON_LAGARTO 
     // Debug
     output                                      ndmreset_o,    // non-debug module reset
     output                                      dmactive_o,    // debug module is active

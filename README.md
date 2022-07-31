@@ -560,4 +560,5 @@ The following items are currently under development and will be released soon.
 - Synthesis flow for large FPGAs.
 - Performance enhancements (cache re-parameterization, write-buffer throughput).
 
-Stay tuned!
+Stay tuned!!
+
