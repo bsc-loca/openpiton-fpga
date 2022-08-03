@@ -14,7 +14,7 @@
 # set to a generic 2x2 configuration.
   
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  GIT_SUBMODULE_STRATEGY: "none"
   FPGA_LOG_FILE: fpga.log
   BITSTREAM: system_${CI_PIPELINE_ID}.bit
   BOOT_SCRIPT: piton/tools/src/proto/alveou280/boot_linux.sh
@@ -51,6 +51,8 @@ synthesis-ariane:
             - MEEP_FPGA 
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: recursive
         retry: 1
         timeout: 6h
         
@@ -80,6 +82,8 @@ synthesis-lagarto:
             - MEEP_FPGA
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: recursive
         retry: 1
         timeout: 6h        
         before_script:
@@ -270,7 +274,6 @@ fpga-test-ariane:
             - FPGA_TEST
         before_script:
             - export PATH=$PATH:$QDMA_DRIVERS
-            - sudo $TOOLS_DIR/givememyuart
         script:
             - $TOOLS_DIR/load-bitstream-beta.sh qdma ariane/bitstream/ariane_$BITSTREAM
             - source $BOOT_SCRIPT
@@ -299,7 +302,6 @@ fpga-test-lagarto:
             - FPGA_TEST
         before_script:
             - export PATH=$PATH:$QDMA_DRIVERS
-            - sudo $TOOLS_DIR/givememyuart
         script:
             - $TOOLS_DIR/load-bitstream-beta.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
             - source $BOOT_SCRIPT_LAGARTO $OPENSBI_BIN
