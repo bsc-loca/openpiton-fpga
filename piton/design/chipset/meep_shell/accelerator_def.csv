@@ -6,7 +6,7 @@ AURORA,no,raw,<name>
 UART,yes,uart_axi,1,CLK0,0x0,normal,uart_irq
 ETHERNET,yes,eth_axi,1,ETH_CLK,eth_axi_aclk,eth_axi_arstn,10Gb,eth_irq,qsfp0
 BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
-BRAM,no,sram_axi,1,CLK0,0x0,none
+BRAM,yes,sram_axi,1,CLK0,0x0,none
 CLK0,100000000,chipset_clk
 CLK1,200000000,mc_clk
 CLK2,50000000,vpu_clk
