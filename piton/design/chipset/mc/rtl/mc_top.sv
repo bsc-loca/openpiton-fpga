@@ -185,7 +185,7 @@ module mc_top (
 
 localparam HBM_WIDTH = 256;
 localparam HBM_SIZE_LOG2 = 33; // 8GB
-localparam HBM_MCS_LOG2  = 5;  // 32 MC channels to participate in "interleaving", set 0 to disable "interleaving"
+localparam HBM_MCS_LOG2  = 0;  // 32 MC channels to participate in "interleaving", set 0 to disable "interleaving"
 localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels in AXI address
 
 `ifdef PITONSYS_MC_SRAM
@@ -399,7 +399,9 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
 
 reg     [31:0]                      delay_cnt;
 reg                                 ui_clk_syn_rst_delayed;
+`ifndef PITONSYS_MEEP
 wire                                init_calib_complete;
+`endif
 wire                                afifo_rst_1;
 wire                                afifo_rst_2;
 
