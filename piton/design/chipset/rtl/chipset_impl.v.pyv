@@ -1283,7 +1283,7 @@ fake_mem_ctrl fake_mc``idx( \
 `endif // endif PITONSYS_NO_MC
 
 
-wire net_interrupt;
+wire [NUM_INT-1:0] net_interrupt;
 wire uart_interrupt;
 
 `ifdef PITONSYS_IOCTRL
@@ -1449,7 +1449,9 @@ uart_top        uart_top (
 
  `ifdef PITONSYS_MEEP
    localparam integer NUM_INT_ETH = 2;
- `else
+ `elsif PITON_FPGA_ETH_CMAC
+   localparam integer NUM_INT_ETH = 2;
+ `else 
    localparam integer NUM_INT_ETH = 1;
  `endif
 
@@ -1466,6 +1468,7 @@ uart_top        uart_top (
         .chipset_clk     ( chipset_clk        ),
         .rst_n           ( chipset_rst_n      ),
 
+		// Interrupts are forwarded in the chipset_clk domain
         .net_interrupt   ( net_interrupt      ),
 
         .noc_in_val      ( buf_net_noc2_valid ),
@@ -1475,10 +1478,11 @@ uart_top        uart_top (
         .noc_out_val     ( net_buf_noc3_valid ),
         .noc_out_data    ( net_buf_noc3_data  ),
         .noc_out_rdy     ( buf_net_noc3_ready )
+		
+		// Common inputs for all cases 	
 
     `ifdef PITON_FPGA_ETHERNETLITE
         ,
-        .net_axi_clk     ( net_axi_clk        ),
         .net_phy_rst_n   ( net_phy_rst_n      ),
 
         .net_phy_tx_clk  ( net_phy_tx_clk     ),
@@ -1495,16 +1499,18 @@ uart_top        uart_top (
     `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE        
         ,
         `ifndef PITONSYS_MEEP
-        .net_axi_clk     (net_axi_clk         ),
         .qsfp_ref_clk_n  (qsfp_ref_clk_n),
         .qsfp_ref_clk_p  (qsfp_ref_clk_p),
         .qsfp_4x_grx_n   (qsfp_4x_grx_n),
         .qsfp_4x_grx_p   (qsfp_4x_grx_p),
         .qsfp_4x_gtx_n   (qsfp_4x_gtx_n),
         .qsfp_4x_gtx_p   (qsfp_4x_gtx_p)
-        `else
-        .net_axi_clk        (eth_axi_aclk   ),
-        .net_axi_arstn      (eth_axi_arstn  ),
+        `else		
+		// in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
+		.net_axi_clk        (eth_axi_aclk   ),		
+		.net_axi_arstn      (eth_axi_arstn  ),		
+		.net_cmac_intr      (eth_irq        ),
+		
         .core_axi_awid      (eth_axi_awid   ),
         .core_axi_awaddr    (eth_axi_awaddr ),
         .core_axi_awlen     (eth_axi_awlen  ),
@@ -1551,10 +1557,8 @@ uart_top        uart_top (
         .core_axi_bresp     (eth_axi_bresp  ),
         .core_axi_buser     (eth_axi_buser  ),
         .core_axi_bvalid    (eth_axi_bvalid ),
-        .core_axi_bready    (eth_axi_bready ),
-        
-        .net_cmac_intc      (eth_irq)
-        
+        .core_axi_bready    (eth_axi_bready )		
+                
         `endif
     `endif // PITON_FPGA_ETH_CMAC
     );

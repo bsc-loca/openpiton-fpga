@@ -33,8 +33,8 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     </port>
     <port>
         <name>net</name>
-        <base>0xFF60000000</base>
-        <length>0x100000</length>
+        <base>0xfff0800000</base>
+        <length>0x400000</length>
         <stream_accessible/>
     </port>
     <port>
