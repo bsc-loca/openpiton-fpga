@@ -41,13 +41,13 @@
 
 module eth_top #(
   parameter SWAP_ENDIANESS = 0,
-  parameter NUM_INT        = 1
+  parameter NUM_INTR        = 1
 ) (
     input                                   chipset_clk,
 
     input                                   rst_n,
 
-    output      [NUM_INT-1:0]               net_interrupt,
+    output      [NUM_INTR-1:0]               net_interrupt,
 
     input                                   noc_in_val,
     input       [`NOC_DATA_WIDTH-1:0]       noc_in_data,
@@ -86,7 +86,7 @@ module eth_top #(
 	 // in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
      input                 				  net_axi_clk,
 	 input                 			      net_axi_arstn,	 	 	 
-	 input  [NUM_INT-1:0] 	     	      net_axi_intr,
+	 input  [NUM_INTR-1:0] 	     	      net_axi_intr,
 	 
      output [`AXI4_ID_WIDTH     -1:0]     core_axi_awid,
      output [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr,
@@ -243,7 +243,7 @@ wire                               core_axi_bready;
 `ifndef PITONSYS_MEEP
 	wire net_axi_clk;
 	wire net_axi_arstn;
-	wire [NUM_INT-1:0]  net_axi_intr; // Needs to be CDCd before output
+	wire [NUM_INTR-1:0]  net_axi_intr; // Needs to be CDCd before output
 
 `endif
 
@@ -468,7 +468,7 @@ IOBUF u_iobuf_dq (
 `ifndef PITONSYS_MEEP
 	assign net_axi_clk   = chipset_clk;
 	assign net_axi_arstn = rst_n;
-	// wire [NUM_INT-1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
+	// wire [NUM_INTR-1:0] net_cmac_intc; // output interrupts (0-tx, 1-rx)
 Eth_CMAC_syst eth_cmac_syst (
   .s_axi_clk        (net_axi_clk),          // input wire s_axi_aclk
   .s_axi_resetn     (net_axi_arstn),        // input wire s_axi_aresetn
@@ -599,12 +599,12 @@ assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
 
 // CDC the interrupts that are in the net_axi_clk domain to the chipset_clk before output them
 
-reg [3:0] long_intr [NUM_INT-1:0]; 
+reg [3:0] long_intr [NUM_INTR-1:0]; 
 
 generate 
     genvar i;
 
- for (genvar i=0; i<NUM_INT ; i = i +1) begin
+ for (genvar i=0; i<NUM_INTR ; i = i +1) begin
   
    always @(posedge chipset_clk) begin
      long_intr[i]  <= {long_intr[i][2:0], net_axi_intr[i]};   
