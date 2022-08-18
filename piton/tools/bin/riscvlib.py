@@ -316,8 +316,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "net":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
-            dmaChannelMM2S = addrBase + 0x0;
-            dmaChannelS2MM = addrBase + 0x30;
+            dmaChannelMM2S = addrBase + 0x0
+            dmaChannelS2MM = addrBase + 0x30
             tmpStr += '''
         ethernet0 {
             xlnx,rxmem = <0x5f2>;
@@ -362,7 +362,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             };
         
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1,  ioDeviceNr, ioDeviceNr+1)
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1,  dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
 
     tmpStr += '''
