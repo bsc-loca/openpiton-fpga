@@ -299,7 +299,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrLen  = devices[i]["length"]
             tmpStr += '''
         uart@%08x {
-            compatible = "ns16550a";
+            compatible = "ns16550";
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
@@ -307,7 +307,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
             reg-offset = <0x1000>;
-            reg-shift = <2>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
+            reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
             ioDeviceNr+=1
