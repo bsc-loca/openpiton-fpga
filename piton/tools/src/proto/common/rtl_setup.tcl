@@ -269,10 +269,15 @@ set OTHER_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/common/rtl/synchronizer_asr_dup.v" \
 ]
 
+set MEEP_RTL_FILES ""
+
+if { [info exists "::env(MEEP_SHELL)"] } {
+
 set MEEP_RTL_FILES [list \
     "${DV_ROOT}/design/chipset/meep_shell/sram_top.v" \
     "${DV_ROOT}/design/chipset/meep_shell/openpiton_wrapper.v" \
-]
+    ]
+}
 
 set PICO_RTL_FILES [list \
     "${DV_ROOT}/design/chip/tile/pico/rtl/picorv32.v" \
