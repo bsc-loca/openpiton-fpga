@@ -46,6 +46,7 @@ from dbg import *
 
 DV_ROOT = os.environ['DV_ROOT']
 MODEL_DIR = os.environ['MODEL_DIR']
+MEEP_DIR = os.environ['MEEP_DIR']
 DESIGN_BLOCK_LIST = os.path.join(DV_ROOT, "tools/src/proto/block.list")
 BOARD_TOOL_LIST = os.path.join(DV_ROOT, "tools/src/proto/board.list")
 PROJECT_BUILD_LOG = "make_project.log"
@@ -103,10 +104,14 @@ def usage():
     print("              Name of the test to be simulated and mapped into BRAM/DRAM", file=sys.stderr)
     print("\n       --verdi-dbg", file=sys.stderr)
     print("              Create Verdi compliant simulation database of test specified by --bram-test option", file=sys.stderr)
+    print("\n       --mgui", file=sys.stderr)
+    print("              Run ManyGUI traffic visualizer while simulating test specified by --bram-test option", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
     print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
+    print("\n       --multimc", file=sys.stderr)
+    print("              Implement design with multiple connections to system memory", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --ethport <number>", file=sys.stderr)
@@ -143,6 +148,8 @@ def usage():
     print("                  impl", file=sys.stderr)
     print("\n       --vnpm", file=sys.stderr)
     print("\n            Run implementation and bitstrean via GNU Make", file=sys.stderr)
+    print("\n       --meep", file=sys.stderr)
+    print("\n            Generate a file list and a define list to called by the MEEP Shell project flow", file=sys.stderr)    
     print("\n       --oled <string>", file=sys.stderr)
     print("\n            String to be displayed on OLED display.", file=sys.stderr)
     print("\n            (Genesys2 and nexysVideo boards only", file=sys.stderr)
@@ -384,6 +391,44 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
     return jid
 
 
+def makeMEEPflow(board, design_data, work_dir, log_dir, slurm, dep_list, def_list):
+    prev_dir = os.getcwd()
+
+    os.chdir(MEEP_DIR)
+
+    # Generate additional defines file that will be sourced in tcl script
+    f = open("tcl/additional_defines.tcl", "w")
+    print("set PROTOSYN_RUNTIME_DEFINES \"%s\"" % ' '.join(def_list), file=f)
+    f.close()
+
+    os.chdir(work_dir)
+
+    tool = find_board_tool(board)
+
+    #os.system('cp -r $DV_ROOT/tools/src/proto/%s/* .' % board)
+    #os.system('cp -r -n $DV_ROOT/tools/src/proto/common/* .')
+    print_info("Building a project for design '%s' for MEEP '%s'" % (design_data["ID"],board))
+    proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
+    proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
+    jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
+    setUARTXilinxFreq(board, design_data)
+    # Passing parameter to TCL
+    if board == "alveou280" :
+        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
+        print_info("HBM is defined as primary system RAM")
+    jid = None
+    if (tool == "vivado"):
+        print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
+        jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
+                         slurm, 1, 4096, "1:00:00", jname, dep_list)
+
+    os.chdir(prev_dir)
+
+    return jid
+
+
+
+
 def find_board_tool(board):
     fp = open(BOARD_TOOL_LIST, 'r')
     for line in fp:
@@ -496,11 +541,14 @@ def setParserOptions(parser):
     parser.add_option("--config_l2_associativity", dest="config_l2_associativity",   action="store", default=4)
     parser.add_option("--bram-test", dest="test_name", action="store")
     parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
+    parser.add_option("--mgui", dest="mgui", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--vnpm", dest="vivado_mode", action="store_true", default=False)
+    parser.add_option("--meep", dest="meep_mode", action="store_true", default=False)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
+    parser.add_option("--multimc", dest="multimc", action="store_true", default=False)
     parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
@@ -541,6 +589,8 @@ def makeDefList(options):
             defines.append("VPU_ENABLE")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
+    if (options.meep_mode == True):
+        defines.append("PITONSYS_MEEP")
 
     # --no-ddr option
     if (options.no_ddr == True) or (options.board == "piton_board"):
@@ -735,6 +785,7 @@ def main():
     run_fpga_impl           = True
     run_gen_test_bram       = False
     run_f1_impl             = False
+    run_MEEP_flow           = False
 
     if options.test_name != None:
         run_sim             = True
@@ -755,6 +806,13 @@ def main():
         run_map_test        = True
         run_make_project    = False
         run_fpga_impl       = False
+
+    if options.meep_mode == True:
+        run_MEEP_flow           = True
+        run_make_project        = False
+        run_fpga_impl           = False
+        run_sim                 = False # maybe change later
+        run_map_test            = False # maybe change later
 
     if options.board == "f1":
         run_f1_impl             = True
@@ -798,7 +856,21 @@ def main():
     os.environ['PITON_X_TILES']   = str(options.x_tiles)
     os.environ['PITON_Y_TILES']   = str(options.y_tiles)
     os.environ['PITON_NUM_TILES'] = str(options.num_tiles)
-    
+
+    os.environ['PITON_EXTRA_MEMS'] = "0"
+    if options.multimc:
+      options.edge_tiles = 2 * (int(options.x_tiles)-1 + int(options.y_tiles)-1)
+      if int(options.edge_tiles) > int(options.num_tiles) or int(options.edge_tiles) < 1:
+         options.edge_tiles = options.num_tiles
+      if not options.hbm:
+        print_info("--multimc option is ignored without --hbm option")
+      elif int(options.edge_tiles) > 30:
+        print_info("Extra (" + str(options.edge_tiles) + ") connections to HBM (one per edge tile) are limited to 30.")
+        os.environ['PITON_EXTRA_MEMS'] = str(30)
+      else:
+        print_info("Extra (" + str(options.edge_tiles) + ") connections to HBM (one per edge tile) will be used.")
+        os.environ['PITON_EXTRA_MEMS'] = str(options.edge_tiles)
+
     # ProNoC
     os.environ['PITON_PRONOC'] = "0"
     if options.pronoc:
@@ -954,11 +1026,18 @@ def main():
                       ' -vcs_build_args=-debug_access+all'          + \
                       ' -vcs_build_args=-debug_region=cell+encrypt' + \
                       ' -vcs_build_args=-LDFLAGS'                   + \
-                      ' -vcs_build_args=-Wl,--no-as-needed'
+                      ' -vcs_build_args=-Wl,--no-as-needed'         + \
+                      ' -vcs_build_args=+vcs+lic+wait'
+
+        mgui_build = '' 
+        mgui_run   = '' 
+        if options.mgui:
+            mgui_build = ' -mgui_build'
+            mgui_run   = ' -mgui_run'
 
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
-        ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
+        ret_val = os.system('sims -sys=manycore' + config + mgui_build + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
         if ret_val != 0:
             print_error("Compilation didn't finish successfully!")
             print_info("See for Errors in %s/compilation.log" % rc_dir.log)
@@ -966,7 +1045,7 @@ def main():
         print_info("Simulation started")
         print_info("Using core clock frequency: %s MHz" % design_data["BOARDS"][options.board]["FREQ"])
         div = calcUARTLatch(design_data, options.board)
-        os.system('sims -sys=manycore ' + config + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
+        os.system('sims -sys=manycore ' + config + mgui_run + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
 
         f = open('%s/simulation.log' % rc_dir.log, 'r')
         cont = f.read()
@@ -1022,6 +1101,13 @@ def main():
             print_info("Using %d jobs in Vivado" % int(options.jobs))
         os.environ['NUM_VIVADO_JOBS']   = str(int(options.jobs))
         jid = runImplFlow(options.board, options.eth, design_data, rc_dir.work, rc_dir.log, defines, options.slurm, dep_list, options.vivado_mode)
+        if jid != None:
+            dep_list.append(jid)
+
+    # MEEP            
+    if run_MEEP_flow:
+        os.environ['MEEP_SHELL']   = str(int(1))
+        jid = makeMEEPflow(options.board, design_data, rc_dir.work, rc_dir.log, options.slurm, None, defines)
         if jid != None:
             dep_list.append(jid)
 

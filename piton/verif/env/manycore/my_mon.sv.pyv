@@ -1,0 +1,377 @@
+// Modified by Princeton University on June 9th, 2015
+// ========== Copyright Header Begin ==========================================
+//
+// OpenSPARC T1 Processor File: cmp_l15_messages_mon.v
+// Copyright (c) 2006 Sun Microsystems, Inc.  All Rights Reserved.
+// DO NOT ALTER OR REMOVE COPYRIGHT NOTICES.
+//
+// The above named program is free software; you can redistribute it and/or
+// modify it under the terms of the GNU General Public
+// License version 2 as published by the Free Software Foundation.
+//
+// The above named program is distributed in the hope that it will be
+// useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+// General Public License for more details.
+//
+// You should have received a copy of the GNU General Public
+// License along with this work; if not, write to the Free Software
+// Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
+//
+// ========== Copyright Header End ============================================
+////////////////////////////////////////////////////////
+
+
+
+`include "sys.h"
+`include "iop.h"
+`include "cross_module.tmp.h"
+
+<%
+    import os
+    import sys
+    sys.path.insert(0, os.path.join(os.environ["DV_ROOT"], 'tools/bin/'));
+    from pyhplib import *
+
+    print("`define PITON_NUM_TILES %d" % PITON_NUM_TILES)
+%>
+
+/*
+
+`define TILE0            `CHIP.tile0
+    `define ARIANE_CORE0     `TILE0.g_ariane_core.core.ariane
+    `define SPARC_CORE0      `TILE0.g_sparc_core.core
+    `define PICO_CORE0       `TILE0.g_picorv32_core.core
+    `ifdef RTL_SPARC0
+    `define CORE_REF0        `SPARC_CORE0
+    `endif // ifdef RTL_SPARC0
+    `ifdef RTL_ARIANE0
+    `define CORE_REF0        `TILE0.g_ariane_core.core
+    `endif // ifdef RTL_ARIANE0
+    `ifdef RTL_PICO0
+    `define CORE_REF0        `PICO_CORE0
+    `endif // ifdef RTL_PICO0
+    `define CCX_TRANSDUCER0  `TILE0.g_sparc_core.ccx_l15_transducer
+    `define PICO_TRANSDUCER0 `TILE0.g_picorv32_core.pico_l15_transducer
+    `define L15_TOP0         `TILE0.l15.l15
+    `define L15_PIPE0        `TILE0.l15.l15.pipeline
+    `define DMBR0            `TILE0.dmbr_ins
+    `define L2_TOP0          `TILE0.l2
+    `define SPARC_REG0       `SPARC_CORE0.sparc0.exu.exu.irf.irf
+
+    */
+
+module my_mon(
+    input wire clk
+);
+
+
+
+parameter TILE_NUM=1;
+
+
+
+`ifdef PITON_MANYGUI
+
+
+//Output file
+integer fd;  
+integer counter = 0;
+integer i;
+initial begin
+    fd = $fopen("debug/mem_cpu_log.txt", "w");  
+    $fclose(fd); 
+end
+
+
+always @ (posedge clk)  counter <= counter + 1;
+
+`ifdef PITON_ARIANE
+
+localparam NR_COMMIT_PORTS = 2;
+localparam [3:0] 
+        NONE      = 4'd0,
+        LOAD      = 4'd1,
+        STORE     = 4'd2,
+        ALU       = 4'd3,
+        CTRL_FLOW = 4'd4,
+        MULT      = 4'd5,
+        CSR       = 4'd6,
+        FPU       = 4'd7,
+        FPU_VEC   = 4'd8;
+`endif
+
+`ifdef PITON_LAGARTO
+   typedef enum logic [6:0] {
+    // basic ALU op
+   ADD, SUB, ADDW, SUBW,
+   // logic operations
+   XOR, OR, AND,
+   // shifts
+   SRA, SRL, SLL, SRLW, SLLW, SRAW,
+   // comparisons
+   BLT, BLTU, BGE, BGEU, BEQ, BNE,
+   // jumps
+   JALR, JAL,
+   // set lower than operations
+   SLT, SLTU,
+   // CSR functions
+   MRET, SRET, URET, ECALL, EBREAK, WFI, FENCE, FENCE_I, SFENCE_VMA, VSETVL, VSETVLI,
+   // Old ISA CSR functions
+   ERET, MRTS, MRTH, HRTS,
+   //CSR_WRITE, CSR_READ, CSR_SET, CSR_CLEAR,
+   CSRRW, CSRRS, CSRRC, CSRRWI, CSRRSI, CSRRCI,
+   // LSU functions
+   LD, SD, LW, LWU, SW, LH, LHU, SH, LB, SB, LBU,
+   // Atomic Memory Operations
+   AMO_LRW, AMO_LRD, AMO_SCW, AMO_SCD,
+   AMO_SWAPW, AMO_ADDW, AMO_ANDW, AMO_ORW, AMO_XORW, AMO_MAXW, AMO_MAXWU, AMO_MINW, AMO_MINWU,
+   AMO_SWAPD, AMO_ADDD, AMO_ANDD, AMO_ORD, AMO_XORD, AMO_MAXD, AMO_MAXDU, AMO_MIND, AMO_MINDU,
+   // Multiplications
+   MUL, MULH, MULHU, MULHSU, MULW,
+   // Divisions
+   DIV, DIVU, DIVW, DIVUW, REM, REMU, REMW, REMUW,
+   // Vectorial Floating-Point Instructions that don't directly map onto the scalar ones
+   VFMIN, VFMAX, VFSGNJ, VFSGNJN, VFSGNJX, VFEQ, VFNE, VFLT, VFGE, VFLE, VFGT, VFCPKAB_S, VFCPKCD_S, VFCPKAB_D, VFCPKCD_D
+} instr_type_t;
+    
+    `define IS_ALU(a) (a==ADD || a==SUB || a==ADDW || a==SUBW || a==MUL || a==MULH || a==MULHU || a==MULHSU || a==MULW || a==DIV  || a==DIVU || a==DIVW  || a==DIVUW  || a==REM || a==REMU || a==REMW || a==REMUW)
+    
+    `define IS_LSU(a) (a==LD || a==LW || a==LWU || a==LH || a==LHU || a==LB || a==LBU || a==SD || a==SW || a==SH || a==SB)
+    
+`endif
+
+//Note: access to L1.5 are not token in account becuase in: "Power and Energy Characterization of an Open Source 25-Core Manycore Processor" HPCA'18.
+//The Authors of OpenPiton claim that
+/* 
+The L1.5 cache is basically a replica of the L1 cache, 
+but is write-back. Thus, a miss in the L1 will also miss 
+in the L1.5. However, it is important to note that the 
+energy to access the L1.5 is included in all results in 
+Table VII except for L1 hit.
+*/
+//In case of L1 hit there is no access to L1.5
+
+//*************************************** MEMORY STATISTICS *************************************************
+
+always @ (posedge clk)
+begin
+    //counter <= counter + 1;
+    
+    //L1-I cache miss. This value is provided by the performance counter implemented by Ariane: perf_counters.sv
+    
+    //L1-D cache miss. This value is provided by the performance counter implemented by Ariane: perf_counters.sv
+    
+    //Cache L1-I access
+    //The strategy is observe when the signal from core to icache is valid. This signal will be only stay active to every new instruction.
+
+    //LD I and D access
+    //Store and Load L1-D access. To account only store, observe only interface 2, to account only Loads, oberve only interface 1
+    //The strategy of this observation consists in monitor the frequency data cache issue a data granted signal to core, informing 
+    //that memory operation (load or store) was sucessifully concluded.
+
+    //LD-D amo access
+    //The strategy is similar. Observe the ack signal sent from the memory to the core, informing that the last AMO was concluded.
+
+    //L2 access, miss, and RAM access
+    //The signals of miss and access were estracted from the dedicated registers used by L2 to implement performance counters.
+    //To account the generation of a new LOAD_MEM it is being tested the signal inside the pipe1, which generate packets o LOAD_MEM
+    //Observe that LOAD_MEM not necessarely means a DRAM_ACCESS. They represent any access to an external peripheric, included DRAM, IOB, boot, UART.
+
+    //DRAM access - signals comes from fake_mem_ctrl.v
+<%
+    tile_i = 0
+    for y in range (PITON_Y_TILES):
+        for x in range (PITON_X_TILES):
+            tile_str = str(x << 8 | y)
+            tile_index = str(tile_i)
+            tile_i = tile_i + 1
+            
+            print ("\n   //Core "+str(x)+"x"+str(y)+" Index: "+tile_index)      
+            
+            print (  "`ifdef PITON_ARIANE\n")  
+            print (  "    for ( i = 0; i < NR_COMMIT_PORTS-1; i = i + 1) begin")
+            print (  "        if (`ARIANE_PREF_CNT"+tile_index+".commit_ack_i[i]) begin")
+            print (  "            if (`ARIANE_PREF_CNT"+tile_index+".commit_instr_i[i].fu == ALU) begin")
+            print (  "                fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "                $fdisplay(fd,\"ALUinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "                $fclose(fd); ") 
+            print (  "            end else if (`ARIANE_PREF_CNT"+tile_index+".commit_instr_i[i].fu == LOAD || `ARIANE_PREF_CNT"+tile_index+".commit_instr_i[i].fu == STORE) begin"  )
+            print (  "                fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "                $fdisplay(fd,\"LSUinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "                $fclose(fd); ") 
+            print (  "            end else begin")
+            print (  "                fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "                $fdisplay(fd,\"Othersinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "                $fclose(fd); ") 
+            print (  "            end")            
+            print (  "        end")
+            print (  "    end")
+            print (  "`endif")           
+            
+            print (  "`ifdef PITON_LAGARTO\n")
+            print (  "    if (`LAGARTO_CORE"+tile_index+".datapath_inst.exe_to_wb_wb.valid ) begin")
+            print (  "        if (`IS_ALU(`LAGARTO_CORE"+tile_index+".datapath_inst.exe_to_wb_wb.instr_type))begin\n")    
+            print (  "           fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "           $fdisplay(fd,\"ALUinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "           $fclose(fd); ") 
+            print (  "        end") 
+            print (  "        else if (`IS_LSU(`LAGARTO_CORE"+tile_index+".datapath_inst.exe_to_wb_wb.instr_type))begin\n")    
+            print (  "           fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "           $fdisplay(fd,\"LSUinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "           $fclose(fd); ") 
+            print (  "        end else begin")
+            print (  "           fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");" )
+            print (  "           $fdisplay(fd,\"Othersinstr:%0d:%0d;\",counter, "+tile_index+");" )
+            print (  "           $fclose(fd); ") 
+            print (  "        end")             
+            print (  "    end")              
+            print (  "`endif")         
+            
+
+            print ("`ifdef PITON_ARIANE\n")  
+            print ("    if(`ARIANE_CORE"+tile_index+".icache_miss_cache_perf) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");")  
+            print ("        $fdisplay(fd,\"L1-Imiss:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);")  
+            print ("    end")    
+            print ("    if(`ARIANE_CORE"+tile_index+".dcache_miss_cache_perf) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");")  
+            print ("        $fdisplay(fd,\"L1-Dmiss:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);")  
+            print ("    end")
+            print ("`endif\n") 
+                        
+            print ("`ifdef PITON_LAGARTO\n")
+            print ("    if(`LAGARTO_CORE"+tile_index+".io_core_pmu_icache_miss) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");")  
+            print ("        $fdisplay(fd,\"L1-Imiss:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);")  
+            print ("    end")            
+            print ("    if(`LAGARTO_CORE"+tile_index+".io_core_pmu_dcache_miss) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");")  
+            print ("        $fdisplay(fd,\"L1-Dmiss:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);")  
+            print ("    end")                        
+            print ("`endif\n")
+              
+            #for iface in range (0,3): #3 interface between Ariane and L1 cache
+            for iface in range (1,3): #3 interface between Ariane and L1 cache, Starts in 1 because 1 is the controller and we don't want account the controller
+                iface_str = str(iface)
+                print ("`ifdef PITON_ARIANE\n")  
+                print ("    if(`ARIANE_CORE"+tile_index+".i_cache_subsystem.dcache_req_ports_o["+iface_str+"].data_gnt) begin")
+                print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+                print ("        $fdisplay(fd,\"L1-Daccess:%0d:"+tile_str+";\",counter);" )
+                print ("        $fclose(fd);" ) 
+                print ("    end")
+                print ("`endif\n")  
+                print ("`ifdef PITON_LAGARTO\n")
+                print ("    if(`LAGARTO_CORE"+tile_index+".i_cache_subsystem.dcache_req_ports_o["+iface_str+"].data_gnt) begin")
+                print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+                print ("        $fdisplay(fd,\"L1-Daccess:%0d:"+tile_str+";\",counter);" )
+                print ("        $fclose(fd);" ) 
+                print ("    end")                
+                print ("`endif\n")
+                
+                
+                
+
+            print ("`ifdef PITON_ARIANE\n")  
+            print ("    //Includes AMO access")
+            print ("    if(`ARIANE_CORE"+tile_index+".i_cache_subsystem.dcache_amo_resp_o.ack) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L1-Damo access:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end")
+            print ("    if(`ARIANE_CORE"+tile_index+".i_frontend.icache_valid_q) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L1-Iaccess:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end" )
+            print ("`endif\n")  
+            
+            print ("`ifdef PITON_LAGARTO\n")
+            print ("    //Includes AMO access")
+            print ("    if(`LAGARTO_CORE"+tile_index+".i_cache_subsystem.dcache_amo_resp_o.ack) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L1-Damo access:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end")
+            print ("    if(`LAGARTO_CORE"+tile_index+".icache_dreq_o.valid) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L1-Iaccess:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end" )
+            
+            print ("`endif\n")  
+            
+            
+            
+            
+            print ("    if(`L2_TOP"+tile_index+".l2_miss_valid) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L2miss:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);" ) 
+            print ("    end" )
+
+            print ("    if(`L2_TOP"+tile_index+".l2_access_valid) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L2access:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end" )
+
+            #Uncomment this line to monitor to track each LOAD_MEM packet sent by L2. This includes boot msg too
+            print ("    if(`L2_TOP"+tile_index+".pipe1.msg_send_valid && `L2_TOP"+tile_index+".pipe1.msg_send_ready && (`L2_TOP"+tile_index+".pipe1.msg_send_mode == 3'h4)) begin")
+            print ("        fd = $fopen(\"debug/mem_cpu_log.txt\", \"a\");"  )
+            print ("        $fdisplay(fd,\"L2LOAD_MEM:%0d:"+tile_str+";\",counter);")
+            print ("        $fclose(fd);"  )
+            print ("    end") 
+    
+			
+				
+    
+    
+    
+    
+    
+    %>
+    if (`TOP_MOD_INST.chipset.chipset_impl.fake_mem_ctrl.mem_valid_in && `TOP_MOD_INST.chipset.chipset_impl.fake_mem_ctrl.mem_ready_in) begin
+        fd = $fopen("debug/mem_cpu_log.txt", "a");
+        $fdisplay(fd,"DRAMaccess:%0d-all;", counter);
+        $fclose(fd);
+    end
+
+    //*************************************** END MEMORY STATISTICS *************************************************
+
+
+    //*************************************** INSTRUCTION STATISTICS ************************************************
+   
+   
+   
+   
+   
+   
+   
+    //Implemented inside piton/design/chip/tile/ariane/src/perf_counters.sv
+ //if (`ARIANE_CORE0.commit_instr_id_commit
+ //if (`ARIANE_CORE0.commit_ack)
+ /*
+    for tile in range (NUM_TILES):
+        tile_str = str(tile)
+            print (  "    for ( i = 0; i < NR_COMMIT_PORTS-1; i = i + 1) begin"
+            print (  "        if (`ARIANE_CORE0.commit_ack[i]) begin"
+            print (  "            if (`ARIANE_CORE0.commit_instr_id_commit[i].fu == LOAD) begin"
+            print (  "                $fdisplay(fd,\"LOAD tile"+tile_str+"\");"
+            print (  "            end"  
+            print (  "        end"
+            print (  "    end"
+    */
+
+end
+
+`endif
+
+endmodule
+
+
+

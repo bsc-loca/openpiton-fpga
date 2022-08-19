@@ -162,7 +162,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     ''' % (core, timeStamp, core, core, uartBase, timeBaseFreq)
 
     if core == "Lagarto":
-        riscv_isa = "rv64ima"
+        riscv_isa = "rv64imafdc"
         dts_core = "lagarto"
     elif core == "Ariane":
         riscv_isa = "rv64imafdc"
@@ -204,6 +204,23 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         reg = <%s>;
     };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+    
+    for i in range(len(devices)):
+        if devices[i]["name"] == "dma_pool":
+            addrBase = devices[i]["base"]
+            addrLen  = devices[i]["length"]
+            tmpStr += '''
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+        
+        eth_pool: dma_pool@%08x {
+            reg = <%s>;
+            compatible = "shared-dma-pool";
+        }; 
+    };
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
 
     tmpStr += '''
     soc {
@@ -215,7 +232,9 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
-    numIrqs = 0
+    #numIrqs = 0
+    # When using Ethernet + DMA, the number of IRQs for Ethernet is 2 instead of 1
+    numIrqs = 1
     devWithIrq = ["uart", "net"];
     for i in range(len(devices)):
         if devices[i]["name"] in devWithIrq:
@@ -280,13 +299,15 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrLen  = devices[i]["length"]
             tmpStr += '''
         uart@%08x {
-            compatible = "ns16550";
+            compatible = "ns16550a";
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
+            device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
+            reg-offset = <0x1000>;
+            reg-shift = <2>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
             ioDeviceNr+=1
@@ -295,44 +316,54 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "net":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
+            dmaChannelMM2S = addrBase + 0x0
+            dmaChannelS2MM = addrBase + 0x30
             tmpStr += '''
-        eth: ethernet@%08x {
-            compatible = "xlnx,xps-ethernetlite-1.00.a";
-            device_type = "network";
-            reg = <%s>;
-            interrupt-parent = <&PLIC0>;
-            interrupts = <%d>;
-            local-mac-address = [ 00 18 3E 02 E3 E5 ];
-            phy-handle = <&phy0>;
-            xlnx,duplex = <0x1>;
-            xlnx,include-global-buffers = <0x1>;
-            xlnx,include-internal-loopback = <0x0>;
-            xlnx,include-mdio = <0x1>;
-            xlnx,rx-ping-pong = <0x1>;
-            xlnx,s-axi-id-width = <0x1>;
-            xlnx,tx-ping-pong = <0x1>;
-            xlnx,use-internal = <0x0>;
-            axi_ethernetlite_0_mdio: mdio {
-                #address-cells = <1>;
-                #size-cells = <0>;
-                phy0: phy@1 {
-                    compatible = "ethernet-phy-id001C.C915";
-                    device_type = "ethernet-phy";
-                    reg = <1>;
-                };
-            };
+        ethernet0 {
+            xlnx,rxmem = <0x5f2>;
+            carv,mtu = <0x5dc>;
+            carv,no-mac;
+            compatible = "xlnx,xxv-ethernet-1.0-carv";
+            device_type = "network";       
+            axistream-connected = <0xfe>;
+            local-mac-address = [00 0a 35 23 07 84];
+            memory-region = <&eth_pool>;
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr)
-            ioDeviceNr+=1
-
-        # eth: lowrisc-eth@%08x {
-        #     compatible = "lowrisc-eth";
-        #     device_type = "network";
-        #     interrupt-parent = <&PLIC0>;
-        #     interrupts = <3 0>;
-        #     local-mac-address = [ee e1 e2 e3 e4 e5];
-        #     reg = <%s>;
-        # };
+        
+        dma_eth: dma@%08x {
+            xlnx,include-dre;
+            phandle = <0xfe>;
+            #dma-cells = <2>;
+            compatible = "xlnx,axi-dma-1.00.a";
+            reg = <%s>;
+            interrupt-names = "mm2s_introut", "s2mm_introut";
+            interrupt-parent = <&PLIC0>;
+            interrupts = <%d %d>;            
+            xlnx,addrwidth = <0x28>;
+            xlnx,include-sg;
+            xlnx,sg-length-width = <0x17>;
+            
+            dma-channel@%08x {
+                compatible = "xlnx,axi-dma-mm2s-channel";
+                dma-channels = <1>;
+                interrupts = <%d>;
+                xlnx,datawidth = <0x40>;
+                xlnx,device-id = <0x00>;
+                xlnx,include-dre;                        
+            };
+            
+            dma-channel@%08x {
+                compatible = "xlnx,axi-dma-s2mm-channel";
+                dma-channels = <1>;
+                interrupts = <%d>;
+                xlnx,datawidth = <0x40>;
+                xlnx,device-id = <0x00>;
+                xlnx,include-dre;            
+            };
+        
+        };
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1,  dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
+            ioDeviceNr+=2                       
 
     tmpStr += '''
     };

@@ -17,7 +17,7 @@ fi
 
 #Load PCIe bitstream to FPGA and setup host PCIe environment
 hw_server -d
-source /home/tools/scripts/load-bitstream.sh qdma ../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
+source /home/tools/scripts/load-bitstream-beta.sh qdma ../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
 
 #Some sanity checks
 # dma-ctl qdma08000 reg dump
@@ -30,3 +30,5 @@ dmesg | grep tty
 
 #Applying both resets to the design
 dma-ctl qdma08000 reg write bar 2 0x0 0x0
+
+#To setup UART on Nanu after reboot: sudo modprobe ftdi_sio

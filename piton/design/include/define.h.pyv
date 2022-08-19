@@ -58,6 +58,8 @@ from pyhplib import *
 print("`define PITON_NUM_TILES %d" % PITON_NUM_TILES)
 print("`define PITON_X_TILES %d"   % PITON_X_TILES)
 print("`define PITON_Y_TILES %d"   % PITON_Y_TILES)
+if PITON_EXTRA_MEMS > 0:
+  print("`define PITON_EXTRA_MEMS %d" % PITON_EXTRA_MEMS)
 %>
 
 // NoC interface

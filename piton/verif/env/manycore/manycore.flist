@@ -24,6 +24,8 @@
 +incdir+.
 
 cross_module.h
+my_mon.sv
+my_network_mon.sv
 manycore_network_mon.v
 // -v one_hot_mux_mon.v
 -v sas_intf.v
@@ -61,3 +63,6 @@ manycore_network_mon.v
 fake_pll.v
 manycore_top.v
 fake_uart.v
+spike_dpi_pkg.sv
+spike_setup.sv
+spike_scoreboard.sv

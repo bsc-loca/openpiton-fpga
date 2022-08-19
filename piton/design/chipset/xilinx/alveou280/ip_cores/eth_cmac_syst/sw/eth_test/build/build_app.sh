@@ -1,7 +1,7 @@
 # The script to build test Ethernet application, last updated for Vitis/Vivado-2021.2
 
 echo ""
-echo "Extracting hw definitions from BD tcl script by Vivado to create C-header file"
+echo "Extracting hw definitions from BD tcl script to create C-header file"
 # vivado -mode batch -nolog -nojournal -notrace -source ./eth_syst_xparams.tcl
 tclsh ./eth_syst_xparams.tcl
 
