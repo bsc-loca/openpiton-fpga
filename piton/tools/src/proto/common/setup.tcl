@@ -88,7 +88,6 @@ if  {$::env(PITON_ARIANE) != "0"} {
   puts "Add Ariane include directories"
 }
 
-
 if  {$::env(PITON_LAGARTO) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
   puts "Add Lagarto include directories"
@@ -99,6 +98,7 @@ if  {$::env(PITON_PRONOC) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
   puts "Add ProNoC include directories"
 }
+
 
 
 #
@@ -149,6 +149,13 @@ for {set k 0} {$k < $::env(PITON_LAGARTO)} {incr k} {
 }
 
 puts "INFO: Using Defines: ${ALL_DEFAULT_VERILOG_MACROS}"
+
+# credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50
+# and https://www.xilinx.com/support/answers/72570.html
+set tmp_PYTHONPATH $env(PYTHONPATH)
+set tmp_PYTHONHOME $env(PYTHONHOME)
+unset ::env(PYTHONPATH)
+unset ::env(PYTHONHOME)
 
 # Pre-process PyHP files
 source $DV_ROOT/tools/src/proto/common/pyhp_preprocess.tcl
@@ -211,3 +218,5 @@ if  { $::env(PITON_LAGARTO) != "0"} {
   puts "INFO: done"
 }
 
+set ::env(PYTHONPATH) $tmp_PYTHONPATH
+set ::env(PYTHONHOME) $tmp_PYTHONHOME
