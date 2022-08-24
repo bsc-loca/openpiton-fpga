@@ -173,7 +173,7 @@ module openpiton_wrapper (
     output           uart_axi_awvalid ,
     input            uart_axi_awready ,
     output  [31:0]   uart_axi_wdata ,
-    output  [3:0]    uart_axi_wstrb ,
+    // output  [3:0]    uart_axi_wstrb ,
     output           uart_axi_wvalid ,
     input            uart_axi_wready ,
     input  [1:0]     uart_axi_bresp ,

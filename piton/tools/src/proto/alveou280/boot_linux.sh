@@ -18,6 +18,13 @@
 #   $ free -th
 #   $ cat /proc/meminfo
 
+#dma_path=$(which dma-ctl)
+#machine=$(hostname)
+
+#if [ "x$dma_path" == "x" ]; then
+#	export PATH=/home/tools/drivers/$machine/dma_ip_drivers/QDMA/linux-kernel/bin/:$PATH
+#fi
+
 #PCIe GPIO bus: {Timeout_en(bit4), Bootrom_nOS(bit3), UartBoot_en(bit2), Ariane_rstn(bit1), System_rstn(bit0)}
 dma-ctl qdma08000 reg write bar 2 0x0 0x0 && #Both resets
 sleep 2 &&

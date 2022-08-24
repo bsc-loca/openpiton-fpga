@@ -11,8 +11,7 @@ specific language governing permissions and limitations under the License.
 
 Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 Date: 26.11.2018
-Modified: 01/09/2021 daniel.jimenez2@bsc.es, BSC
-Description: Peripheral address map for OpenPiton+Lagarto configurations.
+Description: Peripheral address map for OpenPiton+Ariane configurations.
 -->
 <devices>
     <!--The first entry should always be the filter/chip to xbar connection-->
@@ -26,17 +25,17 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <!-- 8GB -->
         <length>0x200000000</length>
     </port>
+	<port>
+        <name>dma_pool</name>
+        <base>0x240000000</base>
+        <!-- 512MB -->
+        <length>0x10000000</length>
+    </port>
     <port>
         <name>iob</name>
         <base>0x9f00000000</base>
         <length>0x10</length>
         <noc2in/>
-    </port>
-    <port>
-	<name>sram</name>
-        <base>0xfff0400000</base>
-	<length>0x100000</length>
-	<stream_accessible/>
     </port>
     <port>
         <name>uart</name>
@@ -45,14 +44,20 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <length>0xd4000</length>
         <noc2in/>
         <stream_accessible/>
-    </port>
+    </port>	    
     <port>
         <name>net</name>
         <base>0xfff0800000</base>
         <length>0x400000</length>
         <stream_accessible/>
     </port>
-    <!-- note: the following modules are ariane-specific and are only instantiated in HW when using the ariane core -->
+    <port>
+        <name>sram</name>
+        <base>0xfff0400000</base>
+        <length>0x100000</length>
+        <stream_accessible/>
+    </port>
+    <!-- note: the following modules are lagarto-specific and are only instantiated in HW when using the lagarto core -->
     <port>
         <!-- this is the shared debug module for JTAG access to all cores -->
         <name>lagarto_debug</name>
@@ -81,7 +86,6 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <length>0x4000000</length>
         <stream_accessible/>
     </port>
-    <!-- performance monitoring unit -->
-    <!-- Removed PMU untill it is revisited -->
+    <!-- end lagarto specific periphs -->
 </devices>
 

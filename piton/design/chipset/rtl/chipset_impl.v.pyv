@@ -1510,7 +1510,7 @@ uart_top        uart_top (
 		// in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
 		.net_axi_clk        (eth_axi_aclk   ),		
 		.net_axi_arstn      (eth_axi_arstn  ),		
-		.net_cmac_intr      (eth_irq        ),
+		.net_axi_intr       (eth_irq        ),
 		
         .core_axi_awid      (eth_axi_awid   ),
         .core_axi_awaddr    (eth_axi_awaddr ),

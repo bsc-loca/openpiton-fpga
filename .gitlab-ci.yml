@@ -17,14 +17,14 @@ variables:
   GIT_SUBMODULE_STRATEGY: "none"
   FPGA_LOG_FILE: fpga.log
   BITSTREAM: system_${CI_PIPELINE_ID}.bit
-  BOOT_SCRIPT: piton/tools/src/proto/alveou280/boot_linux.sh
-  TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
-  QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
+  BOOT_SCRIPT_ARIANE: /home/dmazure/pcie/linux_images/boot_ariane.sh
+  TOOLS_DIR: /home/tools/scripts
+  DRIVERS_DIR: /home/tools/drivers
+  QDMA_APPS_DIR: dma_ip_drivers/QDMA/linux-kernel/bin
   DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
-  GOLDEN_MESSAGE: "Welcome to the Fedora/RISC-V disk image"
+  GOLDEN_MESSAGE: "Welcome to Buildroot"
   ## Temp variables while lagarto+Fedora is developed
-  GOLDEN_MESSAGE_LAGARTO: "io scheduler kyber registered" 
-  OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi.bin
+  OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi_alveo.bin
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
   DEPLOY_DIR: /home/fpga-runnerMEEP/ACME_deploy
 
@@ -41,6 +41,14 @@ stages:
   - fpga-test
   - deploy
 
+# Each job which uses the drivers needs to generate its own version of the tool
+# as it could be running in different machines/kernels
+#
+.qdma_drivers: &qdma_drivers
+        - export QDMA_APPS=$DRIVERS_DIR/`hostname`/$QDMA_APPS_DIR
+        - "export PATH=$QDMA_APPS:$PATH"
+        - "echo New PATH: $PATH"
+
 ###################################
 # Synthesis
 ###################################
@@ -52,14 +60,15 @@ synthesis-ariane:
         rules:
             - !reference [.default_rules, rules]
         variables:
-            GIT_SUBMODULE_STRATEGY: recursive
+            GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/vas_tile_core'
+            GIT_SUBMODULE_STRATEGY: "recursive"
+            GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton
         retry: 1
         timeout: 6h
         
         before_script:
             - export PITON_ROOT=`pwd`
             - mkdir -p ariane
-              #- git submodule update --init --recursive
         script:
             - echo "ROOT= $PITON_ROOT"
             - source piton/ariane_setup.sh
@@ -83,13 +92,14 @@ synthesis-lagarto:
         rules:
             - !reference [.default_rules, rules]
         variables:
-            GIT_SUBMODULE_STRATEGY: recursive
+              GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
+              GIT_SUBMODULE_STRATEGY: "recursive"
+              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton
         retry: 1
         timeout: 6h        
         before_script:
             - export PITON_ROOT=`pwd`
             - mkdir -p lagarto
-              #- git submodule update --init --recursive
         script:
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
@@ -117,6 +127,8 @@ implementation-ariane:
             - synthesis-ariane
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -143,6 +155,8 @@ implementation-lagarto:
             - synthesis-lagarto
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         timeout: 12h
         tags:
             - MEEP_FPGA
@@ -175,6 +189,8 @@ bitstream-ariane:
             - implementation-ariane
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         tags:
             - MEEP_FPGA
         before_script:
@@ -200,6 +216,8 @@ bitstream-lagarto:
             - implementation-lagarto
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         tags:
             - MEEP_FPGA
         before_script:            
@@ -228,6 +246,8 @@ validation-ariane:
             - implementation-ariane        
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         tags:
             - MEEP_FPGA
         before_script:            
@@ -245,6 +265,8 @@ validation-lagarto:
             - implementation-lagarto        
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         tags:
             - MEEP_FPGA
         before_script:
@@ -269,14 +291,16 @@ fpga-test-ariane:
         rules:
             - !reference [.default_rules, rules]
               #when: manual         
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         retry: 2
         tags:
             - FPGA_TEST
         before_script:
-            - export PATH=$PATH:$QDMA_DRIVERS
+            - *qdma_drivers            
         script:
             - $TOOLS_DIR/load-bitstream-beta.sh qdma ariane/bitstream/ariane_$BITSTREAM
-            - source $BOOT_SCRIPT
+            - source $BOOT_SCRIPT_ARIANE $OPENSBI_BIN
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
             - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:
@@ -297,16 +321,18 @@ fpga-test-lagarto:
         rules:
             - !reference [.default_rules, rules]
               #when: manual      
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         retry: 2
         tags:
             - FPGA_TEST
         before_script:
-            - export PATH=$PATH:$QDMA_DRIVERS
+            - *qdma_drivers
         script:
             - $TOOLS_DIR/load-bitstream-beta.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
             - source $BOOT_SCRIPT_LAGARTO $OPENSBI_BIN
             - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE
-            - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE_LAGARTO
+            - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
         after_script:
             - cp $FPGA_LOG_FILE lagarto
         dependencies:
@@ -322,6 +348,8 @@ deploy-ariane:
             - MEEP_FPGA
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         before_script:
             - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA            
         script:
@@ -346,6 +374,8 @@ deploy-lagarto:
             - MEEP_FPGA
         rules:
             - !reference [.default_rules, rules]
+        variables:
+            GIT_SUBMODULE_STRATEGY: "none"
         before_script:
             - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
         script:
