@@ -132,6 +132,17 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
     assert nCpus >= 1
 
+
+    # Core dependant parameters  
+    if core == "Lagarto":
+        riscv_isa = "rv64imafdcv"
+        dts_core = "lagarto"
+        org = "BSC"
+    elif core == "Ariane":
+        riscv_isa = "rv64imafdc"
+        dts_core = "ariane"
+        org = "eth"
+
     # get UART base
     uartBase = 0xDEADBEEF
     for i in range(len(devices)):
@@ -148,8 +159,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 / {
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "eth,%s-bare-dev";
-    model = "eth,%s-bare";
+    compatible = "%s,%s-bare-dev";
+    model = "%s,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
     // chosen {
@@ -159,14 +170,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         #address-cells = <1>;
         #size-cells = <0>;
         timebase-frequency = <%d>;
-    ''' % (core, timeStamp, core, core, uartBase, timeBaseFreq)
-
-    if core == "Lagarto":
-        riscv_isa = "rv64imafdc"
-        dts_core = "lagarto"
-    elif core == "Ariane":
-        riscv_isa = "rv64imafdc"
-        dts_core = "ariane"
+    ''' % (core, timeStamp, org, core, org, core, uartBase, timeBaseFreq)
 
     for k in range(nCpus):
         tmpStr += '''
@@ -175,7 +179,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "cpu";
             reg = <%d>;
             status = "okay";
-            compatible = "eth, %s", "riscv";
+            compatible = "%s, %s", "riscv";
             riscv,isa = "%s";
             mmu-type = "riscv,sv39";
             tlb-split;
@@ -186,7 +190,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
                 compatible = "riscv,cpu-intc";
             };
         };
-        ''' % (k,k,cpuFreq,k,core,riscv_isa,k)
+        ''' % (k,k,cpuFreq,k,org,core,riscv_isa,k)
 
     tmpStr += '''
     };
@@ -226,19 +230,23 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     soc {
         #address-cells = <2>;
         #size-cells = <2>;
-        compatible = "eth,%s-bare-soc", "simple-bus";
+        compatible = "%s,%s-bare-soc", "simple-bus";
         ranges;
-    ''' % (core)
+    ''' % (org, core)
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
-    #numIrqs = 0
     # When using Ethernet + DMA, the number of IRQs for Ethernet is 2 instead of 1
-    numIrqs = 1
+    # TODO: Make a difference in the devices_$(core).xml between "net" and "dma_net", as the number of interrupts is different.
+    # TODO: An alternative is to add a field in the device xml file that holds the number of interrupts.
+    numIrqs = 0
     devWithIrq = ["uart", "net"];
     for i in range(len(devices)):
         if devices[i]["name"] in devWithIrq:
-            numIrqs += 1
+            if devices[i]["name"] == "net":
+                numIrqs += 2
+            else:
+                numIrqs += 1
 
 
     # get the remaining periphs
@@ -370,8 +378,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 };
     '''
 
-    # this needs to match
-    assert ioDeviceNr-1 == numIrqs
+    # this needs to match // 20/08/2022: This doesn't match if the device has more than 1 interrupt, as the Ethernet DMA
+    # assert ioDeviceNr-1 == numIrqs
 
     with open(dtsPath + '/' + dts_core + '.dts','w') as file:
         file.write(tmpStr)

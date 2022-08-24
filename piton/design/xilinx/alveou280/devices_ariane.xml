@@ -27,7 +27,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     </port>
 	<port>
         <name>dma_pool</name>
-        <base>0xfff6000000</base>
+        <base>0x240000000</base>
         <!-- 512MB -->
         <length>0x10000000</length>
     </port>
@@ -38,6 +38,14 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <noc2in/>
     </port>
     <port>
+        <name>uart</name>
+        <base>0xfff0c2c000</base>
+        <!-- Just give it all the space up to the network device? -->
+        <length>0xd4000</length>
+        <noc2in/>
+        <stream_accessible/>
+    </port>	    
+    <port>
         <name>net</name>
         <base>0xfff0800000</base>
         <length>0x400000</length>
@@ -47,15 +55,6 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <name>sram</name>
         <base>0xfff0400000</base>
         <length>0x100000</length>
-        <stream_accessible/>
-    </port>
- 
-    <port>
-        <name>uart</name>
-        <base>0xfff0c2c000</base>
-        <!-- Just give it all the space up to the network device? -->
-        <length>0xd4000</length>
-        <noc2in/>
         <stream_accessible/>
     </port>
     <!-- note: the following modules are ariane-specific and are only instantiated in HW when using the ariane core -->
