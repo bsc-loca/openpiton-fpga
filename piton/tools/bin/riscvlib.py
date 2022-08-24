@@ -295,7 +295,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             compatible = "riscv,debug-013";
             interrupts-extended = <''' % (addrBase)
             for k in range(nCpus):
-                tmpStr += "&CPU%d_intc 65535 " % (k)
+                tmpStr += "&CPU%d_intc 1023 " % (k)
             tmpStr += '''>;
             reg = <%s>;
             reg-names = "control";
