@@ -116,6 +116,8 @@ def usage():
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --ethport <number>", file=sys.stderr)
     print("              Define board-level Ethernet port number", file=sys.stderr)
+    print("\n       --brom-only", file=sys.stderr)
+    print("              Create the bootrom binary only", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -553,6 +555,7 @@ def setParserOptions(parser):
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
+    parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
     parser.add_option("--asic-rtl", dest="asic_rtl", action="store_true", default=False)
@@ -876,6 +879,10 @@ def main():
     if options.pronoc:
         os.environ['PITON_PRONOC']     = "1"
         print_info('setenv PITON_PRONOC')
+
+    # Create only the bootrom
+    if options.brom_only:
+        os.environ['BROM_ONLY'] = "1"
 		
     # Supported cores, initialize env variables.
     os.environ['PITON_PICO']     = "0"

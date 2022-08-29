@@ -220,3 +220,8 @@ if  { $::env(PITON_LAGARTO) != "0"} {
 
 set ::env(PYTHONPATH) $tmp_PYTHONPATH
 set ::env(PYTHONHOME) $tmp_PYTHONHOME
+
+if { [info exists ::env(BROM_ONLY) ]} {
+	puts "Boot ROM created. Finishing protosyn..."
+	return 0
+}	
