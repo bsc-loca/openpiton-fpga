@@ -307,7 +307,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrLen  = devices[i]["length"]
             tmpStr += '''
         uart@%08x {
-            compatible = "ns16550";
+            compatible = "ns16550a";
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
