@@ -171,6 +171,12 @@ module openpiton_wrapper(
     input   [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input                                sram_axi_bvalid,
     output                               sram_axi_bready,
+    
+    `ifdef DEBUG_ROM 
+    output                               debug_rom_req,
+    output  [63:0]                       debug_rom_addr,
+    input   [63:0]                       debug_rom_rdata,
+    `endif
 
     output  [12:0]                       uart_axi_awaddr,
     output                               uart_axi_awvalid,
@@ -356,6 +362,12 @@ module openpiton_wrapper(
         .sram_axi_wstrb(sram_axi_wstrb),
 //        // .sram_axi_wuser(sram_axi_wuser),
         .sram_axi_wvalid(sram_axi_wvalid),
+        
+         `ifdef DEBUG_ROM 
+        .debug_rom_req(debug_rom_req),
+        .debug_rom_addr(debug_rom_addr),
+        .debug_rom_rdata(debug_rom_rdata),
+         `endif
 
         .uart_axi_awaddr(uart_axi_awaddr),
         .uart_axi_awvalid(uart_axi_awvalid),

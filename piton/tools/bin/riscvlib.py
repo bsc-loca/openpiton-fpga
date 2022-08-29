@@ -164,8 +164,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
     // chosen {
-    //     stdout-path = "/soc/uart@%08x:115200";
-    // };
+       //  stdout-path = "/soc/uart@%08x:115200";
+    //};
     cpus {
         #address-cells = <1>;
         #size-cells = <0>;
@@ -295,7 +295,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             compatible = "riscv,debug-013";
             interrupts-extended = <''' % (addrBase)
             for k in range(nCpus):
-                tmpStr += "&CPU%d_intc 65535 " % (k)
+                tmpStr += "&CPU%d_intc 31 " % (k)
             tmpStr += '''>;
             reg = <%s>;
             reg-names = "control";
@@ -314,8 +314,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            reg-offset = <0x1000>;
-            reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
+            reg-shift = <2>; 
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
             ioDeviceNr+=1

@@ -619,6 +619,12 @@ module system(
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
     
+    `ifdef DEBUG_ROM 
+    output                                    debug_rom_req,
+    output  [63:0]                            debug_rom_addr,
+    input   [63:0]                            debug_rom_rdata,
+    `endif
+    
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
@@ -1732,6 +1738,12 @@ chipset chipset(
 		    .sram_axi_wstrb(sram_axi_wstrb),
 		    // .axi4_sram_wuser(sram_axi_wuser),
 		    .sram_axi_wvalid(sram_axi_wvalid),
+		    
+		     `ifdef DEBUG_ROM 
+             .debug_rom_req(debug_rom_req),
+             .debug_rom_addr(debug_rom_addr),
+             .debug_rom_rdata(debug_rom_rdata),
+             `endif
 
             `else
             .ddr_parity(ddr_parity),

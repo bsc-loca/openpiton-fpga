@@ -435,6 +435,13 @@ module chipset(
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
 	
+    `ifdef DEBUG_ROM 
+    output  wire                              debug_rom_req,
+    output  wire [63:0]                       debug_rom_addr,
+    input   wire [63:0]                       debug_rom_rdata,
+    `endif
+	
+	
     `else
     output                          ddr_parity,
     output                          hbm_cattrip,
@@ -1836,6 +1843,13 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_wstrb(sram_axi_wstrb),
 				    // .axi4_sram_wuser(sram_axi_wuser),
 				    .sram_axi_wvalid(sram_axi_wvalid),
+				    
+				    `ifdef DEBUG_ROM 
+				    .debug_rom_en(sw[1]), // pcie_gpio[4]
+                    .debug_rom_req(debug_rom_req),
+                    .debug_rom_addr(debug_rom_addr),
+                    .debug_rom_rdata(debug_rom_rdata),
+                    `endif
         
                     `else
                     .ddr_parity(ddr_parity),
@@ -1927,7 +1941,7 @@ chipset_impl_noc_power_test  chipset_impl (
             .uart_axi_rdata(uart_axi_rdata),
             .uart_axi_rresp(uart_axi_rresp),
             .uart_axi_rvalid(uart_axi_rvalid),
-            .uart_axi_rready(uart_axi_rready),   
+            .uart_axi_rready(uart_axi_rready),               
            `else            
             .uart_tx(uart_tx),
             .uart_rx(uart_rx),
