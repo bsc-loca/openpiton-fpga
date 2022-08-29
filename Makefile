@@ -19,6 +19,7 @@ SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
 PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
+MORE_OPTIONS ?= ""
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -52,7 +53,7 @@ $(RISCV_DIR):
 
 protosyn: clean_project $(RISCV_DIR)
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MORE_OPTIONS)
 
 protosyn_pronoc: clean_project $(RISCV_DIR)
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) --pronoc

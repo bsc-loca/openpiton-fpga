@@ -223,5 +223,7 @@ set ::env(PYTHONHOME) $tmp_PYTHONHOME
 
 if { [info exists ::env(BROM_ONLY) ]} {
 	puts "Boot ROM created. Finishing protosyn..."
-	return 0
+	exec kill [pid]
+	exec kill $::env(PROTOPID)
 }	
+
