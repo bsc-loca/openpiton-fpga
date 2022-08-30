@@ -166,7 +166,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     // with this configuration. this needs to be fixed.
     chosen {
          //stdout-path = "/soc/uart@%08x:115200";
-         bootargs = "console=ttyS0,115200"
+         bootargs = "console=ttyS0,115200";
     };
     cpus {
         #address-cells = <1>;
@@ -301,7 +301,6 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
-            tmpStr += '''
 
         # UART
         if devices[i]["name"] == "uart":
@@ -316,7 +315,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            reg-offset <0x1000>;
+            reg-offset = <0x1000>;
             reg-shift = <2>; 
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)

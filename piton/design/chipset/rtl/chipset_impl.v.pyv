@@ -1149,7 +1149,7 @@ credit_to_valrdy noc3_xbar_to_%s(
             .m_axi_bresp     (m_axi_bresp    ),
             .m_axi_buser     (m_axi_buser    ),
             .m_axi_bvalid    (m_axi_bvalid   ),
-            .m_axi_bready    (m_axi_bready   )
+            .m_axi_bready    (m_axi_bready   ),
 
             `else
             .ddr_parity(ddr_parity),
