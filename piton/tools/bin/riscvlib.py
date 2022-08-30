@@ -164,9 +164,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     model = "%s,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
-    // chosen {
-    //     stdout-path = "/soc/uart@%08x:115200";
-    // };
+    chosen {
+         //stdout-path = "/soc/uart@%08x:115200";
+         bootargs = "console=ttyS0,115200"
+    };
     cpus {
         #address-cells = <1>;
         #size-cells = <0>;
