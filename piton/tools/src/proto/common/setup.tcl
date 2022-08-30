@@ -179,7 +179,7 @@ if  {$::env(PITON_ARIANE) != "0"} {
   exec make clean 2> /dev/null
   exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
   puts "INFO: done"
-  # two targets per hart (M,S) and two interrupt sources (UART, Ethernet)
+  # two targets per hart (M,S) and two interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 3
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
@@ -207,7 +207,7 @@ if  { $::env(PITON_LAGARTO) != "0"} {
   exec make clean 2> /dev/null
   exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
   puts "INFO: done"
-  # two targets per hart (M,S) and two interrupt sources (UART, Ethernet)
+  # two targets per hart (M,S) and three interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 3
   puts "INFO: generating PLIC for Lagarto ($NUM_TARGETS targets, $NUM_SOURCES sources)..."

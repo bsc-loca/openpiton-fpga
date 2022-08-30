@@ -301,7 +301,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
-        
+
         # UART
         if devices[i]["name"] == "uart":
             addrBase = devices[i]["base"]
