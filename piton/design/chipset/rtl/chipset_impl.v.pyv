@@ -1463,7 +1463,6 @@ uart_top        uart_top (
    localparam integer NUM_INTR_ETH = 1;
  `endif
 
-  wire [NUM_INTR_ETH-1:0] net_interrupt;
 
     eth_top #(
     `ifdef PITON_ARIANE
@@ -1700,8 +1699,6 @@ fake_uart fake_uart (
         );
 
 `endif
-
- wire debug_rom_en = uart_timeout_en;
 
 
 /////////////////////////////

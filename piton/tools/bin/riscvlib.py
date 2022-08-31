@@ -229,20 +229,21 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
 
     tmpStr += '''
+    eth0_clk: eth0_clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <%d>;
+    };
+        ''' % (ethClkFreq)
+
+
+    tmpStr += '''
     soc {
         #address-cells = <2>;
         #size-cells = <2>;
         compatible = "%s,%s-bare-soc", "simple-bus";
         ranges;
     ''' % (org, core)
-
-    tmpStr += '''
-        eth0_clk: eth0_clk {
-            compatible = "fixed-clock";
-            #clock-cells = <0>;
-            clock-frequency = <%d>;
-        };
-            ''' % (ethClkFreq)
 
 
     # TODO: this needs to be extended
@@ -341,11 +342,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         
         dma_eth: dma@%08x {
             xlnx,include-dre;
-            phandle = <0xfe>;
             #dma-cells = <1>;
-            compatible = "xlnx,axi-dma-7.1", "xlnx,axi-dma-1.00.a";
+            compatible = "xlnx,axi-dma-1.00.a";
             clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "m_axi_sg_aclk";
-            cloks = <&eth0_clk>, <&eth0_clk>, <&eth0_clk>, <&eth0_clk>;
+            clocks = <&eth0_clk>, <&eth0_clk>, <&eth0_clk>, <&eth0_clk>;
             reg = <%s>;
             interrupt-names = "mm2s_introut", "s2mm_introut";
             interrupt-parent = <&PLIC0>;
