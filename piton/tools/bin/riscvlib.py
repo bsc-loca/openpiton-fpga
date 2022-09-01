@@ -342,6 +342,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         
         dma_eth: dma@%08x {
             xlnx,include-dre;
+            phandle = <0xfe>;
             #dma-cells = <1>;
             compatible = "xlnx,axi-dma-1.00.a";
             clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "m_axi_sg_aclk";
@@ -349,6 +350,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%s>;
             interrupt-names = "mm2s_introut", "s2mm_introut";
             interrupt-parent = <&PLIC0>;
+            interrupts = <%d %d>;
             xlnx,addrwidth = <0x28>;
             xlnx,include-sg;
             xlnx,sg-length-width = <0x17>;
@@ -372,7 +374,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             };
         
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
 
     tmpStr += '''
