@@ -333,10 +333,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             xlnx,rxmem = <0x5f2>;
             carv,mtu = <0x5dc>;
             carv,no-mac;
-            compatible = "xlnx,xxv-ethernet-1.0-carv";
             device_type = "network";       
-            axistream-connected = <0xfe>;
             local-mac-address = [00 0a 35 23 07 84];
+            axistream-connected = <0xfe>;
+            compatible = "xlnx,xxv-ethernet-1.0-carv";
             memory-region = <&eth_pool>;
         };
         
