@@ -176,5 +176,4 @@
 `ifdef PITONSYS_MEEP
  `undef PITONSYS_MC_SRAM
  `undef PITONSYS_PCIE
- `define DEBUG_ROM
 `endif

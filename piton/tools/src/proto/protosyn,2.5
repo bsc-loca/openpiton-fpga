@@ -118,6 +118,8 @@ def usage():
     print("              Define board-level Ethernet port number", file=sys.stderr)
     print("\n       --brom-only", file=sys.stderr)
     print("              Create the bootrom binary only", file=sys.stderr)
+    print("\n       --debug-brom", file=sys.stderr)
+    print("              Create PCIe access to the boot ROM. Only available with meep option", file=sys.stderr)
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -561,6 +563,7 @@ def setParserOptions(parser):
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
+    parser.add_option("--debug-brom", dest="debug_brom", action="store", default=None)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
     parser.add_option("--asic-rtl", dest="asic_rtl", action="store_true", default=False)
@@ -599,6 +602,8 @@ def makeDefList(options):
         print_info("design option is ignored for f1")
     if (options.meep_mode == True):
         defines.append("PITONSYS_MEEP")
+        if (options.debug_brom == True):
+            defines.append("DEBUG_ROM")
 
     # --no-ddr option
     if (options.no_ddr == True) or (options.board == "piton_board"):
