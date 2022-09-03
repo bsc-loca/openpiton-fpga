@@ -169,6 +169,11 @@ module openpiton_wrapper (
     input            sram_axi_bvalid ,
     output           sram_axi_bready ,
 
+   // output          debug_rom_req   ,
+   // output  [63:0]  debug_rom_addr  ,
+   // input   [63:0]  debug_rom_rdata ,
+
+
     output  [12:0]   uart_axi_awaddr ,
     output           uart_axi_awvalid ,
     input            uart_axi_awready ,
@@ -187,7 +192,7 @@ module openpiton_wrapper (
     input            uart_axi_rvalid ,
     output           uart_axi_rready ,
 
-    output 			 uart_irq
+    output 	     uart_irq
     
   );
 
