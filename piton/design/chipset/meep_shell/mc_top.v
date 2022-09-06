@@ -41,6 +41,8 @@ module mc_top (
     input                                             mc_flit_out_rdy,
 
     input                                            uart_boot_en,
+    input                                            init_calib_complete,
+    output                          mc_axi_deadlock,
 	
 	    // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
@@ -179,7 +181,8 @@ noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000))
     .clk                (ui_clk                    ),  
     .rst_n              (~noc_axi4_bridge_rst      ), 
     .uart_boot_en       (uart_boot_en              ),
-    .phy_init_done      (noc_axi4_bridge_init_done ),
+    .phy_init_done      (init_calib_complete       ),
+    .axi_id_deadlock    (mc_axi_deadlock           ),
 
     .src_bridge_vr_noc2_val(fifo_trans_val),
     .src_bridge_vr_noc2_dat(fifo_trans_data),
@@ -229,7 +232,7 @@ noc_axi4_bridge #(.ADDR_OFFSET(64'h80000000))
     .m_axi_arregion(m_axi_arregion),
     .m_axi_aruser(m_axi_aruser),
     .m_axi_arvalid(m_axi_arvalid),
-    .m_axi_arready(core_axi_arready),
+    .m_axi_arready(m_axi_arready),
 
     .m_axi_rid(m_axi_rid),
     .m_axi_rdata(m_axi_rdata),

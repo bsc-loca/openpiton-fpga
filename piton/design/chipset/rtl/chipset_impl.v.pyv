@@ -1615,12 +1615,9 @@ fake_uart fake_uart (
 // Add the SRAM as an independent module instead being part of the memory controller
 `ifdef PITONSYS_MEEP
 
-  wire sram_axi_deadlock;
-
  sram_top sram_top(
             .sys_clk(chipset_clk),
             .sys_rst_n(chipset_rst_n),
-            .sram_axi_deadlock(sram_axi_deadlock),
             .mc_clk(chipset_clk),
 
              .sram_flit_in_data(buf_sram_noc2_data),
@@ -1630,8 +1627,6 @@ fake_uart fake_uart (
              .sram_flit_out_data(sram_buf_noc3_data),
              .sram_flit_out_val(sram_buf_noc3_valid),
              .sram_flit_out_rdy(buf_sram_noc3_ready),
-
-            .uart_boot_en(uart_boot_en),
 
             // AXI Write Address Channel Signals
             .m_axi_awid(sram_axi_awid),
@@ -1686,8 +1681,7 @@ fake_uart fake_uart (
             .m_axi_bresp(sram_axi_bresp),
             .m_axi_buser(sram_axi_buser),
             .m_axi_bvalid(sram_axi_bvalid),
-            .m_axi_bready(sram_axi_bready), 
-            .ddr_ready(hbm_calib_complete)
+            .m_axi_bready(sram_axi_bready)
         );
 
 `endif
