@@ -22,14 +22,15 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     <port>
         <name>mem</name>
         <base>0x80000000</base>
-        <!-- 8GB -->
-        <length>0x200000000</length>
+        <!-- 5GB, reserve one for pmem -->
+        <length>0x140000000</length>
     </port>
 	<port>
         <name>dma_pool</name>
-        <base>0x240000000</base>
-        <!-- 512MB -->
+        <base>0x1C0000000</base>
+        <!-- 256MB -->
         <length>0x10000000</length>
+	<virtual/>
     </port>
     <port>
         <name>iob</name>

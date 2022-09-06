@@ -26,4 +26,5 @@ set_property name debug_rom_req [get_bd_ports enb_0]
 set_property name debug_rom_rdata [get_bd_ports doutb_0]
 set_property LEFT 31 [get_bd_ports /debug_rom_addr]
 
-
+validate_bd_design
+save_bd_design

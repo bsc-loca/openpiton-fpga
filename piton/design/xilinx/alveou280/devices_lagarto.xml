@@ -22,7 +22,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     <port>
         <name>mem</name>
         <base>0x80000000</base>
-        <!-- 6GB -->
+        <!-- 5GB, reserve one for pmem -->
         <length>0x140000000</length>
     </port>
 	<port>
@@ -30,6 +30,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <base>0x1C0000000</base>
         <!-- 256MB -->
         <length>0x10000000</length>
+	<virtual/>
     </port>
     <port>
         <name>iob</name>
