@@ -1289,6 +1289,14 @@ fake_mem_ctrl fake_mc``idx( \
 
 `endif // endif PITONSYS_NO_MC
 
+ `ifdef PITONSYS_MEEP
+   localparam integer NUM_INTR_ETH = 2;
+ `elsif PITON_FPGA_ETH_CMAC
+   localparam integer NUM_INTR_ETH = 2;
+ `else
+   localparam integer NUM_INTR_ETH = 1;
+ `endif
+
 
 wire                    uart_interrupt;
 wire [NUM_INTR_ETH-1:0] net_interrupt;
@@ -1454,14 +1462,6 @@ uart_top        uart_top (
 
 
 `ifdef PITON_FPGA_ETH
-
- `ifdef PITONSYS_MEEP
-   localparam integer NUM_INTR_ETH = 2;
- `elsif PITON_FPGA_ETH_CMAC
-   localparam integer NUM_INTR_ETH = 2;
- `else 
-   localparam integer NUM_INTR_ETH = 1;
- `endif
 
 
     eth_top #(
