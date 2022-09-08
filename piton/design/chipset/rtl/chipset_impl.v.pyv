@@ -1297,6 +1297,9 @@ fake_mem_ctrl fake_mc``idx( \
    localparam integer NUM_INTR_ETH = 1;
  `endif
 
+localparam integer NUM_INTR_UART  = 1;
+localparam integer NUM_INTR_RISCV = NUM_INTR_ETH + NUM_INTR_UART;
+
 
 wire                    uart_interrupt;
 wire [NUM_INTR_ETH-1:0] net_interrupt;
@@ -1753,7 +1756,7 @@ str = '''
     riscv_peripherals #(
         .DataWidth      ( `NOC_DATA_WIDTH ),
         .NumHarts       ( `PITON_NUM_TILES),
-        .NumSources     (               2 ),
+        .NumSources     ( NUM_INTR_RISCV  ),
         .SwapEndianess  (               1 ),
         .DmBase         ( 64'h%016x ),
         .RomBase        ( 64'h%016x ),
@@ -1892,7 +1895,7 @@ str = '''
     riscv_peripherals #(
         .DataWidth      ( `NOC_DATA_WIDTH ),
         .NumHarts       ( `PITON_NUM_TILES),
-        .NumSources     (               2 ),
+        .NumSources     ( NUM_INTR_RISCV  ),
         .SwapEndianess  (               1 ),
         .DmBase         ( 64'h%016x ),
         .RomBase        ( 64'h%016x ),
