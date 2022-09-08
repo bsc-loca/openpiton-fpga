@@ -66,8 +66,33 @@ module openpiton_wrapper(
     input mem_calib_complete,
 
     // Ethernet
-    input                                eth_axi_aclk,
-    input                                eth_axi_arstn,
+    input                                   eth_axi_aclk,
+    input                                   eth_axi_arstn,
+    input  [1:0]                            eth_irq,
+
+  `ifdef ETHERNET_DMA
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   eth_axi_awaddr,
+    output                                  eth_axi_awvalid,
+    input                                   eth_axi_awready,
+
+    output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   eth_axi_wdata,
+    output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] eth_axi_wstrb,
+    output                                  eth_axi_wvalid,
+    input                                   eth_axi_wready,
+
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   eth_axi_bresp,
+    input                                   eth_axi_bvalid,
+    output                                  eth_axi_bready,
+
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   eth_axi_araddr,
+    output                                  eth_axi_arvalid,
+    input                                   eth_axi_arready,
+
+    input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   eth_axi_rdata,
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   eth_axi_rresp,
+    input                                   eth_axi_rvalid,
+    output                                  eth_axi_rready,	  
+  `else
     
     // AXI interface
     output  [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
@@ -119,6 +144,7 @@ module openpiton_wrapper(
     input    [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input                                 eth_axi_bvalid,
     output                                eth_axi_bready,
+   `endif
     
     input  [1:0]                          eth_irq,
 
@@ -266,6 +292,31 @@ module openpiton_wrapper(
       // Ethernet
        .eth_axi_aclk  (eth_axi_aclk),
        .eth_axi_arstn (eth_axi_arstn),
+       .eth_irq       (eth_irq),
+
+      `ifdef ETHERNET_DMA
+       .dma_s_axi_awaddr   (eth_axi_awaddr ) ,
+       .dma_s_axi_awvalid  (eth_axi_awvalid) ,
+       .dma_s_axi_awready  (eth_axi_awready) ,
+
+       .dma_s_axi_wdata    (eth_axi_wdata  ) ,
+       .dma_s_axi_wstrb    (eth_axi_wstrb  ) ,
+       .dma_s_axi_wvalid   (eth_axi_wvalid ) ,
+       .dma_s_axi_wready   (eth_axi_wready ) ,
+
+       .dma_s_axi_bresp    (eth_axi_bresp  ) ,
+       .dma_s_axi_bvalid   (eth_axi_bvalid ) ,
+       .dma_s_axi_bready   (eth_axi_bready ) ,
+
+       .dma_s_axi_araddr   (eth_axi_araddr ) ,
+       .dma_s_axi_arvalid  (eth_axi_arvalid) ,
+       .dma_s_axi_arready  (eth_axi_arready) ,
+
+       .dma_s_axi_rdata    (eth_axi_rdata  ) ,
+       .dma_s_axi_rresp    (eth_axi_rresp  ) ,
+       .dma_s_axi_rvalid   (eth_axi_rvalid ) ,
+       .dma_s_axi_rready   (eth_axi_rready ) ,
+      `else
 
        .eth_axi_araddr(eth_axi_araddr),
        .eth_axi_arburst(eth_axi_arburst),
@@ -313,8 +364,7 @@ module openpiton_wrapper(
        .eth_axi_wstrb(eth_axi_wstrb),
 //       // .eth_axi_wuser(eth_axi_wuser),
        .eth_axi_wvalid(eth_axi_wvalid),
-       
-       .eth_irq(eth_irq),
+      `endif
 
         .sram_axi_araddr(sram_axi_araddr),
         .sram_axi_arburst(sram_axi_arburst),

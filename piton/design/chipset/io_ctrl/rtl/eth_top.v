@@ -82,11 +82,13 @@ module eth_top #(
     input   [3:0]  qsfp_4x_grx_p,
     output  [3:0]  qsfp_4x_gtx_n,
     output  [3:0]  qsfp_4x_gtx_p
-    `else     
+    `else         
 	 // in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
      input                 				  net_axi_clk,
 	 input                 			      net_axi_arstn,	 	 	 
 	 input  [NUM_INTR-1:0] 	     	      net_axi_intr,
+	 
+	 `ifndef ETHERNET_DMA 
 	 
      output [`AXI4_ID_WIDTH     -1:0]     core_axi_awid,
      output [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr,
@@ -135,10 +137,32 @@ module eth_top #(
      input  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser,
      input                               core_axi_bvalid,
      output                              core_axi_bready
+     `else
      
-    
-    
-    `endif
+     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr,
+     output                                  dma_s_axi_awvalid,
+     input                                   dma_s_axi_awready,
+                                      
+     output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_wdata,
+     output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] dma_s_axi_wstrb,
+     output                                  dma_s_axi_wvalid,
+     input                                   dma_s_axi_wready,
+                                      
+     input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_bresp,
+     input                                   dma_s_axi_bvalid,
+     output                                  dma_s_axi_bready,
+                                      
+     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_araddr,
+     output                                  dma_s_axi_arvalid,
+     input                                   dma_s_axi_arready,
+                                      
+     input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_rdata,
+     input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_rresp,
+     input                                   dma_s_axi_rvalid,
+     output                                  dma_s_axi_rready
+     
+     `endif // ETHERNET DMA             
+    `endif // PITONSYS_MEEP
 `endif // PITON_FPGA_ETH_CMAC
 );
 
@@ -184,6 +208,30 @@ wire                            net_phy_mdio_t;
 
 wire net_phy_crs = 1'b0;
 wire net_phy_col = 1'b0;
+
+`elsif ETHERNET_DMA
+
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr;
+wire                                  dma_s_axi_awvalid;
+wire                                  dma_s_axi_awready;
+                                      
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_wdata;
+wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] dma_s_axi_wstrb;
+wire                                  dma_s_axi_wvalid;
+wire                                  dma_s_axi_wready;
+                                      
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_bresp;
+wire                                  dma_s_axi_bvalid;
+wire                                  dma_s_axi_bready;
+                                      
+wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_araddr;
+wire                                  dma_s_axi_arvalid;
+wire                                  dma_s_axi_arready;
+                                      
+wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_rdata;
+wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_rresp;
+wire                                  dma_s_axi_rvalid;
+wire                                  dma_s_axi_rready;
 
 
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
@@ -336,6 +384,53 @@ noc_axilite_bridge #(
     .m_axi_bvalid        (net_s_axi_bvalid),
     .m_axi_bready        (net_s_axi_bready)
 );
+
+`elsif ETHERNET_DMA
+
+noc_axilite_bridge #(
+    .SLAVE_RESP_BYTEWIDTH   (4),
+    .SWAP_ENDIANESS         (SWAP_ENDIANESS)
+) noc_ethernet_bridge (
+    .clk                    (net_axi_clk           ),
+    .rst                    (net_axi_arstn         ),      // TODO: rewrite to positive ?
+
+    .splitter_bridge_val    (afifo_netbridge_val   ),
+    .splitter_bridge_data   (afifo_netbridge_data  ),
+    .bridge_splitter_rdy    (netbridge_afifo_rdy   ),   // CRAZY NAMING !
+
+    .bridge_splitter_val    (netbridge_afifo_val   ),
+    .bridge_splitter_data   (netbridge_afifo_data  ),
+    .splitter_bridge_rdy    (afifo_netbridge_rdy   ),   // CRAZY NAMING !
+
+    //axi lite signals
+    //write address channel
+    .m_axi_awaddr        (dma_s_axi_awaddr),
+    .m_axi_awvalid       (dma_s_axi_awvalid),
+    .m_axi_awready       (dma_s_axi_awready),
+                          
+    //write data channel 
+    .m_axi_wdata         (dma_s_axi_wdata),
+    .m_axi_wstrb         (dma_s_axi_wstrb),
+    .m_axi_wvalid        (dma_s_axi_wvalid),
+    .m_axi_wready        (dma_s_axi_wready),
+
+    //read address channel
+    .m_axi_araddr        (dma_s_axi_araddr),
+    .m_axi_arvalid       (dma_s_axi_arvalid),
+    .m_axi_arready       (dma_s_axi_arready),
+                          
+    //read data channel  
+    .m_axi_rdata         (dma_s_axi_rdata),
+    .m_axi_rresp         (dma_s_axi_rresp),
+    .m_axi_rvalid        (dma_s_axi_rvalid),
+    .m_axi_rready        (dma_s_axi_rready),
+
+    //write response channel
+    .m_axi_bresp         (dma_s_axi_bresp),
+    .m_axi_bvalid        (dma_s_axi_bvalid),
+    .m_axi_bready        (dma_s_axi_bready)
+);
+
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
 noc_axi4_bridge #(
     .SWAP_ENDIANESS (SWAP_ENDIANESS),
@@ -614,8 +709,6 @@ generate
    
   end
  endgenerate    
-
-
 
 
 endmodule

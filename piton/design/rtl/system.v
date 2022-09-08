@@ -515,7 +515,30 @@ module system(
 	    //Ethernet
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,
-         // AXI interface
+  `ifdef ETHERNET_DMA
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]    dma_s_axi_awaddr,
+    output                                   dma_s_axi_awvalid,
+    input                                    dma_s_axi_awready,
+
+    output [`C_M_AXI_LITE_DATA_WIDTH-1:0]    dma_s_axi_wdata,
+    output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0]  dma_s_axi_wstrb,
+    output                                   dma_s_axi_wvalid,
+    input                                    dma_s_axi_wready,
+
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]    dma_s_axi_bresp,
+    input                                    dma_s_axi_bvalid,
+    output                                   dma_s_axi_bready,
+
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]    dma_s_axi_araddr,
+    output                                   dma_s_axi_arvalid,
+    input                                    dma_s_axi_arready,
+
+    input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]    dma_s_axi_rdata,
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]    dma_s_axi_rresp,
+    input                                    dma_s_axi_rvalid,
+    output                                   dma_s_axi_rready,    
+  `else
+    // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    eth_axi_awlen,
@@ -565,6 +588,7 @@ module system(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input  wire                               eth_axi_bvalid,
     output wire                               eth_axi_bready, 
+   `endif
     
     input wire   [1:0]                        eth_irq, //TODO: connect it downstream
 
@@ -1640,57 +1664,81 @@ chipset chipset(
             .m_axi_bready    (mem_axi_bready   ),
 			
 			      // Ethernet
-			.eth_axi_aclk    (eth_axi_aclk   ),
-			.eth_axi_arstn   (eth_axi_arstn  ),
+	    .eth_axi_aclk    (eth_axi_aclk   ),
+	    .eth_axi_arstn   (eth_axi_arstn  ),
+            .eth_irq         (eth_irq        ),
+          `ifdef ETHERNET_DMA	
+           .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
+           .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
+           .dma_s_axi_awready  (dma_s_axi_awready) ,
+           
+           .dma_s_axi_wdata    (dma_s_axi_wdata  ) ,
+           .dma_s_axi_wstrb    (dma_s_axi_wstrb  ) ,
+           .dma_s_axi_wvalid   (dma_s_axi_wvalid ) ,
+           .dma_s_axi_wready   (dma_s_axi_wready ) ,
+           
+           .dma_s_axi_bresp    (dma_s_axi_bresp  ) ,
+           .dma_s_axi_bvalid   (dma_s_axi_bvalid ) ,
+           .dma_s_axi_bready   (dma_s_axi_bready ) ,
+           
+           .dma_s_axi_araddr   (dma_s_axi_araddr ) ,
+           .dma_s_axi_arvalid  (dma_s_axi_arvalid) ,
+           .dma_s_axi_arready  (dma_s_axi_arready) ,
+           
+           .dma_s_axi_rdata    (dma_s_axi_rdata  ) ,
+           .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
+           .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
+           .dma_s_axi_rready   (dma_s_axi_rready ) ,
+          `else	    
 
-		    .eth_axi_araddr(eth_axi_araddr),
-		    .eth_axi_arburst(eth_axi_arburst),
-		    .eth_axi_arcache(eth_axi_arcache),
-		    .eth_axi_arid(eth_axi_arid),
-		    .eth_axi_arlen(eth_axi_arlen),
-		    .eth_axi_arlock(eth_axi_arlock),
-		    .eth_axi_arprot(eth_axi_arprot),
-		    // .eth_axi_arqos(eth_axi_arqos),
-		    .eth_axi_arready(eth_axi_arready),
-		    .eth_axi_arsize(eth_axi_arsize),
-		    // .eth_axi_aruser(eth_axi_aruser),
-		    .eth_axi_arvalid(eth_axi_arvalid),
-		   
-		    .eth_axi_awaddr(eth_axi_awaddr),
-		    .eth_axi_awburst(eth_axi_awburst),
-		    .eth_axi_awcache(eth_axi_awcache),
-		    .eth_axi_awid(eth_axi_awid),
-		    .eth_axi_awlen(eth_axi_awlen),
-		    .eth_axi_awlock(eth_axi_awlock),
-		    .eth_axi_awprot(eth_axi_awprot),
-		    // .eth_axi_awqos(eth_axi_awqos),
-		    .eth_axi_awready(eth_axi_awready),
-		    .eth_axi_awsize(eth_axi_awsize),
-		    // .eth_axi_awuser(eth_axi_awuser),
-		    .eth_axi_awvalid(eth_axi_awvalid),
-		   
-		    .eth_axi_bid(eth_axi_bid),
-		    .eth_axi_bready(eth_axi_bready),
-		    .eth_axi_bresp(eth_axi_bresp),
-		    // .eth_axi_buser(eth_axi_buser),
-		    .eth_axi_bvalid(eth_axi_bvalid),
-		   
-		    .eth_axi_rdata(eth_axi_rdata),
-		    .eth_axi_rid(eth_axi_rid),
-		    .eth_axi_rlast(eth_axi_rlast),
-		    .eth_axi_rready(eth_axi_rready),
-		    .eth_axi_rresp(eth_axi_rresp),
-		    // .eth_axi_ruser(eth_axi_ruser),
-		    .eth_axi_rvalid(eth_axi_rvalid),
-		   
-		    .eth_axi_wdata(eth_axi_wdata),
-		    .eth_axi_wlast(eth_axi_wlast),
-		    .eth_axi_wready(eth_axi_wready),
-		    .eth_axi_wstrb(eth_axi_wstrb),
-		    // .eth_axi_wuser(eth_axi_wuser),
-		    .eth_axi_wvalid(eth_axi_wvalid),
-		   // SRAM Pheripheral
-		    .eth_irq(eth_irq),
+	    .eth_axi_araddr(eth_axi_araddr),
+	    .eth_axi_arburst(eth_axi_arburst),
+	    .eth_axi_arcache(eth_axi_arcache),
+	    .eth_axi_arid(eth_axi_arid),
+	    .eth_axi_arlen(eth_axi_arlen),
+	    .eth_axi_arlock(eth_axi_arlock),
+	    .eth_axi_arprot(eth_axi_arprot),
+	    // .eth_axi_arqos(eth_axi_arqos),
+	    .eth_axi_arready(eth_axi_arready),
+	    .eth_axi_arsize(eth_axi_arsize),
+	    // .eth_axi_aruser(eth_axi_aruser),
+	    .eth_axi_arvalid(eth_axi_arvalid),
+	   
+	    .eth_axi_awaddr(eth_axi_awaddr),
+	    .eth_axi_awburst(eth_axi_awburst),
+	    .eth_axi_awcache(eth_axi_awcache),
+	    .eth_axi_awid(eth_axi_awid),
+	    .eth_axi_awlen(eth_axi_awlen),
+	    .eth_axi_awlock(eth_axi_awlock),
+	    .eth_axi_awprot(eth_axi_awprot),
+	    // .eth_axi_awqos(eth_axi_awqos),
+	    .eth_axi_awready(eth_axi_awready),
+	    .eth_axi_awsize(eth_axi_awsize),
+	    // .eth_axi_awuser(eth_axi_awuser),
+	    .eth_axi_awvalid(eth_axi_awvalid),
+	   
+	    .eth_axi_bid(eth_axi_bid),
+	    .eth_axi_bready(eth_axi_bready),
+	    .eth_axi_bresp(eth_axi_bresp),
+	    // .eth_axi_buser(eth_axi_buser),
+	    .eth_axi_bvalid(eth_axi_bvalid),
+	   
+	    .eth_axi_rdata(eth_axi_rdata),
+	    .eth_axi_rid(eth_axi_rid),
+	    .eth_axi_rlast(eth_axi_rlast),
+	    .eth_axi_rready(eth_axi_rready),
+	    .eth_axi_rresp(eth_axi_rresp),
+	    // .eth_axi_ruser(eth_axi_ruser),
+	    .eth_axi_rvalid(eth_axi_rvalid),
+	   
+	    .eth_axi_wdata(eth_axi_wdata),
+	    .eth_axi_wlast(eth_axi_wlast),
+	    .eth_axi_wready(eth_axi_wready),
+	    .eth_axi_wstrb(eth_axi_wstrb),
+	    // .eth_axi_wuser(eth_axi_wuser),
+	    .eth_axi_wvalid(eth_axi_wvalid),
+	   `endif
+	   // SRAM Pheripheral
 		   
 		    .sram_axi_araddr(sram_axi_araddr),
 		    .sram_axi_arburst(sram_axi_arburst),

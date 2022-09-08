@@ -76,6 +76,8 @@ ci_bitstream:
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
 ### Cleaning calls ###
+
+clean: clean_project
 	
 clean_all: clean_project
 	rm -rf $(PROJECT_SUBDIR)

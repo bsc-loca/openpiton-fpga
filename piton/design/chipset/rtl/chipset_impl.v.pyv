@@ -230,6 +230,31 @@ module chipset_impl(
     input  wire                               m_axi_bvalid,
     output wire                               m_axi_bready,
     // ETHERNET
+    `ifdef ETHERNET_DMA
+
+     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr,
+     output                                  dma_s_axi_awvalid,
+     input                                   dma_s_axi_awready,
+                                      
+     output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_wdata,
+     output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] dma_s_axi_wstrb,
+     output                                  dma_s_axi_wvalid,
+     input                                   dma_s_axi_wready,
+                                      
+     input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_bresp,
+     input                                   dma_s_axi_bvalid,
+     output                                  dma_s_axi_bready,
+                                      
+     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_araddr,
+     output                                  dma_s_axi_arvalid,
+     input                                   dma_s_axi_arready,
+                                      
+     input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_rdata,
+     input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_rresp,
+     input                                   dma_s_axi_rvalid,
+     output                                  dma_s_axi_rready,
+
+    `else
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,
 	   // AXI interface
@@ -282,6 +307,7 @@ module chipset_impl(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input  wire                               eth_axi_bvalid,
     output wire                               eth_axi_bready, 
+    `endif
     
     input wire   [1:0 ]                       eth_irq,
 	
@@ -1522,6 +1548,30 @@ uart_top        uart_top (
 		.net_axi_clk        (eth_axi_aclk   ),		
 		.net_axi_arstn      (eth_axi_arstn  ),		
 		.net_axi_intr       (eth_irq        ),
+          `ifdef ETHERNET_DMA
+           .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
+           .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
+           .dma_s_axi_awready  (dma_s_axi_awready) ,
+
+           .dma_s_axi_wdata    (dma_s_axi_wdata  ) ,
+           .dma_s_axi_wstrb    (dma_s_axi_wstrb  ) ,
+           .dma_s_axi_wvalid   (dma_s_axi_wvalid ) ,
+           .dma_s_axi_wready   (dma_s_axi_wready ) ,
+
+           .dma_s_axi_bresp    (dma_s_axi_bresp  ) ,
+           .dma_s_axi_bvalid   (dma_s_axi_bvalid ) ,
+           .dma_s_axi_bready   (dma_s_axi_bready ) ,
+
+           .dma_s_axi_araddr   (dma_s_axi_araddr ) ,
+           .dma_s_axi_arvalid  (dma_s_axi_arvalid) ,
+           .dma_s_axi_arready  (dma_s_axi_arready) ,
+
+           .dma_s_axi_rdata    (dma_s_axi_rdata  ) ,
+           .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
+           .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
+           .dma_s_axi_rready   (dma_s_axi_rready ) 
+          `else
+
 		
         .core_axi_awid      (eth_axi_awid   ),
         .core_axi_awaddr    (eth_axi_awaddr ),
@@ -1570,6 +1620,7 @@ uart_top        uart_top (
         .core_axi_buser     (eth_axi_buser  ),
         .core_axi_bvalid    (eth_axi_bvalid ),
         .core_axi_bready    (eth_axi_bready )		
+	`endif
                 
         `endif
     `endif // PITON_FPGA_ETH_CMAC
