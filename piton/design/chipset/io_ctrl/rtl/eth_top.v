@@ -209,30 +209,6 @@ wire                            net_phy_mdio_t;
 wire net_phy_crs = 1'b0;
 wire net_phy_col = 1'b0;
 
-`elsif ETHERNET_DMA
-
-wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr;
-wire                                  dma_s_axi_awvalid;
-wire                                  dma_s_axi_awready;
-                                      
-wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_wdata;
-wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] dma_s_axi_wstrb;
-wire                                  dma_s_axi_wvalid;
-wire                                  dma_s_axi_wready;
-                                      
-wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_bresp;
-wire                                  dma_s_axi_bvalid;
-wire                                  dma_s_axi_bready;
-                                      
-wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_araddr;
-wire                                  dma_s_axi_arvalid;
-wire                                  dma_s_axi_arready;
-                                      
-wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_rdata;
-wire [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_rresp;
-wire                                  dma_s_axi_rvalid;
-wire                                  dma_s_axi_rready;
-
 
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
  `ifndef PITONSYS_MEEP
@@ -392,7 +368,7 @@ noc_axilite_bridge #(
     .SWAP_ENDIANESS         (SWAP_ENDIANESS)
 ) noc_ethernet_bridge (
     .clk                    (net_axi_clk           ),
-    .rst                    (net_axi_arstn         ),      // TODO: rewrite to positive ?
+    .rst                    (~net_axi_arstn        ),      // TODO: rewrite to positive ?
 
     .splitter_bridge_val    (afifo_netbridge_val   ),
     .splitter_bridge_data   (afifo_netbridge_data  ),

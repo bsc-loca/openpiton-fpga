@@ -146,7 +146,6 @@ module openpiton_wrapper(
     output                                eth_axi_bready,
    `endif
     
-    input  [1:0]                          eth_irq,
 
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
