@@ -232,6 +232,11 @@ module chipset_impl(
     // ETHERNET
     `ifdef ETHERNET_DMA
 
+     input wire                               eth_axi_aclk,
+     input wire                               eth_axi_arstn,
+     input wire   [1:0 ]                      eth_irq,
+
+
      output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr,
      output                                  dma_s_axi_awvalid,
      input                                   dma_s_axi_awready,
@@ -257,6 +262,7 @@ module chipset_impl(
     `else
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,
+    input wire   [1:0 ]                      eth_irq,
 	   // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,
@@ -309,7 +315,6 @@ module chipset_impl(
     output wire                               eth_axi_bready, 
     `endif
     
-    input wire   [1:0 ]                       eth_irq,
 	
 	// Memory interchange space
 	output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
