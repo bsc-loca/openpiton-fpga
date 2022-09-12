@@ -171,7 +171,7 @@ upgrade_ip [get_ips * ] -log ip_upgrade.log
 
 puts "INFO: OpenPiton tcl options added."
 
-set g_patch_list [list $MEEP_PATH/shell_patch.tcl]
+set g_patch_list [list $MEEP_PATH/shell_patch.tcl $MEEP_PATH/ila_patch.tcl]
 
 }
 

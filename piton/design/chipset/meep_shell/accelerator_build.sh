@@ -4,5 +4,5 @@
 
 CORE=lagarto
 
-make protosyn CORE=$CORE XTILES=1 YTILES=1 PROTO_OPTIONS="--meep --eth --hbm --vpu" MORE_OPTIONS="--debug-brom"
+make protosyn CORE=$CORE XTILES=1 YTILES=1 PROTO_OPTIONS="--meep --eth --hbm" MORE_OPTIONS="--debug-brom"
 

@@ -73,7 +73,7 @@ module openpiton_wrapper (
     input           eth_axi_awready ,
 
     output [63:0]   eth_axi_wdata ,
-    output [63:0]   eth_axi_wstrb ,
+//    output [63:0]   eth_axi_wstrb ,
     output          eth_axi_wvalid ,
     input           eth_axi_wready ,
 
