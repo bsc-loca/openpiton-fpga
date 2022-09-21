@@ -18,7 +18,7 @@ function automatic [31:0] swapNibbles;
 
   itLen = 7;
 
-  for (i = 0; i < itLen; i = i + 1)
+  for (i = 0; i <= itLen; i = i + 1)
     swapNibbles[4*i +: 4] = wordIn[(itLen-i)*4 +: 4];      
   end 
    
