@@ -364,7 +364,7 @@ noc_axilite_bridge #(
 `elsif ETHERNET_DMA
 
 noc_axilite_bridge #(
-    .SLAVE_RESP_BYTEWIDTH   (4),
+    .SLAVE_RESP_BYTEWIDTH   (0),
     .SWAP_ENDIANESS         (SWAP_ENDIANESS)
 ) noc_ethernet_bridge (
     .clk                    (net_axi_clk           ),
