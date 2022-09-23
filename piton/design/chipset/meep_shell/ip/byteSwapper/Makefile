@@ -7,11 +7,13 @@ FPGA_BOARD  ?= u55c
 
 #Options: generateIP
 
-OPTIONS = endianess_swap
+OPTIONS = endianess_swapper
 
-all: endianess_swap
+all: endianess_swapper
 
-default: endianess_swap
+default: endianess_swapper
+
+ip: default
 
 #Generate the target IP
 
