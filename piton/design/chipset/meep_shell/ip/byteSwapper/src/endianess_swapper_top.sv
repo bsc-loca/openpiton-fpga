@@ -1,5 +1,5 @@
 
-module endianess_swapp_top #(
+module endianess_swapper_top #(
   parameter AXI_ID_WIDTH   = 1  ,
   parameter AXI_ADDR_WIDTH = 48 ,
   parameter AXI_DATA_WIDTH = 256
