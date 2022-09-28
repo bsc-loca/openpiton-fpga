@@ -58,7 +58,6 @@ puts $bd_hdr "   XPAR_AXIDMA_0_DEVICE_ID         = 0,"
 puts $bd_hdr "   XPAR_AXIDMA_0_NUM_MM2S_CHANNELS = 1,"
 puts $bd_hdr "   XPAR_AXIDMA_0_NUM_S2MM_CHANNELS = 1,"
 puts $bd_hdr "   XPAR_AXI_DMA_0_MICRO_DMA        = 0,"
-puts $bd_hdr "   XPAR_AXI_DMA_0_ADDR_WIDTH       = 32,"
 puts $bd_hdr "  // Definitions extracted from Ethernet subsystem BD tcl script"
 set comma_first 0
 while {[gets $bd_tcl line] >= 0} {
@@ -77,6 +76,8 @@ while {[gets $bd_tcl line] >= 0} {
         set line [string map  {"CONFIG.c_include_sg" "XPAR_AXIDMA_0_INCLUDE_SG ="}            $line]
       } elseif  {[string first "CONFIG.c_sg_length_width"          $line] >= 0} {
         set line [string map  {"CONFIG.c_sg_length_width" "XPAR_AXIDMA_0_SG_LENGTH_WIDTH ="}  $line]
+      } elseif  {[string first "CONFIG.c_addr_width"               $line] >= 0} {
+        set line [string map  {"CONFIG.c_addr_width" "XPAR_AXI_DMA_0_ADDR_WIDTH ="}           $line]
       } elseif  {[string first "CONFIG.c_sg_include_stscntrl_strm" $line] >= 0} {
         set line [string map  {"CONFIG.c_sg_include_stscntrl_strm" "XPAR_AXIDMA_0_SG_INCLUDE_STSCNTRL_STRM ="} $line]
       } elseif  {[string first "CONFIG.c_include_mm2s_dre"         $line] >= 0} {

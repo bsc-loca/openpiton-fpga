@@ -323,7 +323,7 @@ void EthSyst::axiDmaInit() {
   printf("XAxiDma is initialized and reset: \n");
   printf("HasSg       = %d  \n", axiDma.HasSg);
   printf("Initialized = %d  \n", axiDma.Initialized);
-  if (0) {
+  if (1) {
     printf("RegBase                  = %lX \n", axiDma.RegBase);
     printf("HasMm2S                  = %d  \n", axiDma.HasMm2S);
     printf("HasS2Mm                  = %d  \n", axiDma.HasS2Mm);
@@ -652,7 +652,7 @@ int EthSyst::flushReceive() {
            !XAxiDma_Busy  (&axiDma, XAXIDMA_DEVICE_TO_DMA)) {
       int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
       if (XST_SUCCESS != status) {
-        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
+        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
                 RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
         return status;
       }
@@ -879,7 +879,7 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
     } else { // in simple mode
       int status = XAxiDma_SimpleTransfer(&axiDma, TX_DMA_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
       if (XST_SUCCESS != status) {
-         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%X with lenth %d failed with status %d\n",
+         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%lX with lenth %d failed with status %d\n",
                 TX_DMA_MEM_ADDR, ByteCount, status);
       }
 	  return status;
@@ -1133,7 +1133,7 @@ uint16_t EthSyst::frameRecv(uint8_t* FramePtr)
   } else { // in simple mode
     int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
     if (XST_SUCCESS != status) {
-      printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
+      printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
              RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
     }
   }
