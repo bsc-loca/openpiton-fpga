@@ -563,6 +563,7 @@ task automatic extractSize;
   
 endtask
 
+/*
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [2:0] stor_header_r;
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [6:0] wr_size_r;
 (* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [6:0] rd_size_r;
@@ -620,6 +621,7 @@ always @(posedge clk) begin : p_debug
 
 end
 
+*/
 
 function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
   input [`AXI4_DATA_WIDTH-1:0] data;
