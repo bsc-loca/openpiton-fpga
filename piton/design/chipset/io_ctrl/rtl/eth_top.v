@@ -583,7 +583,7 @@ assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
   assign core_axi_bresp   = 2'h0;
   assign core_axi_buser   = `AXI4_USER_WIDTH'h0;
 
-  assign unsync_net_int = 1'h0;
+  assign net_axi_intr = {NUM_INTR{1'h0}};
 `endif
 
 `else  // PITON_FPGA_ETH

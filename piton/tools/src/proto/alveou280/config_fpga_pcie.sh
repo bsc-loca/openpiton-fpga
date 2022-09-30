@@ -5,8 +5,12 @@
 #  $ protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 #             --eth                     # adding Ethernet unit
 #             --ethport <num>           # define board-level Ethernet port (default=0)
+#             --hbm                     # define HBM as primary system memory
+#             --multimc                 # implement design with multiple connections to system memory (HBM)
+#             --pronoc                  # specifies that the ProNoC NoC shall be used instead of PitonNoC
 #             --bram-test hello_world.c # adding VCS-based simulation
 #             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
+#             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 
 
 script=${BASH_SOURCE[0]}
