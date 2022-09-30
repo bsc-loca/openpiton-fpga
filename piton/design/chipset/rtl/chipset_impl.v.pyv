@@ -1563,10 +1563,13 @@ uart_top        uart_top (
         `endif
     `endif // PITON_FPGA_ETH_CMAC
     );
+`else  
+ 	localparam integer NUM_INTR_ETH = 1;
 `endif // PITON_FPGA_ETH
 
 `else // PITONSYS_IOCTRL
 
+localparam integer NUM_INTR_ETH = 1;
 assign net_interrupt  = 1'b0;
 assign uart_interrupt = 1'b0;
 
