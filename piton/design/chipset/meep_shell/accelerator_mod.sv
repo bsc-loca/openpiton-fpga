@@ -93,7 +93,7 @@ module openpiton_wrapper (
 	
     // AXI interface
     output [5:0]      sram_axi_awid ,
-    output [63:0]     sram_axi_awaddr ,
+    output [19:0]     sram_axi_awaddr ,
     output [7:0]      sram_axi_awlen ,
     output [2:0]      sram_axi_awsize ,
     output [1:0]      sram_axi_awburst ,
@@ -114,7 +114,7 @@ module openpiton_wrapper (
     input             sram_axi_wready ,
 
     output  [5:0]    sram_axi_arid ,
-    output  [63:0]   sram_axi_araddr ,
+    output  [19:0]   sram_axi_araddr ,
     output  [7:0]    sram_axi_arlen ,
     output  [2:0]    sram_axi_arsize ,
     output  [1:0]    sram_axi_arburst ,

@@ -1630,10 +1630,13 @@ uart_top        uart_top (
         `endif
     `endif // PITON_FPGA_ETH_CMAC
     );
+`else  
+ 	localparam integer NUM_INTR_ETH = 1;
 `endif // PITON_FPGA_ETH
 
 `else // PITONSYS_IOCTRL
 
+localparam integer NUM_INTR_ETH = 1;
 assign net_interrupt  = 1'b0;
 assign uart_interrupt = 1'b0;
 
@@ -1682,13 +1685,10 @@ fake_uart fake_uart (
 // Add the SRAM as an independent module instead being part of the memory controller
 `ifdef PITONSYS_MEEP
 
-  wire sram_axi_deadlock;
-
  sram_top sram_top(
             .sys_clk(chipset_clk),
             .sys_rst_n(chipset_rst_n),
-            .sram_axi_deadlock(sram_axi_deadlock),
-            .mc_clk(mc_clk),
+            .mc_clk(chipset_clk),
 
              .sram_flit_in_data(buf_sram_noc2_data),
              .sram_flit_in_val(buf_sram_noc2_valid),
@@ -1697,8 +1697,6 @@ fake_uart fake_uart (
              .sram_flit_out_data(sram_buf_noc3_data),
              .sram_flit_out_val(sram_buf_noc3_valid),
              .sram_flit_out_rdy(buf_sram_noc3_ready),
-
-            .uart_boot_en(uart_boot_en),
 
             // AXI Write Address Channel Signals
             .m_axi_awid(sram_axi_awid),
@@ -1753,8 +1751,7 @@ fake_uart fake_uart (
             .m_axi_bresp(sram_axi_bresp),
             .m_axi_buser(sram_axi_buser),
             .m_axi_bvalid(sram_axi_bvalid),
-            .m_axi_bready(sram_axi_bready), 
-            .ddr_ready(hbm_calib_complete)
+            .m_axi_bready(sram_axi_bready)
         );
 
 `endif

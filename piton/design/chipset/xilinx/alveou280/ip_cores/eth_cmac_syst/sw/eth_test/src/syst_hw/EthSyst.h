@@ -237,13 +237,13 @@ class EthSyst {
   enum {
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
-    // DMA physical addresses, DMA doesn't see CPU address space, just own memories, so full address is not needed
-    TX_DMA_MEM_ADDR = 0, // ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
-    RX_DMA_MEM_ADDR = 0, // ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
+    // DMA physical addresses, DMA doesn't see CPU address space, just own memories, so full address might not be needed
+    TX_DMA_MEM_ADDR = ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_DMA_MEM_ADDR = ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
     TX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
     RX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
-    TX_SG_MEM_ADDR  = 0,              //   ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
-    RX_SG_MEM_ADDR  = TX_SG_MEM_SIZE, // + ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
+    TX_SG_MEM_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
+    RX_SG_MEM_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE,
   };
   uint32_t volatile* txMem;   // Tx mem base address
   uint32_t volatile* rxMem;   // Rx mem base address

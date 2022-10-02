@@ -84,9 +84,9 @@ module eth_top #(
     output  [3:0]  qsfp_4x_gtx_p
     `else         
 	 // in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
-     input                 				  net_axi_clk,
-	 input                 			      net_axi_arstn,	 	 	 
-	 input  [NUM_INTR-1:0] 	     	      net_axi_intr,
+     input                                net_axi_clk,
+     input                                net_axi_arstn,	 	 	 
+     input  [NUM_INTR-1:0]                net_axi_intr,
 	 
 	 `ifndef ETHERNET_DMA 
 	 
@@ -165,6 +165,13 @@ module eth_top #(
     `endif // PITONSYS_MEEP
 `endif // PITON_FPGA_ETH_CMAC
 );
+
+`ifndef PITONSYS_MEEP
+	wire net_axi_clk;
+	wire net_axi_arstn;
+	wire [NUM_INTR-1:0]  net_axi_intr; // Needs to be CDCd before output
+`endif
+
 
 `ifdef PITON_FPGA_ETH
 
@@ -262,13 +269,6 @@ wire  [`AXI4_USER_WIDTH   -1:0]    core_axi_buser;
 wire                               core_axi_bvalid;
 wire                               core_axi_bready;
  `endif
-`endif
-
-`ifndef PITONSYS_MEEP
-	wire net_axi_clk;
-	wire net_axi_arstn;
-	wire [NUM_INTR-1:0]  net_axi_intr; // Needs to be CDCd before output
-
 `endif
 
 
@@ -654,7 +654,7 @@ assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
   assign core_axi_bresp   = 2'h0;
   assign core_axi_buser   = `AXI4_USER_WIDTH'h0;
 
-  assign unsync_net_int = 1'h0;
+  assign net_axi_intr = {NUM_INTR{1'h0}};
 `endif
 
 `else  // PITON_FPGA_ETH
@@ -665,6 +665,8 @@ assign core_axi_buser  = `AXI4_USER_WIDTH'h0;
 
     assign net_phy_tx_en        = 1'b0;
     assign net_phy_mdc          = 1'b0;
+
+    assign net_axi_intr = {NUM_INTR{1'h0}};
 
 `endif  // PITON_FPGA_ETH
 

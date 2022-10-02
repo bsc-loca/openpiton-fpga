@@ -242,6 +242,8 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  noc_axi4_bridge #(
     `ifdef PITON_ARIANE
       .SWAP_ENDIANESS (1),
+    `elsif PITON_LAGARTO
+      .SWAP_ENDIANESS (1),
     `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent

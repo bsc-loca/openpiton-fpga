@@ -32,7 +32,6 @@
 module sram_top (
     input                           sys_clk,
     input                           sys_rst_n,
-    output                          sram_axi_deadlock,
     input                           mc_clk,
 
     input   [`NOC_DATA_WIDTH-1:0]   sram_flit_in_data,
@@ -42,8 +41,6 @@ module sram_top (
     output  [`NOC_DATA_WIDTH-1:0]   sram_flit_out_data,
     output                          sram_flit_out_val,
     input                           sram_flit_out_rdy,
-
-    input                           uart_boot_en,
 
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
@@ -98,9 +95,7 @@ module sram_top (
     input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
     input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
     input  wire                                   m_axi_bvalid,
-    output wire                                   m_axi_bready,
-
-    input wire                                    ddr_ready
+    output wire                                   m_axi_bready
 
   );
 
@@ -131,10 +126,6 @@ module sram_top (
   wire    [`NOC_DATA_WIDTH-1:0]       fifo_trans_data;
   wire                                fifo_trans_rdy;
 
-  wire                               noc_axi4_bridge_rst;
-  wire                               noc_axi4_bridge_init_done;
-  
-  assign noc_axi4_bridge_rst       = ~mc_rst_n;
 
 
   noc_bidir_afifo  sram_afifo  (
@@ -165,17 +156,19 @@ module sram_top (
                    
                     
                 noc_axi4_bridge #(
-                    .ADDR_OFFSET(64'h00000000),
-                    .NUM_REQ_OUTSTANDING_LOG2 (`PITON_NUM_TILES * 4),
-                    .NUM_REQ_YTHREADS (`PITON_Y_TILES),
-                    .NUM_REQ_XTHREADS (`PITON_X_TILES)
+                  `ifdef PITON_ARIANE
+                    .SWAP_ENDIANESS (1),
+                  `elsif PITON_LAGARTO
+                    .SWAP_ENDIANESS (1),
+                  `endif
+                    .NOC2AXI_DESER_ORDER (1)
                 )
                  noc_axi4_bridge  (
-                    .clk                (mc_clk                    ),  
-                    .rst_n              (~noc_axi4_bridge_rst      ), 
-                    .uart_boot_en       (uart_boot_en              ),
-                    .phy_init_done      (ddr_ready ),
-                    .axi_id_deadlock    (sram_axi_deadlock           ),                    
+                    .clk                (mc_clk  ),  
+                    .rst_n              (mc_rst_n), 
+                    .uart_boot_en       (1'b0),
+                    .phy_init_done      (1'b1),
+                    .axi_id_deadlock    (),
 
                     .src_bridge_vr_noc2_val(fifo_trans_val),
                     .src_bridge_vr_noc2_dat(fifo_trans_data),

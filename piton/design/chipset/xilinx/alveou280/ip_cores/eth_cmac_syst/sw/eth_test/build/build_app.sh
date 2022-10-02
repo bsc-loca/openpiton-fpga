@@ -13,6 +13,7 @@ cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_13/src/x
 sed -i 's|DATA_SYNC|//DATA_SYNC|g' ./xaxidma_bdring.c
 sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g' ./xaxidma_g.c
 
+# -DDEBUG for enabling Xilinx debug output
 riscv64-unknown-linux-gnu-gcc -Wall -Og -fpermissive -D__aarch64__ -o ./eth_test \
                               -I./ \
                               -I../src/syst_hw \
