@@ -1814,7 +1814,7 @@ noc_axi4_bridge #(
                     .m_axi_ruser(ncmem_axi_ruser),
                     .m_axi_rvalid(ncmem_axi_rvalid),
                     .m_axi_rready(ncmem_axi_rready)
-
+                 );
 `endif
 
 
