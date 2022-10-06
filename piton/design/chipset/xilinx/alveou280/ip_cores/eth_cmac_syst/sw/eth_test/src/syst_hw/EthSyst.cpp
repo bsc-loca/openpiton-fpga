@@ -74,13 +74,25 @@ EthSyst::EthSyst() {
     exit(1);
   }
 
+  uncacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, UNCACHE_MEM_ADDR));
+  if (ethSystBase == MAP_FAILED) {
+    printf("Memory mapping of Ethernet system failed.\n");
+    exit(1);
+  }
+
+#ifdef DMA_MEM_HBM
+  dmaMemBase = uncacheMem;
+#else
+  dmaMemBase = ethSystBase;
+#endif
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
-  txMem    = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  rxMem    = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  sgMem    = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  txMem    = dmaMemBase  + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  rxMem    = dmaMemBase  + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  sgMem    = dmaMemBase  + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+
   sgTxMem  = sgMem;
-  sgRxMem  = sgMem + (TX_SG_MEM_SIZE / sizeof(uint32_t));
+  sgRxMem  = sgTxMem + (TX_SG_MEM_SIZE / sizeof(uint32_t));
 
 }
 

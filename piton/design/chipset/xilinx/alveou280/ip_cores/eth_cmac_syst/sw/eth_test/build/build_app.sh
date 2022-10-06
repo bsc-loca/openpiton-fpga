@@ -14,6 +14,7 @@ sed -i 's|DATA_SYNC|//DATA_SYNC|g' ./xaxidma_bdring.c
 sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g' ./xaxidma_g.c
 
 # -DDEBUG for enabling Xilinx debug output
+# -DDMA_MEM_HBM for HW with HBM-based DMA
 riscv64-unknown-linux-gnu-gcc -Wall -Og -fpermissive -D__aarch64__ -o ./eth_test \
                               -I./ \
                               -I../src/syst_hw \
