@@ -203,6 +203,8 @@
 class EthSyst {
   uint32_t volatile* ethSystBase; // Whole Ethernet system base address
   uint32_t volatile* ethCore;     // Ethernet core base address
+  uint32_t volatile* uncacheMem;  // uncached system memory range for DMA usage
+  uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
   //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
@@ -228,7 +230,7 @@ class EthSyst {
   void alignedWrite(void*, unsigned);
   void alignedRead (void*, unsigned);
   uint16_t getReceiveDataLength(uint16_t);
-  
+
   public:
   XTmrCtr timerCnt; // Instance of Timer counter
   XAxiDma axiDma;   // AXI DMA instance definitions
@@ -237,13 +239,21 @@ class EthSyst {
   enum {
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
-    // DMA physical addresses, DMA doesn't see CPU address space, just own memories, so full address might not be needed
-    TX_DMA_MEM_ADDR = ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
-    RX_DMA_MEM_ADDR = ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
+    UNCACHE_MEM_ADDR = DRAM_UNCACHE_BASEADDR +
+                       DRAM_UNCACHE_ADRRANGE - ETH_SYST_ADRRANGE,
+    // DMA physical addresses
+#ifdef DMA_MEM_HBM
+    DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,
+#else
+    // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory
+    DMA_MEM_BASEADDR = ETH_SYST_BASEADDR,
+#endif
+    TX_DMA_MEM_ADDR = DMA_MEM_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_DMA_MEM_ADDR = DMA_MEM_BASEADDR + RX_MEM_CPU_BASEADDR,
+    TX_SG_MEM_ADDR  = DMA_MEM_BASEADDR + SG_MEM_CPU_BASEADDR,
     TX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
     RX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
-    TX_SG_MEM_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
-    RX_SG_MEM_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR + TX_SG_MEM_SIZE,
+    RX_SG_MEM_ADDR  = TX_SG_MEM_ADDR + TX_SG_MEM_SIZE
   };
   uint32_t volatile* txMem;   // Tx mem base address
   uint32_t volatile* rxMem;   // Rx mem base address

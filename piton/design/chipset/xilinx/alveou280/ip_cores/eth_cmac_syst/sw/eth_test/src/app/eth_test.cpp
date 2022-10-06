@@ -69,12 +69,16 @@ int main(int argc, char *argv[])
         DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
         ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
                                                                  // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
+      #ifdef DMA_MEM_HBM
+        ETH_MEMPACK_SIZE = ETH_PACKET_LEN
+      #else
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN > DMA_AXI_BURST/2  ? ((ETH_PACKET_LEN + DMA_AXI_BURST-1) / DMA_AXI_BURST) * DMA_AXI_BURST :
                            ETH_PACKET_LEN > DMA_AXI_BURST/4  ? DMA_AXI_BURST/2  :
                            ETH_PACKET_LEN > DMA_AXI_BURST/8  ? DMA_AXI_BURST/4  :
                            ETH_PACKET_LEN > DMA_AXI_BURST/16 ? DMA_AXI_BURST/8  :
                            ETH_PACKET_LEN > DMA_AXI_BURST/32 ? DMA_AXI_BURST/16 : ETH_PACKET_LEN
         // ETH_PACKET_DECR = 7*sizeof(uint32_t) // optional length decrement for some packets for test purposes
+      #endif
   };
 
 
@@ -94,7 +98,11 @@ int main(int argc, char *argv[])
 
     switch (choice) {
       case 'l': {
-        printf("------- Running DMA Tx/Rx/SG memory test -------\n");
+        #ifdef DMA_MEM_HBM
+        printf("------- Running DMA Tx/Rx/SG memory test (HBM-based) -------\n");
+        #else
+        printf("------- Running DMA Tx/Rx/SG memory test (SRAM-based) -------\n");
+        #endif
         printf("Checking memories with random values from %0X to %0X \n", 0, RAND_MAX);
         // first clearing previously stored values
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = 0;
@@ -152,7 +160,7 @@ int main(int argc, char *argv[])
         // checking written values
         srand(1);
         val = 0;
-        printf("Checking TX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+TX_MEM_CPU_BASEADDR, size_t(ethSyst.txMem), txMemSize);
+        printf("Checking TX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ethSyst.TX_DMA_MEM_ADDR, size_t(ethSyst.txMem), txMemSize);
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -174,7 +182,7 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("Checking RX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+RX_MEM_CPU_BASEADDR, size_t(ethSyst.rxMem), rxMemSize);
+        printf("Checking RX memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ethSyst.RX_DMA_MEM_ADDR, size_t(ethSyst.rxMem), rxMemSize);
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -196,7 +204,7 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("Checking BD memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ETH_SYST_BASEADDR+SG_MEM_CPU_BASEADDR, size_t(ethSyst.sgMem), sgMemSize);
+        printf("Checking BD memory at addr 0x%lX(virt: 0x%lX) with size %ld \n", ethSyst.TX_SG_MEM_ADDR, size_t(ethSyst.sgMem), sgMemSize);
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -417,7 +425,11 @@ int main(int argc, char *argv[])
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
                              ethSyst.rxBdCount));
+      #ifdef DMA_MEM_HBM
+        size_t txBunch = packets;
+      #else
         size_t txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
+      #endif
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
         dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
@@ -522,7 +534,11 @@ int main(int argc, char *argv[])
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
                              ethSyst.rxBdCount));
+      #ifdef DMA_MEM_HBM
+        size_t txBunch = packets;
+      #else
         size_t txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
+      #endif
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
         size_t dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);
@@ -613,7 +629,11 @@ int main(int argc, char *argv[])
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
                              ethSyst.rxBdCount));
+      #ifdef DMA_MEM_HBM
+        txBunch = packets;
+      #else
         txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
+      #endif
         printf("DMA: Transferring %ld whole packets with length %d bytes between memories with common size %ld bytes (packet allocation %d bytes) \n",
                     packets, ETH_PACKET_LEN, txrxMemSize, ETH_MEMPACK_SIZE);
         dmaTxMemPtr = size_t(ethSyst.TX_DMA_MEM_ADDR);

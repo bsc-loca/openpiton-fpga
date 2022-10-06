@@ -97,10 +97,12 @@ module eth_top #(
      output [`AXI4_CACHE_WIDTH  -1:0]     core_axi_awcache,
      output [`AXI4_PROT_WIDTH   -1:0]     core_axi_awprot,
      output [`AXI4_QOS_WIDTH    -1:0]     core_axi_awqos,
+     output  [`AXI4_REGION_WIDTH -1:0]    core_axi_awregion,
      output [`AXI4_USER_WIDTH   -1:0]     core_axi_awuser,
      output                               core_axi_awvalid,
      input                                core_axi_awready,
-     
+
+     output  [`AXI4_ID_WIDTH     -1:0]    core_axi_wid,
      output  [`AXI4_DATA_WIDTH   -1:0]    core_axi_wdata,
      output  [`AXI4_STRB_WIDTH   -1:0]    core_axi_wstrb,
      output                               core_axi_wlast,

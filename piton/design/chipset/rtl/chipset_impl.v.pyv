@@ -247,7 +247,7 @@ module chipset_impl(
     output wire                              eth_axi_awvalid,
     input  wire                              eth_axi_awready,
 
-    //output wire  [`AXI4_ID_WIDTH     -1:0]    eth_axi_wid,
+    output wire  [`AXI4_ID_WIDTH     -1:0]    eth_axi_wid,
     output wire  [`AXI4_DATA_WIDTH   -1:0]    eth_axi_wdata,
     output wire  [`AXI4_STRB_WIDTH   -1:0]    eth_axi_wstrb,
     output wire                               eth_axi_wlast,
@@ -335,7 +335,59 @@ module chipset_impl(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
-   
+
+	// non-cacheable system memory space
+	output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
+    output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
+    output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
+    output wire [`AXI4_SIZE_WIDTH   -1:0]    ncmem_axi_awsize,
+    output wire [`AXI4_BURST_WIDTH  -1:0]    ncmem_axi_awburst,
+    output wire                              ncmem_axi_awlock,
+    output wire [`AXI4_CACHE_WIDTH  -1:0]    ncmem_axi_awcache,
+    output wire [`AXI4_PROT_WIDTH   -1:0]    ncmem_axi_awprot,
+    output wire [`AXI4_QOS_WIDTH    -1:0]    ncmem_axi_awqos,
+    output wire [`AXI4_REGION_WIDTH -1:0]    ncmem_axi_awregion,
+    output wire [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_awuser,
+    output wire                              ncmem_axi_awvalid,
+    input  wire                              ncmem_axi_awready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_wid,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    ncmem_axi_wdata,
+    output wire  [`AXI4_STRB_WIDTH   -1:0]    ncmem_axi_wstrb,
+    output wire                               ncmem_axi_wlast,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_wuser,
+    output wire                               ncmem_axi_wvalid,
+    input  wire                               ncmem_axi_wready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_arid,
+    output wire  [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_araddr,
+    output wire  [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_arlen,
+    output wire  [`AXI4_SIZE_WIDTH   -1:0]    ncmem_axi_arsize,
+    output wire  [`AXI4_BURST_WIDTH  -1:0]    ncmem_axi_arburst,
+    output wire                               ncmem_axi_arlock,
+    output wire  [`AXI4_CACHE_WIDTH  -1:0]    ncmem_axi_arcache,
+    output wire  [`AXI4_PROT_WIDTH   -1:0]    ncmem_axi_arprot,
+    output wire  [`AXI4_QOS_WIDTH    -1:0]    ncmem_axi_arqos,
+    output wire  [`AXI4_REGION_WIDTH -1:0]    ncmem_axi_arregion,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_aruser,
+    output wire                               ncmem_axi_arvalid,
+    input  wire                               ncmem_axi_arready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_rid,
+    input  wire  [`AXI4_DATA_WIDTH   -1:0]    ncmem_axi_rdata,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    ncmem_axi_rresp,
+    input  wire                               ncmem_axi_rlast,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_ruser,
+    input  wire                               ncmem_axi_rvalid,
+    output wire                               ncmem_axi_rready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_bid,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    ncmem_axi_bresp,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
+    input  wire                               ncmem_axi_bvalid,
+    output wire                               ncmem_axi_bready,
+
+	// UART space
     output  [12:0]                          uart_axi_awaddr,        
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
@@ -1521,10 +1573,12 @@ uart_top        uart_top (
         .core_axi_awcache   (eth_axi_awcache),
         .core_axi_awprot    (eth_axi_awprot ),
         .core_axi_awqos     (eth_axi_awqos  ),
+        .core_axi_awregion  (eth_axi_awregion),
         .core_axi_awuser    (eth_axi_awuser ),
         .core_axi_awvalid   (eth_axi_awvalid ),
         .core_axi_awready   (eth_axi_awready ),
                             
+        .core_axi_wid       (eth_axi_wid   ),
         .core_axi_wdata     (eth_axi_wdata ),
         .core_axi_wstrb     (eth_axi_wstrb ),
         .core_axi_wlast     (eth_axi_wlast ),
@@ -1687,6 +1741,80 @@ fake_uart fake_uart (
             .m_axi_bready(sram_axi_bready)
         );
 
+localparam HBM_WIDTH = 256;
+noc_axi4_bridge #(
+                  `ifdef PITON_ARIANE
+                    .SWAP_ENDIANESS (1),
+                  `elsif PITON_LAGARTO
+                    .SWAP_ENDIANESS (1),
+                  `endif
+                    .NOC2AXI_DESER_ORDER (1),
+                    .AXI4_DAT_WIDTH_USED (HBM_WIDTH)
+                )
+                 noc_axi4_bridge_ncmem  (
+                    .clk                (chipset_clk  ),  
+                    .rst_n              (chipset_rst_n), 
+                    .uart_boot_en       (1'b0),
+                    .phy_init_done      (1'b1),
+
+                    .src_bridge_vr_noc2_val(buf_ncmem_noc2_valid),
+                    .src_bridge_vr_noc2_dat(buf_ncmem_noc2_data),
+                    .src_bridge_vr_noc2_rdy(ncmem_buf_noc2_ready),
+
+                    .bridge_dst_vr_noc3_val(ncmem_buf_noc3_valid),
+                    .bridge_dst_vr_noc3_dat(ncmem_buf_noc3_data),
+                    .bridge_dst_vr_noc3_rdy(buf_ncmem_noc3_ready),
+
+                    .m_axi_awid(ncmem_axi_awid),
+                    .m_axi_awaddr(ncmem_axi_awaddr),
+                    .m_axi_awlen(ncmem_axi_awlen),
+                    .m_axi_awsize(ncmem_axi_awsize),
+                    .m_axi_awburst(ncmem_axi_awburst),
+                    .m_axi_awlock(ncmem_axi_awlock),
+                    .m_axi_awcache(ncmem_axi_awcache),
+                    .m_axi_awprot(ncmem_axi_awprot),
+                    .m_axi_awqos(ncmem_axi_awqos),
+                    .m_axi_awregion(ncmem_axi_awregion),
+                    .m_axi_awuser(ncmem_axi_awuser),
+                    .m_axi_awvalid(ncmem_axi_awvalid),
+                    .m_axi_awready(ncmem_axi_awready),
+
+                    .m_axi_wid(ncmem_axi_wid),
+                    .m_axi_wdata(ncmem_axi_wdata),
+                    .m_axi_wstrb(ncmem_axi_wstrb),
+                    .m_axi_wlast(ncmem_axi_wlast),
+                    .m_axi_wuser(ncmem_axi_wuser),
+                    .m_axi_wvalid(ncmem_axi_wvalid),
+                    .m_axi_wready(ncmem_axi_wready),
+
+                    .m_axi_bid(ncmem_axi_bid),
+                    .m_axi_bresp(ncmem_axi_bresp),
+                    .m_axi_buser(ncmem_axi_buser),
+                    .m_axi_bvalid(ncmem_axi_bvalid),
+                    .m_axi_bready(ncmem_axi_bready),
+
+                    .m_axi_arid(ncmem_axi_arid),
+                    .m_axi_araddr(ncmem_axi_araddr),
+                    .m_axi_arlen(ncmem_axi_arlen),
+                    .m_axi_arsize(ncmem_axi_arsize),
+                    .m_axi_arburst(ncmem_axi_arburst),
+                    .m_axi_arlock(ncmem_axi_arlock),
+                    .m_axi_arcache(ncmem_axi_arcache),
+                    .m_axi_arprot(ncmem_axi_arprot),
+                    .m_axi_arqos(ncmem_axi_arqos),
+                    .m_axi_arregion(ncmem_axi_arregion),
+                    .m_axi_aruser(ncmem_axi_aruser),
+                    .m_axi_arvalid(ncmem_axi_arvalid),
+                    .m_axi_arready(ncmem_axi_arready),
+
+                    .m_axi_rid(ncmem_axi_rid),
+                    .m_axi_rdata(ncmem_axi_rdata),
+                    .m_axi_rresp(ncmem_axi_rresp),
+                    .m_axi_rlast(ncmem_axi_rlast),
+                    .m_axi_ruser(ncmem_axi_ruser),
+                    .m_axi_rvalid(ncmem_axi_rvalid),
+                    .m_axi_rready(ncmem_axi_rready)
+                 );
 `endif
 
 
