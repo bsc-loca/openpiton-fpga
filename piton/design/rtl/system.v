@@ -375,10 +375,8 @@ module system(
         // GTY quads connected to QSFP unit on Alveo board     
         input          qsfp0_ref_clk_n,
         input          qsfp0_ref_clk_p,
-    `ifdef PITON_FPGA_ETH_PORT1
-    input          qsfp1_ref_clk_n,
-    input          qsfp1_ref_clk_p,
-    `endif
+        input          qsfp1_ref_clk_n,
+        input          qsfp1_ref_clk_p,
         input   [3:0]  qsfp_4x_grx_n,
         input   [3:0]  qsfp_4x_grx_p,
         output  [3:0]  qsfp_4x_gtx_n,
