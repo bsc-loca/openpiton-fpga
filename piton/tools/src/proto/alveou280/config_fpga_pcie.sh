@@ -23,7 +23,7 @@ fi
 hw_server -d
 BITSREAM=../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
 if [ ! -f "$BITSREAM" ]; then
-  #trying "fpga_shell" implementation in case own OP build doesn't exist
+  echo "Native OP bitstream $BITSREAM doesn't exist, trying OP under MEEP_SHELL implementation:"
   BITSREAM=../../../../../../bitstream/system.bit
 fi
 source /home/tools/scripts/load-bitstream-beta.sh qdma $BITSREAM
