@@ -41,6 +41,7 @@ module noc_axi4_bridge #(
     parameter RDWR_INORDER = 0, // control of Rd/Wr responses order
     // "Outstanding requests" queue parameters
     parameter NUM_REQ_OUTSTANDING_LOG2 = 2,
+    parameter OUTSTAND_QUEUE_BRAM = 1,
     parameter NUM_REQ_MSHRID_LBIT = 0,
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1,
@@ -152,6 +153,7 @@ noc_axi4_bridge_buffer #(
     .ADDR_SWAP_LSB  (ADDR_SWAP_LSB),
     .RDWR_INORDER (RDWR_INORDER),
     .NUM_REQ_OUTSTANDING_LOG2 (NUM_REQ_OUTSTANDING_LOG2),
+    .OUTSTAND_QUEUE_BRAM (OUTSTAND_QUEUE_BRAM),
     .NUM_REQ_MSHRID_LBIT (NUM_REQ_MSHRID_LBIT),
     .NUM_REQ_MSHRID_BITS (NUM_REQ_MSHRID_BITS),
     .NUM_REQ_YTHREADS (NUM_REQ_YTHREADS),

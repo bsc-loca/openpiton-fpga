@@ -185,7 +185,7 @@ module mc_top (
 
 localparam HBM_WIDTH = 256;
 localparam HBM_SIZE_LOG2 = 33; // 8GB
-localparam HBM_MCS_LOG2  = 0;  // 32 MC channels to participate in "interleaving", set 0 to disable "interleaving"
+localparam HBM_MCS_LOG2  = 0;  //  0 to disable "interleaving", 5 for 32 MC channels to participate in "interleaving"
 localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels in AXI address
 
 `ifdef PITONSYS_MC_SRAM
@@ -248,7 +248,9 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
       `ifdef PITON_FPGA_MC_HBM
-      .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+        .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+      `else
+        .OUTSTAND_QUEUE_BRAM (0),
       `endif
       .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4)),
       // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
@@ -1079,6 +1081,8 @@ noc_axi4_bridge #(
     .ADDR_SWAP_LBITS(HBM_MCS_LOG2),
     .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
     .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
+  `else
+    .OUTSTAND_QUEUE_BRAM (0), // speed-up of the bridge if working at DDR clock
   `endif
     .ADDR_OFFSET(64'h80000000),
     .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
@@ -1531,8 +1535,10 @@ axi4_zeroer axi4_zeroer(
         .pci2hbm_saxi_wstrb   (pci2hbm_maxi_wstrb),
         .pci2hbm_saxi_wvalid  (pci2hbm_maxi_wvalid),
 
+        .mem_clk(ui_clk),
+        .mem_rst(ui_clk_sync_rst),
         .mem_calib_complete(init_calib_complete),
-        
+
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),
         .ddr4_sdram_c0_ba(ddr_ba),
@@ -1549,12 +1555,12 @@ axi4_zeroer axi4_zeroer(
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
         
         .hbm_cattrip(hbm_cattrip),
-        
+
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
         .sys_rst(~sys_rst_n),
         .sys_clk(core_ref_clk),
-        
+
         .pci_express_x16_rxn(pci_express_x16_rxn),
         .pci_express_x16_rxp(pci_express_x16_rxp),
         .pci_express_x16_txn(pci_express_x16_txn),
@@ -1569,9 +1575,6 @@ axi4_zeroer axi4_zeroer(
  assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
  assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
  
- assign ui_clk_sync_rst = ~sys_rst_n;
- assign ui_clk = core_ref_clk;
-  
 `else // PITONSYS_PCIE
  
 ddr4_axi4 ddr_axi4 (

@@ -45,6 +45,7 @@ module noc_axi4_bridge_buffer #(
     parameter RDWR_INORDER = 0,
     // "Outstanding requests" queue parameters
     parameter NUM_REQ_OUTSTANDING_LOG2 = 2, // "Outstanding requests" queue size
+    parameter OUTSTAND_QUEUE_BRAM = 1, // "Outstanding requests" queue is implemented on BRAM
     parameter NUM_REQ_MSHRID_LBIT = 0, // particular NOC fields to participate in AXI ID
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1, // high component of number of "Outstanding requests" threads
@@ -443,15 +444,17 @@ always @(posedge clk)
   end
 
 assign read_req_val  = req_val && !req_command && !req_occup && !init_outstnd_mem;
-assign read_req_id = req_id;
-
+assign read_req_id   = req_id;
 assign write_req_val = req_val &&  req_command && !req_occup && !init_outstnd_mem;
-assign write_req_id = req_id;
+assign write_req_id  = req_id;
 
 wire [NUM_REQ_OUTSTANDING_LOG2-1 : 0] outstnd_vrt_wrptr = outstnd_vrt_wrptrs[full_req_id];
 wire [NUM_REQ_OUTSTANDING_LOG2   : 0] outstnd_req_cnt = req_command ? outstnd_wrreq_cnt :
                                                                       outstnd_rdreq_cnt;
+wire [OUTSTND_HDR_WIDTH-1 : 0] save_header = {outstnd_req_cnt,outstnd_vrt_wrptr,1'b1,req_header};
 
+generate
+if (OUTSTAND_QUEUE_BRAM) begin: outstand_queue_bram
 // Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
 xilinx_true_dual_port_write_first_1_clock_ram #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
@@ -461,7 +464,7 @@ xilinx_true_dual_port_write_first_1_clock_ram #(
     .addra(outstnd_abs_rdptr_mem),    // Port A address bus, width determined from RAM_DEPTH
     .addrb(outstnd_abs_wrptr_mem),    // Port B address bus, width determined from RAM_DEPTH
     .dina({OUTSTND_HDR_WIDTH{1'b0}}), // Port A RAM input data, width determined from RAM_WIDTH
-    .dinb({outstnd_req_cnt,outstnd_vrt_wrptr,1'b1,req_header}), // Port B RAM input data, width determined from RAM_WIDTH
+    .dinb(save_header),               // Port B RAM input data, width determined from RAM_WIDTH
     .clka(clk),                       // Clock
     .wea(ser_go | init_outstnd_mem),  // Port A write enable
     .web(req_go),                     // Port B write enable
@@ -474,6 +477,24 @@ xilinx_true_dual_port_write_first_1_clock_ram #(
     .douta(stor_header),              // Port A RAM output data, width determined from RAM_WIDTH
     .doutb(clean_header)              // Port B RAM output data, width determined from RAM_WIDTH
 );
+end
+
+else begin: outstand_queue_regs
+  reg [OUTSTND_HDR_WIDTH-1:0] outstnd_req_mem [(1<<NUM_REQ_OUTSTANDING_LOG2)-1:0];
+  reg [NUM_REQ_OUTSTANDING_LOG2-1:0] outstnd_abs_rdptr_mem_rd;
+  reg [NUM_REQ_OUTSTANDING_LOG2-1:0] outstnd_abs_wrptr_mem_rd;
+  always @(posedge clk)
+    begin
+      if (ser_go | init_outstnd_mem) outstnd_req_mem[outstnd_abs_rdptr_mem] <= {OUTSTND_HDR_WIDTH{1'b0}};
+      if (req_go)                    outstnd_req_mem[outstnd_abs_wrptr_mem] <= save_header;
+      outstnd_abs_rdptr_mem_rd <= outstnd_abs_rdptr_mem;
+      outstnd_abs_wrptr_mem_rd <= outstnd_abs_wrptr_mem;
+    end
+  assign stor_header  = outstnd_req_mem[outstnd_abs_rdptr_mem_rd];
+  assign clean_header = outstnd_req_mem[outstnd_abs_wrptr_mem_rd];
+end
+endgenerate
+
 
 wire outstnd_abs_rdptr_val_act = outstnd_abs_rdptr_val & resp_val;
 reg stor_hdr_val;
