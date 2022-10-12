@@ -604,6 +604,7 @@ def makeDefList(options):
         defines.append("PITONSYS_MEEP")
         if (options.debug_brom == True):
             defines.append("DEBUG_ROM")
+        if (options.eth):
             defines.append("ETHERNET_DMA")
 
     # --no-ddr option
