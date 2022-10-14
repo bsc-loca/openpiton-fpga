@@ -34,7 +34,7 @@ module noc_axi4_bridge #(
     parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
     parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NOC2AXI_DESER_ORDER = 0, // NOC words to AXI word deserialization order
-    parameter ADDR_OFFSET = 64'h0,
+    parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
     parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
     parameter ADDR_SWAP_LSB   = 6,                  // low position of moved bits in AXI address
