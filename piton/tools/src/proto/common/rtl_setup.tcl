@@ -684,7 +684,7 @@ set CHIPSET_PRJ_IP_FILES [list \
 set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
 
-set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
+set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include ${DV_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
 set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
