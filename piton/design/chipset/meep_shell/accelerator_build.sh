@@ -1,6 +1,8 @@
 #!/bin/bash
 
-#Use this script to call protosyn
+# Use this script to call protosyn
+# make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS" MORE_OPTIONS="--debug-brom"
+
 
 EA_MOD=$1
 
@@ -36,5 +38,5 @@ acme_vpu)
     ;;
 esac
 
-make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS" MORE_OPTIONS="--debug-brom"
+make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
 
