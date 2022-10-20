@@ -375,8 +375,10 @@ module system(
         // GTY quads connected to QSFP unit on Alveo board     
         input          qsfp0_ref_clk_n,
         input          qsfp0_ref_clk_p,
+
         input          qsfp1_ref_clk_n,
         input          qsfp1_ref_clk_p,
+
         input   [3:0]  qsfp_4x_grx_n,
         input   [3:0]  qsfp_4x_grx_p,
         output  [3:0]  qsfp_4x_gtx_n,

@@ -110,8 +110,10 @@ def usage():
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
     print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
-    print("\n       --multimc", file=sys.stderr)
+    print("\n       --multimc <number of memory controller ports>", file=sys.stderr)
     print("              Implement design with multiple connections to system memory", file=sys.stderr)
+    print("\n       --multimc_indices <comma separated list of indices connected to MCs>", file=sys.stderr)
+    print("              Comma separated list of edge routers IDs connected to MCs.", file=sys.stderr)
     print("\n       --eth", file=sys.stderr)
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --ethport <number>", file=sys.stderr)
@@ -548,7 +550,8 @@ def setParserOptions(parser):
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
-    parser.add_option("--multimc", dest="multimc", action="store_true", default=False)
+    parser.add_option("--multimc", dest="multimc", action="store", default=0)
+    parser.add_option("--multimc_indices", dest="multimc_indices", action="store", default=None)
     parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
@@ -760,6 +763,58 @@ def setUARTXilinxFreq(board, design_data):
     os.environ['SYSTEM_FREQ'] = str(design_data["BOARDS"][board]["FREQ"])
 
 
+def unique(list1):  
+    unique_list = []  
+    for x in list1:
+        if x not in unique_list:
+            unique_list.append(x)
+    return unique_list
+  
+
+def get_both_xy_edge_routers_ids (piton_X, piton_Y):
+    edges=[]
+    i=0
+    j=0
+    for i in range(piton_X): # first row 
+      id = j * piton_X + i;
+      edges.append(id)     
+    
+    i=piton_X-1
+    for j in range(1,piton_Y,1):  #last column 
+      id = j * piton_X + i
+      edges.append(id)  	
+
+    j=piton_Y-1
+    for i in reversed(list(range(1, piton_X-1))): # last row
+      id = j * piton_X + i 
+      edges.append(id)  
+
+    i=0;
+    for j in reversed(list(range(1, piton_Y))): #first column
+      id = j * piton_X + i 
+      edges.append(id)  
+    return unique(edges)
+
+
+def distribute_mc_equal_space_on_all_edges (x_tiles, y_tiles, multimc):
+    edge_ids = get_both_xy_edge_routers_ids (x_tiles,y_tiles)
+    edges = len(edge_ids)
+    d = 0
+    if(multimc > 0) : 
+      d = int(edges/multimc)
+    mc_num=0
+    mmc = ''	
+    for m in range (multimc):
+      mc_num= int (d * m)
+      mc_id = edge_ids[mc_num]
+      if(m==0) :
+         mmc=str(mc_id)
+      else :
+         mmc= mmc + "," + str(mc_id) 	
+    return mmc
+
+
+
 def main():
     parser = OptionParser(add_help_option=False)
     parser = setParserOptions(parser)
@@ -862,6 +917,8 @@ def main():
       options.edge_tiles = 2 * (int(options.x_tiles)-1 + int(options.y_tiles)-1)
       if int(options.edge_tiles) > int(options.num_tiles) or int(options.edge_tiles) < 1:
          options.edge_tiles = options.num_tiles
+      if int(options.edge_tiles) > int(options.multimc):
+         options.edge_tiles =int(options.multimc)        
       if not options.hbm:
         print_info("--multimc option is ignored without --hbm option")
       elif int(options.edge_tiles) > 30:
@@ -870,6 +927,41 @@ def main():
       else:
         print_info("Extra (" + str(options.edge_tiles) + ") connections to HBM (one per edge tile) will be used.")
         os.environ['PITON_EXTRA_MEMS'] = str(options.edge_tiles)
+     
+      if options.multimc_indices:
+        print_info ("MC indices:" + options.multimc_indices)
+        options.multimc_indices = options.multimc_indices
+        mc_tiles=[]         
+        mc_tiles.extend(options.multimc_indices.split(","))
+        l =  len(mc_tiles)
+        #check indices size be equal with multimc
+        if( l != int(options.multimc) ):
+          print_error("Error : the number of tiles in multimc_indices is " + str(l) + " which is not equal to given multimc (" + options.multimc +")" )
+          sys.exit(1)       
+        unique_list = []  
+        for x in mc_tiles:
+        #check indices are unique
+          if x not in unique_list:
+            unique_list.append(x)
+          else :
+            print_error("Error : " + str(x) + " is repeated in  " + str(mc_tiles) )
+            sys.exit(1)
+        #check indices are int
+          if ( not x.isdigit()) :
+            print_error("Error : " + str(x) + " is not a valid int number " )
+            sys.exit(1)
+        #check indices are in edge
+          x_p = int(x) % int(options.x_tiles)
+          y_p = (int(x) - x_p) / int(options.y_tiles)
+          if( x_p != 0 and y_p !=0 and x_p != int (options.x_tiles) -1 and y_p != int(options.y_tiles)-1) :
+            edge_ids = get_both_xy_edge_routers_ids (int(options.x_tiles),int(options.y_tiles))
+            print_error("Error: the tile number " + x + " (" + str(int(x_p)) +","+ str(int(y_p)) + ") in multimc_indices is not an edge router. Edge Ids are:"+str(edge_ids))
+            sys.exit(1)
+        os.environ['PITON_MC_INDICES']=options.multimc_indices		        
+      else :
+        options.multimc_indices=distribute_mc_equal_space_on_all_edges(int(options.x_tiles),int(options.y_tiles),int(os.environ['PITON_EXTRA_MEMS']))
+        print_info ("No memory controller (MC) indices are given as input. Distribute MCs with equal space on all edges:" + options.multimc_indices)
+        os.environ['PITON_MC_INDICES']=options.multimc_indices
 
     # ProNoC
     os.environ['PITON_PRONOC'] = "0"

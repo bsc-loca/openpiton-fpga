@@ -69,9 +69,9 @@ end
 
 `ifdef PITON_PRONOC
    
-    `define NOC1 `CHIP.noc1.unpacked.tori_noc.noc_top.router_chan_in
-    `define NOC2 `CHIP.noc2.unpacked.tori_noc.noc_top.router_chan_in
-    `define NOC3 `CHIP.noc3.unpacked.tori_noc.noc_top.router_chan_in
+    `define NOC1 `CHIP.noc1.noc.tori_noc.noc_top.router_chan_in
+    `define NOC2 `CHIP.noc2.noc.tori_noc.noc_top.router_chan_in
+    `define NOC3 `CHIP.noc3.noc.tori_noc.noc_top.router_chan_in
     `define JTAG_FLATID_WIDTH 8
     
     localparam    L   =   0,
@@ -110,7 +110,7 @@ end
         for(p=0; p<5; p++) begin :port_
             localparam [`JTAG_FLATID_WIDTH-1:0] FLAT_ID = k[`JTAG_FLATID_WIDTH-1:0];
             
-            pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1),.TILE_NUM(k)) pr2pi_wrapper1
+            pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(1)) pr2pi_wrapper1
             (
                 .default_chipid(DEFAULT_CHIPID), 
                 .default_coreid_x(DEAF_X[`NOC_X_WIDTH-1:0] ), 
@@ -125,7 +125,7 @@ end
                 .current_r_addr_o()
             ); 
             
-             pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2),.TILE_NUM(k)) pr2pi_wrapper2
+             pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(2)) pr2pi_wrapper2
             (
                 .default_chipid(DEFAULT_CHIPID), 
                 .default_coreid_x(DEAF_X[`NOC_X_WIDTH-1:0] ), 
@@ -141,7 +141,7 @@ end
             ); 
             
             
-             pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3),.TILE_NUM(k)) pr2pi_wrapper3
+             pronoc_to_piton_wrapper  #(.FLATID_WIDTH(`JTAG_FLATID_WIDTH),.NOC_NUM(3)) pr2pi_wrapper3
             (
                 .default_chipid(DEFAULT_CHIPID), 
                 .default_coreid_x(DEAF_X[`NOC_X_WIDTH-1:0] ), 

@@ -18,6 +18,21 @@ RISCV_DIR   := $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
+MULTIMC =
+MULTIMC_INDICES = 
+
+
+MC_OPTION = 
+
+ifdef MULTIMC
+	MC_OPTION = --multimc $(MULTIMC)
+	ifdef MULTIMC_INDICES
+	MC_OPTION = --multimc $(MULTIMC) --multimc_indices $(MULTIMC_INDICES)
+	endif
+endif
+
+
+ 
 PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
 
 #Don't rely on this to call the subprograms
@@ -47,15 +62,15 @@ incremental:
 $(RISCV_DIR):
 	git clone https://github.com/riscv/riscv-gnu-toolchain; \
 	cd riscv-gnu-toolchain; \
-	./configure --prefix=$@ && make -j8; \
+#	./configure --prefix=$@ && make -j8; \
 	cd $(ROOT_DIR); \
 
 protosyn: clean_project $(RISCV_DIR)
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
 
 protosyn_pronoc: clean_project $(RISCV_DIR)
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) --pronoc
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)

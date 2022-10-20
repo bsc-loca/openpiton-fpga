@@ -1576,7 +1576,6 @@ axi4_zeroer axi4_zeroer(
  assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
  assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
  assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
- 
 `else // PITONSYS_PCIE
  
 ddr4_axi4 ddr_axi4 (

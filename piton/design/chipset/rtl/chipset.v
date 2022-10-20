@@ -998,8 +998,10 @@ end
 
 `ifndef PITON_BOARD
     `ifndef PITONSYS_INC_PASSTHRU
+    `ifndef PITON_NO_CHIP_BRIDGE
         assign io_clk_loopback = io_clk;
-    `endif
+    `endif // endif PITON_NO_CHIP_BRIDGE
+    `endif // endif PITONSYS_INC_PASSTHRU
 
     `ifdef PITON_CLKS_CHIPSET
         // If we are generating clocks, they are just the same as

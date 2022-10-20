@@ -32,5 +32,11 @@ int main(int argc, char** argv) {
   // increment atomic counter
   ATOMIC_OP(amo_cnt, 1, add, w);
 
+   if (argv[0][0] == argv[0][1]-1) {
+    volatile unsigned long long trap;
+    trap = *((unsigned long long *) PITON_TEST_GOOD_END);
+  }
+  
+
   return 0;
 }

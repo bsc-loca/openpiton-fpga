@@ -1,4 +1,4 @@
-piton/design/chip/rtl/chip.v.pyv
+piton/design/chip/rtl/chip.sv.pyv
 piton/design/chip/tile/dynamic_node/common/rtl/network_input_blk_multi_out.v
 piton/design/chip/tile/rtl/tile.v.pyv
 piton/tools/src/sims/manycore.config

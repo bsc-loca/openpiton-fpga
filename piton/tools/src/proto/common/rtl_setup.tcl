@@ -73,7 +73,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/rtl/bram_1r1w_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/synchronizer.v" \
     "${DV_ROOT}/design/chip/rtl/OCI.v" \
-    "${DV_ROOT}/design/chip/rtl/chip.v" \
+    "${DV_ROOT}/design/chip/rtl/chip.sv" \
     "${DV_ROOT}/design/chip/pll/rtl/pll_top.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_mux.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_se_to_diff.v" \

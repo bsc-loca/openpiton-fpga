@@ -87,6 +87,11 @@ piton/verif/env/dmbr_test/test_cases/simple_sink.vmh
 piton/verif/env/dmbr_test/test_cases/simple_src.vmh
 piton/verif/diag/assembly/princeton/dmbr_assembly.s
 
+
+piton/design/chip/tile/noc/benchmark/app-scalar/*/bin/*
+piton/design/chip/tile/noc/benchmark/app-scalar/*/dataset.h
+piton/tools/verilator/mcs_map_info.h
+
 # Ignore Vivado
 .Xil/*
 vivado*.log
@@ -101,6 +106,7 @@ ucli.key
 *.v.tmp
 *.h.tmp
 *.tmp.v
+*.tmp.sv
 *.tmp.h
 
 # Ignore generated .pyc files (specifically for pyhplib)
