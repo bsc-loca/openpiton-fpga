@@ -23,6 +23,7 @@ module openpiton_wrapper (
     input            mem_axi_awready ,
 
     // AXI Write Data Channel Signals
+    //input   [5:0]   mem_axi_wid ,
     output  [255:0] mem_axi_wdata ,
     output  [63:0]  mem_axi_wstrb ,
     output          mem_axi_wlast ,
@@ -106,6 +107,7 @@ module openpiton_wrapper (
     output            sram_axi_awvalid ,
     input             sram_axi_awready ,
 
+    //input   [5:0]     sram_axi_wid ,
     output  [511:0]   sram_axi_wdata ,
     output  [63:0]    sram_axi_wstrb ,
     output            sram_axi_wlast ,
@@ -145,6 +147,60 @@ module openpiton_wrapper (
     // output  [63:0]  debug_rom_addr  ,
     // input   [63:0]  debug_rom_rdata ,
 
+    // AXI Write Address Channel Signals
+    output  [5:0]    ncmem_axi_awid ,
+    output  [63:0]   ncmem_axi_awaddr ,
+    output  [7:0]    ncmem_axi_awlen ,
+    output  [2:0]    ncmem_axi_awsize ,
+    output  [1:0]    ncmem_axi_awburst ,
+    //output           ncmem_axi_awlock ,
+    //output  [3:0]    ncmem_axi_awcache ,
+    //output  [2:0]    ncmem_axi_awprot ,
+    //output  [3:0]    ncmem_axi_awqos ,
+    //output  [3:0]    ncmem_axi_awregion ,
+    output  [10:0]   ncmem_axi_awuser ,
+    output           ncmem_axi_awvalid ,
+    input            ncmem_axi_awready ,
+
+    // AXI Write Data Channel Signals
+    //input   [5:0]   ncmem_axi_wid ,
+    output  [255:0] ncmem_axi_wdata ,
+    output  [63:0]  ncmem_axi_wstrb ,
+    output          ncmem_axi_wlast ,
+    output  [10:0]  ncmem_axi_wuser ,
+    output          ncmem_axi_wvalid ,
+    input           ncmem_axi_wready ,
+
+    // AXI Read Address Channel Signals
+    output  [5:0]   ncmem_axi_arid ,
+    output  [63:0]  ncmem_axi_araddr ,
+    output  [7:0]   ncmem_axi_arlen ,
+    output  [2:0]   ncmem_axi_arsize ,
+    output  [1:0]   ncmem_axi_arburst ,
+    //output          ncmem_axi_arlock ,
+    //output  [3:0]   ncmem_axi_arcache ,
+    //output  [2:0]   ncmem_axi_arprot ,
+    //output  [3:0]   ncmem_axi_arqos ,
+    //output  [3:0]   ncmem_axi_arregion ,
+    output  [10:0]  ncmem_axi_aruser ,
+    output          ncmem_axi_arvalid ,
+    input           ncmem_axi_arready ,
+
+    // AXI Read Data Channel Signals
+    input   [5:0]    ncmem_axi_rid ,
+    input   [255:0]  ncmem_axi_rdata ,
+    input   [1:0]    ncmem_axi_rresp ,
+    input            ncmem_axi_rlast ,
+    input   [10:0]   ncmem_axi_ruser ,
+    input            ncmem_axi_rvalid ,
+    output           ncmem_axi_rready ,
+
+    // AXI Write Response Channel Signals
+    input   [5:0]    ncmem_axi_bid ,
+    input   [1:0]    ncmem_axi_bresp ,
+    input   [10:0]   ncmem_axi_buser ,
+    input            ncmem_axi_bvalid ,
+    output           ncmem_axi_bready ,
 
     output  [12:0]   uart_axi_awaddr ,
     output           uart_axi_awvalid ,

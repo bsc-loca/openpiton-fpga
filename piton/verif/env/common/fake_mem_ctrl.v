@@ -43,7 +43,9 @@
 
 `define MEM_ADDR_WIDTH      64
 
-module fake_mem_ctrl(
+module fake_mem_ctrl #(
+	parameter HMB_CHAN_NUM=0
+)(
 
     input wire clk,
     input wire rst_n,
@@ -53,11 +55,18 @@ module fake_mem_ctrl(
     output reg noc_ready_in,
 
 
-    output reg noc_valid_out,
-    output reg [`NOC_DATA_WIDTH-1:0] noc_data_out,
+    output  noc_valid_out,
+    output  [`NOC_DATA_WIDTH-1:0] noc_data_out,
     input wire noc_ready_out
 
 );
+
+
+ reg noc_valid_out_tmp;
+ reg [`NOC_DATA_WIDTH-1:0] noc_data_out_tmp;
+ wire noc_ready_out_tmp;
+
+
 
 reg mem_valid_in;
 reg [3*`NOC_DATA_WIDTH-1:0] mem_header_in;
@@ -189,8 +198,7 @@ reg [`NOC_DATA_WIDTH-1:0] msg_send_data [7:0];
 reg [`NOC_DATA_WIDTH-1:0] mem_temp;
 wire [`NOC_DATA_WIDTH*3-1:0] msg_send_header;
 
-
-
+reg [`PHY_ADDR_WIDTH-1:0] msg_addr_o,msg_addr_o_next;
 
 l2_decoder decoder(
     .msg_header         (mem_header_in),
@@ -604,7 +612,7 @@ reg [3:0] buf_out_rd_ptr_next;
 
 always @ *
 begin
-    noc_valid_out = (buf_out_counter_f != 0);
+    noc_valid_out_tmp = (buf_out_counter_f != 0);
 end
 
 always @ *
@@ -615,7 +623,7 @@ end
 
 always @ *
 begin
-    if (noc_valid_out && noc_ready_out)
+    if (noc_valid_out_tmp && noc_ready_out_tmp)
     begin
         buf_out_counter_next = buf_out_counter_f - 1;
     end
@@ -648,7 +656,7 @@ begin
     begin
         buf_out_rd_ptr_next = 0;
     end
-    else if (noc_valid_out && noc_ready_out)
+    else if (noc_valid_out_tmp && noc_ready_out_tmp)
     begin
         buf_out_rd_ptr_next = buf_out_rd_ptr_f + 1;
     end
@@ -685,6 +693,7 @@ begin
         buf_out_mem_next[6] = msg_send_data[5];
         buf_out_mem_next[7] = msg_send_data[6];
         buf_out_mem_next[8] = msg_send_data[7];
+	msg_addr_o_next= msg_addr;
     end
     else
     begin
@@ -697,6 +706,7 @@ begin
         buf_out_mem_next[6] = buf_out_mem_f[6];
         buf_out_mem_next[7] = buf_out_mem_f[7];
         buf_out_mem_next[8] = buf_out_mem_f[8];
+        msg_addr_o_next = msg_addr_o;
     end
 end
 
@@ -713,6 +723,7 @@ begin
         buf_out_mem_f[6] <= 0;
         buf_out_mem_f[7] <= 0;
         buf_out_mem_f[8] <= 0;
+        msg_addr_o <= {`PHY_ADDR_WIDTH{1'b0}};
     end
     else
     begin
@@ -725,21 +736,22 @@ begin
         buf_out_mem_f[6] <= buf_out_mem_next[6];
         buf_out_mem_f[7] <= buf_out_mem_next[7];
         buf_out_mem_f[8] <= buf_out_mem_next[8];
+        msg_addr_o <= msg_addr_o_next;
     end
 end
 
 
 always @ *
 begin
-    noc_valid_out = (buf_out_counter_f != 0);
+    noc_valid_out_tmp = (buf_out_counter_f != 0);
 end
 
 always @ *
 begin
     // Tri: another quick fix for x
-    noc_data_out = 0;
+    noc_data_out_tmp = 0;
     if (buf_out_rd_ptr_f < 9)
-        noc_data_out = buf_out_mem_f[buf_out_rd_ptr_f];
+        noc_data_out_tmp = buf_out_mem_f[buf_out_rd_ptr_f];
 end
 
 `ifndef MINIMAL_MONITORING
@@ -751,15 +763,75 @@ always @(posedge clk) begin
         $display("FakeMem: input: %h", noc_data_in, $time);
 `endif
     end
-    if (noc_valid_out & noc_ready_out) begin
+    if (noc_valid_out_tmp & noc_ready_out_tmp) begin
 `ifdef VERILATOR
-        $display("FakeMem: output %h", noc_data_out);
+        $display("FakeMem: output %h", noc_data_out_tmp);
 `else
-        $display("FakeMem: output %h", noc_data_out, $time);
+        $display("FakeMem: output %h", noc_data_out_tmp, $time);
 `endif
     end
 end
 `endif // endif MINIMAL_MONITORING
+
+
+//apply RD delay estimations
+
+
+
+
+
+`ifdef PITON_HBM_LAT
+
+hbm_delay #(
+	.HMB_CHAN_NUM   (HMB_CHAN_NUM  )
+	) hbm_delay (
+	.clk            (clk           ), 
+	.rst_n          (rst_n         ), 
+	.noc_valid_in   (noc_valid_out_tmp  ), 
+	.noc_data_in    (noc_data_out_tmp   ), 
+	.noc_ready_in   (noc_ready_out_tmp ), 
+	.msg_addr       (msg_addr_o      ), 
+	.noc_valid_out  (noc_valid_out ), 
+	.noc_data_out   (noc_data_out  ), 
+	.noc_ready_out  (noc_ready_out ));
+	
+	`ifndef MINIMAL_MONITORING	
+	always @(posedge clk) begin
+		if (noc_valid_out & noc_ready_out) begin
+	 		$display("Delay: output %h", noc_data_out, $time);
+		end
+	end
+	`endif	
+	
+/*	
+	integer tmp1,tmp2;
+initial begin 
+	tmp1=$fopen("delay.txt","w");
+	tmp2=$fopen("fake.txt","w");
+end
+	
+	always @(posedge clk) begin
+		if (noc_valid_out & noc_ready_out) begin
+	 		$fdisplay(tmp1,"%h", noc_data_out);
+	 		$fflush(tmp1);
+		end
+	
+		if (noc_valid_out_tmp & noc_ready_out_tmp) begin
+	 		$fdisplay(tmp2,"%h", noc_data_out_tmp);
+	 		$fflush(tmp2);
+		end
+end
+*/	
+
+
+`else 
+
+	assign noc_valid_out = noc_valid_out_tmp;
+    assign noc_data_out  = noc_data_out_tmp;
+    assign noc_ready_out_tmp = noc_ready_out;
+
+`endif
+
 
 endmodule
 

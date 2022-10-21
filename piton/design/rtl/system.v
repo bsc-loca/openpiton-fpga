@@ -375,10 +375,10 @@ module system(
         // GTY quads connected to QSFP unit on Alveo board     
         input          qsfp0_ref_clk_n,
         input          qsfp0_ref_clk_p,
-    `ifdef PITON_FPGA_ETH_PORT1
-    input          qsfp1_ref_clk_n,
-    input          qsfp1_ref_clk_p,
-    `endif
+
+        input          qsfp1_ref_clk_n,
+        input          qsfp1_ref_clk_p,
+
         input   [3:0]  qsfp_4x_grx_n,
         input   [3:0]  qsfp_4x_grx_p,
         output  [3:0]  qsfp_4x_gtx_n,
@@ -510,8 +510,6 @@ module system(
     input  wire                               mem_axi_bvalid,
     output wire                               mem_axi_bready,
 
-    input  wire                                   ddr_ready,
-	
 	    //Ethernet
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,
@@ -649,6 +647,59 @@ module system(
     input   [63:0]                            debug_rom_rdata,
     `endif
     
+    // AXI non-cacheable system memory
+    output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
+    output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
+    output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
+    output wire [`AXI4_SIZE_WIDTH   -1:0]    ncmem_axi_awsize,
+    output wire [`AXI4_BURST_WIDTH  -1:0]    ncmem_axi_awburst,
+    output wire                              ncmem_axi_awlock,
+    output wire [`AXI4_CACHE_WIDTH  -1:0]    ncmem_axi_awcache,
+    output wire [`AXI4_PROT_WIDTH   -1:0]    ncmem_axi_awprot,
+    output wire [`AXI4_QOS_WIDTH    -1:0]    ncmem_axi_awqos,
+    output wire [`AXI4_REGION_WIDTH -1:0]    ncmem_axi_awregion,
+    output wire [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_awuser,
+    output wire                              ncmem_axi_awvalid,
+    input  wire                              ncmem_axi_awready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_wid,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    ncmem_axi_wdata,
+    output wire  [`AXI4_STRB_WIDTH   -1:0]    ncmem_axi_wstrb,
+    output wire                               ncmem_axi_wlast,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_wuser,
+    output wire                               ncmem_axi_wvalid,
+    input  wire                               ncmem_axi_wready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_arid,
+    output wire  [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_araddr,
+    output wire  [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_arlen,
+    output wire  [`AXI4_SIZE_WIDTH   -1:0]    ncmem_axi_arsize,
+    output wire  [`AXI4_BURST_WIDTH  -1:0]    ncmem_axi_arburst,
+    output wire                               ncmem_axi_arlock,
+    output wire  [`AXI4_CACHE_WIDTH  -1:0]    ncmem_axi_arcache,
+    output wire  [`AXI4_PROT_WIDTH   -1:0]    ncmem_axi_arprot,
+    output wire  [`AXI4_QOS_WIDTH    -1:0]    ncmem_axi_arqos,
+    output wire  [`AXI4_REGION_WIDTH -1:0]    ncmem_axi_arregion,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_aruser,
+    output wire                               ncmem_axi_arvalid,
+    input  wire                               ncmem_axi_arready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_rid,
+    input  wire  [`AXI4_DATA_WIDTH   -1:0]    ncmem_axi_rdata,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    ncmem_axi_rresp,
+    input  wire                               ncmem_axi_rlast,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_ruser,
+    input  wire                               ncmem_axi_rvalid,
+    output wire                               ncmem_axi_rready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_bid,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    ncmem_axi_bresp,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
+    input  wire                               ncmem_axi_bvalid,
+    output wire                               ncmem_axi_bready,
+
+
+>>>>>>> production
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
@@ -668,7 +719,7 @@ module system(
     output                                  uart_axi_rready,    
     input                                   uart_irq
     
-`endif //PITONSYSMEEP
+`endif //PITONSYS_MEEP
 );
 
 ///////////////////////
@@ -1747,10 +1798,11 @@ chipset chipset(
 		    .sram_axi_arlen(sram_axi_arlen),
 		    .sram_axi_arlock(sram_axi_arlock),
 		    .sram_axi_arprot(sram_axi_arprot),
-		    // .axi4_sram_arqos(sram_axi_arqos),
+		    .sram_axi_arqos(sram_axi_arqos),
+            .sram_axi_arregion(sram_axi_arregion),
 		    .sram_axi_arready(sram_axi_arready),
 		    .sram_axi_arsize(sram_axi_arsize),
-		    // .axi4_sram_aruser(sram_axi_aruser),
+		    .sram_axi_aruser(sram_axi_aruser),
 		    .sram_axi_arvalid(sram_axi_arvalid),
 		    
 		    .sram_axi_awaddr(sram_axi_awaddr),
@@ -1760,16 +1812,17 @@ chipset chipset(
 		    .sram_axi_awlen(sram_axi_awlen),
 		    .sram_axi_awlock(sram_axi_awlock),
 		    .sram_axi_awprot(sram_axi_awprot),
-		    // .axi4_sram_awqos(sram_axi_awqos),
+		    .sram_axi_awqos(sram_axi_awqos),
+            .sram_axi_awregion(sram_axi_awregion),
 		    .sram_axi_awready(sram_axi_awready),
 		    .sram_axi_awsize(sram_axi_awsize),
-		    // .axi4_sram_awuser(sram_axi_awuser),
+		    .sram_axi_awuser(sram_axi_awuser),
 		    .sram_axi_awvalid(sram_axi_awvalid),
 		    
 		    .sram_axi_bid(sram_axi_bid),
 		    .sram_axi_bready(sram_axi_bready),
 		    .sram_axi_bresp(sram_axi_bresp),
-		    // .axi4_sram_buser(sram_axi_buser),
+		    .sram_axi_buser(sram_axi_buser),
 		    .sram_axi_bvalid(sram_axi_bvalid),
 		    
 		    .sram_axi_rdata(sram_axi_rdata),
@@ -1777,14 +1830,15 @@ chipset chipset(
 		    .sram_axi_rlast(sram_axi_rlast),
 		    .sram_axi_rready(sram_axi_rready),
 		    .sram_axi_rresp(sram_axi_rresp),
-		    // .axi4_sram_ruser(sram_axi_ruser),
+		    .sram_axi_ruser(sram_axi_ruser),
 		    .sram_axi_rvalid(sram_axi_rvalid),
 		    
 		    .sram_axi_wdata(sram_axi_wdata),
+		    .sram_axi_wid(sram_axi_wid),
 		    .sram_axi_wlast(sram_axi_wlast),
 		    .sram_axi_wready(sram_axi_wready),
 		    .sram_axi_wstrb(sram_axi_wstrb),
-		    // .axi4_sram_wuser(sram_axi_wuser),
+		    .sram_axi_wuser(sram_axi_wuser),
 		    .sram_axi_wvalid(sram_axi_wvalid),
 		    
 		     `ifdef DEBUG_ROM 
@@ -1792,6 +1846,57 @@ chipset chipset(
              .debug_rom_addr(debug_rom_addr),
              .debug_rom_rdata(debug_rom_rdata),
              `endif
+
+
+		    .ncmem_axi_araddr(ncmem_axi_araddr),
+		    .ncmem_axi_arburst(ncmem_axi_arburst),
+		    .ncmem_axi_arcache(ncmem_axi_arcache),
+		    .ncmem_axi_arid(ncmem_axi_arid),
+		    .ncmem_axi_arlen(ncmem_axi_arlen),
+		    .ncmem_axi_arlock(ncmem_axi_arlock),
+		    .ncmem_axi_arprot(ncmem_axi_arprot),
+		    .ncmem_axi_arqos(ncmem_axi_arqos),
+            .ncmem_axi_arregion(ncmem_axi_arregion),
+		    .ncmem_axi_arready(ncmem_axi_arready),
+		    .ncmem_axi_arsize(ncmem_axi_arsize),
+		    .ncmem_axi_aruser(ncmem_axi_aruser),
+		    .ncmem_axi_arvalid(ncmem_axi_arvalid),
+		    
+		    .ncmem_axi_awaddr(ncmem_axi_awaddr),
+		    .ncmem_axi_awburst(ncmem_axi_awburst),
+		    .ncmem_axi_awcache(ncmem_axi_awcache),
+		    .ncmem_axi_awid(ncmem_axi_awid),
+		    .ncmem_axi_awlen(ncmem_axi_awlen),
+		    .ncmem_axi_awlock(ncmem_axi_awlock),
+		    .ncmem_axi_awprot(ncmem_axi_awprot),
+		    .ncmem_axi_awqos(ncmem_axi_awqos),
+            .ncmem_axi_awregion(ncmem_axi_awregion),
+		    .ncmem_axi_awready(ncmem_axi_awready),
+		    .ncmem_axi_awsize(ncmem_axi_awsize),
+		    .ncmem_axi_awuser(ncmem_axi_awuser),
+		    .ncmem_axi_awvalid(ncmem_axi_awvalid),
+		    
+		    .ncmem_axi_bid(ncmem_axi_bid),
+		    .ncmem_axi_bready(ncmem_axi_bready),
+		    .ncmem_axi_bresp(ncmem_axi_bresp),
+		    .ncmem_axi_buser(ncmem_axi_buser),
+		    .ncmem_axi_bvalid(ncmem_axi_bvalid),
+		    
+		    .ncmem_axi_rdata(ncmem_axi_rdata),
+		    .ncmem_axi_rid(ncmem_axi_rid),
+		    .ncmem_axi_rlast(ncmem_axi_rlast),
+		    .ncmem_axi_rready(ncmem_axi_rready),
+		    .ncmem_axi_rresp(ncmem_axi_rresp),
+		    .ncmem_axi_ruser(ncmem_axi_ruser),
+		    .ncmem_axi_rvalid(ncmem_axi_rvalid),
+		    
+		    .ncmem_axi_wdata(ncmem_axi_wdata),
+		    .ncmem_axi_wid(ncmem_axi_wid),
+		    .ncmem_axi_wlast(ncmem_axi_wlast),
+		    .ncmem_axi_wready(ncmem_axi_wready),
+		    .ncmem_axi_wstrb(ncmem_axi_wstrb),
+		    .ncmem_axi_wuser(ncmem_axi_wuser),
+		    .ncmem_axi_wvalid(ncmem_axi_wvalid),
 
             `else
             .ddr_parity(ddr_parity),

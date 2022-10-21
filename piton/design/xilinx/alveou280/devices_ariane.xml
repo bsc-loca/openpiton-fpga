@@ -25,13 +25,25 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <!-- 5GB, reserve one for pmem -->
         <length>0x140000000</length>
     </port>
+    <port>
+        <name>ncmem</name>
+        <base>0xf000000000</base>
+        <!-- 8GB non-cacheable -->
+        <length>0x200000000</length>
+        <stream_accessible/>
+    </port>
 	<port>
-	<!-- 1GB, reserve one for pmem -->
+        <name>ncmem</name>
+        <base>0xf000000000</base>
+        <!-- 8GB non-cacheable -->
+        <length>0x200000000</length>
+        <stream_accessible/>
+    </port>
+	<port>
         <name>dma_pool</name>
-        <base>0x40000000</base>
+        <base>0xfff6000000</base>
         <!-- 256MB -->
         <length>0x10000000</length>
-	<virtual/>
     </port>
     <port>
         <name>iob</name>

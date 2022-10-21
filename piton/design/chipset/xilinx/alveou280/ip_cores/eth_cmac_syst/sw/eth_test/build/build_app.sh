@@ -1,11 +1,10 @@
 # The script to build test Ethernet application, last updated for Vitis/Vivado-2021.2
 
 echo ""
-echo "Extracting hw definitions from BD tcl script to create C-header file"
+echo "----- Extracting hw definitions from BD tcl script to create C-header file"
 # vivado -mode batch -nolog -nojournal -notrace -source ./eth_syst_xparams.tcl
 tclsh ./eth_syst_xparams.tcl
 
-echo ""
 # Taking some DMA driver sources
 cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_13/src/xaxidma_bdring.c ./
 cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_13/src/xaxidma_g.c      ./
@@ -13,8 +12,19 @@ cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_13/src/x
 sed -i 's|DATA_SYNC|//DATA_SYNC|g' ./xaxidma_bdring.c
 sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g' ./xaxidma_g.c
 
+echo "----- Checking if hw is implemented under MEEP_SHELL:"
+if grep "ETHERNET.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+then
+  echo "----- Eth DMA memory is HBM-based in hw design, setting its addresses accordingly"
+  DEF_DMA_MEM_HBM=-DDMA_MEM_HBM
+else
+  echo "----- Eth DMA memory is SRAM-based in hw design, setting its addresses accordingly"
+  DEF_DMA_MEM_HBM=
+fi
+echo ""
+
 # -DDEBUG for enabling Xilinx debug output
-riscv64-unknown-linux-gnu-gcc -Wall -Og -fpermissive -D__aarch64__ -o ./eth_test \
+riscv64-unknown-linux-gnu-gcc -Wall -Og -fpermissive -D__aarch64__ -o ./eth_test $DEF_DMA_MEM_HBM \
                               -I./ \
                               -I../src/syst_hw \
                               -I$XILINX_VIVADO/data/embeddedsw/lib/sw_apps/versal_plm/misc \

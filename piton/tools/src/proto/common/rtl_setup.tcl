@@ -73,7 +73,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/rtl/bram_1r1w_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/synchronizer.v" \
     "${DV_ROOT}/design/chip/rtl/OCI.v" \
-    "${DV_ROOT}/design/chip/rtl/chip.v" \
+    "${DV_ROOT}/design/chip/rtl/chip.sv" \
     "${DV_ROOT}/design/chip/pll/rtl/pll_top.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_mux.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_se_to_diff.v" \
@@ -274,8 +274,8 @@ set MEEP_RTL_FILES ""
 if { [info exists "::env(MEEP_SHELL)"] } {
 
 set MEEP_RTL_FILES [list \
-    "${DV_ROOT}/design/chipset/meep_shell/sram_top.v" \
-    "${DV_ROOT}/design/chipset/meep_shell/openpiton_wrapper.v" \
+    "${DV_ROOT}/design/chipset/meep_shell/sram_top.sv" \
+    "${DV_ROOT}/design/chipset/meep_shell/openpiton_wrapper.sv" \
     ]
 }
 
@@ -681,8 +681,9 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
-set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
+
+set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
 set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include ${DV_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
 

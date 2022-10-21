@@ -12,6 +12,7 @@
 #             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
 #             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 
+# TODO: This script will not work when the PCIe enumeration doesn't return 08
 
 script=${BASH_SOURCE[0]}
 if [ $script == $0 ]; then
@@ -21,8 +22,12 @@ fi
 
 #Load PCIe bitstream to FPGA and setup host PCIe environment
 hw_server -d
-source /home/tools/scripts/load-bitstream-beta.sh qdma ../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
-# source /home/tools/scripts/load-bitstream-beta.sh qdma ../../../../../../fpga_shell/bitstream/system.bit
+BITSREAM=../../../../../build/alveou280/system/alveou280_system/alveou280_system.runs/impl_1/system.bit
+if [ ! -f "$BITSREAM" ]; then
+  echo "Native OP bitstream $BITSREAM doesn't exist, trying OP under MEEP_SHELL implementation:"
+  BITSREAM=../../../../../../bitstream/system.bit
+fi
+source /home/tools/scripts/load-bitstream-beta.sh qdma $BITSREAM
 
 #Some sanity checks
 # dma-ctl qdma08000 reg dump
