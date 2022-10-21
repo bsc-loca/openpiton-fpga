@@ -698,8 +698,6 @@ module system(
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
 
-
->>>>>>> production
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
