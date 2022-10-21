@@ -30,7 +30,7 @@ piton/design/*/*/*/*/*/*/*/*/*/synopsys/*
 piton/design/*/*/*/*/*/*/*/*/*/*/synopsys/*
 !piton/design/*/*/*/*/*/*/*/*/*/*/synopsys/script
 
-# IP for FPGA designs is generated in palce
+# IP for FPGA designs is generated in place
 # where .xci file is located, so need to ignore
 # these generated files.
 # Good for 10 levels of hierarchy
@@ -172,3 +172,4 @@ vsim.dbg
 # ignore the folder (symlink) but not the contents
 #/meep_shell
 #!/meep_shell/
+*.xci
