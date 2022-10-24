@@ -15,7 +15,7 @@
 
 workflow:
     rules:
-        - !reference [.default_rules, rules]
+        - !reference [.workflow_default_rules, rules]
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
           when: never  
@@ -43,7 +43,12 @@ variables:
 
 .default_rules:
   rules:
-    if: ($CI_COMMIT_BRANCH =~ /^production/ || $CI_COMMIT_MESSAGE =~ /^#TestCICD/ || $CI_PIPELINE_SOURCE == "schedule")
+    #if: ($CI_COMMIT_BRANCH =~ /^production/ || $CI_COMMIT_MESSAGE =~ /^#TestCICD/ || $CI_PIPELINE_SOURCE == "schedule")
+    - when: always
+
+.workflow_default_rules:  
+  rules:
+     if: $CI_PIPELINE_SOURCE == "merge_request_event"
 
 stages:
   - protosyn
