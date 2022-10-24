@@ -22,7 +22,7 @@
 #include <stddef.h>
 #include "custom_def.h"
 
-#define PITON_TEST_GOOD_END 0x8100000000ULL
+
 //--------------------------------------------------------------------------
 // Input/Reference Data
 
@@ -34,7 +34,7 @@
 
 #include "util.h"
 
- #define  VERYFY_RESULT  
+
 //--------------------------------------------------------------------------
 // axpy function
  
@@ -68,7 +68,7 @@ int MAIN(){
    double y[N_ROWS];
    if(cid==0) {printf("We are %d cores.\n",nc);}   
    BARRIER();
-   stats(SpMV(cid,nc,N_ROWS,a,ia,ja,x,y);BARRIER(),N_ROWS);
+   STATS(SpMV(cid,nc,N_ROWS,a,ia,ja,x,y);BARRIER(),N_ROWS);
    BARRIER();
    #ifdef VERYFY_RESULT
    int res = mt_verify(cid,nc,N_ROWS , y, y_ref);
