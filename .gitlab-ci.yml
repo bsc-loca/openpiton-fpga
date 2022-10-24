@@ -12,6 +12,16 @@
 #
 # More jobs can be created if we want to check different number of cores. It is currently
 # set to a generic 2x2 configuration.
+
+workflow:
+    rules:
+        - !reference [.default_rules, rules]
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+          when: never  
+        - if: $CI_COMMIT_TAG != null 
+        - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+          when: never # Pushing to main doesn't create pipelines unless there is a tag
   
 variables:
   GIT_SUBMODULE_STRATEGY: "none"
@@ -24,7 +34,9 @@ variables:
   DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
   GOLDEN_MESSAGE: "Welcome to Buildroot"
   ## Temp variables while lagarto+Fedora is developed
-  OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi_alveo.bin
+  # OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi_alveo.bin
+  # Update to ns16550a, previous OpenSBI will not work
+  OPENSBI_BIN: /home/dmazure/workspace/4Xavi/osbi_alveo.bin
   BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
   DEPLOY_DIR: /home/fpga-runnerMEEP/ACME_deploy
 
