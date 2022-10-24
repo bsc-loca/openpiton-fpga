@@ -7,6 +7,7 @@ module openpiton_wrapper(
     input            vpu_clk,
     input   [4:0]    pcie_gpio ,
     output           ExtArstn,
+    input            mc_rstn,
 
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    mem_axi_awid,
@@ -198,6 +199,10 @@ module openpiton_wrapper(
     output                               sram_axi_bready,
 
     // AXI non-cacheable system memory
+    `ifdef PITON_NONCACH_MEM
+    //input wire                               ncmem_axi_aclk,
+    //input wire                               ncmem_axi_arstn,
+    
     output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
@@ -247,6 +252,7 @@ module openpiton_wrapper(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
+    `endif
 
     // AXI UART
     output  [12:0]                       uart_axi_awaddr,

@@ -122,6 +122,8 @@ def usage():
     print("              Create the bootrom binary only", file=sys.stderr)
     print("\n       --debug-brom", file=sys.stderr)
     print("              Create PCIe access to the boot ROM. Only available with meep option", file=sys.stderr)
+    print("\n       --ncmem", file=sys.stderr)
+    print("              Create an alias of the main memory bypassing the cache. Only available with meep option", file=sys.stderr)    
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -565,6 +567,7 @@ def setParserOptions(parser):
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
+    parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
     parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
     parser.add_option("--debug-brom", dest="debug_brom", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
@@ -610,6 +613,8 @@ def makeDefList(options):
             defines.append("DEBUG_ROM")
         if (options.eth):
             defines.append("ETHERNET_DMA")
+        if (options.ncmem):
+            defines.append("PITON_NONCACH_MEM")
 
     # --no-ddr option
     if (options.no_ddr == True) or (options.board == "piton_board"):

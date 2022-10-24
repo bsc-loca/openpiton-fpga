@@ -6,7 +6,8 @@ module openpiton_wrapper (
     input            mc_clk,
     input            vpu_clk,
     input   [4:0]    pcie_gpio ,
-    output 	     ExtArstn,
+    output 	         ExtArstn,
+    input            mc_rstn,
     // AXI Write Address Channel Signals
     output  [5:0]    mem_axi_awid ,
     output  [63:0]   mem_axi_awaddr ,
@@ -148,6 +149,9 @@ module openpiton_wrapper (
     // input   [63:0]  debug_rom_rdata ,
 
     // AXI Write Address Channel Signals
+    //input ncmem_axi_aclk ,
+    //input ncmem_axi_arstn ,
+
     output  [5:0]    ncmem_axi_awid ,
     output  [63:0]   ncmem_axi_awaddr ,
     output  [7:0]    ncmem_axi_awlen ,

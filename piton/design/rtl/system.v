@@ -455,6 +455,7 @@ module system(
     input chipset_clk,
     input mc_clk,
     input vpu_clk,
+    input mc_rstn,
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    mem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    mem_axi_awaddr,
@@ -513,7 +514,7 @@ module system(
 	    //Ethernet
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,        
-    input wire   [1:0]                       eth_irq, //TODO: connect it downstream
+    input wire   [1:0]                       eth_irq, 
     
   `ifdef ETHERNET_DMA
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   eth_axi_awaddr,
@@ -648,7 +649,11 @@ module system(
     input   [63:0]                            debug_rom_rdata,
     `endif
     
+    `ifdef PITON_NONCACH_MEM
     // AXI non-cacheable system memory
+    // input wire                               ncmem_axi_aclk,
+    // input wire                               ncmem_axi_arstn,
+    
     output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
@@ -698,6 +703,7 @@ module system(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
+    `endif // NON_CACHE_MEM
 
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
@@ -1846,6 +1852,11 @@ chipset chipset(
              .debug_rom_rdata(debug_rom_rdata),
              `endif
 
+            `ifdef PITON_NONCACH_MEM 
+//            .ncmem_axi_aclk(ncmem_axi_aclk),
+//            .ncmem_axi_arstn(ncmem_axi_arstn),
+            .ncmem_axi_aclk(mc_clk),
+            .ncmem_axi_arstn(mc_rstn),
 
 		    .ncmem_axi_araddr(ncmem_axi_araddr),
 		    .ncmem_axi_arburst(ncmem_axi_arburst),
@@ -1896,6 +1907,7 @@ chipset chipset(
 		    .ncmem_axi_wstrb(ncmem_axi_wstrb),
 		    .ncmem_axi_wuser(ncmem_axi_wuser),
 		    .ncmem_axi_wvalid(ncmem_axi_wvalid),
+		    `endif
 
             `else
             .ddr_parity(ddr_parity),

@@ -22,8 +22,8 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     <port>
         <name>mem</name>
         <base>0x80000000</base>
-        <!-- 5GB, reserve one for pmem -->
-        <length>0x140000000</length>
+        <!-- 6GB, no space for pmem -->
+        <length>0x180000000</length>
     </port>
     <port>
         <name>ncmem</name>

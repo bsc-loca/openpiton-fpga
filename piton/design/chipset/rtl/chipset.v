@@ -469,7 +469,11 @@ module chipset(
     input   wire [63:0]                       debug_rom_rdata,
     `endif
 
+    `ifdef PITON_NONCACH_MEM 
     // AXI non-cacheable system memory
+    input wire                               ncmem_axi_aclk,
+    input wire                               ncmem_axi_arstn,
+    
     output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
@@ -519,6 +523,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
+    `endif // NON_CACHE_MEM
 
     `else
     output                          ddr_parity,
@@ -1961,7 +1966,11 @@ chipset_impl_noc_power_test  chipset_impl (
                     .debug_rom_addr(debug_rom_addr),
                     .debug_rom_rdata(debug_rom_rdata),
                     `endif
-
+                                   
+                    `ifdef PITON_NONCACH_MEM     
+                    .ncmem_axi_aclk(ncmem_axi_aclk),
+                    .ncmem_axi_arstn(ncmem_axi_arstn),
+                    
 				    .ncmem_axi_araddr(ncmem_axi_araddr),
 				    .ncmem_axi_arburst(ncmem_axi_arburst),
 				    .ncmem_axi_arcache(ncmem_axi_arcache),
@@ -2011,6 +2020,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .ncmem_axi_wstrb(ncmem_axi_wstrb),
 				    .ncmem_axi_wuser(ncmem_axi_wuser),
 				    .ncmem_axi_wvalid(ncmem_axi_wvalid),
+				    `endif //NONC_CHACH_MEM
 
                     `else
                     .ddr_parity(ddr_parity),

@@ -10,7 +10,7 @@ EA_MOD=$1
 CORE=lagarto
 XTILES=1
 YTILES=1
-PROTO_OPTIONS="--meep --eth --hbm"
+PROTO_OPTIONS="--meep --eth --hbm --ncmem"
 #PROTO_OPTIONS="--meep --eth --hbm --vpu"
 
 case "$EA_MOD" in

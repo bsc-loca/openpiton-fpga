@@ -374,6 +374,7 @@ module chipset_impl(
     input   [63:0]                           debug_rom_rdata,
    `endif
 
+   `ifdef PITON_NONCACH_MEM
 	// non-cacheable system memory space
 	input  wire                              ncmem_axi_aclk,
 	input  wire                              ncmem_axi_arstn,
@@ -427,6 +428,7 @@ module chipset_impl(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
+    `endif
 
 	// UART space
     output  [12:0]                          uart_axi_awaddr,        
@@ -1780,31 +1782,21 @@ fake_uart fake_uart (
         );
 		
 		
-	`ifdef PITONSYS_NON_CACH_MEM
+	`ifdef PITON_NONCACH_MEM
 
-	localparam HBM_WIDTH = 256;
-		ncmem_top #(
-		  `ifdef PITON_ARIANE
-			.SWAP_ENDIANESS (1),
-		  `elsif PITON_LAGARTO
-			.SWAP_ENDIANESS (1),
-		  `endif
-			.NOC2AXI_DESER_ORDER (1),
-			.AXI4_DAT_WIDTH_USED (HBM_WIDTH)
-		)
-		 ncmem_top_i  (
-			.clk                (ncmem_axi_aclk      ),  
+		ncmem_top ncmem_top_i  (
+			.mc_clk             (ncmem_axi_aclk      ), 
+            .mc_rstn            (ncmem_axi_arstn     ),    
 			.core_ref_clk       (chipset_clk         ),
-			.sys_rst_n			(chipset_rst_n       ),
-			.mc_rst_n           (ncmem_axi_arstn     ),   
+			.core_ref_rstn	    (chipset_rst_n       ),
 			.phy_init_done      (init_calib_complete ),
 
-			.ncmem_in_val  (buf_ncmem_noc2_valid),
-			.ncmem_in_data (buf_ncmem_noc2_data),
+			.ncmem_in_val  (buf_ncmem_noc2_valid),			
+            .ncmem_in_data (buf_ncmem_noc2_data),
 			.ncmem_in_rdy  (ncmem_buf_noc2_ready),
 
-			.ncmem_out_val (ncmem_buf_noc3_valid),
-			.ncmem_out_dat (ncmem_buf_noc3_data),
+            .ncmem_out_val  (ncmem_buf_noc3_valid),			
+            .ncmem_out_data (ncmem_buf_noc3_data),			
 			.ncmem_out_rdy (buf_ncmem_noc3_ready),
 
 			.m_axi_awid(ncmem_axi_awid),
