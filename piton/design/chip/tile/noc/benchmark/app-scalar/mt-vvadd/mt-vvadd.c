@@ -37,7 +37,7 @@
 
 extern void __attribute__((noinline)) vvadd(int coreid, int ncores, size_t n, const data_t* x, const data_t* y, data_t* z);
 
-#define VERYFY_RESULT
+
 
 #ifdef VERYFY_RESULT
     #include "double_cmp.h"
@@ -69,7 +69,7 @@ int MAIN(){
    
    // First do out-of-place vvadd
    BARRIER();
-   stats(vvadd(cid, nc, DATA_SIZE, input1_data, input2_data, results_data); BARRIER(), DATA_SIZE);
+   STATS(vvadd(cid, nc, DATA_SIZE, input1_data, input2_data, results_data); BARRIER(), DATA_SIZE);
  
    #ifdef VERYFY_RESULT
    int res = mt_verify(cid,nc,DATA_SIZE , results_data, verify_data);
@@ -89,7 +89,7 @@ int MAIN(){
            results_data[i] = input1_data[i];
    }
    BARRIER();   
-   stats(vvadd(cid, nc, DATA_SIZE, results_data, input2_data, results_data); BARRIER(), DATA_SIZE);
+   STATS(vvadd(cid, nc, DATA_SIZE, results_data, input2_data, results_data); BARRIER(), DATA_SIZE);
  
    #ifdef VERYFY_RESULT
    res = mt_verify(cid,nc,DATA_SIZE , results_data, verify_data);

@@ -34,7 +34,7 @@
 
 #include "util.h"
 
- #define  VERYFY_RESULT  
+   
 //--------------------------------------------------------------------------
 // axpy function
  
@@ -70,7 +70,7 @@ int MAIN(){
   
    BARRIER();
   // barrier(nc);
-   stats(axpy(cid,nc,ARRAY_SIZE,input1_data,input2_data,Alfa); BARRIER(),ARRAY_SIZE);
+   STATS(axpy(cid,nc,ARRAY_SIZE,input1_data,input2_data,Alfa); BARRIER(),ARRAY_SIZE);
   // barrier(nc);
    BARRIER();
    #ifdef VERYFY_RESULT
