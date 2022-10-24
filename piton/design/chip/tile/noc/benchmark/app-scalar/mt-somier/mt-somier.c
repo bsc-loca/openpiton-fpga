@@ -28,12 +28,11 @@ int err;
 // Basic Utilities and Multi-thread Support
 
 #include "util.h"
-
- //#define  VERYFY_RESULT  
+ 
 //--------------------------------------------------------------------------
 // axpy function
  
-#define VERYFY_RESULT
+
 
 
 #ifdef VERYFY_RESULT
@@ -89,7 +88,7 @@ int MAIN(){
        
    }   
    BARRIER();
-   stats(somier_scalar(cid,nc);BARRIER(),N);
+   STATS(somier_scalar(cid,nc);BARRIER(),N);
    BARRIER();
  
 #ifdef VERYFY_RESULT   

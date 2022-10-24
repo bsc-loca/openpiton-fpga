@@ -463,7 +463,9 @@ for core_id in range(PITON_NUM_TILES) :
 %>
 `endif
 
-`ifndef DISABLE_ALL_MONITORS
+
+
+
 
     // this is the T1 sparc core monitor
     monitor   monitor(
@@ -471,6 +473,8 @@ for core_id in range(PITON_NUM_TILES) :
         .cmp_gclk  (`CHIP_INT_CLK),
         .rst_l     (`CHIP.rst_n_inter_sync)
         );
+
+`ifndef DISABLE_ALL_MONITORS
 
 `ifndef MINIMAL_MONITORING
     integer j;

@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include "custom_def.h"
 
-#define PITON_TEST_GOOD_END 0x8100000000ULL
+
 //--------------------------------------------------------------------------
 // Input/Reference Data
 
@@ -33,7 +33,7 @@
 
 #include "util.h"
 
- #define  VERYFY_RESULT  
+ 
    
 //--------------------------------------------------------------------------
 // matmul function
@@ -63,7 +63,7 @@ int MAIN(){
    static data_t results_data[ARRAY_SIZE];   
    if(cid==0) {printf("We are %d cores.\n",nc);}   
    BARRIER();   
-   stats(matmul(cid, nc, DIM_SIZE, input1_data, input2_data, results_data); BARRIER(), DIM_SIZE/DIM_SIZE/DIM_SIZE);
+   STATS(matmul(cid, nc, DIM_SIZE, input1_data, input2_data, results_data); BARRIER(), DIM_SIZE/DIM_SIZE/DIM_SIZE);
    BARRIER();
    #ifdef VERYFY_RESULT
    int res = verify(ARRAY_SIZE , results_data, verify_data);
