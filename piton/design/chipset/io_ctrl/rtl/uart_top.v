@@ -539,7 +539,11 @@ uart_mux   uart_mux (
       
       
     `else
-      uart_16550   uart_16550 (
+    
+    // Update to 16550a. Simply remove the "a" to downgrade. The riscvlib.py needs to match.
+    // OpenSBI also needs to be modified to match the used driver
+    
+      uart_16550a   uart_16550a (
         .s_axi_aclk       (axi_clk          ),  // input wire s_axi_aclk
         .s_axi_aresetn    (rst_n            ),  // input wire s_axi_aresetn
         .ip2intc_irpt     (uart_interrupt   ),  // output wire ip2intc_irpt
