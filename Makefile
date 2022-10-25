@@ -33,7 +33,7 @@ endif
 
 
  
-PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
+PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm --pronoc
 MORE_OPTIONS ?= ""
 
 #Don't rely on this to call the subprograms

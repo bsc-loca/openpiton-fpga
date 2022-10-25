@@ -92,7 +92,7 @@ synthesis-ariane:
             - make initialize CORE=ariane
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
-            - make protosyn_pronoc $DESIGN_OPTIONS CORE=ariane
+            - make protosyn $DESIGN_OPTIONS CORE=ariane
         after_script:
             - cp -rf build/alveou280/system/protosyn_logs ariane           
 
