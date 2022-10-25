@@ -1,7 +1,8 @@
 
 FPGA_TARGET ?= alveou280
 ROOT_DIR    =  $(PWD)
-PROJECT_SUBDIR =  $(ROOT_DIR)/build/$(FPGA_TARGET)/system/
+PITON_BUILD_DIR = $(ROOT_DIR)/build
+PROJECT_SUBDIR =  $(PITON_BUILD_DIR)/$(FPGA_TARGET)/system/
 PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
@@ -92,7 +93,7 @@ ci_bitstream:
 clean: clean_project
 	
 clean_all: clean_project
-	rm -rf $(PROJECT_SUBDIR)
+	rm -rf $(PITON_BUILD_DIR)/alveo*
 	
 clean_synthesis:	
 	rm -rf dcp/*

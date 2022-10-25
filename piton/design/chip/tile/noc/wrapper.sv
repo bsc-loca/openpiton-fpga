@@ -753,8 +753,8 @@ module pronoc_noc
 		.reset(reset),
 		.clk(clk),    
 		.chan_in_all (pronoc_chan_in ),
-		.chan_out_all(pronoc_chan_out),
-		.router_event()			
+		.chan_out_all(pronoc_chan_out)
+		//.router_event()			
 	);
 	
 	
