@@ -70,6 +70,7 @@ protosyn: clean_project $(RISCV_DIR)
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
 
 protosyn_pronoc: clean_project $(RISCV_DIR)
+	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
