@@ -205,6 +205,7 @@ class EthSyst {
   uint32_t volatile* ethCore;     // Ethernet core base address
   uint32_t volatile* cacheMem;    // cached system memory range for DMA usage
   uint32_t volatile* uncacheMem;  // uncached system memory range for DMA usage
+  uint8_t  volatile* cacheFlAddr; // Control address for enforced Cache Flush
   uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
   uint32_t volatile* dmaMemBsNC;  // virtual DMA memory non-cacheable base addr
   //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
@@ -232,6 +233,7 @@ class EthSyst {
   void alignedWrite(void*, unsigned);
   void alignedRead (void*, unsigned);
   uint16_t getReceiveDataLength(uint16_t);
+  uint8_t volatile cacheFlush(size_t);
 
   public:
   XTmrCtr timerCnt; // Instance of Timer counter
@@ -245,6 +247,9 @@ class EthSyst {
                        DRAM_UNCACHE_ADRRANGE - ETH_SYST_ADRRANGE*4,
     CACHE_MEM_ADDR   = DRAM_BASEADDR +
                        DRAM_ADRRANGE         - ETH_SYST_ADRRANGE*4,
+    // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
+    CACHE_FLUSH_BASEADDR = 0xAC00000000 + CACHE_MEM_ADDR,
+    CACHE_FLUSH_ADDRMASK = 0x03FFFFFFC0,
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
     DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR,
@@ -303,6 +308,10 @@ class EthSyst {
   int flushReceive();
   int frameSend(uint8_t*, unsigned);
   uint16_t frameRecv(uint8_t*);
+
+  uint64_t swap64(uint64_t);
+  uint32_t swap32(uint32_t);
+  uint16_t swap16(uint16_t);
 };
 
 #endif // end of protection macro

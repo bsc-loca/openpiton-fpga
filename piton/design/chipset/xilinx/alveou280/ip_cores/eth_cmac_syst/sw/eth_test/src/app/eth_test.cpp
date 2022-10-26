@@ -28,27 +28,6 @@ int udp_perf_server();
 int tcp_perf_client();
 int tcp_perf_server();
 
-uint64_t swap64(uint64_t val) {
-  return ((val << 56) & 0xFF00000000000000) |
-         ((val << 40) & 0x00FF000000000000) |
-         ((val << 24) & 0x0000FF0000000000) |
-         ((val << 8 ) & 0x000000FF00000000) |
-         ((val >> 8 ) & 0x00000000FF000000) |
-         ((val >> 24) & 0x0000000000FF0000) |
-         ((val >> 40) & 0x000000000000FF00) |
-         ((val >> 56) & 0x00000000000000FF) ;
-}
-uint32_t swap32(uint32_t val) {
-  return ((val << 24) & 0xFF000000) |
-         ((val << 8 ) & 0x00FF0000) |
-         ((val >> 8 ) & 0x0000FF00) |
-         ((val >> 24) & 0x000000FF) ;
-}
-uint16_t swap16(uint16_t val) {
-  return ((val << 8 ) & 0xFF00) |
-         ((val >> 8 ) & 0x00FF) ;
-}
-
 int main(int argc, char *argv[])
 {
   EthSyst ethSyst; // Instance of the Ethernet System driver
@@ -177,9 +156,9 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? swap64(val)       : val;
+          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
@@ -192,9 +171,9 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? swap64(val)       : val;
+          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
@@ -207,9 +186,9 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? swap64(val)       : val;
+          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
@@ -279,9 +258,9 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = rdCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? swap64(val)       : val;
+          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
           if (                 txMemRd8 [addrSwapped] !=  (val >> 56)) {
@@ -309,9 +288,9 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = rdCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? swap64(val)       : val;
+          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
           if (                 rxMemRd8 [addrSwapped] !=  (val >> 56)) {
@@ -340,9 +319,9 @@ int main(int argc, char *argv[])
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
           #ifndef DMA_MEM_HBM // sometimes BD region mapped to system memory doesn't pass check
-          uint16_t val16 = rdCachMem ? swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? swap64(val)       : val;
+          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
+          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
+          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
           size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
           if (                 sgMemRd8 [addrSwapped] !=  (val >> 56)) {
