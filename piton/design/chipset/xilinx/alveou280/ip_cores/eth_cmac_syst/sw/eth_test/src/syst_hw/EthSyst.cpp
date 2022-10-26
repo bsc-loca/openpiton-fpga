@@ -80,20 +80,32 @@ EthSyst::EthSyst() {
     exit(1);
   }
 
+  cacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_MEM_ADDR));
+  if (ethSystBase == MAP_FAILED) {
+    printf("Memory mapping of Ethernet system failed.\n");
+    exit(1);
+  }
+
 #ifdef DMA_MEM_HBM
-  dmaMemBase = uncacheMem;
+  dmaMemBase = cacheMem;
+  dmaMemBsNC = uncacheMem;
 #else
   dmaMemBase = ethSystBase;
+  dmaMemBsNC = ethSystBase;
 #endif
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
-  txMem    = dmaMemBase  + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  rxMem    = dmaMemBase  + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  sgMem    = dmaMemBase  + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
 
-  sgTxMem  = sgMem;
-  sgRxMem  = sgTxMem + (TX_SG_MEM_SIZE / sizeof(uint32_t));
+  txMem   = dmaMemBase + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+  rxMem   = dmaMemBase + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+  sgMem   = dmaMemBase + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+ 
+  txMemNC = dmaMemBsNC + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+  rxMemNC = dmaMemBsNC + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+  sgMemNC = dmaMemBsNC + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
 
+  sgTxMem  = sgMemNC; //sgMem;
+  sgRxMem  = sgTxMem + (SG_TX_MEM_SIZE / sizeof(uint32_t));
 }
 
 // EthSyst::~EthSyst() {
@@ -386,8 +398,8 @@ void EthSyst::dmaBDSetup(bool RxnTx)
 
   // Setup BD space
   size_t const sgMemVirtAddr = reinterpret_cast<size_t>(RxnTx ? sgRxMem        : sgTxMem);
-  size_t const sgMemPhysAddr =                          RxnTx ? RX_SG_MEM_ADDR : TX_SG_MEM_ADDR;
-  size_t const sgMemSize     =                          RxnTx ? RX_SG_MEM_SIZE : TX_SG_MEM_SIZE;
+  size_t const sgMemPhysAddr =                          RxnTx ? SG_RX_MEM_ADDR : SG_TX_MEM_ADDR;
+  size_t const sgMemSize     =                          RxnTx ? SG_RX_MEM_SIZE : SG_TX_MEM_SIZE;
 
 	uint32_t BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT, sgMemSize);
 	Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
@@ -654,7 +666,7 @@ int EthSyst::flushReceive() {
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
 	  uint32_t rxdBDs = 0;
 	  do {
-        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
+        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_MEM_ADDR);
         dmaBDTransfer(true, 1, 1, BdPtr);
         rxdBDs = dmaBDCheck(true);
         printf("Flushing %d Rx transfers \n", rxdBDs);
@@ -662,10 +674,10 @@ int EthSyst::flushReceive() {
   } else // in simple mode
     while ((XAxiDma_ReadReg(axiDma.RxBdRing[0].ChanBase, XAXIDMA_SR_OFFSET) & XAXIDMA_HALTED_MASK) ||
            !XAxiDma_Busy  (&axiDma, XAXIDMA_DEVICE_TO_DMA)) {
-      int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+      int status = XAxiDma_SimpleTransfer(&axiDma, RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
       if (XST_SUCCESS != status) {
         printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
-                RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
+                RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
         return status;
       }
       printf("Flushing Rx data... \n");
@@ -885,14 +897,14 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 	 */
     ByteCount = std::max((unsigned)ETH_MIN_PACK_SIZE, std::min(ByteCount, (unsigned)XAE_MAX_TX_FRAME_SIZE));
     if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, TX_DMA_MEM_ADDR);
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, TX_MEM_ADDR);
       dmaBDTransfer(false, 1, 1, BdPtr);
 	    return XST_SUCCESS;
     } else { // in simple mode
-      int status = XAxiDma_SimpleTransfer(&axiDma, TX_DMA_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
+      int status = XAxiDma_SimpleTransfer(&axiDma, TX_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
       if (XST_SUCCESS != status) {
          printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%lX with lenth %d failed with status %d\n",
-                TX_DMA_MEM_ADDR, ByteCount, status);
+                TX_MEM_ADDR, ByteCount, status);
       }
 	  return status;
 	}
@@ -1140,13 +1152,13 @@ uint16_t EthSyst::frameRecv(uint8_t* FramePtr)
 
   // Acknowledge the frame.
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_MEM_ADDR);
       dmaBDTransfer(true, 1, 1, BdPtr);
   } else { // in simple mode
-    int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+    int status = XAxiDma_SimpleTransfer(&axiDma, RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
     if (XST_SUCCESS != status) {
       printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
-             RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
+             RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
     }
   }
 

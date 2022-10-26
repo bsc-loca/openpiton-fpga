@@ -35,6 +35,22 @@ while {[gets $dv_xml line] >= 0} {
     }
   }
   # extracting uncached SDRAM address definitions
+  if      {[string first "<name>mem</name>" $line] >= 0} {
+    while {[string first "</port>"            $line] <  0} {
+      gets $dv_xml line
+      if        {[string first "<base>" $line] >= 0} {
+        set line [string map  {"<base>"  "DRAM_BASEADDR = "}  $line]
+        set line [string map  {"</base>" ","}                         $line]
+      } elseif  {[string first "<length>"         $line] >= 0} {
+        set line [string map  {"<length>" "DRAM_ADRRANGE = "} $line]
+        set line [string map  {"</length>" ","}                       $line]
+      } else {
+        continue
+      }
+      puts $bd_hdr $line
+    }
+  }
+  # extracting uncached SDRAM address definitions
   if      {[string first "<name>ncmem</name>" $line] >= 0} {
     while {[string first "</port>"            $line] <  0} {
       gets $dv_xml line
