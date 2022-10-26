@@ -22,6 +22,11 @@ openpiton)
     CORE=ariane
     echo "Selected build configuration: Ariane 1x1"
     ;;
+pronoc)
+    CORE=lagarto
+    PROTO_OPTIONS="--meep --eth --hbm --ncmem --pronoc"
+    echo "Selected build configuration: Lagarto 1x1 with Pronoc"
+    ;; 
 acme_v2)
     CORE=lagarto
     XTILES=2
@@ -33,8 +38,8 @@ acme_vpu)
     XTILES=2
     YTILES=2
     # Add VPU
-    PROTO_OPTIONS="--meep --eth --hbm --vpu"
-    echo "Selected build configuration: Lagarto 2x2 plus VPU"
+    PROTO_OPTIONS="--meep --eth --hbm --vpu --pronoc"
+    echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac
 

@@ -93,6 +93,7 @@ synthesis-ariane:
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
             - make protosyn $DESIGN_OPTIONS CORE=ariane
+            - "[ ! -f /dcp/synthesis.dcp ] && echo \"synthesis failed \" && exit 1"
         after_script:
             - cp -rf build/alveou280/system/protosyn_logs ariane           
 
@@ -124,6 +125,7 @@ synthesis-lagarto:
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
             - make protosyn $DESIGN_OPTIONS CORE=lagarto
+            - "[ ! -f /dcp/synthesis.dcp ] && echo \"synthesis failed \" && exit 1"  
         after_script:
             - mkdir -p lagarto
             - cp -rf build/alveou280/system/protosyn_logs lagarto
