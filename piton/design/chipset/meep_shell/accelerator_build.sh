@@ -27,6 +27,11 @@ pronoc)
     PROTO_OPTIONS="--meep --eth --hbm --ncmem --pronoc"
     echo "Selected build configuration: Lagarto 1x1 with Pronoc"
     ;; 
+meep_dvino)
+    CORE=lagarto
+    PROTO_OPTIONS="--meep --eth --hbm --ncmem --pronoc --vpu"
+    echo "Selected build configuration: MEEP DVINO with Pronoc"
+    ;;
 acme_v2)
     CORE=lagarto
     XTILES=2
