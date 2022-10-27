@@ -125,6 +125,10 @@ uint8_t volatile EthSyst::cacheFlush(size_t addr) {
   return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
 }
 
+void EthSyst::cacheInvalid(size_t addr) {
+  // dummy function so far
+}
+
 //***************** Endianess swap funtions *****************
 uint64_t EthSyst::swap64(uint64_t val) {
   return ((val << 56) & 0xFF00000000000000) |
@@ -989,11 +993,15 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 ******************************************************************************/
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
-	uint16_t length = rxMemNC[headerOffset / sizeof(uint32_t)];
+  #ifdef DMA_MEM_HBM
+	uint16_t length = swap32(rxMem[(headerOffset / sizeof(uint32_t))^1]);
+  #else
+	uint16_t length =        rxMem[ headerOffset / sizeof(uint32_t)   ];
+  #endif
 	length = ((length & 0xFF00) >> 8) | ((length & 0x00FF) << 8);
 
   printf("   Accepting packet at mem addr 0x%lX, extracting length/type %d(0x%X) at offset %d \n",
-              size_t(rxMemNC), length, length, headerOffset);
+              size_t(rxMem), length, length, headerOffset);
 
 	return length;
 }
@@ -1025,8 +1033,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	volatile uint16_t* From16Ptr;
 	uint8_t* To8Ptr;
 	volatile uint8_t* From8Ptr;
-
-	From32Ptr = (uint32_t*)rxMemNC;
+  size_t rxAddr = 0;
 
 	if ((((uint32_t) DestPtr) & 0x00000003) == 0) {
 
@@ -1039,7 +1046,14 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Output each word.
 			 */
-			*To32Ptr++ = *From32Ptr++;
+      #ifdef DMA_MEM_HBM
+        From32Ptr = &rxMem[rxAddr^1];
+        cacheInvalid(size_t(From32Ptr));
+        *To32Ptr++ = swap32(*From32Ptr);
+      #else
+        *To32Ptr++ = rxMem[rxAddr];
+      #endif
+      rxAddr++;
 
 			/*
 			 * Adjust length accordingly.
@@ -1063,7 +1077,14 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-			AlignBuffer = *From32Ptr++;
+      #ifdef DMA_MEM_HBM
+        From32Ptr = &rxMem[rxAddr^1];
+        cacheInvalid(size_t(From32Ptr));
+        AlignBuffer = swap32(*From32Ptr);
+      #else
+        AlignBuffer = rxMem[rxAddr];
+      #endif
+      rxAddr++;
 			From8Ptr = (uint8_t*) &AlignBuffer;
 
 			/*
@@ -1090,7 +1111,14 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-			AlignBuffer = *From32Ptr++;
+      #ifdef DMA_MEM_HBM
+        From32Ptr = &rxMem[rxAddr^1];
+        cacheInvalid(size_t(From32Ptr));
+        AlignBuffer = swap32(*From32Ptr);
+      #else
+        AlignBuffer = rxMem[rxAddr];
+      #endif
+      rxAddr++;
 
 			/*
 			 * This is a funny looking cast. The new gcc, version
@@ -1125,7 +1153,14 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	/*
 	 * Read the remaining data.
 	 */
-	AlignBuffer = *From32Ptr++;
+  #ifdef DMA_MEM_HBM
+    From32Ptr = &rxMem[rxAddr^1];
+    cacheInvalid(size_t(From32Ptr));
+    AlignBuffer = swap32(*From32Ptr);
+  #else
+    AlignBuffer = rxMem[rxAddr];
+  #endif
+  rxAddr++;
 	From8Ptr = (uint8_t*) &AlignBuffer;
 
 	for (Index = 0; Index < Length; Index++) {

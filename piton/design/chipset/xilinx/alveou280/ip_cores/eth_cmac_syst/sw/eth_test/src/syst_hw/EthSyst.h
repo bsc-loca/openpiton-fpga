@@ -234,6 +234,7 @@ class EthSyst {
   void alignedRead (void*, unsigned);
   uint16_t getReceiveDataLength(uint16_t);
   uint8_t volatile cacheFlush(size_t);
+  void cacheInvalid(size_t);
 
   public:
   XTmrCtr timerCnt; // Instance of Timer counter
