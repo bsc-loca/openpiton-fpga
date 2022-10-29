@@ -156,11 +156,6 @@ module sram_top (
                    
                     
                 noc_axi4_bridge #(
-                  `ifdef PITON_ARIANE
-                    .SWAP_ENDIANESS (1),
-                  `elsif PITON_LAGARTO
-                    .SWAP_ENDIANESS (1),
-                  `endif
                     .NOC2AXI_DESER_ORDER (1)
                 )
                  noc_axi4_bridge  (

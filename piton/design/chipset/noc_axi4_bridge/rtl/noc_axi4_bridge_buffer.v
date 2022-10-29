@@ -32,7 +32,7 @@
 
 
 module noc_axi4_bridge_buffer #(
-    parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
+    parameter ENDIANESS_SWAP_LOG = 3, // logarithm of max supported endianess swap data size, 0 means swap is off
     parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
     parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
@@ -235,12 +235,12 @@ assign write_req_addr = req_addr;
 
 
 // Transformation of write data according to queueed request
-reg [6:0] wr_size;
+reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] wr_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] wr_offset;
 always @(*) extractSize(req_header, wr_size, wr_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
-                                                                      wdata;
+wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = ENDIANESS_SWAP_LOG ? swapData(wdata, wr_size) :
+                                                                          wdata;
 
 // wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
 wire [`AXI4_STRB_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
@@ -507,13 +507,13 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-reg [6:0] rd_size;
+reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] rd_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] rd_offset;
 always @(*) extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size, rd_offset);
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
-wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped  = SWAP_ENDIANESS ? swapData(rdata_offseted, rd_size) :
-                                                                       rdata_offseted;
+wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped  = ENDIANESS_SWAP_LOG ? swapData(rdata_offseted, rd_size) :
+                                                                           rdata_offseted;
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata = rd_size[0] ? {`AXI4_DATA_WIDTH/8  {rdata_swapped[7  :0]}} :
                                     rd_size[1] ? {`AXI4_DATA_WIDTH/16 {rdata_swapped[15 :0]}} :
@@ -531,7 +531,7 @@ assign ser_header = stor_header;
 
 task automatic extractSize;
   input  [`MSG_HEADER_WIDTH-1 :0] header;
-  output [6:0] size;
+  output [$clog2(`AXI4_DATA_WIDTH/8)  :0] size;
   output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
   reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
   reg uncacheable;
@@ -542,40 +542,57 @@ task automatic extractSize;
                 (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
   if (uncacheable)
     case (header[`MSG_DATA_SIZE])
-      `MSG_DATA_SIZE_0B:  size = 7'd0;
-      `MSG_DATA_SIZE_1B:  size = 7'd1;
-      `MSG_DATA_SIZE_2B:  size = 7'd2;
-      `MSG_DATA_SIZE_4B:  size = 7'd4;
-      `MSG_DATA_SIZE_8B:  size = 7'd8;
-      `MSG_DATA_SIZE_16B: size = 7'd16;
-      `MSG_DATA_SIZE_32B: size = 7'd32;
-      `MSG_DATA_SIZE_64B: size = 7'd64;
-      default:            size = 7'b0; // should never end up here
+      `MSG_DATA_SIZE_0B:  size = 0;
+      `MSG_DATA_SIZE_1B:  size = 1;
+      `MSG_DATA_SIZE_2B:  size = 2;
+      `MSG_DATA_SIZE_4B:  size = 4;
+      `MSG_DATA_SIZE_8B:  size = 8;
+      `MSG_DATA_SIZE_16B: size = 16;
+      `MSG_DATA_SIZE_32B: size = 32;
+      `MSG_DATA_SIZE_64B: size = 64;
+      default:            size = 0; // should never end up here
     endcase
-  else                    size = 7'd64;
+  else                    size = 64;
   offset = uncacheable ? virt_addr : 0;
   end
 endtask
 
 
-function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
-  input [`AXI4_DATA_WIDTH-1:0] data;
-  input [6:0] size;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] swap_grnlty;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] itr_swp;
+function automatic [`AXI4_DATA_WIDTH    -1:0] swapData;
+  input [           `AXI4_DATA_WIDTH    -1:0] data;
+  input [$clog2    (`AXI4_DATA_WIDTH/8)   :0] size;
+  reg [$clog2(ENDIANESS_SWAP_LOG)   :0] swap_granlty_log;
+  reg [       ENDIANESS_SWAP_LOG  -1:0] swap_granlty;
+  reg [       ENDIANESS_SWAP_LOG    :0] itr_swp;
+  reg [       ENDIANESS_SWAP_LOG  -1:0] swap_granlties;
+  reg [       ENDIANESS_SWAP_LOG    :0] itr_grn;
+  localparam  DATA_PARTS = (`AXI4_DATA_WIDTH/8) >> ENDIANESS_SWAP_LOG;
+  reg [$clog2(DATA_PARTS)           :0] itr_prt;
+  reg [$clog2(`AXI4_DATA_WIDTH/8) -1:0] lo_swap_idx;
+  reg [$clog2(`AXI4_DATA_WIDTH/8) -1:0] hi_swap_idx;
   begin
-  // swap_grnlty = size - 7'h1;
-  // the following code produces less LUTs
-  swap_grnlty = size[0] ? 6'd0  :
-                size[1] ? 6'd1  :
-                size[2] ? 6'd3  :
-                size[3] ? 6'd7  :
-                size[4] ? 6'd15 :
-                size[5] ? 6'd31 :
-                          6'd63;
-  swapData = `AXI4_DATA_WIDTH'h0;
-  for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
-    swapData[itr_swp*8 +: 8] = data[(swap_grnlty - itr_swp)*8 +: 8];
+    // limiting swapping granularity to a set maximum
+    swap_granlty_log = size[0] ?                                               0 :
+                       size[1] ? ENDIANESS_SWAP_LOG < 1 ? ENDIANESS_SWAP_LOG : 1 :
+                       size[2] ? ENDIANESS_SWAP_LOG < 2 ? ENDIANESS_SWAP_LOG : 2 :
+                       size[3] ? ENDIANESS_SWAP_LOG < 3 ? ENDIANESS_SWAP_LOG : 3 :
+                       size[4] ? ENDIANESS_SWAP_LOG < 4 ? ENDIANESS_SWAP_LOG : 4 :
+                       size[5] ? ENDIANESS_SWAP_LOG < 5 ? ENDIANESS_SWAP_LOG : 5 :
+                                 ENDIANESS_SWAP_LOG < 6 ? ENDIANESS_SWAP_LOG : 6 ;
+
+    swap_granlty   = ( 1                        << swap_granlty_log) - 1;
+    swap_granlties = ((1 << ENDIANESS_SWAP_LOG) >> swap_granlty_log) - 1;
+
+    for (itr_prt = 0; itr_prt <= (DATA_PARTS-1); itr_prt = itr_prt+1) begin
+      lo_swap_idx[$clog2(`AXI4_DATA_WIDTH/8)-1 : ENDIANESS_SWAP_LOG] = itr_prt;
+      hi_swap_idx[$clog2(`AXI4_DATA_WIDTH/8)-1 : ENDIANESS_SWAP_LOG] = itr_prt;
+      for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
+      for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
+        lo_swap_idx[ENDIANESS_SWAP_LOG-1 : 0] = (itr_grn << swap_granlty_log) +                itr_swp;
+        hi_swap_idx[ENDIANESS_SWAP_LOG-1 : 0] = (itr_grn << swap_granlty_log) + swap_granlty - itr_swp;
+        swapData[lo_swap_idx*8 +: 8] = data[hi_swap_idx*8 +: 8];
+      end
+    end
   end
 endfunction
 
