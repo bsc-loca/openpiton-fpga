@@ -564,10 +564,8 @@ function automatic [`AXI4_DATA_WIDTH    -1:0] swapData;
   reg [$clog2(ENDIANESS_SWAP_LOG)   :0] swap_granlty_log;
   reg [       ENDIANESS_SWAP_LOG  -1:0] swap_granlty;
   reg [       ENDIANESS_SWAP_LOG    :0] itr_swp;
-  reg [       ENDIANESS_SWAP_LOG  -1:0] swap_granlties;
-  reg [       ENDIANESS_SWAP_LOG    :0] itr_grn;
-  localparam  DATA_PARTS = (`AXI4_DATA_WIDTH/8) >> ENDIANESS_SWAP_LOG;
-  reg [$clog2(DATA_PARTS)           :0] itr_prt;
+  reg [$clog2(`AXI4_DATA_WIDTH/8)-ENDIANESS_SWAP_LOG -1:0] swap_granlties;
+  reg [$clog2(`AXI4_DATA_WIDTH/8)-ENDIANESS_SWAP_LOG   :0] itr_grn;
   reg [$clog2(`AXI4_DATA_WIDTH/8) -1:0] lo_swap_idx;
   reg [$clog2(`AXI4_DATA_WIDTH/8) -1:0] hi_swap_idx;
   begin
@@ -580,18 +578,15 @@ function automatic [`AXI4_DATA_WIDTH    -1:0] swapData;
                        size[5] ? ENDIANESS_SWAP_LOG < 5 ? ENDIANESS_SWAP_LOG : 5 :
                                  ENDIANESS_SWAP_LOG < 6 ? ENDIANESS_SWAP_LOG : 6 ;
 
-    swap_granlty   = ( 1                        << swap_granlty_log) - 1;
-    swap_granlties = ((1 << ENDIANESS_SWAP_LOG) >> swap_granlty_log) - 1;
+    swap_granlties = (size >> swap_granlty_log) - 1;
+    swap_granlty   = (1    << swap_granlty_log) - 1;
 
-    for (itr_prt = 0; itr_prt <= (DATA_PARTS-1); itr_prt = itr_prt+1) begin
-      lo_swap_idx[$clog2(`AXI4_DATA_WIDTH/8)-1 : ENDIANESS_SWAP_LOG] = itr_prt;
-      hi_swap_idx[$clog2(`AXI4_DATA_WIDTH/8)-1 : ENDIANESS_SWAP_LOG] = itr_prt;
-      for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
-      for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
-        lo_swap_idx[ENDIANESS_SWAP_LOG-1 : 0] = (itr_grn << swap_granlty_log) +                itr_swp;
-        hi_swap_idx[ENDIANESS_SWAP_LOG-1 : 0] = (itr_grn << swap_granlty_log) + swap_granlty - itr_swp;
-        swapData[lo_swap_idx*8 +: 8] = data[hi_swap_idx*8 +: 8];
-      end
+    swapData = `AXI4_DATA_WIDTH'bX;
+    for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
+    for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
+      lo_swap_idx =  (itr_grn << swap_granlty_log) +                itr_swp;
+      hi_swap_idx =  (itr_grn << swap_granlty_log) + swap_granlty - itr_swp;
+      swapData[lo_swap_idx*8 +: 8] = data[hi_swap_idx*8 +: 8];
     end
   end
 endfunction
