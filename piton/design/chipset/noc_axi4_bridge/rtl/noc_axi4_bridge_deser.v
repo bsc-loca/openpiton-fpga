@@ -32,8 +32,8 @@
 
 
 module noc_axi4_bridge_deser #(
-    // NOC words to AXI word deserialization order
-    parameter NOC2AXI_DESER_ORDER = 0
+  parameter SWAP_ENDIANESS = 0,
+  parameter NOC2AXI_DESER_ORDER = 0 // NOC words to AXI word deserialization order
 ) (
   input clk, 
   input rst_n, 
@@ -66,6 +66,11 @@ assign flit_in_rdy = (state != SEND) & phy_init_done;
 wire flit_in_go = flit_in_val & flit_in_rdy;
 assign out_val = (state == SEND);
 
+reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] dat_offset;
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
+always @(*) noc_extractSize(header_out, dat_size_log, dat_offset);
+wire [`NOC_DATA_WIDTH -1:0] data_swapped = SWAP_ENDIANESS ? swapData(flit_in, dat_size_log) :
+                                                                     flit_in;
 always @(posedge clk) begin
   if(~rst_n) begin
     state <= ACCEPT_W1;
@@ -171,7 +176,7 @@ generate
         in_data_buf[i] <= 0;
       end 
       else begin
-        in_data_buf[i] <= (i == remaining_flits) & flit_in_val & (state == ACCEPT_DATA) ? flit_in 
+        in_data_buf[i] <= (i == remaining_flits) & flit_in_val & (state == ACCEPT_DATA) ? data_swapped 
                         : (state == SEND) & out_rdy                                     ? 0
                         :                                                                 in_data_buf[i];
       end

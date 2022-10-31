@@ -31,7 +31,9 @@
 `include "noc_axi4_bridge_define.vh"
 
 
-module noc_axi4_bridge_ser(
+module noc_axi4_bridge_ser #(
+  parameter SWAP_ENDIANESS = 0
+) (
   input clk, 
   input rst_n, 
 
@@ -46,11 +48,14 @@ module noc_axi4_bridge_ser(
 );
 
 // states
+reg [1:0] state;
 localparam ACCEPT = 2'd0;
 localparam SEND_HEADER = 2'd1;
 localparam SEND_DATA = 2'd2;
 
-reg [`AXI4_DATA_WIDTH-1:0] data_in_f;
+reg [`AXI4_DATA_WIDTH     -1:0] data_in_f;
+reg [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log_f;
+reg [`NOC_DATA_WIDTH      -1:0] data_swapped;
 
 wire in_go = in_val & in_rdy;
 wire flit_out_go = flit_out_val & flit_out_rdy;
@@ -62,12 +67,13 @@ always @(posedge clk) begin
   else if (in_go) begin
     data_in_f <= data_in;
   end
-  else begin
-    data_in_f <= data_in_f;
+  else if (flit_out_go) begin
+    data_in_f <= data_in_f >> `NOC_DATA_WIDTH;
+    data_swapped <= SWAP_ENDIANESS ? swapData(data_in_f, dat_size_log_f) :
+                                              data_in_f;
   end
 end
 
-reg [1:0] state;
 reg [`MSG_LENGTH_WIDTH-1:0] remaining_flits;
 assign flit_out_val = (state == SEND_HEADER) || (state == SEND_DATA);
 assign in_rdy = (state == ACCEPT);
@@ -120,6 +126,10 @@ always @(posedge clk) begin
   end
 end
 
+reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] dat_offset;
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
+always @(*) noc_extractSize(header_in, dat_size_log, dat_offset);
+
 always @(posedge clk) begin
   if (~rst_n) begin
     resp_header <= `NOC_DATA_WIDTH'b0;
@@ -134,6 +144,7 @@ always @(posedge clk) begin
           resp_header[`MSG_DST_FBITS   ]     <= header_in[`MSG_SRC_FBITS ];
           resp_header[`MSG_MSHRID      ]     <= header_in[`MSG_MSHRID    ];
           resp_header[`MSG_OPTIONS_1   ]     <= {`MSG_OPTIONS_1_WIDTH{1'b0}};
+          dat_size_log_f                     <= dat_size_log;
           case (header_in[`MSG_TYPE])
             `MSG_TYPE_LOAD_MEM: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_LOAD_MEM_ACK;
@@ -195,7 +206,7 @@ always @(*) begin
       flit_out = resp_header;
     end
     SEND_DATA: begin
-      flit_out = data_in_f >> (64 * (`PAYLOAD_LEN - remaining_flits));
+      flit_out = data_swapped;
     end
     default: begin
       flit_out = `NOC_DATA_WIDTH'b0;

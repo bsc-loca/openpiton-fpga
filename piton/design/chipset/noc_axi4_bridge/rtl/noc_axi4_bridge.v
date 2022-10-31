@@ -146,7 +146,6 @@ wire ser_rdy;
 
 
 noc_axi4_bridge_buffer #(
-    .ENDIANESS_SWAP_LOG (ENDIANESS_SWAP_LOG),
     .ADDR_OFFSET (ADDR_OFFSET),
     .ADDR_SWAP_LBITS(ADDR_SWAP_LBITS),
     .ADDR_SWAP_MSB  (ADDR_SWAP_MSB),
@@ -198,6 +197,7 @@ noc_axi4_bridge_buffer #(
 );
 
 noc_axi4_bridge_deser #(
+    .SWAP_ENDIANESS      (ENDIANESS_SWAP_LOG ),
     .NOC2AXI_DESER_ORDER (NOC2AXI_DESER_ORDER)
 ) noc_axi4_bridge_deser (
     .clk(clk), 
@@ -304,7 +304,9 @@ noc_axi4_bridge_write #(
     .m_axi_bready(m_axi_bready)
 );
 
-noc_axi4_bridge_ser noc_axi4_bridge_ser(
+noc_axi4_bridge_ser #(
+    .SWAP_ENDIANESS (ENDIANESS_SWAP_LOG)
+) noc_axi4_bridge_ser (
     .clk(clk), 
     .rst_n(rst_n), 
 
@@ -319,3 +321,54 @@ noc_axi4_bridge_ser noc_axi4_bridge_ser(
 );
 
 endmodule
+
+
+task automatic noc_extractSize;
+  input  [`MSG_HEADER_WIDTH-1 :0] header;
+  output [`MSG_DATA_SIZE_WIDTH      -1:0] size_log;
+  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
+  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
+  reg uncacheable;
+  begin
+    virt_addr = header[`MSG_ADDR];
+    uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
+                  (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
+                  (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+    offset   = uncacheable ? virt_addr : 0;
+    size_log = uncacheable ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
+  end
+endtask
+
+
+function automatic [`NOC_DATA_WIDTH -1:0] swapData;
+  input [           `NOC_DATA_WIDTH -1:0] data;
+  input [`MSG_DATA_SIZE_WIDTH       -1:0] size_log;
+  reg [  `MSG_DATA_SIZE_WIDTH       -1:0] swap_granlty_log;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] swap_granlty;
+  reg [$clog2(`NOC_DATA_WIDTH/8)      :0] itr_swp;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] swap_granlties;
+  reg [$clog2(`NOC_DATA_WIDTH/8)      :0] itr_grn;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] lo_swap_idx;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] hi_swap_idx;
+  begin
+    // limiting swapping granularity to data width
+    swap_granlty_log = size_log < $clog2(`NOC_DATA_WIDTH/8) ? size_log : $clog2(`NOC_DATA_WIDTH/8);
+
+    swap_granlties = ((`NOC_DATA_WIDTH/8) >> swap_granlty_log) - 1;
+    swap_granlty   = (                 1  << swap_granlty_log) - 1;
+
+    swapData = `AXI4_DATA_WIDTH'bX;
+    for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
+    for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
+      lo_swap_idx =  (itr_grn << swap_granlty_log) +                itr_swp;
+      hi_swap_idx =  (itr_grn << swap_granlty_log) + swap_granlty - itr_swp;
+      swapData[lo_swap_idx*8 +: 8] = data[hi_swap_idx*8 +: 8];
+    end
+  end
+endfunction
+
+
+function integer clip2zer;
+  input integer val;
+  clip2zer = val < 0 ? 0 : val;
+endfunction
