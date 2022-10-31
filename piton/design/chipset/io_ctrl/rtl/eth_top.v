@@ -340,6 +340,7 @@ noc_axilite_bridge #(
 );
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
 noc_axi4_bridge #(
+    .SWAP_ENDIANESS (SWAP_ENDIANESS),
     .NOC2AXI_DESER_ORDER (1)
 ) noc_ethernet_bridge (
     .clk                (net_axi_clk     ),  

@@ -240,6 +240,11 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire                               sram_axi_bready;
 
  noc_axi4_bridge #(
+    `ifdef PITON_ARIANE
+      .SWAP_ENDIANESS (1),
+    `elsif PITON_LAGARTO
+      .SWAP_ENDIANESS (1),
+    `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
       `ifdef PITON_FPGA_MC_HBM
@@ -1073,7 +1078,6 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 // system memory base address from devices.xml, unaligned with memory size and thus is subtracted from access memory address
 localparam MEM_BASE_UNALIGN = `AXI4_ADDR_WIDTH'h80000000;
 noc_axi4_bridge #(
-    .ENDIANESS_SWAP_LOG(0),
   `ifdef PITON_FPGA_MC_HBM
     .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
     .ADDR_SWAP_LBITS(HBM_MCS_LOG2),

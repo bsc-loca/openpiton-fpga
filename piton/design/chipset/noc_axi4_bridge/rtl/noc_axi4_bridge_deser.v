@@ -32,7 +32,7 @@
 
 
 module noc_axi4_bridge_deser #(
-  parameter SWAP_ENDIANESS = 0,
+  parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
   parameter NOC2AXI_DESER_ORDER = 0 // NOC words to AXI word deserialization order
 ) (
   input clk, 
@@ -49,18 +49,18 @@ module noc_axi4_bridge_deser #(
   input  out_rdy
 );
 
+reg [2:0] state;
 localparam ACCEPT_W1   = 3'd0;
 localparam ACCEPT_W2   = 3'd1;
 localparam ACCEPT_W3   = 3'd2;
 localparam ACCEPT_DATA = 3'd3;
 localparam SEND        = 3'd4;
 
-reg [`NOC_DATA_WIDTH-1:0]           pkt_w1;
-reg [`NOC_DATA_WIDTH-1:0]           pkt_w2;
-reg [`NOC_DATA_WIDTH-1:0]           pkt_w3; 
-reg [`NOC_DATA_WIDTH-1:0]           in_data_buf[`PAYLOAD_LEN-1:0]; //buffer for incomming packets
-reg [`MSG_LENGTH_WIDTH-1:0]         remaining_flits; //flits remaining in current packet
-reg [2:0]                           state;
+reg [`NOC_DATA_WIDTH  -1:0] pkt_w1;
+reg [`NOC_DATA_WIDTH  -1:0] pkt_w2;
+reg [`NOC_DATA_WIDTH  -1:0] pkt_w3;
+reg [`NOC_DATA_WIDTH  -1:0] in_data_buf[`PAYLOAD_LEN-1:0]; //buffer for incomming packets
+reg [`MSG_LENGTH_WIDTH-1:0] remaining_flits; //flits remaining in current packet
 
 assign flit_in_rdy = (state != SEND) & phy_init_done;
 wire flit_in_go = flit_in_val & flit_in_rdy;
@@ -71,15 +71,9 @@ reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
 always @(*) noc_extractSize(header_out, dat_size_log, dat_offset);
 wire [`NOC_DATA_WIDTH -1:0] data_swapped = SWAP_ENDIANESS ? swapData(flit_in, dat_size_log) :
                                                                      flit_in;
-always @(posedge clk) begin
-  if(~rst_n) begin
-    state <= ACCEPT_W1;
-    remaining_flits <= 0;
-    pkt_w1 <= 0;
-    pkt_w2 <= 0;
-    pkt_w3 <= 0;
-  end 
-  else begin
+always @(posedge clk)
+  if(~rst_n) state <= ACCEPT_W1;
+  else
     case (state)
       ACCEPT_W1: begin
         if (flit_in_go) begin
@@ -87,13 +81,6 @@ always @(posedge clk) begin
           remaining_flits <= flit_in[`MSG_LENGTH]-1;
           pkt_w1 <= flit_in;  
         end
-        else begin
-          state <= state;
-          remaining_flits <= remaining_flits;
-          pkt_w1 <= pkt_w1;
-        end
-        pkt_w2 <= pkt_w2;
-        pkt_w3 <= pkt_w3;  
       end
       ACCEPT_W2: begin
         if (flit_in_go) begin
@@ -101,90 +88,43 @@ always @(posedge clk) begin
           remaining_flits <= remaining_flits - 1;
           pkt_w2 <= flit_in;
         end
-        else begin
-          state <= state;
-          remaining_flits <= remaining_flits;
-          pkt_w2 <= pkt_w2;
-        end
-        pkt_w1 <= pkt_w1;
-        pkt_w3 <= pkt_w3;  
       end
       ACCEPT_W3: begin
         if (flit_in_go) begin
-          if (remaining_flits == 0) begin
+          if (remaining_flits == 0)
             state <= SEND;
-            remaining_flits <= 0;
-          end
           else begin
             state <= ACCEPT_DATA;
             remaining_flits <= remaining_flits - 1;
           end
           pkt_w3 <= flit_in;  
         end
-        else begin
-          state <= state;
-          remaining_flits <= remaining_flits;
-          pkt_w3 <= pkt_w3;  
-        end
-        pkt_w1 <= pkt_w1;
-        pkt_w2 <= pkt_w2;
       end
       ACCEPT_DATA: begin
         if (flit_in_go) begin
-          if (remaining_flits == 0) begin
+          if (remaining_flits == 0)
             state <= SEND;
-            remaining_flits <= 0;
-          end
           else begin
             state <= ACCEPT_DATA;
             remaining_flits <= remaining_flits - 1;
           end
         end
-        else begin
-          state <= state;
-          remaining_flits <= remaining_flits;
-        end
-        pkt_w1 <= pkt_w1;
-        pkt_w2 <= pkt_w2;
-        pkt_w3 <= pkt_w3;  
+        if (flit_in_val)
+          in_data_buf[remaining_flits] <= data_swapped;
       end
       SEND: begin
-        if (out_rdy) begin
+        if (out_rdy)
           state <= ACCEPT_W1;
-          remaining_flits <= 0;
-          pkt_w1 <= 0;
-          pkt_w2 <= 0;
-          pkt_w3 <= 0;
-        end
-        else begin
-          state <= state;
-          remaining_flits <= remaining_flits;
-          pkt_w1 <= pkt_w1;
-          pkt_w2 <= pkt_w2;
-          pkt_w3 <= pkt_w3;  
-        end
+      end
+      default: begin
+        // should never end up here
+        state <= 3'bX;
+        remaining_flits <= `MSG_LENGTH_WIDTH'bX;
+        pkt_w1 <= `NOC_DATA_WIDTH'bX;
+        pkt_w2 <= `NOC_DATA_WIDTH'bX;
+        pkt_w3 <= `NOC_DATA_WIDTH'bX;
       end
     endcase // state
-  end
-end
-
-genvar i;
-generate
-  for (i = 0; i < `PAYLOAD_LEN; i = i + 1) begin
-    always @(posedge clk) begin
-      if(~rst_n) begin
-        in_data_buf[i] <= 0;
-      end 
-      else begin
-        in_data_buf[i] <= (i == remaining_flits) & flit_in_val & (state == ACCEPT_DATA) ? data_swapped 
-                        : (state == SEND) & out_rdy                                     ? 0
-                        :                                                                 in_data_buf[i];
-      end
-    end
-  end
-endgenerate
-
-
 
 assign header_out = {pkt_w3, pkt_w2, pkt_w1};
 // Alex Kropotov: workaround to ovecome probably incorrect assignment

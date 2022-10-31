@@ -1743,6 +1743,11 @@ fake_uart fake_uart (
 
 localparam HBM_WIDTH = 256;
 noc_axi4_bridge #(
+                  `ifdef PITON_ARIANE
+                    .SWAP_ENDIANESS (1),
+                  `elsif PITON_LAGARTO
+                    .SWAP_ENDIANESS (1),
+                  `endif
                     .NOC2AXI_DESER_ORDER (1),
                     .AXI4_DAT_WIDTH_USED (HBM_WIDTH)
                 )

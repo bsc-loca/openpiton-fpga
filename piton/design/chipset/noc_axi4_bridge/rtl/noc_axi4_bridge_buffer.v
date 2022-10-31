@@ -239,15 +239,7 @@ reg [`MSG_DATA_SIZE_WIDTH      -1:0] wr_size_log;
 always @(*) noc_extractSize(req_header, wr_size_log, wr_offset);
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] wr_size = 1 << wr_size_log;
-// wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-wire [`AXI4_STRB_WIDTH-1:0]  wstrb = wr_size[0] ? { 1{1'b1}} :
-                                     wr_size[1] ? { 2{1'b1}} :
-                                     wr_size[2] ? { 4{1'b1}} :
-                                     wr_size[3] ? { 8{1'b1}} :
-                                     wr_size[4] ? {16{1'b1}} :
-                                     wr_size[5] ? {32{1'b1}} :
-                                     wr_size[6] ? {64{1'b1}} :
-                                     `AXI4_DATA_WIDTH'h0;
+wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
 
 assign write_req_data = wdata << (8*wr_offset);
 assign write_req_strb = wstrb <<    wr_offset;

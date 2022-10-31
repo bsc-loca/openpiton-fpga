@@ -32,7 +32,7 @@
 
 module noc_axi4_bridge #(
     parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
-    parameter ENDIANESS_SWAP_LOG = $clog2(`AXI4_DATA_WIDTH/8), // logarithm of max supported endianess swap data size, 0 means swap is off
+    parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter NOC2AXI_DESER_ORDER = 0, // NOC words to AXI word deserialization order
     parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
@@ -197,7 +197,7 @@ noc_axi4_bridge_buffer #(
 );
 
 noc_axi4_bridge_deser #(
-    .SWAP_ENDIANESS      (ENDIANESS_SWAP_LOG ),
+    .SWAP_ENDIANESS      (SWAP_ENDIANESS),
     .NOC2AXI_DESER_ORDER (NOC2AXI_DESER_ORDER)
 ) noc_axi4_bridge_deser (
     .clk(clk), 
@@ -305,7 +305,7 @@ noc_axi4_bridge_write #(
 );
 
 noc_axi4_bridge_ser #(
-    .SWAP_ENDIANESS (ENDIANESS_SWAP_LOG)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
 ) noc_axi4_bridge_ser (
     .clk(clk), 
     .rst_n(rst_n), 
@@ -357,7 +357,6 @@ function automatic [`NOC_DATA_WIDTH -1:0] swapData;
     swap_granlties = ((`NOC_DATA_WIDTH/8) >> swap_granlty_log) - 1;
     swap_granlty   = (                 1  << swap_granlty_log) - 1;
 
-    swapData = `AXI4_DATA_WIDTH'bX;
     for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
     for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
       lo_swap_idx =  (itr_grn << swap_granlty_log) +                itr_swp;
