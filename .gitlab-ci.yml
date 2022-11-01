@@ -223,7 +223,8 @@ fpga-shell-trigger:
             COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell
-                branch: master
+                #branch: master
+                branch: develop/trigger_cicd
                 strategy: depend
 
 
