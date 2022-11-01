@@ -503,14 +503,13 @@ always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size_log, rd_
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] rd_size = 1 << rd_size_log;
-wire [`AXI4_DATA_WIDTH-1:0]  rdata = rd_size[0] ? {`AXI4_DATA_WIDTH/8  {rdata_offseted[7  :0]}} :
-                                     rd_size[1] ? {`AXI4_DATA_WIDTH/16 {rdata_offseted[15 :0]}} :
-                                     rd_size[2] ? {`AXI4_DATA_WIDTH/32 {rdata_offseted[31 :0]}} :
-                                     rd_size[3] ? {`AXI4_DATA_WIDTH/64 {rdata_offseted[63 :0]}} :
-                                     rd_size[4] ? {`AXI4_DATA_WIDTH/128{rdata_offseted[127:0]}} :
-                                     rd_size[5] ? {`AXI4_DATA_WIDTH/256{rdata_offseted[255:0]}} :
-                                     rd_size[6] ? {`AXI4_DATA_WIDTH/512{rdata_offseted[511:0]}} :
-                                                   `AXI4_DATA_WIDTH'h0;
+wire [`AXI4_DATA_WIDTH -1:0] rdata = rd_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
+                                     rd_size[1] ? {32 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/32]}} :
+                                     rd_size[2] ? {16 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/16]}} :
+                                     rd_size[3] ? {8  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/8 ]}} :
+                                     rd_size[4] ? {4  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/4 ]}} :
+                                     rd_size[5] ? {2  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/2 ]}} :
+                                     rd_size[6] ?      rdata_offseted     : `AXI4_DATA_WIDTH'h0;
 
 assign ser_val    = stor_hdr_en;
 assign ser_data   = stor_command ? `AXI4_DATA_WIDTH'b0 : rdata;

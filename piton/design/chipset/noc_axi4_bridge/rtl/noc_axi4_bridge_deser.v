@@ -44,7 +44,7 @@ module noc_axi4_bridge_deser #(
   input phy_init_done,
 
   output [`MSG_HEADER_WIDTH-1:0] header_out, 
-  output [`AXI4_DATA_WIDTH-1:0] data_out, 
+  output reg [`AXI4_DATA_WIDTH-1:0] data_out, 
   output out_val, 
   input  out_rdy
 );
@@ -127,22 +127,11 @@ always @(posedge clk)
     endcase // state
 
 assign header_out = {pkt_w3, pkt_w2, pkt_w1};
-// Alex Kropotov: workaround to ovecome probably incorrect assignment
-assign data_out = NOC2AXI_DESER_ORDER ? {in_data_buf[7],
-                                         in_data_buf[6],
-                                         in_data_buf[5],
-                                         in_data_buf[4],
-                                         in_data_buf[3],
-                                         in_data_buf[2],
-                                         in_data_buf[1],
-                                         in_data_buf[0]} :
-                                        {in_data_buf[0],
-                                         in_data_buf[1],
-                                         in_data_buf[2],
-                                         in_data_buf[3],
-                                         in_data_buf[4],
-                                         in_data_buf[5],
-                                         in_data_buf[6],
-                                         in_data_buf[7]};
+
+reg [$clog2(`PAYLOAD_LEN) :0] itr_flt;
+always @(*)
+  for (itr_flt = 0; itr_flt <= (`PAYLOAD_LEN-1); itr_flt = itr_flt+1)
+    data_out[itr_flt * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH] = NOC2AXI_DESER_ORDER ? in_data_buf[                  itr_flt] :
+                                                                                   in_data_buf[`PAYLOAD_LEN -1 - itr_flt];
 
 endmodule
