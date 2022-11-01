@@ -198,6 +198,14 @@ push-lagarto:
             - git commit -m "CICD triggered by VAS update - $COMMIT_MESG"
             - git remote set-url --push origin "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY"
             - git push --set-upstream "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY" acme_ci/$COMMIT_REF
+            #### Get the new SHA, and store it so it can be passed to the FPGA trigger job ###
+            - NEW_BRANCH=$(git branch --show-current) 
+            - echo NEW_BRANCH=$NEW_BRANCH >> branch_info.env
+            - echo NEW_BRANCH_SHA=$(git rev-parse $NEW_BRANCH) >> branch_info.env
+        artifacts:
+            when: always            
+            reports:
+             dotenv: branch_info.env
 
 # This is the last job in the triggered pipeline, which triggers the FPGA shell CICD
 # The shell will receive the CI_COMMIT_SHA variable, so it can update the ea_url.txt file
@@ -210,10 +218,12 @@ fpga-shell-trigger:
         needs: 
             - push-lagarto
         variables:
-            COMMIT_SHA: $CI_COMMIT_SHA
+            COMMIT_SHA: $NEW_BRANCH_SHA 
+            COMMIT_REF: $NEW_BRANCH
+            COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell
-                branch: main
+                branch: master
                 strategy: depend
 
 
