@@ -7,7 +7,7 @@ workflow:
     rules:
         - !reference [.workflow_default_rules, rules]
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-        - if: $CI_PIPELINE_SOURCE == "trigger"
+        - if: $CI_PIPELINE_SOURCE == "pipeline"
         - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
           when: never  
         - if: $CI_COMMIT_TAG != null 
@@ -22,12 +22,25 @@ variables:
     DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
-    MYSCRIPT: /home/dmazure/workspace/gitlab_script.sh
+    MYSCRIPT: /home/dmazure/workspace/gitlab_script_op.sh
 
 .default_rules:
   rules:
     if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
     #- when: always
+
+.lagarto_rules:
+    rules:
+        - !reference [.default_rules, rules]
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_PIPELINE_SOURCE == "pipeline"  
+
+.ariane_rules:
+    rules:
+        - !reference [.default_rules, rules]
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_PIPELINE_SOURCE == "pipeline"
+          when: never # Trigger events are for VAS updates    
 
 .workflow_default_rules:  
   rules:
@@ -48,11 +61,7 @@ synthesis-ariane:
         stage: synthesis
         tags: 
             - MEEP_FPGA 
-        rules:
-            - !reference [.default_rules, rules]
-            - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-            - if: $CI_PIPELINE_SOURCE == "trigger"
-              when: never # Trigger events are for VAS updates
+        extends: .ariane_rules
         #except:
         #    changes:
         #        - piton/design/chip/tile/vas_tile_core
@@ -65,6 +74,7 @@ synthesis-ariane:
         timeout: 6h
         
         before_script:
+            - !reference [.git_clean, before_script]
             - export PITON_ROOT=`pwd`
             - mkdir -p ariane
         script:
@@ -75,7 +85,7 @@ synthesis-ariane:
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
             - make protosyn $DESIGN_OPTIONS CORE=ariane
-            - "[ ! -f /dcp/synthesis.dcp ] && echo \"synthesis failed \" && exit 1"
+            - !reference [.check_synth, script]
         after_script:
             - cp -rf build/alveou280/system/protosyn_logs ariane           
 
@@ -89,10 +99,7 @@ synthesis-lagarto:
         stage: synthesis
         tags:
             - MEEP_FPGA
-        rules:
-            - !reference [.default_rules, rules]
-            - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-            - if: $CI_PIPELINE_SOURCE == "trigger"          
+        extends: .lagarto_rules        
         variables:        
               GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
@@ -101,6 +108,7 @@ synthesis-lagarto:
         retry: 1
         timeout: 6h        
         before_script:
+            - !reference [.git_clean, before_script]
             - export PITON_ROOT=`pwd`
             - mkdir -p lagarto
         script:
@@ -116,7 +124,7 @@ synthesis-lagarto:
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
             - make protosyn $DESIGN_OPTIONS CORE=lagarto
-            - "[ ! -f /dcp/synthesis.dcp ] && echo \"synthesis failed \" && exit 1"  
+            - !reference [.check_synth, script]
         after_script:
             - mkdir -p lagarto
             - cp -rf build/alveou280/system/protosyn_logs lagarto
@@ -131,6 +139,7 @@ validation-ariane:
         stage: validation
         tags:
             - MEEP_FPGA
+        extends: .ariane_rules
         needs:
             - synthesis-ariane
             # Do we need to setup same rules as the needed job?
@@ -143,6 +152,7 @@ validation-lagarto:
         stage: validation
         tags:
             - MEEP_FPGA
+        extends: .lagarto_rules
         needs:
             - synthesis-lagarto
         script:
@@ -154,6 +164,7 @@ deploy-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
+        extends: .lagarto_rules
         needs:
             - synthesis-lagarto
         before_script:
@@ -170,6 +181,7 @@ push-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
+        extends: .lagarto_rules
         needs:
             - validation-lagarto 
         variables:
@@ -194,10 +206,9 @@ push-lagarto:
 
 fpga-shell-trigger:
         stage: push-shell
+        extends: .lagarto_rules
         needs: 
             - push-lagarto
-        rules:
-            - if: $CI_COMMIT_BRANCH =~ "/^acme_ci/" && $CI_PIPELINE_SOURCE == "push"
         variables:
             COMMIT_SHA: $CI_COMMIT_SHA
         trigger: 
@@ -207,3 +218,18 @@ fpga-shell-trigger:
 
 
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
+##
+
+.git_clean:
+    before_script:
+        - git config --local --unset http.proxy || true
+        - git config --local --unset https.proxy || true
+
+
+.check_synth:
+  script:
+    - |
+      if [ ! -f dcp/synthesis.dcp ]; then 
+        echo "dcp file has not been created"
+        exit 23; 
+      fi;        
