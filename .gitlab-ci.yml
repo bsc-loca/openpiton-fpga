@@ -51,6 +51,7 @@ stages:
   - validation
   - deploy-openpiton
   - push-shell
+  - clean
   
 
 ###################################
@@ -226,6 +227,22 @@ fpga-shell-trigger:
                 #branch: master
                 branch: develop/trigger_cicd
                 strategy: depend
+
+clean-on-failure:
+    stage: clean
+    needs: 
+        - push-lagarto
+    extends: .lagarto_rules
+    when: on_failure
+    script:
+        # If the shell pipeline fails, remove the release commit from OpenPiton repo
+        - | 
+            if git show-ref --quiet refs/heads/acme_ci/$COMMIT_REF; then
+                echo "Deleting acme_ci/$COMMIT_REF branch"
+                git push -d origin acme_ci/$COMMIT_REF
+            fi
+
+
 
 
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
