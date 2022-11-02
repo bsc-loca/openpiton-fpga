@@ -228,6 +228,10 @@ fpga-shell-trigger:
                 branch: develop/trigger_cicd
                 strategy: depend
 
+# TODO: on_failure will not get the trigger dependency, doesn't work.
+# We need to decide if it is necessary remove from OpenPiton's repo  
+# the release candidates.
+
 clean-on-failure:
     stage: clean
     needs: 
