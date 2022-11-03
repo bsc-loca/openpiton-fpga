@@ -130,26 +130,35 @@ void EthSyst::cacheInvalid(size_t addr) {
 }
 
 //***************** Endianess swap funtions *****************
-uint64_t EthSyst::swap64(uint64_t val) {
-  return ((val << 56) & 0xFF00000000000000) |
-         ((val << 40) & 0x00FF000000000000) |
-         ((val << 24) & 0x0000FF0000000000) |
-         ((val << 8 ) & 0x000000FF00000000) |
-         ((val >> 8 ) & 0x00000000FF000000) |
-         ((val >> 24) & 0x0000000000FF0000) |
-         ((val >> 40) & 0x000000000000FF00) |
-         ((val >> 56) & 0x00000000000000FF) ;
-}
-uint32_t EthSyst::swap32(uint32_t val) {
-  return ((val << 24) & 0xFF000000) |
-         ((val << 8 ) & 0x00FF0000) |
-         ((val >> 8 ) & 0x0000FF00) |
-         ((val >> 24) & 0x000000FF) ;
-}
-uint16_t EthSyst::swap16(uint16_t val) {
-  return ((val << 8 ) & 0xFF00) |
-         ((val >> 8 ) & 0x00FF) ;
-}
+// example: size_t addrSwapped = addr ^ (sizeof(uint64_t)-1);
+
+// uint64_t EthSyst::swap64(uint64_t val) {
+//   return ((val << 56) & 0xFF00000000000000) |
+//          ((val << 40) & 0x00FF000000000000) |
+//          ((val << 24) & 0x0000FF0000000000) |
+//          ((val << 8 ) & 0x000000FF00000000) |
+//          ((val >> 8 ) & 0x00000000FF000000) |
+//          ((val >> 24) & 0x0000000000FF0000) |
+//          ((val >> 40) & 0x000000000000FF00) |
+//          ((val >> 56) & 0x00000000000000FF) ;
+// }
+// example: mem64[addr/8] = swap64(val);
+
+// uint32_t EthSyst::swap32(uint32_t val) {
+//   return ((val << 24) & 0xFF000000) |
+//          ((val << 8 ) & 0x00FF0000) |
+//          ((val >> 8 ) & 0x0000FF00) |
+//          ((val >> 24) & 0x000000FF) ;
+// }
+// example: mem32[addrSwapped/4] = swap32(val);
+
+// uint16_t EthSyst::swap16(uint16_t val) {
+//   return ((val << 8 ) & 0xFF00) |
+//          ((val >> 8 ) & 0x00FF) ;
+// }
+// example: mem16[addrSwapped/2] = swap16(val);
+
+// example: mem8 [addrSwapped  ] = val;
 
 //***************** Initialization of 100Gb Ethernet Core *****************
 void EthSyst::ethCoreInit(bool gtLoopback) {
@@ -745,7 +754,6 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	unsigned Index;
 	unsigned Length = ByteCount;
 	volatile uint32_t AlignBuffer;
-	volatile uint32_t *To32Ptr;
 	uint32_t* From32Ptr;
 	volatile uint16_t* To16Ptr;
 	uint16_t* From16Ptr;
@@ -764,12 +772,9 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output each word destination.
 			 */
+      txMem[txAddr] = *From32Ptr++;
       #ifdef DMA_MEM_HBM
-        To32Ptr = &txMem[txAddr^1];
-        *To32Ptr = swap32(*From32Ptr++);
-        cacheFlush(size_t(To32Ptr));
-      #else
-        txMem[txAddr] = *From32Ptr++;
+        cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
 
@@ -807,12 +812,9 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output the buffer
 			 */
+      txMem[txAddr] = AlignBuffer;
       #ifdef DMA_MEM_HBM
-        To32Ptr = &txMem[txAddr^1];
-        *To32Ptr = swap32(AlignBuffer);
-        cacheFlush(size_t(To32Ptr));
-      #else
-        txMem[txAddr] = AlignBuffer;
+        cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
 
@@ -862,12 +864,9 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output the buffer.
 			 */
+      txMem[txAddr] = AlignBuffer;
       #ifdef DMA_MEM_HBM
-        To32Ptr = &txMem[txAddr^1];
-        *To32Ptr = swap32(AlignBuffer);
-        cacheFlush(size_t(To32Ptr));
-      #else
-        txMem[txAddr] = AlignBuffer;
+        cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
 
@@ -905,12 +904,9 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 		*To8Ptr++ = *From8Ptr++;
 	}
 	if (Length) {
+    txMem[txAddr] = AlignBuffer;
     #ifdef DMA_MEM_HBM
-      To32Ptr = &txMem[txAddr^1];
-      *To32Ptr = swap32(AlignBuffer);
-      cacheFlush(size_t(To32Ptr));
-    #else
-      txMem[txAddr] = AlignBuffer;
+      cacheFlush(size_t(&txMem[txAddr]));
     #endif
     txAddr++;
 
@@ -993,11 +989,7 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 ******************************************************************************/
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
-  #ifdef DMA_MEM_HBM
-	uint16_t length = swap32(rxMem[(headerOffset / sizeof(uint32_t))^1]);
-  #else
-	uint16_t length =        rxMem[ headerOffset / sizeof(uint32_t)   ];
-  #endif
+	uint16_t length = rxMem[headerOffset / sizeof(uint32_t)];
 	length = ((length & 0xFF00) >> 8) | ((length & 0x00FF) << 8);
 
   printf("   Accepting packet at mem addr 0x%lX, extracting length/type %d(0x%X) at offset %d \n",
@@ -1028,7 +1020,6 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	unsigned Length = ByteCount;
 	volatile uint32_t AlignBuffer;
 	uint32_t* To32Ptr;
-	volatile uint32_t* From32Ptr;
 	uint16_t* To16Ptr;
 	volatile uint16_t* From16Ptr;
 	uint8_t* To8Ptr;
@@ -1047,12 +1038,9 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			 * Output each word.
 			 */
       #ifdef DMA_MEM_HBM
-        From32Ptr = &rxMem[rxAddr^1];
-        cacheInvalid(size_t(From32Ptr));
-        *To32Ptr++ = swap32(*From32Ptr);
-      #else
-        *To32Ptr++ = rxMem[rxAddr];
+        cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
+      *To32Ptr++ = rxMem[rxAddr];
       rxAddr++;
 
 			/*
@@ -1078,12 +1066,9 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			 * Copy each word into the temporary buffer.
 			 */
       #ifdef DMA_MEM_HBM
-        From32Ptr = &rxMem[rxAddr^1];
-        cacheInvalid(size_t(From32Ptr));
-        AlignBuffer = swap32(*From32Ptr);
-      #else
-        AlignBuffer = rxMem[rxAddr];
+        cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
+      AlignBuffer = rxMem[rxAddr];
       rxAddr++;
 			From8Ptr = (uint8_t*) &AlignBuffer;
 
@@ -1112,12 +1097,9 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			 * Copy each word into the temporary buffer.
 			 */
       #ifdef DMA_MEM_HBM
-        From32Ptr = &rxMem[rxAddr^1];
-        cacheInvalid(size_t(From32Ptr));
-        AlignBuffer = swap32(*From32Ptr);
-      #else
-        AlignBuffer = rxMem[rxAddr];
+        cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
+      AlignBuffer = rxMem[rxAddr];
       rxAddr++;
 
 			/*
@@ -1154,12 +1136,9 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	 * Read the remaining data.
 	 */
   #ifdef DMA_MEM_HBM
-    From32Ptr = &rxMem[rxAddr^1];
-    cacheInvalid(size_t(From32Ptr));
-    AlignBuffer = swap32(*From32Ptr);
-  #else
-    AlignBuffer = rxMem[rxAddr];
+    cacheInvalid(size_t(&rxMem[rxAddr]));
   #endif
+  AlignBuffer = rxMem[rxAddr];
   rxAddr++;
 	From8Ptr = (uint8_t*) &AlignBuffer;
 

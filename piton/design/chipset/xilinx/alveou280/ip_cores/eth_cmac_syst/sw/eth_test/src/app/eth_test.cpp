@@ -156,46 +156,34 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
-          if (axiWordIdx%4 == 0) txMemWr8 [addrSwapped  ] = val >> 56;
-          if (axiWordIdx%4 == 1) txMemWr16[addrSwapped/2] = val16;
-          if (axiWordIdx%4 == 2) txMemWr32[addrSwapped/4] = val32;
-          if (axiWordIdx%4 == 3) txMemWr64[addr       /8] = val64;
+          if (axiWordIdx%4 == 0) txMemWr8 [addr  ] = val >> 56;
+          if (axiWordIdx%4 == 1) txMemWr16[addr/2] = val >> 48;
+          if (axiWordIdx%4 == 2) txMemWr32[addr/4] = val >> 32;
+          if (axiWordIdx%4 == 3) txMemWr64[addr/8] = val;
         }
         printf("  RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemWr32), rxMemSize);
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
-          if (axiWordIdx%4 == 0) rxMemWr8 [addrSwapped  ] = val >> 56;
-          if (axiWordIdx%4 == 1) rxMemWr16[addrSwapped/2] = val16;
-          if (axiWordIdx%4 == 2) rxMemWr32[addrSwapped/4] = val32;
-          if (axiWordIdx%4 == 3) rxMemWr64[addr       /8] = val64;
+          if (axiWordIdx%4 == 0) rxMemWr8 [addr  ] = val >> 56;
+          if (axiWordIdx%4 == 1) rxMemWr16[addr/2] = val >> 48;
+          if (axiWordIdx%4 == 2) rxMemWr32[addr/4] = val >> 32;
+          if (axiWordIdx%4 == 3) rxMemWr64[addr/8] = val;
         }
         printf("  BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemWr32), sgMemSize);
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = wrCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = wrCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = wrCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (wrCachMem ? sizeof(uint64_t)-1 : 0);
           size_t axiWordIdx = addr/axiWidth;
           // changing written data type every wide AXI word
-          if (axiWordIdx%4 == 0) sgMemWr8 [addrSwapped  ] = val >> 56;
-          if (axiWordIdx%4 == 1) sgMemWr16[addrSwapped/2] = val16;
-          if (axiWordIdx%4 == 2) sgMemWr32[addrSwapped/4] = val32;
-          if (axiWordIdx%4 == 3) sgMemWr64[addr       /8] = val64;
+          if (axiWordIdx%4 == 0) sgMemWr8 [addr  ] = val >> 56;
+          if (axiWordIdx%4 == 1) sgMemWr16[addr/2] = val >> 48;
+          if (axiWordIdx%4 == 2) sgMemWr32[addr/4] = val >> 32;
+          if (axiWordIdx%4 == 3) sgMemWr64[addr/8] = val;
         }
         #ifdef DMA_MEM_HBM
         // flushing cache
@@ -258,29 +246,25 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
-          if (                 txMemRd8 [addrSwapped] !=  (val >> 56)) {
+          if (                 txMemRd8 [addr  ] != val >> 56) {
             printf("\nERROR: Incorrect readback of Byte at addr %lx from Tx Mem: %x, expected: %lx \n",
-                         addr, txMemRd8 [addrSwapped],     val >> 56);
+                         addr, txMemRd8 [addr  ],   val >> 56);
             exit(1);
           }
-          if ((addr%2) == 1 && txMemRd16[addrSwapped/2] != val16) {
-            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from Tx Mem: %x, expected: %x \n",
-                         addr, txMemRd16[addrSwapped/2],   val16);
+          if ((addr%2) == 1 && txMemRd16[addr/2] != val >> 48) {
+            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from Tx Mem: %x, expected: %lx \n",
+                         addr, txMemRd16[addr/2],   val >> 48);
             exit(1);
           }
-          if ((addr%4) == 3 && txMemRd32[addrSwapped/4] != val32) {
-            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from Tx Mem: %x, expected: %x \n",
-                         addr, txMemRd32[addrSwapped/4],   val32);
+          if ((addr%4) == 3 && txMemRd32[addr/4] != val >> 32) {
+            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from Tx Mem: %x, expected: %lx \n",
+                         addr, txMemRd32[addr/4],   val >> 32);
             exit(1);
           }
-          if ((addr%8) == 7 && txMemRd64[addr/8       ] != val64) {
+          if ((addr%8) == 7 && txMemRd64[addr/8] != val) {
             printf("\nERROR: Incorrect readback of Word-64 at addr %lx from Tx Mem: %lx, expected: %lx \n",
-                         addr, txMemRd64[addr/8       ],   val64);
+                         addr, txMemRd64[addr/8],   val);
             exit(1);
           }
         }
@@ -288,29 +272,25 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
-          if (                 rxMemRd8 [addrSwapped] !=  (val >> 56)) {
+          if (                 rxMemRd8 [addr  ] != val >> 56) {
             printf("\nERROR: Incorrect readback of Byte at addr %lx from Rx Mem: %x, expected: %lx \n",
-                         addr, rxMemRd8 [addrSwapped],     val >> 56);
+                         addr, rxMemRd8 [addr  ],   val >> 56);
             exit(1);
           }
-          if ((addr%2) == 1 && rxMemRd16[addrSwapped/2] != val16) {
-            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from Rx Mem: %x, expected: %x \n",
-                         addr, rxMemRd16[addrSwapped/2],   val16);
+          if ((addr%2) == 1 && rxMemRd16[addr/2] != val >> 48) {
+            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from Rx Mem: %x, expected: %lx \n",
+                         addr, rxMemRd16[addr/2],   val >> 48);
             exit(1);
           }
-          if ((addr%4) == 3 && rxMemRd32[addrSwapped/4] != val32) {
-            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from Rx Mem: %x, expected: %x \n",
-                         addr, rxMemRd32[addrSwapped/4],   val32);
+          if ((addr%4) == 3 && rxMemRd32[addr/4] != val >> 32) {
+            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from Rx Mem: %x, expected: %lx \n",
+                         addr, rxMemRd32[addr/4],   val >> 32);
             exit(1);
           }
-          if ((addr%8) == 7 && rxMemRd64[addr/8       ] != val64) {
+          if ((addr%8) == 7 && rxMemRd64[addr/8] != val) {
             printf("\nERROR: Incorrect readback of Word-64 at addr %lx from Rx Mem: %lx, expected: %lx \n",
-                         addr, rxMemRd64[addr/8       ],   val64);
+                         addr, rxMemRd64[addr/8],   val);
             exit(1);
           }
         }
@@ -319,29 +299,25 @@ int main(int argc, char *argv[])
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
           #ifndef DMA_MEM_HBM // sometimes BD region mapped to system memory doesn't pass check
-          uint16_t val16 = rdCachMem ? ethSyst.swap16(val >> 48) : val >> 48;
-          uint32_t val32 = rdCachMem ? ethSyst.swap32(val >> 32) : val >> 32;
-          uint64_t val64 = rdCachMem ? ethSyst.swap64(val)       : val;
-          size_t addrSwapped = addr ^ (rdCachMem ? sizeof(uint64_t)-1 : 0);
           // checking readback using different data types
-          if (                 sgMemRd8 [addrSwapped] !=  (val >> 56)) {
+          if (                 sgMemRd8 [addr  ] != val >> 56) {
             printf("\nERROR: Incorrect readback of Byte at addr %lx from BD Mem: %x, expected: %lx \n",
-                         addr, sgMemRd8 [addrSwapped],     val >> 56);
+                         addr, sgMemRd8 [addr  ],   val >> 56);
             exit(1);
           }
-          if ((addr%2) == 1 && sgMemRd16[addrSwapped/2] != val16) {
-            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from BD Mem: %x, expected: %x \n",
-                         addr, sgMemRd16[addrSwapped/2],   val16);
+          if ((addr%2) == 1 && sgMemRd16[addr/2] != val >> 48) {
+            printf("\nERROR: Incorrect readback of Word-16 at addr %lx from BD Mem: %x, expected: %lx \n",
+                         addr, sgMemRd16[addr/2],   val >> 48);
             exit(1);
           }
-          if ((addr%4) == 3 && sgMemRd32[addrSwapped/4] != val32) {
-            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from BD Mem: %x, expected: %x \n",
-                         addr, sgMemRd32[addrSwapped/4],   val32);
+          if ((addr%4) == 3 && sgMemRd32[addr/4] != val >> 32) {
+            printf("\nERROR: Incorrect readback of Word-32 at addr %lx from BD Mem: %x, expected: %lx \n",
+                         addr, sgMemRd32[addr/4],   val >> 32);
             exit(1);
           }
-          if ((addr%8) == 7 && sgMemRd64[addr/8       ] != val64) {
+          if ((addr%8) == 7 && sgMemRd64[addr/8] != val) {
             printf("\nERROR: Incorrect readback of Word-64 at addr %lx from BD Mem: %lx, expected: %lx \n",
-                         addr, sgMemRd64[addr/8       ],   val64);
+                         addr, sgMemRd64[addr/8],   val);
             exit(1);
           }
           #endif
