@@ -28,9 +28,11 @@ int udp_perf_server();
 int tcp_perf_client();
 int tcp_perf_server();
 
+// Instance of the Ethernet System driver, global since cache methods are called from Xilinx DMA driver
+EthSyst ethSyst;
+
 int main(int argc, char *argv[])
 {
-  EthSyst ethSyst; // Instance of the Ethernet System driver
   // Tx/Rx memories 
   size_t const txMemSize  = TX_MEM_CPU_ADRRANGE;
   size_t const rxMemSize  = RX_MEM_CPU_ADRRANGE;

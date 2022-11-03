@@ -110,7 +110,7 @@ EthSyst::EthSyst() {
   rxMemNC = dmaMemBsNC + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
   sgMemNC = dmaMemBsNC + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
 
-  sgTxMem  = sgMemNC; //sgMem;
+  sgTxMem  = sgMem;
   sgRxMem  = sgTxMem + (SG_TX_MEM_SIZE / sizeof(uint32_t));
 }
 
@@ -125,8 +125,9 @@ uint8_t volatile EthSyst::cacheFlush(size_t addr) {
   return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
 }
 
-void EthSyst::cacheInvalid(size_t addr) {
+uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
   // dummy function so far
+  return 0;
 }
 
 //***************** Endianess swap funtions *****************
@@ -595,6 +596,10 @@ XAxiDma_Bd* EthSyst::dmaBDPoll(bool RxnTx, size_t packets)
       // printf("RxnTx=%d, Waiting untill %ld BD transfers finish: %d BDs processed from BD %lx \n",
       //             RxnTx, packets, ProcessedBdCount, size_t(CurBdPtr));
       // sleep(1); // in seconds, user wait process
+      #ifdef DMA_MEM_HBM
+        // a delay to use workaround of dummy cache Invalidate function
+        usleep(0);
+      #endif
 	}
   XTmrCtr_Stop(&timerCnt, RxnTx ? 1:0); // Stop Timer when transfer is finished
   return BdPtr;
@@ -761,7 +766,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	uint8_t* From8Ptr;
   size_t txAddr = 0;
 
-	if ((((uint32_t) SrcPtr) & 0x00000003) == 0) {
+	if ((size_t(SrcPtr) & 0x00000003) == 0) {
 
 		/*
 		 * Word aligned buffer, no correction needed.
@@ -793,7 +798,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 		From8Ptr = (uint8_t*) From32Ptr;
 
 	}
-	else if ((((uint32_t) SrcPtr) & 0x00000001) != 0) {
+	else if ((size_t(SrcPtr) & 0x00000001) != 0) {
 		/*
 		 * Byte aligned buffer, correct.
 		 */
@@ -989,7 +994,11 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 ******************************************************************************/
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
-	uint16_t length = rxMem[headerOffset / sizeof(uint32_t)];
+  uint32_t volatile* lengthPtr = &rxMem[headerOffset / sizeof(uint32_t)];
+  #ifdef DMA_MEM_HBM
+    cacheInvalid(size_t(lengthPtr));
+  #endif
+	uint16_t length = *lengthPtr;
 	length = ((length & 0xFF00) >> 8) | ((length & 0x00FF) << 8);
 
   printf("   Accepting packet at mem addr 0x%lX, extracting length/type %d(0x%X) at offset %d \n",
@@ -1026,7 +1035,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	volatile uint8_t* From8Ptr;
   size_t rxAddr = 0;
 
-	if ((((uint32_t) DestPtr) & 0x00000003) == 0) {
+	if ((size_t(DestPtr) & 0x00000003) == 0) {
 
 		/*
 		 * Word aligned buffer, no correction needed.
@@ -1055,7 +1064,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 		To8Ptr = (uint8_t*) To32Ptr;
 
 	}
-	else if ((((uint32_t) DestPtr) & 0x00000001) != 0) {
+	else if ((size_t(DestPtr) & 0x00000001) != 0) {
 		/*
 		 * Byte aligned buffer, correct.
 		 */

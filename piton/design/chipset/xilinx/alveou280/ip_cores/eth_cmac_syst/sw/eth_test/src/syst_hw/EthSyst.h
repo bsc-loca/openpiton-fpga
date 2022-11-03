@@ -233,8 +233,6 @@ class EthSyst {
   void alignedWrite(void*, unsigned);
   void alignedRead (void*, unsigned);
   uint16_t getReceiveDataLength(uint16_t);
-  uint8_t volatile cacheFlush(size_t);
-  void cacheInvalid(size_t);
 
   public:
   XTmrCtr timerCnt; // Instance of Timer counter
@@ -289,6 +287,8 @@ class EthSyst {
   uint8_t physConnOrder;
   enum {PHYS_CONN_WAIT_INI = 2};
 
+  uint8_t volatile cacheFlush  (size_t);
+  uint8_t volatile cacheInvalid(size_t);
   EthSyst();
   // ~EthSyst();
   void ethCoreInit(bool);
