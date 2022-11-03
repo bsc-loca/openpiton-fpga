@@ -24,7 +24,7 @@ fi
 echo ""
 
 # -DDEBUG for enabling Xilinx debug output
-riscv64-unknown-linux-gnu-gcc -Wall -Og -D__arch64__ $DEF_DMA_MEM_HBM -o ./eth_test \
+riscv64-unknown-linux-gnu-gcc -Wall -Og -D__aarch64__ $DEF_DMA_MEM_HBM -o ./eth_test \
                               -I./ \
                               -I../src/syst_hw \
                               -I$XILINX_VIVADO/data/embeddedsw/lib/sw_apps/versal_plm/misc \

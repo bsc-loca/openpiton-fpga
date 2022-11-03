@@ -52,11 +52,11 @@
 
 #include "xaxidma_bdring.h"
 
+#ifdef DMA_MEM_HBM
 // mapping of Cache Flush/Invalidate functions to OpenPiton hw-specific ones (Invalidate is dummy so far)
 #undef XAXIDMA_CACHE_FLUSH
 #undef XAXIDMA_CACHE_INVALIDATE
 
-#ifdef DMA_MEM_HBM
 #include "EthSyst.h"
 
 extern EthSyst ethSyst; // Link to global instance of the Ethernet System driver
