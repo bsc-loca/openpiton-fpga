@@ -46,7 +46,6 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
 ]
 
-#"${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
 
 set GLOBAL_DEFAULT_VERILOG_MACROS "NO_SCAN FPGA_SYN PITON_FPGA_SYNTH PITON_PROTO"
 
@@ -687,10 +686,13 @@ set CHIPSET_PRJ_IP_FILES [list \
 
 set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
-set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include ${DV_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
+# the tcl parser in the core is called from "piton/design/xilinx/design.tcl"
 set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
+
+#set LAGARTO_INCLUDE_DIRS "${LAGARTO_ROOT}/modules/meep-vpu/src/include ${LAGARTO_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
+# Include dirs is created on the Flist parser, and used @./tools/src/proto/common/setup.tcl 
 
 set PRONOC_ROOT "${DV_ROOT}/design/chip/tile/noc"
 

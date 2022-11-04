@@ -605,6 +605,8 @@ def makeDefList(options):
         if options.vpu:
             defines.append("VPU_ENABLE")
             defines.append("MEEP_VPU")
+        else:
+            defines.append("VPU_DISABLE")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
     if (options.meep_mode == True):
