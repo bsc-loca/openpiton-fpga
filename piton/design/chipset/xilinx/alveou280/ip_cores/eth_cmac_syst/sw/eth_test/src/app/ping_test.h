@@ -21,7 +21,11 @@ class PingReqstTest {
   enum {
     NUM_OF_PING_REQ_PKTS   = 11,    // Number of ping req it generates, change this parameter to limit the number of ping requests sent by this program.
     NUM_RX_PACK_CHECK_REQ  = 10,    // Max num of Rx pack to be checked before sending another request
+    #ifndef DMA_MEM_HBM
     NUM_PACK_CHECK_RX_PACK = 100000 // Max number of pack to be checked before to identify a Rx packet
+    #else
+    NUM_PACK_CHECK_RX_PACK = 30
+    #endif
   };
 
   // Set up a local MAC address.

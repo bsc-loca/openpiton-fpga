@@ -596,10 +596,6 @@ XAxiDma_Bd* EthSyst::dmaBDPoll(bool RxnTx, size_t packets)
       // printf("RxnTx=%d, Waiting untill %ld BD transfers finish: %d BDs processed from BD %lx \n",
       //             RxnTx, packets, ProcessedBdCount, size_t(CurBdPtr));
       // sleep(1); // in seconds, user wait process
-      #ifdef DMA_MEM_HBM
-        // a delay to use workaround of dummy cache Invalidate function
-        usleep(0);
-      #endif
 	}
   XTmrCtr_Stop(&timerCnt, RxnTx ? 1:0); // Stop Timer when transfer is finished
   return BdPtr;

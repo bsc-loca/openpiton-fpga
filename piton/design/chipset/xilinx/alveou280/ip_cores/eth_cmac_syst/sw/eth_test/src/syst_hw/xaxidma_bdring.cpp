@@ -57,6 +57,7 @@
 #undef XAXIDMA_CACHE_FLUSH
 #undef XAXIDMA_CACHE_INVALIDATE
 
+#include <unistd.h>
 #include "EthSyst.h"
 
 extern EthSyst ethSyst; // Link to global instance of the Ethernet System driver
@@ -1277,7 +1278,7 @@ int XAxiDma_BdRingFromHw(XAxiDma_BdRing * RingPtr, int BdLimit,
 		BdSts = XAxiDma_BdRead(CurBdPtr, XAXIDMA_BD_STS_OFFSET);
 		BdCr = XAxiDma_BdRead(CurBdPtr, XAXIDMA_BD_CTRL_LEN_OFFSET);
         #ifdef DMA_MEM_HBM
-          // workaround of above dummy Invalidate function
+          // workaround of above dummy so far cache Invalidate call
           XAXIDMA_CACHE_FLUSH(CurBdPtr);
         #endif
 
@@ -1322,6 +1323,11 @@ int XAxiDma_BdRingFromHw(XAxiDma_BdRing * RingPtr, int BdLimit,
 		/* Move on to the next BD in work group */
 		CurBdPtr = (XAxiDma_Bd *)((void *)XAxiDma_BdRingNext(RingPtr, CurBdPtr));
 	}
+    #ifdef DMA_MEM_HBM
+      // a delay to make effective the above workaround of dummy so far cache Invalidate call,
+	  // meaning giving a chance for DMA engine to update status before next flush
+      usleep(0);
+    #endif
 
 	/* Subtract off any partial packet BDs found */
 	BdCount -= BdPartialCount;
