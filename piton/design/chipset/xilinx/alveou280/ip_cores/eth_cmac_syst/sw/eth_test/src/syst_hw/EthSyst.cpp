@@ -86,7 +86,7 @@ EthSyst::EthSyst() {
     exit(1);
   }
 
-  cacheFlAddr = (uint8_t*)mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR);
+  cacheFlAddr = reinterpret_cast<uint8_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR));
   if (cacheFlAddr == MAP_FAILED) {
     printf("Memory mapping of Cache system failed.\n");
     exit(1);
