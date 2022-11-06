@@ -251,7 +251,11 @@ class EthSyst {
     CACHE_FLUSH_ADDRMASK = 0x03FFFFFFC0,
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
+  #ifdef DMA_MEM_CACHE
     DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR,
+  #else
+    DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,
+  #endif
     DMA_MEMNC_BSADDR = UNCACHE_MEM_ADDR,
 #else
     // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory

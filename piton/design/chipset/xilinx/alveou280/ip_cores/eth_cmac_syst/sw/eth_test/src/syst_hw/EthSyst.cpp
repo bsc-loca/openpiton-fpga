@@ -93,7 +93,11 @@ EthSyst::EthSyst() {
   }
 
 #ifdef DMA_MEM_HBM
+  #ifdef DMA_MEM_CACHE
   dmaMemBase = cacheMem;
+  #else
+  dmaMemBase = uncacheMem;
+  #endif
   dmaMemBsNC = uncacheMem;
 #else
   dmaMemBase = ethSystBase;
@@ -121,8 +125,8 @@ EthSyst::EthSyst() {
 
 //***************** Enforced cache flush on specific addres *****************
 uint8_t volatile EthSyst::cacheFlush(size_t addr) {
-  // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
-  return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
+    // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
+    return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
 }
 
 uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
@@ -774,7 +778,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output each word destination.
 			 */
       txMem[txAddr] = *From32Ptr++;
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -814,7 +818,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -866,7 +870,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer.
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -906,7 +910,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	}
 	if (Length) {
     txMem[txAddr] = AlignBuffer;
-    #ifdef DMA_MEM_HBM
+    #ifdef DMA_MEM_CACHE
       cacheFlush(size_t(&txMem[txAddr]));
     #endif
     txAddr++;
@@ -991,7 +995,7 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
   uint32_t volatile* lengthPtr = &rxMem[headerOffset / sizeof(uint32_t)];
-  #ifdef DMA_MEM_HBM
+  #ifdef DMA_MEM_CACHE
     cacheInvalid(size_t(lengthPtr));
   #endif
 	uint16_t length = *lengthPtr;
@@ -1042,7 +1046,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Output each word.
 			 */
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       *To32Ptr++ = rxMem[rxAddr];
@@ -1070,7 +1074,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1101,7 +1105,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_HBM
+      #ifdef DMA_MEM_CACHE
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1140,7 +1144,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	/*
 	 * Read the remaining data.
 	 */
-  #ifdef DMA_MEM_HBM
+  #ifdef DMA_MEM_CACHE
     cacheInvalid(size_t(&rxMem[rxAddr]));
   #endif
   AlignBuffer = rxMem[rxAddr];
