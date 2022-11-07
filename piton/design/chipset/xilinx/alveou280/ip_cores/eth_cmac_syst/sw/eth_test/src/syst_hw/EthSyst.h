@@ -251,7 +251,7 @@ class EthSyst {
     CACHE_FLUSH_ADDRMASK = 0x03FFFFFFC0,
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
-  #ifdef DMA_MEM_CACHE
+  #ifdef DMA_MEM_CACHED
     DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR,
   #else
     DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,

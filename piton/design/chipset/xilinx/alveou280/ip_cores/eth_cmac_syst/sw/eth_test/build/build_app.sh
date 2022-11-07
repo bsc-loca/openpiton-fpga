@@ -16,7 +16,7 @@ echo "----- Checking if hw is implemented under MEEP_SHELL:"
 if grep "ETHERNET.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Eth DMA memory is HBM-based in hw design, setting its addresses accordingly"
-  DEF_DMA_MEM_HBM="-DDMA_MEM_HBM -DDMA_MEM_CACHE"
+  DEF_DMA_MEM_HBM="-DDMA_MEM_HBM -DDMA_MEM_CACHED"
 else
   echo "----- Eth DMA memory is SRAM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM=""
