@@ -22,7 +22,7 @@ variables:
     DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
-    MYSCRIPT: /home/dmazure/workspace/gitlab_script_op.sh
+    MYSCRIPT: cicd/gitlab_script_op.sh
 
 .default_rules:
   rules:
@@ -46,6 +46,12 @@ variables:
   rules:
      if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
 
+.multi_target:
+    parallel:
+        matrix:
+            - CONF: [acme, ariane, pronoc, meep_dvino]
+              
+
 stages:  
   - synthesis
   - validation
@@ -58,54 +64,17 @@ stages:
 # Synthesis
 ###################################
 
-synthesis-ariane:
-        stage: synthesis
-        tags: 
-            - MEEP_FPGA 
-        extends: .ariane_rules
-        #except:
-        #    changes:
-        #        - piton/design/chip/tile/vas_tile_core
-        variables:
-            GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/vas_tile_core'
-            GIT_STRATEGY: clone
-            GIT_SUBMODULE_STRATEGY: recursive
-            GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton
-        retry: 1
-        timeout: 6h
-        
-        before_script:
-            - !reference [.git_clean, before_script]
-            - export PITON_ROOT=`pwd`
-            - mkdir -p ariane
-        script:
-            - echo "ROOT= $PITON_ROOT"
-            - source piton/ariane_setup.sh
-            - make initialize CORE=ariane
-            - echo "RISCV = $RISCV"
-            - echo "VIVADO = $VIVADO_BIN"
-            # 2x2 by default
-            - make protosyn $DESIGN_OPTIONS CORE=ariane
-            - !reference [.check_synth, script]
-        after_script:
-            - cp -rf build/alveou280/system/protosyn_logs ariane           
-
-        artifacts:
-            when: always
-            paths:        
-                - ariane
-                - dcp/synthesis.dcp
-
-synthesis-lagarto:
+synthesis-matrix:
         stage: synthesis
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules        
+        extends: .lagarto_rules  
+        parallel: !reference [.multi_target, parallel]       
         variables:        
-              GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
+              #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
               GIT_SUBMODULE_STRATEGY: recursive
-              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton
+              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$CONF
         retry: 1
         timeout: 6h        
         before_script:
@@ -116,50 +85,32 @@ synthesis-lagarto:
             ############################
             ## First, update the submodule if the pipeline source is a trigger
             ############################
-            - . $MYSCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE #CI_PIPELINE_TRIGGERED
+            - . $MYSCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
             ### Setup OpenPiton
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
-            - make initialize CORE=lagarto
+            # Clone RISCV toolchain, if the RISCV variable doesn't exists
+            - make initialize
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
-            - make protosyn $DESIGN_OPTIONS CORE=lagarto
+            # A matrix can be created here to synthesize all different options
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF
+            #- make protosyn $DESIGN_OPTIONS CORE=lagarto
+            - mv dcp/synthesis.dcp dcp/synthesis_${CONF}.dcp
             - !reference [.check_synth, script]
+            - |
+                echo "Check here the synthesis log searching for critical warnings";
+                echo "Timing loops, latches ...";
         after_script:
-            - mkdir -p lagarto
-            - cp -rf build/alveou280/system/protosyn_logs lagarto
+            - mkdir -p $CONF
+            - cp -rf build/alveou280/system/protosyn_logs $CONF
 
         artifacts:
             when: always
             paths:
                 - lagarto
-                - dcp/synthesis.dcp
-
-validation-ariane:
-        stage: validation
-        tags:
-            - MEEP_FPGA
-        extends: .ariane_rules
-        needs:
-            - synthesis-ariane
-            # Do we need to setup same rules as the needed job?
-        script:
-            - |
-                echo "Check here the synthesis log searching for critical warnings";
-                echo "Timing loops, latches ...";
-
-validation-lagarto:
-        stage: validation
-        tags:
-            - MEEP_FPGA
-        extends: .lagarto_rules
-        needs:
-            - synthesis-lagarto
-        script:
-            - |
-                echo "Check here the synthesis log searching for critical warnings";
-                echo "Timing loops, latches ..."; 
+                - dcp
 
 deploy-lagarto:
         stage: deploy-openpiton
@@ -167,7 +118,7 @@ deploy-lagarto:
             - MEEP_FPGA
         extends: .lagarto_rules
         needs:
-            - synthesis-lagarto
+            - synthesis-matrix
         before_script:
             - ls; ls dcp;
             - export TODAY=$(date +"%y%m%d")
@@ -183,8 +134,11 @@ push-lagarto:
         tags:
             - MEEP_FPGA
         extends: .lagarto_rules
+        rules:
+            - if: $CI_PIPELINE_SOURCE == "pipeline"                
+            - when: never
         needs:
-            - validation-lagarto 
+            - synthesis-matrix
         variables:
                 GIT_STRATEGY: clone
                 GIT_SUBMODULES_STRATEGY: normal 
@@ -216,16 +170,13 @@ push-lagarto:
 fpga-shell-trigger:
         stage: push-shell
         extends: .lagarto_rules
-        needs: 
-            - push-lagarto
         variables:
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
-                project: meep/FPGA_implementations/AlveoU280/fpga_shell
-                #branch: master
-                branch: develop/trigger_cicd
+                project: meep/FPGA_implementations/AlveoU280/fpga_shell                
+                branch: master
                 strategy: depend
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
@@ -234,8 +185,6 @@ fpga-shell-trigger:
 
 clean-on-failure:
     stage: clean
-    needs: 
-        - push-lagarto
     extends: .lagarto_rules
     when: on_failure
     script:
@@ -261,7 +210,7 @@ clean-on-failure:
 .check_synth:
   script:
     - |
-      if [ ! -f dcp/synthesis.dcp ]; then 
+      if [ ! -f dcp/synthesis_${CONF}.dcp ]; then 
         echo "dcp file has not been created"
         exit 23; 
       fi;        
