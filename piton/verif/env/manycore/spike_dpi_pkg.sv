@@ -88,6 +88,10 @@ typedef struct
   import "DPI-C" function int  get_memory_data(output longint mem_element, input longint mem_addr);
   import "DPI-C" function longint unsigned spike_get_csr(input int csr);
   import "DPI-C" function void spike_set_external_interrupt(input longint mip_val);
+  import "DPI-C" function longint unsigned spike_get_gpr(int unsigned gpr);
+  import "DPI-C" function void override_spike_gpr(longint unsigned hart_id, byte reg_dest, longint unsigned reg_data);
+  import "DPI-C" function void override_spike_csr(longint unsigned hart_id, int csr_addr, longint unsigned csr_data);
+  import "DPI-C" function void override_csr_backdoor(longint unsigned hart_id, int csr_addr, longint unsigned csr_data);
 
 endpackage
 
