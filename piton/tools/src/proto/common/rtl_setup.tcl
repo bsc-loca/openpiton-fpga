@@ -46,7 +46,6 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
 ]
 
-#"${DV_ROOT}/design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv" \
 
 set GLOBAL_DEFAULT_VERILOG_MACROS "NO_SCAN FPGA_SYN PITON_FPGA_SYNTH PITON_PROTO"
 
@@ -537,6 +536,7 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/uart_reseter.v" \
     "${DV_ROOT}/design/chipset/io_ctrl/rtl/eth_top.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/mc_top.sv" \
+    "${DV_ROOT}/design/chipset/mc/rtl/ncmem_top.sv" \
     "${DV_ROOT}/design/chipset/mc/rtl/noc_mig_bridge.v" \
     "${DV_ROOT}/design/chipset/mc/rtl/memory_zeroer.v" \
     "${DV_ROOT}/design/chipset/noc_axilite_bridge/rtl/noc_axilite_bridge.v" \
@@ -652,6 +652,7 @@ set CHIPSET_IP_FILE_PREFIXES [list \
     "${DV_ROOT}/design/chipset/xilinx/${BOARD}/ip_cores/mac_eth_axi_lite/mac_eth_axi_lite" \
     "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/atg_uart_init/atg_uart_init" \
     "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/uart_16550/uart_16550" \
+    "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/uart_16550a/uart_16550a" \
     "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/mem_uart_timeout/mem_uart_timeout" \
     "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/bram_256x512/bram_256x512" \
     "${DV_ROOT}/design/chipset/io_ctrl/xilinx/${BOARD}/ip_cores/bram_16384x512/bram_16384x512" \
@@ -681,13 +682,17 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
+
+
 set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
 
-set LAGARTO_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/src/include"
-
 # Set the path for the lagarto FList parser. This needs to be thought further.
+# the tcl parser in the core is called from "piton/design/xilinx/design.tcl"
 set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
+
+#set LAGARTO_INCLUDE_DIRS "${LAGARTO_ROOT}/modules/meep-vpu/src/include ${LAGARTO_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
+# Include dirs is created on the Flist parser, and used @./tools/src/proto/common/setup.tcl 
 
 set PRONOC_ROOT "${DV_ROOT}/design/chip/tile/noc"
 

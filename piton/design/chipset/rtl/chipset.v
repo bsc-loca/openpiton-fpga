@@ -328,7 +328,34 @@ module chipset(
     input  wire                               m_axi_bvalid,
     output wire                               m_axi_bready,
 	
-	 //Ethernet
+    //Ethernet
+    input wire                               eth_axi_aclk,
+    input wire                               eth_axi_arstn,
+
+   `ifdef ETHERNET_DMA
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_awaddr,
+    output                                  dma_s_axi_awvalid,
+    input                                   dma_s_axi_awready,
+                                      
+    output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_wdata,
+    output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] dma_s_axi_wstrb,
+    output                                  dma_s_axi_wvalid,
+    input                                   dma_s_axi_wready,
+                                      
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_bresp,
+    input                                   dma_s_axi_bvalid,
+    output                                  dma_s_axi_bready,
+                                      
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   dma_s_axi_araddr,
+    output                                  dma_s_axi_arvalid,
+    input                                   dma_s_axi_arready,
+                                      
+    input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   dma_s_axi_rdata,
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   dma_s_axi_rresp,
+    input                                   dma_s_axi_rvalid,
+    output                                  dma_s_axi_rready,
+
+   `else
     input wire                               eth_axi_aclk,
     input wire                               eth_axi_arstn,
          // AXI interface
@@ -381,6 +408,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    eth_axi_buser,
     input  wire                               eth_axi_bvalid,
     output wire                               eth_axi_bready, 
+    `endif // ETHERNET_DMA
     
     input wire   [1:0]                        eth_irq, //TODO: connect it downstream
 
@@ -434,8 +462,18 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
+	
+    `ifdef DEBUG_ROM 
+    output  wire                              debug_rom_req,
+    output  wire [63:0]                       debug_rom_addr,
+    input   wire [63:0]                       debug_rom_rdata,
+    `endif
 
+    `ifdef PITON_NONCACH_MEM 
     // AXI non-cacheable system memory
+    input wire                               ncmem_axi_aclk,
+    input wire                               ncmem_axi_arstn,
+    
     output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
@@ -485,6 +523,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    ncmem_axi_buser,
     input  wire                               ncmem_axi_bvalid,
     output wire                               ncmem_axi_bready,
+    `endif // NON_CACHE_MEM
 
     `else
     output                          ddr_parity,
@@ -1790,9 +1829,34 @@ chipset_impl_noc_power_test  chipset_impl (
                     .m_axi_bvalid    (m_axi_bvalid   ),
                     .m_axi_bready    (m_axi_bready   ),
 					
-					    // Ethernet
-					.eth_axi_aclk(eth_axi_aclk),
-					.eth_axi_arstn(eth_axi_arstn),
+		    // Ethernet
+		    .eth_axi_aclk(eth_axi_aclk),
+		    .eth_axi_arstn(eth_axi_arstn),
+                    .eth_irq         (eth_irq        ),
+          `ifdef ETHERNET_DMA
+           .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
+           .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
+           .dma_s_axi_awready  (dma_s_axi_awready) ,
+
+           .dma_s_axi_wdata    (dma_s_axi_wdata  ) ,
+           .dma_s_axi_wstrb    (dma_s_axi_wstrb  ) ,
+           .dma_s_axi_wvalid   (dma_s_axi_wvalid ) ,
+           .dma_s_axi_wready   (dma_s_axi_wready ) ,
+
+           .dma_s_axi_bresp    (dma_s_axi_bresp  ) ,
+           .dma_s_axi_bvalid   (dma_s_axi_bvalid ) ,
+           .dma_s_axi_bready   (dma_s_axi_bready ) ,
+
+           .dma_s_axi_araddr   (dma_s_axi_araddr ) ,
+           .dma_s_axi_arvalid  (dma_s_axi_arvalid) ,
+           .dma_s_axi_arready  (dma_s_axi_arready) ,
+
+           .dma_s_axi_rdata    (dma_s_axi_rdata  ) ,
+           .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
+           .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
+           .dma_s_axi_rready   (dma_s_axi_rready ) ,
+          `else
+					
 
 				    .eth_axi_araddr(eth_axi_araddr),
 				    .eth_axi_arburst(eth_axi_arburst),
@@ -1843,8 +1907,8 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .eth_axi_wstrb(eth_axi_wstrb),
 				    .eth_axi_wuser(eth_axi_wuser),
 				    .eth_axi_wvalid(eth_axi_wvalid),
+				   `endif
 				    // SRAM Pheripheral
-				    .eth_irq(eth_irq),
 				   
 				    .sram_axi_araddr(sram_axi_araddr),
 				    .sram_axi_arburst(sram_axi_arburst),
@@ -1895,7 +1959,18 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_wstrb(sram_axi_wstrb),
 				    .sram_axi_wuser(sram_axi_wuser),
 				    .sram_axi_wvalid(sram_axi_wvalid),
-
+				    
+				    `ifdef DEBUG_ROM 
+				    .debug_rom_en(sw[1]), // pcie_gpio[4]
+                    .debug_rom_req(debug_rom_req),
+                    .debug_rom_addr(debug_rom_addr),
+                    .debug_rom_rdata(debug_rom_rdata),
+                    `endif
+                                   
+                    `ifdef PITON_NONCACH_MEM     
+                    .ncmem_axi_aclk(ncmem_axi_aclk),
+                    .ncmem_axi_arstn(ncmem_axi_arstn),
+                    
 				    .ncmem_axi_araddr(ncmem_axi_araddr),
 				    .ncmem_axi_arburst(ncmem_axi_arburst),
 				    .ncmem_axi_arcache(ncmem_axi_arcache),
@@ -1945,6 +2020,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .ncmem_axi_wstrb(ncmem_axi_wstrb),
 				    .ncmem_axi_wuser(ncmem_axi_wuser),
 				    .ncmem_axi_wvalid(ncmem_axi_wvalid),
+				    `endif //NONC_CHACH_MEM
 
                     `else
                     .ddr_parity(ddr_parity),
@@ -2036,7 +2112,7 @@ chipset_impl_noc_power_test  chipset_impl (
             .uart_axi_rdata(uart_axi_rdata),
             .uart_axi_rresp(uart_axi_rresp),
             .uart_axi_rvalid(uart_axi_rvalid),
-            .uart_axi_rready(uart_axi_rready),   
+            .uart_axi_rready(uart_axi_rready),               
            `else            
             .uart_tx(uart_tx),
             .uart_rx(uart_rx),

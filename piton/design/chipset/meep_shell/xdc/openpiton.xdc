@@ -32,3 +32,4 @@ set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
 
 # ------------------------------------------------------------------------
 
+

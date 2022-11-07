@@ -1076,7 +1076,9 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
 // system memory base address from devices.xml, unaligned with memory size and thus is subtracted from access memory address
-localparam MEM_BASE_UNALIGN = `AXI4_ADDR_WIDTH'h80000000;
+//localparam MEM_BASE_UNALIGN = `AXI4_ADDR_WIDTH'h80000000;
+localparam MEM_BASE_UNALIGN = '0;
+
 noc_axi4_bridge #(
   `ifdef PITON_FPGA_MC_HBM
     .AXI4_DAT_WIDTH_USED (HBM_WIDTH),

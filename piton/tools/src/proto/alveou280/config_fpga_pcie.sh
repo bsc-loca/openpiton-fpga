@@ -12,6 +12,7 @@
 #             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
 #             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 
+# TODO: This script will not work when the PCIe enumeration doesn't return 08
 
 script=${BASH_SOURCE[0]}
 if [ $script == $0 ]; then

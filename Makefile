@@ -1,7 +1,8 @@
 
 FPGA_TARGET ?= alveou280
 ROOT_DIR    =  $(PWD)
-PROJECT_SUBDIR =  $(ROOT_DIR)/build/$(FPGA_TARGET)/system/
+PITON_BUILD_DIR = $(ROOT_DIR)/build
+PROJECT_SUBDIR =  $(PITON_BUILD_DIR)/$(FPGA_TARGET)/system/
 PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
@@ -33,7 +34,8 @@ endif
 
 
  
-PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
+PROTO_OPTIONS ?= --vnpm --eth --hbm --pronoc
+MORE_OPTIONS ?= ""
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -67,11 +69,7 @@ $(RISCV_DIR):
 
 protosyn: clean_project $(RISCV_DIR)
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
-
-protosyn_pronoc: clean_project $(RISCV_DIR)
-	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -91,9 +89,11 @@ ci_bitstream:
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
 ### Cleaning calls ###
+
+clean: clean_project
 	
 clean_all: clean_project
-	rm -rf $(PROJECT_SUBDIR)
+	rm -rf $(PITON_BUILD_DIR)/alveo*
 	
 clean_synthesis:	
 	rm -rf dcp/*

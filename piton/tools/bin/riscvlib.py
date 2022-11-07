@@ -149,6 +149,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "uart":
             uartBase = devices[i]["base"]
 
+    ethClkFreq = 156250000
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
 // OpenPiton + %s framework
@@ -163,9 +164,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     model = "%s,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
-    // chosen {
-    //     stdout-path = "/soc/uart@%08x:115200";
-    // };
+    chosen {
+         //stdout-path = "/soc/uart@%08x:115200";
+         bootargs = "console=ttyS0,115200";
+    };
     cpus {
         #address-cells = <1>;
         #size-cells = <0>;
@@ -227,12 +229,22 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
 
     tmpStr += '''
+    eth0_clk: eth0_clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <%d>;
+    };
+        ''' % (ethClkFreq)
+
+
+    tmpStr += '''
     soc {
         #address-cells = <2>;
         #size-cells = <2>;
         compatible = "%s,%s-bare-soc", "simple-bus";
         ranges;
     ''' % (org, core)
+
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
@@ -290,24 +302,14 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
-            tmpStr += '''
-        debug-controller@%08x {
-            compatible = "riscv,debug-013";
-            interrupts-extended = <''' % (addrBase)
-            for k in range(nCpus):
-                tmpStr += "&CPU%d_intc 65535 " % (k)
-            tmpStr += '''>;
-            reg = <%s>;
-            reg-names = "control";
-        };
-            ''' % (_reg_fmt(addrBase, addrLen, 2, 2))
+
         # UART
         if devices[i]["name"] == "uart":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
         uart@%08x {
-            compatible = "ns16550";
+            compatible = "ns16550a";
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
@@ -315,7 +317,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
             reg-offset = <0x1000>;
-            reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
+            reg-shift = <2>; 
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
             ioDeviceNr+=1
@@ -331,22 +333,24 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             xlnx,rxmem = <0x5f2>;
             carv,mtu = <0x5dc>;
             carv,no-mac;
-            compatible = "xlnx,xxv-ethernet-1.0-carv";
             device_type = "network";       
-            axistream-connected = <0xfe>;
             local-mac-address = [00 0a 35 23 07 84];
+            axistream-connected = <0xfe>;
+            compatible = "xlnx,xxv-ethernet-1.0-carv";
             memory-region = <&eth_pool>;
         };
         
         dma_eth: dma@%08x {
             xlnx,include-dre;
             phandle = <0xfe>;
-            #dma-cells = <2>;
+            #dma-cells = <1>;
             compatible = "xlnx,axi-dma-1.00.a";
+            clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "m_axi_sg_aclk";
+            clocks = <&eth0_clk>, <&eth0_clk>, <&eth0_clk>, <&eth0_clk>;
             reg = <%s>;
             interrupt-names = "mm2s_introut", "s2mm_introut";
             interrupt-parent = <&PLIC0>;
-            interrupts = <%d %d>;            
+            interrupts = <%d %d>;
             xlnx,addrwidth = <0x28>;
             xlnx,include-sg;
             xlnx,sg-length-width = <0x17>;
@@ -370,7 +374,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             };
         
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1,  dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
 
     tmpStr += '''
