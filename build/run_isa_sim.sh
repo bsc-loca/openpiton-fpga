@@ -28,7 +28,7 @@ else
 fi
 
 echo "[MEEP] Running spike. Getting golden reference..."
-$TOOLS/spike -l --isa rv64g ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
+$TOOLS/spike -l --isa rv64gc ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
 
 echo "[MEEP] Formating lagarto signature for comparation..."
 cat signature.txt |  $TOOLS/spike-dasm > lagarto.sig
