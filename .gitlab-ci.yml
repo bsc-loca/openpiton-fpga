@@ -108,19 +108,20 @@ synthesis-matrix:
             # A matrix can be created here to synthesize all different options
             - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF
             #- make protosyn $DESIGN_OPTIONS CORE=lagarto
-            - !reference [.check_synth, script]
-            - mv dcp/synthesis.dcp dcp/synthesis_${CONF}.dcp
+            - !reference [.check_synth, script]            
             - |
                 echo "Check here the synthesis log searching for critical warnings";
                 echo "Timing loops, latches ...";
         after_script:
-            - mkdir -p $CONF
-            - cp -rf build/alveou280/system/protosyn_logs $CONF
+            - mkdir -p logs/${CONF}
+            - mkdir -p dcp/${CONF}
+            - mv dcp/synthesis.dcp dcp/${CONF}/synthesis_${CONF}.dcp
+            - cp -rf build/alveou280/system/protosyn_logs logs/${CONF}
 
         artifacts:
             when: always
             paths:
-                - lagarto
+                - logs
                 - dcp
 
 deploy-lagarto:
@@ -137,8 +138,8 @@ deploy-lagarto:
             - export ABSDIR=$DEPLOY_DIR/$OPDIRNAME
             - mkdir -p $ABSDIR 
         script:            
-            - cp -rf lagarto $ABSDIR
-            - cp -rf dcp $ABSDIR/lagarto
+            - cp -rf logs $ABSDIR/
+            - cp -rf dcp $ABSDIR/
 
 push-lagarto:
         stage: deploy-openpiton
@@ -221,7 +222,7 @@ clean-on-failure:
 .check_synth:
   script:
     - |
-      if [ ! -f dcp/synthesis_${CONF}.dcp ]; then 
+      if [ ! -f dcp/synthesis.dcp ]; then 
         echo "dcp file has not been created"
         exit 23; 
       fi;        
