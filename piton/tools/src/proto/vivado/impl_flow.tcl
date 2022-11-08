@@ -80,6 +80,7 @@ proc synthesis { g_root_dir g_number_of_jobs } {
 	set status [get_property STATUS [get_runs synth_1]]
 
 	if { $status == "synth_design Complete!"} {
+		file mkdir ${g_root_dir}/dcp
         	write_checkpoint -force $g_root_dir/dcp/synthesis.dcp
 	} else {
 		puts "Synthesis didn't succeed"
