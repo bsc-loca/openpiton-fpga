@@ -107,8 +107,8 @@ synthesis-matrix:
             # A matrix can be created here to synthesize all different options
             - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF
             #- make protosyn $DESIGN_OPTIONS CORE=lagarto
-            - mv dcp/synthesis.dcp dcp/synthesis_${CONF}.dcp
             - !reference [.check_synth, script]
+            - mv dcp/synthesis.dcp dcp/synthesis_${CONF}.dcp
             - |
                 echo "Check here the synthesis log searching for critical warnings";
                 echo "Timing loops, latches ...";

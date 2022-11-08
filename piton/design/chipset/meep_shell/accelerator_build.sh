@@ -56,6 +56,9 @@ acme_vpu)
     ;;
 esac
 
+
+echo "EA configuration is $EA_MOD with $MEEP$PROTO_OPTIONS"
+
 PROTO_OPTIONS=$MEEP$PROTO_OPTIONS
 
 make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
