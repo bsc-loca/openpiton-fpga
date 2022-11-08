@@ -7,7 +7,7 @@
 EA_MOD=$1
 MEEP=$2
 
-if [ $MEEP != "" ]; then
+if ["$MEEP" != "" ]; then
     MEEP="--meep --eth --ncmem --hbm "
 else
     MEEP="--vnpm --hbm "

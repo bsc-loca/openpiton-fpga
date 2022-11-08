@@ -25,15 +25,22 @@ variables:
     MYSCRIPT: cicd/gitlab_script_op.sh
 
 .default_rules:
-  rules:
-    if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
-    #- when: always
+    rules:
+        if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
+        #- when: always
+
+.exclude_ariane:
+    rules:
+        # Don't do Ariane if this is a Lagarto update
+        - if: $CI_PIPELINE_SOURCE == "pipeline" && $CONF=="ariane"
+          when: never
 
 .lagarto_rules:
     rules:
-        - !reference [.default_rules, rules]
+        - !reference [.default_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_PIPELINE_SOURCE == "pipeline"  
+        - !reference [.exclude_ariane, rules]
 
 .ariane_rules:
     rules:
@@ -68,7 +75,7 @@ synthesis-matrix:
         stage: synthesis
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules  
+        extends: .lagarto_rules 
         parallel: !reference [.multi_target, parallel]       
         variables:        
               #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
