@@ -14,7 +14,7 @@ sims clean
 rm -rf manycore/
 
 echo "[MEEP] Compiling..."
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU
 
 echo "[MEEP] Running simulation..."
 # differentiate virtual and physical test for the arguments
@@ -28,7 +28,7 @@ else
 fi
 
 echo "[MEEP] Running spike. Getting golden reference..."
-$TOOLS/spike -l --isa rv64g ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
+$TOOLS/spike -l --isa rv64gc ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig
 
 echo "[MEEP] Formating lagarto signature for comparation..."
 cat signature.txt |  $TOOLS/spike-dasm > lagarto.sig

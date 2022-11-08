@@ -10,3 +10,5 @@ lagarto_tile1_rv64uf_tests_p
 lagarto_tile1_rv64uf_tests_v
 lagarto_tile1_rv64ud_tests_p
 lagarto_tile1_rv64ud_tests_v
+lagarto_tile1_rv64uc_tests_p
+lagarto_tile1_rv64uc_tests_v
