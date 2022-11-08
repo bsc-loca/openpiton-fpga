@@ -1578,7 +1578,7 @@ uart_top        uart_top (
 		.net_axi_clk        (eth_axi_aclk   ),		
 		.net_axi_arstn      (eth_axi_arstn  ),		
 		.net_axi_intr       (eth_irq        ),
-          `ifdef ETHERNET_DMA
+        `ifdef ETHERNET_DMA
            .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
            .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
            .dma_s_axi_awready  (dma_s_axi_awready) ,
@@ -1600,9 +1600,7 @@ uart_top        uart_top (
            .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
            .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
            .dma_s_axi_rready   (dma_s_axi_rready ) 
-          `else
-
-		
+        `else
         .core_axi_awid      (eth_axi_awid   ),
         .core_axi_awaddr    (eth_axi_awaddr ),
         .core_axi_awlen     (eth_axi_awlen  ),
@@ -1652,18 +1650,14 @@ uart_top        uart_top (
         .core_axi_buser     (eth_axi_buser  ),
         .core_axi_bvalid    (eth_axi_bvalid ),
         .core_axi_bready    (eth_axi_bready )		
-	`endif
-                
-        `endif
+        `endif // ETHERNET_DMA
+        `endif // PITONSYS_MEEP
     `endif // PITON_FPGA_ETH_CMAC
     );
-`else  
- 	localparam integer NUM_INTR_ETH = 1;
 `endif // PITON_FPGA_ETH
 
 `else // PITONSYS_IOCTRL
 
-localparam integer NUM_INTR_ETH = 1;
 assign net_interrupt  = 1'b0;
 assign uart_interrupt = 1'b0;
 
