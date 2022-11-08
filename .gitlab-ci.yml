@@ -85,7 +85,7 @@ synthesis-matrix:
               GIT_STRATEGY: clone
               GIT_SUBMODULE_STRATEGY: recursive
               GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$CONF
-        retry: 1
+        #retry: 1
         timeout: 6h        
         before_script:
             - !reference [.git_clean, before_script]
@@ -100,8 +100,7 @@ synthesis-matrix:
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
             # Clone RISCV toolchain, if the RISCV variable doesn't exists
-            # Protosyn target in the Makefile will skip the toolchain configuration
-            # 
+            # Protosyn target in the Makefile will skip the toolchain configuration            
             - export RISCV=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
