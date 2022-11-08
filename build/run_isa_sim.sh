@@ -14,7 +14,7 @@ sims clean
 rm -rf manycore/
 
 echo "[MEEP] Compiling..."
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU
 
 echo "[MEEP] Running simulation..."
 # differentiate virtual and physical test for the arguments
