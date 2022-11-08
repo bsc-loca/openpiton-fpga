@@ -15,7 +15,7 @@ VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
-RISCV_DIR   ?= $(ROOT_DIR)/riscv
+RISCV   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
@@ -49,7 +49,7 @@ test:
 	@echo "Your core is $(CORE)"
 	@echo "FPGA TARGET: $(FPGA_TARGET)"
 
-initialize: $(RISCV_DIR)
+initialize: $(RISCV)
 
 synthesis: $(SYNTH_DCP)
 
@@ -61,13 +61,13 @@ incremental:
 	@echo "Source a tcl so Vivado takes the latest dcp file to configure incremental implementaiton"
 
 
-$(RISCV_DIR):
+$(RISCV):
 	git clone https://github.com/riscv/riscv-gnu-toolchain; \
 	cd riscv-gnu-toolchain; \
 	./configure --prefix=$@ && make -j8; \
 	cd $(ROOT_DIR); \
 
-protosyn: clean_project $(RISCV_DIR)
+protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 

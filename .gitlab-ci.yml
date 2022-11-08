@@ -100,7 +100,9 @@ synthesis-matrix:
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
             # Clone RISCV toolchain, if the RISCV variable doesn't exists
-            - make initialize RISCV_DIR=$CI_RISCV_DIR
+            # Protosyn target in the Makefile will skip the toolchain configuration
+            # 
+            - export RISCV=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
