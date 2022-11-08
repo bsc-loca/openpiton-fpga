@@ -15,7 +15,7 @@ VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
-RISCV_DIR   := $(ROOT_DIR)/riscv
+RISCV_DIR   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
@@ -64,7 +64,7 @@ incremental:
 $(RISCV_DIR):
 	git clone https://github.com/riscv/riscv-gnu-toolchain; \
 	cd riscv-gnu-toolchain; \
-#	./configure --prefix=$@ && make -j8; \
+	./configure --prefix=$@ && make -j8; \
 	cd $(ROOT_DIR); \
 
 protosyn: clean_project $(RISCV_DIR)

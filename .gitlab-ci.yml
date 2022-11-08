@@ -22,6 +22,9 @@ variables:
     DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
+    # Use a preconfigured RISCV toolchain. This is risky.
+    # There should be a scheduled task to regenerate it.
+    CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     MYSCRIPT: cicd/gitlab_script_op.sh
 
 .default_rules:
@@ -97,7 +100,7 @@ synthesis-matrix:
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
             # Clone RISCV toolchain, if the RISCV variable doesn't exists
-            - make initialize
+            - make initialize RISCV_DIR=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
