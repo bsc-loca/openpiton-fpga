@@ -8,14 +8,15 @@ EA_MOD=$1
 MEEP=$2
 
 if [ $MEEP != "" ]; then
-    MEEP="--meep "
+    MEEP="--meep --eth --ncmem --hbm "
+else
+    MEEP="--vnpm --hbm "
 fi
 
 # Default options
 CORE=lagarto
 XTILES=1
 YTILES=1
-PROTO_OPTIONS="--eth --hbm --ncmem"
 #PROTO_OPTIONS="--meep --eth --hbm --vpu"
 
 case "$EA_MOD" in
@@ -31,12 +32,12 @@ pronoc)
     CORE=lagarto
     XTILES=2
     YTILES=2
-    PROTO_OPTIONS="--eth --hbm --ncmem --pronoc"
+    PROTO_OPTIONS=" --pronoc"
     echo "Selected build configuration: Lagarto 2x2 with Pronoc"
     ;; 
 meep_dvino)
     CORE=lagarto
-    PROTO_OPTIONS="--eth --hbm --vpu"
+    PROTO_OPTIONS=" --vpu"
     echo "Selected build configuration: MEEP DVINO"
     ;;
 acme_v2)
@@ -50,7 +51,7 @@ acme_vpu)
     XTILES=2
     YTILES=2
     # Add VPU
-    PROTO_OPTIONS="--eth --hbm --vpu --pronoc"
+    PROTO_OPTIONS=" --vpu --pronoc"
     echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac
