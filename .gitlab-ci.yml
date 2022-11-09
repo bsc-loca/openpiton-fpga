@@ -43,18 +43,12 @@ variables:
         - !reference [.default_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_PIPELINE_SOURCE == "pipeline"  
-        - !reference [.exclude_ariane, rules]
-
-.ariane_rules:
-    rules:
-        - !reference [.default_rules, rules]
-        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-        - if: $CI_PIPELINE_SOURCE == "pipeline"
-          when: never # Trigger events are for VAS updates    
+        - !reference [.exclude_ariane, rules] 
 
 .workflow_default_rules:  
   rules:
      if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
+
 
 .multi_target:
     parallel:
@@ -108,21 +102,28 @@ synthesis-matrix:
             # A matrix can be created here to synthesize all different options
             - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF
             #- make protosyn $DESIGN_OPTIONS CORE=lagarto
-            - !reference [.check_synth, script]            
-            - |
-                echo "Check here the synthesis log searching for critical warnings";
-                echo "Timing loops, latches ...";
+            - !reference [.check_synth_dcp, script]            
         after_script:
             - mkdir -p logs/${CONF}
             - mkdir -p dcp/${CONF}
-            - mv dcp/synthesis.dcp dcp/${CONF}/synthesis_${CONF}.dcp
             - cp -rf build/alveou280/system/protosyn_logs logs/${CONF}
-
+            - mv dcp/synthesis.dcp dcp/${CONF}/synthesis_${CONF}.dcp
         artifacts:
             when: always
             paths:
                 - logs
                 - dcp
+
+validation-matrix:
+        stage: validation
+        parallel: !reference [.multi_target, parallel]
+        tags: 
+            - MEEP_FPGA                
+        extends: .lagarto_rules
+        needs:
+            - synthesis-matrix
+        script:
+            - . cicd/synth_check.sh . logs/${CONF}
 
 deploy-lagarto:
         stage: deploy-openpiton
@@ -145,10 +146,9 @@ push-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules
         rules:
-            - if: $CI_PIPELINE_SOURCE == "pipeline"                
-            - when: never
+            - !reference [.lagarto_rules, rules]
+            - if: $CI_PIPELINE_SOURCE == "pipeline"           
         needs:
             - synthesis-matrix
         variables:
@@ -181,7 +181,7 @@ push-lagarto:
 
 fpga-shell-trigger:
         stage: push-shell
-        extends: .lagarto_rules
+        extends: .lagarto_rules        
         variables:
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
@@ -197,8 +197,15 @@ fpga-shell-trigger:
 
 clean-on-failure:
     stage: clean
-    extends: .lagarto_rules
+    tags:
+        - MEEP_FPGA
+    rules:
+        - !reference [.lagarto_rules, rules]
+        - if: $CI_PIPELINE_SOURCE != "pipeline" 
+          when: never          
     when: on_failure
+    needs:
+        - push-lagarto
     script:
         # If the shell pipeline fails, remove the release commit from OpenPiton repo
         - | 
@@ -206,7 +213,6 @@ clean-on-failure:
                 echo "Deleting acme_ci/$COMMIT_REF branch"
                 git push -d origin acme_ci/$COMMIT_REF
             fi
-
 
 
 
@@ -219,7 +225,7 @@ clean-on-failure:
         - git config --local --unset https.proxy || true
 
 
-.check_synth:
+.check_synth_dcp:
   script:
     - |
       if [ ! -f dcp/synthesis.dcp ]; then 
