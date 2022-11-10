@@ -146,7 +146,8 @@ module openpiton_wrapper(
     input  wire                               eth_axi_bvalid,
     output wire                               eth_axi_bready, 
    `endif
-
+    
+   `ifdef MEEP_SRAM
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
     output [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr,
@@ -197,6 +198,7 @@ module openpiton_wrapper(
     input   [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input                                sram_axi_bvalid,
     output                               sram_axi_bready,
+    `endif
 
     // AXI non-cacheable system memory
     `ifdef PITON_NONCACH_MEM

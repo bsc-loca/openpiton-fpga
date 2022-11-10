@@ -1909,6 +1909,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .eth_axi_wvalid(eth_axi_wvalid),
 				   `endif
 				    // SRAM Pheripheral
+				     `ifdef MEEP_SRAM
 				   
 				    .sram_axi_araddr(sram_axi_araddr),
 				    .sram_axi_arburst(sram_axi_arburst),
@@ -1959,6 +1960,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_wstrb(sram_axi_wstrb),
 				    .sram_axi_wuser(sram_axi_wuser),
 				    .sram_axi_wvalid(sram_axi_wvalid),
+				    `endif
 				    
 				    `ifdef DEBUG_ROM 
 				    .debug_rom_en(sw[1]), // pcie_gpio[4]
