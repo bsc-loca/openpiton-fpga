@@ -1,8 +1,9 @@
-`ifdef MEEP_COSIM
-
 package spike_dpi_pkg;
 
     import EPI_pkg::*;
+
+localparam MAX_VLEN = 1024;
+localparam MAX_64BIT_BLOCKS = MAX_VLEN/64;
 
 // Spike data
 typedef logic [DATA_PATH_WIDTH-1:0] vec_operand_t [MAX_VLEN/MIN_SEW-1:0];
@@ -22,8 +23,8 @@ typedef struct
 
 typedef struct
 {
-    vec_operand_t old_vd;
-    vec_operand_t vd;
+    longint old_vd;
+    longint vd;
     vec_operand_t vs1;
     vec_operand_t vs2;
     vec_operand_t vs3;
@@ -55,8 +56,8 @@ typedef struct
     int unsigned vxsat;
     int unsigned vlen;
     int unsigned elen;
-    vector_operands_t vector_operands;
     csrs_t csrs;
+    vector_operands_t vector_operands;
     formatted_vector_operands_t formatted_vector_operands;
 } core_info_t;
 
@@ -90,5 +91,3 @@ typedef struct
   import "DPI-C" function void spike_set_external_interrupt(input longint mip_val);
 
 endpackage
-
-`endif

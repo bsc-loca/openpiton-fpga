@@ -1362,6 +1362,10 @@ sub pre_build
     !system("cd $ENV{LAGARTO_ROOT}/src/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
       die (" Error generating PLIC for Lagarto.");
     print "done\n";
+    print "generating signature generator for Lagarto...\n";
+    !system("cd $ENV{LAGARTO_ROOT}/torture/src/models/cxx && ./build.sh ") or
+      die (" Error generating signature generator for Lagarto.");
+    print "done\n";
   }
 
   # go back to where this block was invoked
@@ -1422,8 +1426,16 @@ sub generic_sim_build
 
     push (@{$opt{sim_build_args}}, "-f flist") ;
 
+    if ($opt{pmu_mon}) {
+      push (@{$opt{sim_build_args}}, "+define+PMU_MONITOR")
+    }
+
     if ($opt{cosim}) {
       push (@{$opt{sim_build_args}}, "+define+MEEP_COSIM")
+    }
+
+    if ($opt{no_verbose}) {
+      push (@{$opt{sim_build_args}}, "+define+MINIMAL_MONITORING")
     }
 
     if ($opt{vcs_build}) {
@@ -1669,7 +1681,7 @@ sub generic_sim_build
       $build_cmd .= "--top-module cmp_top " ;
       $build_cmd .= "-Wno-fatal " ;
       $build_cmd .= "-Wno-BLKANDNBLK " ;
-      #$build_cmd .= "-Wno-TIMESCALEMOD " ;
+      $build_cmd .= "-Wno-TIMESCALEMOD " ;
       $build_cmd .= "-DPITON_DPI " ;
       $build_cmd .= "--unroll-count 256 " ;
       $build_cmd .= "-CFLAGS -DVERILATOR " ;
@@ -1833,7 +1845,9 @@ sub generic_sim_run
     push (@{$opt{sim_run_args}}, "+stub_mask=$opt{stub_mask}") if ($opt{stub_mask} ne "") ;
     push (@{$opt{sim_run_args}}, "+TIMEOUT=$opt{rtl_timeout}") if ($opt{rtl_timeout}) ;
     push (@{$opt{sim_run_args}}, "+max_cycle=$opt{max_cycle}") if ($opt{max_cycle}) ;
-
+    push (@{$opt{sim_run_args}}, "+disable_l2_mon") if ($opt{no_verbose}) ;
+    push (@{$opt{sim_run_args}}, "+disable_l15_mon") if ($opt{no_verbose}) ;
+    push (@{$opt{sim_run_args}}, "+tso_mon=0") if ($opt{no_verbose}) ;
     push (@{$opt{sim_run_args}}, "+initreg+$opt{tg_seed}") if ($opt{vcs_use_initreg}) ;
     push (@{$opt{sim_run_args}}, "+tg_seed=$opt{tg_seed}") ;
     push (@{$opt{sim_run_args}},  $good_trap) if ($good_trap ne "") ;
@@ -1908,6 +1922,9 @@ sub generic_sim_run
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");
       	$cmd .= " -wlfcompress -wlf all-waves.wlf -do \"log -r /*\" ";
       }
+      # add path for dpi
+      $cmd .= "-sv_lib ";
+      $cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture ";
       if ($opt{cosim}) {
         $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";  # Spike's binary used for cosimulation
       }
@@ -2857,6 +2874,7 @@ sub parse_args
             'overwrite!',
             'pal_use_tgseed!',
             'parallel!',
+            'pmu_mon!',
             'post_process_cmd=s@',
             'pre_process_cmd=s@',
             'reg_count=i',
@@ -2922,6 +2940,7 @@ sub parse_args
             'vcs_use_initreg!',
             'vcs_use_sdf!',
             'verbose!',
+            'no_verbose!',
             'vfile=s@',
             'vlt_build!',
             'vlt_build_args=s@',
@@ -3470,9 +3489,19 @@ OPENPITON ARGUMENTS
             enable cosimulation with Spike. Using Spike DPI, testbench will get
             instruction commit information from Spike and match it with RTL after
             every committed instruction.
+
+    -no_verbose
+            reduce verbosity to minimal by disabling the monitor prints of L2, L1_5
+            tso monitor and defining MINIMAL_MONITORING.
+
     -cov
             enable coverage. For now, enabling branch, statement and toggle
             for code coverage. Also enabling functional coverage.
+
+    -pmu_mon
+            enable PMU monitor. It enables the PMU monitor and scoreboard logic
+            to compare PMU counters from CSR file of each core with their
+            respective reference counters in PMU scoreboard.
 
     -log_all
             in a msm_run, this command logs all signals and dumps them to the "all-waves.wlf" file for later inspection with a wave viewer.

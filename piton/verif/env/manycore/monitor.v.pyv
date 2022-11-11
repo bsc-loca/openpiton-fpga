@@ -52,7 +52,7 @@ module monitor(/*AUTOARG*/
 	err_f  = 1;
 	bad    = 0;
 `ifndef VERILATOR
-	max_cycle = 30000;
+	max_cycle = 6000000;
 `else // ifndef VERILATOR
 	max_cycle = 1500000;
 `endif // ifndef VERILATOR
@@ -61,7 +61,7 @@ module monitor(/*AUTOARG*/
 	if($value$plusargs("max_cycle=%d", max_cycle))$display("max cycles = %d", max_cycle);
      end // initial begin
    always @(posedge clk)begin
-     if(`TOP_MOD.diag_done == 0)cycle = cycle + 1;
+     cycle = cycle + 1;
       if(cycle == max_cycle)begin
 	 $display("%0d : Simulation -> (terminated by reaching max cycles = %0d)", $time, max_cycle);
 	 $finish;

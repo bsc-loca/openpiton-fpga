@@ -77,8 +77,10 @@ export LAGARTO_ROOT=${PITON_ROOT}/piton/design/chip/tile/vas_tile_core/
 ## GCC and RISCV GCC setup
 export CXX=g++ CC=gcc
 # customize this to a fast local disk
-export RISCV=/home/tools/openpiton/riscv_install
-#export RISCV=/home/`whoami`/tools/riscv_install
+if [ x$RISCV == x ]; then
+  export RISCV=/home/tools/openpiton/riscv_install
+fi
+
 export VERILATOR_ROOT=$LAGARTO_ROOT/tmp/verilator-4.014/
 
 # setup paths
