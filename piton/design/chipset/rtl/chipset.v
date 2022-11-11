@@ -411,7 +411,8 @@ module chipset(
     `endif // ETHERNET_DMA
     
     input wire   [1:0]                        eth_irq, //TODO: connect it downstream
-
+    
+    `ifdef MEEP_SRAM
     // AXI interface SRAM
     output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_awaddr,
@@ -462,6 +463,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
+    `endif // MEEP_SRAM
 	
     `ifdef DEBUG_ROM 
     output  wire                              debug_rom_req,
