@@ -1,5 +1,25 @@
 #!/bin/bash
 
+trap '' INT
+
+run_simulation () (
+   trap - INT
+
+   echo "[MEEP] Running simulation..."
+   # differentiate virtual and physical test for the arguments
+   if [[ $TEST == *"-v-"* ]];
+   then
+       echo "[MEEP] virtual test"
+       sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
+   else
+       echo "[MEEP] physical test"
+       sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled 
+   fi
+)
+
+echo 'main shell here'
+
+
 TOOLS=/home/tools/drac/bin
 TEST=$1
 
@@ -14,18 +34,9 @@ sims clean
 rm -rf manycore/
 
 echo "[MEEP] Compiling..."
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
-echo "[MEEP] Running simulation..."
-# differentiate virtual and physical test for the arguments
-if [[ $TEST == *"-v-"* ]];
-then
-    echo "[MEEP] virtual test"
-    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000
-else
-    echo "[MEEP] physical test"
-    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 $TEST.S -lagarto -precompiled 
-fi
+run_simulation
 
 echo "[MEEP] Running spike. Getting golden reference..."
 $TOOLS/spike -l --isa rv64gc ../piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build/isa/$TEST 2> $TEST.sig

@@ -86,7 +86,7 @@ pico-amoxor     amoxor_w.S
 </cmp_default>
 </pico_tile1>
 
-<lagarto_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG> 
+<lagarto_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB> 
 <cmp_default name=default>
     // note: these asm tests assume that the RISCV tests have been precompiled with the
     // correct environment
