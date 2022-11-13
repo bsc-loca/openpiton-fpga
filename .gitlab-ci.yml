@@ -215,9 +215,7 @@ shell-prelaunch:
 
 fpga-shell-trigger:
         stage: push-shell
-        extends: .lagarto_rules        
-        needs:
-            - deploy-openpiton
+        extends: .lagarto_rules                
         variables:
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
@@ -241,7 +239,8 @@ clean-on-failure:
           when: never          
     when: on_failure
     needs:
-        - push-lagarto
+        - job: push-lagarto
+          optional: true
     script:
         # If the shell pipeline fails, remove the release commit from OpenPiton repo
         - | 
