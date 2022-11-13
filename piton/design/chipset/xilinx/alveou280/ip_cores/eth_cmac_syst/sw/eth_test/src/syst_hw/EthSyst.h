@@ -203,8 +203,11 @@
 class EthSyst {
   uint32_t volatile* ethSystBase; // Whole Ethernet system base address
   uint32_t volatile* ethCore;     // Ethernet core base address
+  uint32_t volatile* cacheMem;    // cached system memory range for DMA usage
   uint32_t volatile* uncacheMem;  // uncached system memory range for DMA usage
+  uint8_t  volatile* cacheFlAddr; // Control address for enforced Cache Flush
   uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
+  uint32_t volatile* dmaMemBsNC;  // virtual DMA memory non-cacheable base addr
   //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
@@ -241,25 +244,45 @@ class EthSyst {
     ETH_MAX_PACK_SIZE = 9600,
     UNCACHE_MEM_ADDR = DRAM_UNCACHE_BASEADDR +
                        DRAM_UNCACHE_ADRRANGE - ETH_SYST_ADRRANGE,
+    CACHE_MEM_ADDR   = DRAM_BASEADDR +
+                       DRAM_ADRRANGE         - ETH_SYST_ADRRANGE,
+    // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
+    CACHE_FLUSH_BASEADDR = 0xAC00000000 + CACHE_MEM_ADDR,
+    CACHE_FLUSH_ADDRMASK = 0x03FFFFFFC0,
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
+  #ifdef DMA_MEM_CACHED
+    DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR,
+  #else
     DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,
+  #endif
+    DMA_MEMNC_BSADDR = UNCACHE_MEM_ADDR,
 #else
     // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory
     DMA_MEM_BASEADDR = ETH_SYST_BASEADDR,
+    DMA_MEMNC_BSADDR = ETH_SYST_BASEADDR,
 #endif
-    TX_DMA_MEM_ADDR = DMA_MEM_BASEADDR + TX_MEM_CPU_BASEADDR,
-    RX_DMA_MEM_ADDR = DMA_MEM_BASEADDR + RX_MEM_CPU_BASEADDR,
-    TX_SG_MEM_ADDR  = DMA_MEM_BASEADDR + SG_MEM_CPU_BASEADDR,
-    TX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
-    RX_SG_MEM_SIZE  = SG_MEM_CPU_ADRRANGE/2,
-    RX_SG_MEM_ADDR  = TX_SG_MEM_ADDR + TX_SG_MEM_SIZE
+    TX_MEM_ADDR    = DMA_MEM_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_MEM_ADDR    = DMA_MEM_BASEADDR + RX_MEM_CPU_BASEADDR,
+    SG_MEM_ADDR    = DMA_MEM_BASEADDR + SG_MEM_CPU_BASEADDR,
+
+    TX_MEMNC_ADDR  = DMA_MEMNC_BSADDR + TX_MEM_CPU_BASEADDR,
+    RX_MEMNC_ADDR  = DMA_MEMNC_BSADDR + RX_MEM_CPU_BASEADDR,
+    SG_MEMNC_ADDR  = DMA_MEMNC_BSADDR + SG_MEM_CPU_BASEADDR,
+
+    SG_TX_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
+    SG_RX_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
+    SG_TX_MEM_ADDR = SG_MEM_ADDR,
+    SG_RX_MEM_ADDR = SG_TX_MEM_ADDR + SG_TX_MEM_SIZE
   };
   uint32_t volatile* txMem;   // Tx mem base address
   uint32_t volatile* rxMem;   // Rx mem base address
   uint32_t volatile* sgMem;   // SG mem base address
   uint32_t volatile* sgTxMem; // Tx SG mem base address
   uint32_t volatile* sgRxMem; // Rx SG mem base address
+  uint32_t volatile* txMemNC; // Tx mem base address
+  uint32_t volatile* rxMemNC; // Rx mem base address
+  uint32_t volatile* sgMemNC; // SG mem base address
 
   size_t txBdCount = 0;
   size_t rxBdCount = 0;
@@ -268,6 +291,8 @@ class EthSyst {
   uint8_t physConnOrder;
   enum {PHYS_CONN_WAIT_INI = 2};
 
+  uint8_t volatile cacheFlush  (size_t);
+  uint8_t volatile cacheInvalid(size_t);
   EthSyst();
   // ~EthSyst();
   void ethCoreInit(bool);
@@ -288,6 +313,10 @@ class EthSyst {
   int flushReceive();
   int frameSend(uint8_t*, unsigned);
   uint16_t frameRecv(uint8_t*);
+
+  // uint64_t swap64(uint64_t);
+  // uint32_t swap32(uint32_t);
+  // uint16_t swap16(uint16_t);
 };
 
 #endif // end of protection macro

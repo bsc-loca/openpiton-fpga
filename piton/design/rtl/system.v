@@ -591,7 +591,7 @@ module system(
     output wire                               eth_axi_bready, 
    `endif
 
-
+    `ifdef MEEP_SRAM
     // AXI interface SRAM
     output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_awaddr,
@@ -642,6 +642,7 @@ module system(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
+    `endif
     
     `ifdef DEBUG_ROM 
     output                                    debug_rom_req,
@@ -1795,7 +1796,7 @@ chipset chipset(
 	    .eth_axi_wvalid(eth_axi_wvalid),
 	   `endif
 	   // SRAM Pheripheral
-		   
+		    `ifdef MEEP_SRAM
 		    .sram_axi_araddr(sram_axi_araddr),
 		    .sram_axi_arburst(sram_axi_arburst),
 		    .sram_axi_arcache(sram_axi_arcache),
@@ -1845,6 +1846,7 @@ chipset chipset(
 		    .sram_axi_wstrb(sram_axi_wstrb),
 		    .sram_axi_wuser(sram_axi_wuser),
 		    .sram_axi_wvalid(sram_axi_wvalid),
+		    `endif
 		    
 		     `ifdef DEBUG_ROM 
              .debug_rom_req(debug_rom_req),
