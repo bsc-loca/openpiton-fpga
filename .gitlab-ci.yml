@@ -199,13 +199,9 @@ shell-prelaunch:
         needs:
             - validation-matrix
         script:
-            - NEW_BRANCH=$(git branch --show-current) 
-            - echo NEW_BRANCH=$NEW_BRANCH >> branch_info.env
-            - echo NEW_BRANCH_SHA=$(git rev-parse $NEW_BRANCH) >> branch_info.env
-            # NEW_BRANCH_SHA should be equivalent to predefined $CI_COMMIT_SHA
-            # NEW BRANCH should be equivalent to predefined $CI_COMMIT_REF_NAME
-            - echo "$NEW_BRANCH vs $CI_COMMIT_REF_NAME"
-            - echo "$NEW_BRANCH_SHA vs $CI_COMMIT_SHA"
+            - NEW_BRANCH=$CI_COMMIT_REF_NAME
+            - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
+            - echo "NEW_BRANCH_SHA=$CI_COMMIT_SHA" >> branch_info.env
         artifacts:
             when: always            
             reports:
