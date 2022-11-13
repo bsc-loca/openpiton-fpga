@@ -74,6 +74,7 @@ synthesis-matrix:
             - MEEP_FPGA
         extends: .lagarto_rules 
         parallel: !reference [.multi_target, parallel]       
+        interruptible: true
         variables:        
               #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
@@ -192,6 +193,8 @@ shell-prelaunch:
         rules:
             - if: $CI_PIPELINE_SOURCE == "pipeline"                         
               when: never
+            - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
         needs:
             - validation-matrix
         script:
