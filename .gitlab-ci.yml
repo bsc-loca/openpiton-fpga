@@ -27,7 +27,7 @@ variables:
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     MYSCRIPT: cicd/gitlab_script_op.sh
 
-.default_rules:
+.test_rules:
     rules:
         if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
         #- when: always
@@ -38,11 +38,15 @@ variables:
         - if: $CI_PIPELINE_SOURCE == "pipeline" && $CONF=="ariane"
           when: never
 
-.lagarto_rules:
+.default_rules:
     rules:
-        - !reference [.default_rules, rules]        
+        - !reference [.test_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_PIPELINE_SOURCE == "pipeline"  
+
+.lagarto_rules:
+    rules:
+        - !reference [.default_rules, rules]     
         - !reference [.exclude_ariane, rules] 
 
 .workflow_default_rules:  
@@ -75,6 +79,7 @@ synthesis-matrix:
         extends: .lagarto_rules 
         parallel: !reference [.multi_target, parallel]       
         interruptible: true
+        retry: 1
         variables:        
               #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
@@ -133,7 +138,7 @@ deploy-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules
+        extends: .default_rules
         needs:
             - validation-matrix
         before_script:
@@ -190,11 +195,7 @@ shell-prelaunch:
             - MEEP_FPGA
         variables:
             GIT_STRATEGY: clone            
-        rules:
-            - if: $CI_PIPELINE_SOURCE == "pipeline"                         
-              when: never
-            - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-
+        extends: .default_rules
         needs:
             - validation-matrix
         script:
@@ -218,8 +219,9 @@ shell-prelaunch:
 
 fpga-shell-trigger:
         stage: push-shell
-        extends: .lagarto_rules                
-        variables:
+        extends: .default_rules           
+        variables:        
+            GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
@@ -237,7 +239,7 @@ clean-on-failure:
     tags:
         - MEEP_FPGA
     rules:
-        - !reference [.lagarto_rules, rules]
+        - !reference [.default_rules, rules]
         - if: $CI_PIPELINE_SOURCE != "pipeline" 
           when: never          
     when: on_failure
