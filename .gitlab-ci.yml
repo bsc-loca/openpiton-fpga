@@ -84,8 +84,10 @@ simulation:
         rules:
             - if: $CI_PIPELINE_SOURCE == "push"
         script:
+            - echo "Running Regression tests"
+            - echo "$PWD"
             - cd build
-            - source build/run_all_isa_groups.sh
+            - source run_all_isa_groups.sh
             - "cd 2*"
 
 ###################################
