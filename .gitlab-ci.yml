@@ -63,6 +63,19 @@ stages:
   - push-shell
   - clean
   
+###################################
+# Simulations
+###################################
+
+regression:
+        stage: regression
+        tags: MEEP_SIMS
+        rules:
+            - if: $CI_PIPELINE_SOURCE == "push"
+        script:
+            - cd build
+            - source build/run_all_isa_groups.sh
+            - "cd 2*"
 
 ###################################
 # Synthesis
