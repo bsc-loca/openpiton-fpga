@@ -5,7 +5,7 @@ PIPELINE_SOURCE=$2
 
 echo "Pipeline Source is = $PIPELINE_SOURCE"
 
-if [ $2 == "pipeline" ]; then
+if [ "x$2" == "xpipeline" ]; then
 
 THIS_DIR=`pwd`
 
