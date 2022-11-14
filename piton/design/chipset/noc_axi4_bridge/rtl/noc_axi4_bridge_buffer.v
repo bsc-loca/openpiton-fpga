@@ -32,7 +32,6 @@
 
 
 module noc_axi4_bridge_buffer #(
-    parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
     parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
@@ -235,25 +234,15 @@ assign write_req_addr = req_addr;
 
 
 // Transformation of write data according to queueed request
-reg [6:0] wr_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] wr_offset;
-always @(*) extractSize(req_header, wr_size, wr_offset);
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] wr_size_log;
+always @(*) noc_extractSize(req_header, wr_size_log, wr_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
-                                                                      wdata;
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] wr_size = 1 << wr_size_log;
+wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
 
-// wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-wire [`AXI4_STRB_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
-                                    wr_size[1] ? { 2{1'b1}} :
-                                    wr_size[2] ? { 4{1'b1}} :
-                                    wr_size[3] ? { 8{1'b1}} :
-                                    wr_size[4] ? {16{1'b1}} :
-                                    wr_size[5] ? {32{1'b1}} :
-                                    wr_size[6] ? {64{1'b1}} :
-                                    `AXI4_DATA_WIDTH'h0;
-
-assign write_req_data = wdata_swapped << (8*wr_offset);
-assign write_req_strb = wstrb         <<    wr_offset;
+assign write_req_data = wdata << (8*wr_offset);
+assign write_req_strb = wstrb <<    wr_offset;
 
 
 //
@@ -507,83 +496,24 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-reg [6:0] rd_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] rd_offset;
-always @(*) extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size, rd_offset);
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] rd_size_log;
+always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size_log, rd_offset);
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
-wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped  = SWAP_ENDIANESS ? swapData(rdata_offseted, rd_size) :
-                                                                       rdata_offseted;
 
-wire [`AXI4_DATA_WIDTH-1:0] rdata = rd_size[0] ? {`AXI4_DATA_WIDTH/8  {rdata_swapped[7  :0]}} :
-                                    rd_size[1] ? {`AXI4_DATA_WIDTH/16 {rdata_swapped[15 :0]}} :
-                                    rd_size[2] ? {`AXI4_DATA_WIDTH/32 {rdata_swapped[31 :0]}} :
-                                    rd_size[3] ? {`AXI4_DATA_WIDTH/64 {rdata_swapped[63 :0]}} :
-                                    rd_size[4] ? {`AXI4_DATA_WIDTH/128{rdata_swapped[127:0]}} :
-                                    rd_size[5] ? {`AXI4_DATA_WIDTH/256{rdata_swapped[255:0]}} :
-                                    rd_size[6] ? {`AXI4_DATA_WIDTH/512{rdata_swapped[511:0]}} :
-                                                  `AXI4_DATA_WIDTH'h0;
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] rd_size = 1 << rd_size_log;
+wire [`AXI4_DATA_WIDTH -1:0] rdata = rd_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
+                                     rd_size[1] ? {32 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/32]}} :
+                                     rd_size[2] ? {16 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/16]}} :
+                                     rd_size[3] ? {8  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/8 ]}} :
+                                     rd_size[4] ? {4  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/4 ]}} :
+                                     rd_size[5] ? {2  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/2 ]}} :
+                                     rd_size[6] ?      rdata_offseted     : `AXI4_DATA_WIDTH'h0;
 
 assign ser_val    = stor_hdr_en;
 assign ser_data   = stor_command ? `AXI4_DATA_WIDTH'b0 : rdata;
 assign ser_header = stor_header;
-
-
-task automatic extractSize;
-  input  [`MSG_HEADER_WIDTH-1 :0] header;
-  output [6:0] size;
-  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
-  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
-  reg uncacheable;
-  begin
-  virt_addr = header[`MSG_ADDR];
-  uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-  if (uncacheable)
-    case (header[`MSG_DATA_SIZE])
-      `MSG_DATA_SIZE_0B:  size = 7'd0;
-      `MSG_DATA_SIZE_1B:  size = 7'd1;
-      `MSG_DATA_SIZE_2B:  size = 7'd2;
-      `MSG_DATA_SIZE_4B:  size = 7'd4;
-      `MSG_DATA_SIZE_8B:  size = 7'd8;
-      `MSG_DATA_SIZE_16B: size = 7'd16;
-      `MSG_DATA_SIZE_32B: size = 7'd32;
-      `MSG_DATA_SIZE_64B: size = 7'd64;
-      default:            size = 7'b0; // should never end up here
-    endcase
-  else                    size = 7'd64;
-  offset = uncacheable ? virt_addr : 0;
-  end
-endtask
-
-
-function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
-  input [`AXI4_DATA_WIDTH-1:0] data;
-  input [6:0] size;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] swap_grnlty;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] itr_swp;
-  begin
-  // swap_grnlty = size - 7'h1;
-  // the following code produces less LUTs
-  swap_grnlty = size[0] ? 6'd0  :
-                size[1] ? 6'd1  :
-                size[2] ? 6'd3  :
-                size[3] ? 6'd7  :
-                size[4] ? 6'd15 :
-                size[5] ? 6'd31 :
-                          6'd63;
-  swapData = `AXI4_DATA_WIDTH'h0;
-  for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
-    swapData[itr_swp*8 +: 8] = data[(swap_grnlty - itr_swp)*8 +: 8];
-  end
-endfunction
-
-
-function integer clip2zer;
-  input integer val;
-  clip2zer = val < 0 ? 0 : val;
-endfunction
 
 
 /*

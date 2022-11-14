@@ -6,7 +6,7 @@
 workflow:
     rules:
         - !reference [.workflow_default_rules, rules]
-        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
         - if: $CI_PIPELINE_SOURCE == "pipeline"
         - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
           when: never  
@@ -27,7 +27,7 @@ variables:
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     MYSCRIPT: cicd/gitlab_script_op.sh
 
-.default_rules:
+.test_rules:
     rules:
         if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
         #- when: always
@@ -38,11 +38,15 @@ variables:
         - if: $CI_PIPELINE_SOURCE == "pipeline" && $CONF=="ariane"
           when: never
 
-.lagarto_rules:
+.default_rules:
     rules:
-        - !reference [.default_rules, rules]        
+        - !reference [.test_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_PIPELINE_SOURCE == "pipeline"  
+
+.lagarto_rules:
+    rules:
+        - !reference [.default_rules, rules]     
         - !reference [.exclude_ariane, rules] 
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
@@ -102,6 +106,8 @@ synthesis-matrix:
             - MEEP_FPGA
         extends: .lagarto_rules 
         parallel: !reference [.multi_target, parallel]       
+        interruptible: true
+        retry: 1
         variables:        
               #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
@@ -144,6 +150,8 @@ synthesis-matrix:
 
 validation-matrix:
         stage: validation
+        variables:                      
+              GIT_STRATEGY: clone
         parallel: !reference [.multi_target, parallel]
         tags: 
             - MEEP_FPGA                
@@ -152,14 +160,15 @@ validation-matrix:
             - synthesis-matrix
         script:
             - . cicd/synth_check.sh . logs/${CONF}
+        allow_failure: true # pass with errors ...
 
 deploy-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules
+        extends: .default_rules
         needs:
-            - synthesis-matrix
+            - validation-matrix
         before_script:
             - ls; ls dcp;
             - export TODAY=$(date +"%y%m%d")
@@ -169,16 +178,16 @@ deploy-lagarto:
         script:            
             - cp -rf logs $ABSDIR/
             - cp -rf dcp $ABSDIR/
+       
 
 push-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
         rules:
-            - !reference [.lagarto_rules, rules]
             - if: $CI_PIPELINE_SOURCE == "pipeline"           
         needs:
-            - synthesis-matrix
+            - validation-matrix
         variables:
                 GIT_STRATEGY: clone
                 GIT_SUBMODULES_STRATEGY: normal 
@@ -202,6 +211,31 @@ push-lagarto:
             reports:
              dotenv: branch_info.env
 
+# This job is generated when the push-lagarto is not. It is needed
+# to create the variables that the fpga-shell-trigger job consumes.
+# Those variables need to be created when the pipeline trigger
+# is a merge request event too, not only because when is a triggered
+# pipeline.
+
+shell-prelaunch:
+        stage: deploy-openpiton   
+        tags:
+            - MEEP_FPGA
+        variables:
+            GIT_STRATEGY: clone            
+        extends: .default_rules
+        needs:
+            - validation-matrix
+        script:
+            - NEW_BRANCH=$CI_COMMIT_REF_NAME
+            - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
+            - echo "NEW_BRANCH_SHA=$CI_COMMIT_SHA" >> branch_info.env
+        artifacts:
+            when: always            
+            reports:
+             dotenv: branch_info.env
+
+               
 # This is the last job in the triggered pipeline, which triggers the FPGA shell CICD
 # The shell will receive the CI_COMMIT_SHA variable, so it can update the ea_url.txt file
 # @ support/acme/ea_url.txt, and do things normally. (make update_sha)
@@ -209,8 +243,9 @@ push-lagarto:
 
 fpga-shell-trigger:
         stage: push-shell
-        extends: .lagarto_rules        
-        variables:
+        extends: .default_rules           
+        variables:        
+            GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
@@ -228,12 +263,13 @@ clean-on-failure:
     tags:
         - MEEP_FPGA
     rules:
-        - !reference [.lagarto_rules, rules]
+        - !reference [.default_rules, rules]
         - if: $CI_PIPELINE_SOURCE != "pipeline" 
           when: never          
     when: on_failure
     needs:
-        - push-lagarto
+        - job: push-lagarto
+          optional: true
     script:
         # If the shell pipeline fails, remove the release commit from OpenPiton repo
         - | 
@@ -242,8 +278,6 @@ clean-on-failure:
                 git push -d origin acme_ci/$COMMIT_REF
             fi
 
-
-
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
 ##
 
@@ -251,7 +285,6 @@ clean-on-failure:
     before_script:
         - git config --local --unset http.proxy || true
         - git config --local --unset https.proxy || true
-
 
 .check_synth_dcp:
   script:

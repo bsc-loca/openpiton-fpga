@@ -411,7 +411,8 @@ module chipset(
     `endif // ETHERNET_DMA
     
     input wire   [1:0]                        eth_irq, //TODO: connect it downstream
-
+    
+    `ifdef MEEP_SRAM
     // AXI interface SRAM
     output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_awaddr,
@@ -462,6 +463,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
+    `endif // MEEP_SRAM
 	
     `ifdef DEBUG_ROM 
     output  wire                              debug_rom_req,
@@ -1909,6 +1911,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .eth_axi_wvalid(eth_axi_wvalid),
 				   `endif
 				    // SRAM Pheripheral
+				     `ifdef MEEP_SRAM
 				   
 				    .sram_axi_araddr(sram_axi_araddr),
 				    .sram_axi_arburst(sram_axi_arburst),
@@ -1959,6 +1962,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_wstrb(sram_axi_wstrb),
 				    .sram_axi_wuser(sram_axi_wuser),
 				    .sram_axi_wvalid(sram_axi_wvalid),
+				    `endif
 				    
 				    `ifdef DEBUG_ROM 
 				    .debug_rom_en(sw[1]), // pcie_gpio[4]

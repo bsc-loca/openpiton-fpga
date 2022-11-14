@@ -315,7 +315,7 @@ module chipset_impl(
     output wire                               eth_axi_bready, 
     `endif
     
-	
+	`ifdef MEEP_SRAM
 	// Memory interchange space
 	output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_awaddr,
@@ -366,6 +366,7 @@ module chipset_impl(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
+    `endif
    
    `ifdef DEBUG_ROM 
     input                                    debug_rom_en,
@@ -1705,7 +1706,7 @@ fake_uart fake_uart (
 
 // Add the SRAM as an independent module instead being part of the memory controller
 `ifdef PITONSYS_MEEP
-
+    `ifdef MEEP_SRAM
  sram_top sram_top(
             .sys_clk(chipset_clk),
             .sys_rst_n(chipset_rst_n),
@@ -1774,7 +1775,7 @@ fake_uart fake_uart (
             .m_axi_bvalid(sram_axi_bvalid),
             .m_axi_bready(sram_axi_bready)
         );
-		
+	`endif
 		
 	`ifdef PITON_NONCACH_MEM
 
@@ -1783,15 +1784,15 @@ fake_uart fake_uart (
             .mc_rstn            (ncmem_axi_arstn     ),    
 			.core_ref_clk       (chipset_clk         ),
 			.core_ref_rstn	    (chipset_rst_n       ),
-			.phy_init_done      (init_calib_complete ),
+			.phy_init_done      (hbm_calib_complete  ),
 
-			.ncmem_in_val  (buf_ncmem_noc2_valid),			
-            .ncmem_in_data (buf_ncmem_noc2_data),
-			.ncmem_in_rdy  (ncmem_buf_noc2_ready),
-
-            .ncmem_out_val  (ncmem_buf_noc3_valid),			
-            .ncmem_out_data (ncmem_buf_noc3_data),			
-			.ncmem_out_rdy (buf_ncmem_noc3_ready),
+			.ncmem_flit_in_val  (buf_dma_pool_noc2_valid ),			
+            .ncmem_flit_in_data (buf_dma_pool_noc2_data  ),
+			.ncmem_flit_in_rdy  (dma_pool_buf_noc2_ready ),
+                   
+            .ncmem_flit_out_val  (dma_pool_buf_noc3_valid ),			
+            .ncmem_flit_out_data (dma_pool_buf_noc3_data  ),			
+			.ncmem_flit_out_rdy  (buf_dma_pool_noc3_ready ),
 
 			.m_axi_awid(ncmem_axi_awid),
 			.m_axi_awaddr(ncmem_axi_awaddr),
