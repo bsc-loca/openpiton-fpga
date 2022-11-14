@@ -69,7 +69,8 @@ stages:
 
 regression:
         stage: regression
-        tags: MEEP_SIMS
+        tags: 
+            - MEEP_SIMS
         rules:
             - if: $CI_PIPELINE_SOURCE == "push"
         script:
