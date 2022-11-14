@@ -57,6 +57,7 @@ variables:
               
 
 stages:  
+  - simulation
   - synthesis
   - validation
   - deploy-openpiton
@@ -67,8 +68,8 @@ stages:
 # Simulations
 ###################################
 
-regression:
-        stage: regression
+simulation:
+        stage: simulation
         tags: 
             - MEEP_SIMS
         rules:
