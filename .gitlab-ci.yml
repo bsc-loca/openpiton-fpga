@@ -13,6 +13,7 @@ workflow:
         - if: $CI_COMMIT_TAG != null 
         - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
           when: never # Pushing to main doesn't create pipelines unless there is a tag
+        - when: always
   
 variables:
     GIT_STRATEGY: none
@@ -70,6 +71,14 @@ stages:
 
 simulation:
         stage: simulation
+        timeout: 1h        
+        before_script:
+            - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
+            - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+            # eda env mentor licence 
+            - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
+            - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
+            - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
         tags: 
             - MEEP_SIMS
         rules:
