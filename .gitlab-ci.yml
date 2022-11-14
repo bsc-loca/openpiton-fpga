@@ -85,15 +85,12 @@ simulation:
             - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
         tags: 
             - MEEP_SIMS
-        rules:
-            - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
         script:
             - echo "Running Regression tests"
             - echo "$PWD"
             - ls 
             - "cd build"
             - source run_all_isa_groups.sh
-            - "cd 2*"
 
 ###################################
 # Synthesis
