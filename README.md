@@ -30,15 +30,11 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
 
 Compiling Openpiton with Lagarto
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
-
-Compiling Openpiton with Lagarto and FPU from Zagreb
-
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
 
 Compiling with torture (to generate signature file for spike):
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
 You can clean the files before to compile for lagarto by doing:
     sims clean
@@ -75,7 +71,11 @@ After the execution of the benchmark you can display the result with:
 
 First build the system with the number of tiles that you desire. The below example use 4 tiles.
 
+<<<<<<< HEAD
     sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+=======
+    sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
+>>>>>>> rtl/HV_GC5-L1Ar-V_ACME
 
 Then recompile the benchmark to work with 4 tiles:
 
@@ -100,9 +100,15 @@ After the execution of the benchmark you can display the result with:
 #### Regressions
 
 The RISC-V ISA tests, benchmarks and some additonal simple example programs have been added to the regression suite of OpenPiton, and can be invoked as described below.
+<<<<<<< HEAD
 RISC-V ISA tests are grouped into physical (ending with p) and virtual addresses (ending with v)):
 
     sims -group=lagarto_tile1_rv64ui_tests_p -sim_type=msm
+=======
+RISC-V ISA tests are grouped into the following four batches, where the last two are the regressions for atomic memory operations (AMOs):
+
+    sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+>>>>>>> rtl/HV_GC5-L1Ar-V_ACME
 
 List of regression tests supported:
 
@@ -118,6 +124,7 @@ List of regression tests supported:
 - lagarto_tile1_rv64uf_tests_v
 - lagarto_tile1_rv64ud_tests_p
 - lagarto_tile1_rv64ud_tests_v
+<<<<<<< HEAD
 - lagarto_tile1_rv64uc_tests_p
 - lagarto_tile1_rv64uc_tests_v
 
@@ -182,6 +189,13 @@ sims -sys=manycore -x_tiles=3 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL
 # run simulation
 sims -sys=manycore -msm_run -x_tiles=3 -y_tiles=2 -lagarto hello_world_many.c -finish_mask 0x111111 -rtl_timeout 1000000
 ```
+=======
+
+If you would like to get an overview of the exit status of a regression batch, step into the regression subfolder and call
+
+    regreport . -summary
+
+>>>>>>> rtl/HV_GC5-L1Ar-V_ACME
 
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
