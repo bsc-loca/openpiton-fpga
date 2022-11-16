@@ -97,8 +97,6 @@ simulation:
             ## First, update the submodule if the pipeline source is a trigger
             ############################
             - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
-        script:
-
             - echo "Running Regression tests"
             - echo "$PWD"
             - ls 
