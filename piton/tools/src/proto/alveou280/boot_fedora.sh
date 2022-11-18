@@ -71,4 +71,4 @@ echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma
 sleep 2
 dma-ctl qdma08000 reg write bar 2 0x0 0x3 #Release Ariane's reset
 
-#picocom -b 115200 /dev/ttyUSB2
+picocom -b 115200 /dev/ttyUSB2
