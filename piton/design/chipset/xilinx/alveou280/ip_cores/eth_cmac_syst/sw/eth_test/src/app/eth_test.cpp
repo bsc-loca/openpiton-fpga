@@ -395,6 +395,10 @@ int main(int argc, char *argv[])
           exit(1);
         }
         uint32_t volatile* sramSys = reinterpret_cast<uint32_t*>(mmap(0, SRAM_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, SRAM_SYST_BASEADDR));
+        if (sramSys == MAP_FAILED) {
+          printf("Memory mapping of system SRAM failed.\n");
+          exit(1);
+        }
         printf("(virt: 0x%lX) with size %ld -------\n", size_t(sramSys), SRAM_SYST_ADRRANGE);
         size_t const sramWords = SRAM_SYST_ADRRANGE / sizeof(uint32_t);
 

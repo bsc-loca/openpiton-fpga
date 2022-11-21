@@ -51,7 +51,7 @@ while {[gets $dv_xml line] >= 0} {
     }
   }
   # extracting uncached SDRAM address definitions
-  if      {[string first "<name>ncmem</name>" $line] >= 0} {
+  if      {[string first "<name>dma_pool</name>" $line] >= 0} {
     while {[string first "</port>"            $line] <  0} {
       gets $dv_xml line
       if        {[string first "<base>" $line] >= 0} {
