@@ -288,6 +288,8 @@ def ReadDevicesXMLFile():
         base = int(text, 0)
       elif tag == "length":
         length = int(text, 0)
+      elif tag == "fragment":
+        fragment = int(text, 0)        
       elif tag == "name":
         name = text
       elif tag == "noc2in":

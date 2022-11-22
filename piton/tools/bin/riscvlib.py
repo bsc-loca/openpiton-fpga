@@ -214,13 +214,12 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     for i in range(len(devices)):
         if devices[i]["name"] == "dma_pool":
             addrBase = devices[i]["base"]
-            #addrLen  = devices[i]["length"]
+            addrLen  = devices[i]["length"]
             # Small hack to be able to access the whole space defined in the devices.xml file
             # but still using just a fragment (256M) for this dma pool. The remaining space is 
             # reserved for the Ethernet Over PCIe driver
             # TODO: The Eth-PCIe driver should be able to use a(nother) reserved-memory node
-            # TODO: Instead of hard-coding this addrLen, the xml could define another field
-            addrLen  = "0x10000000"
+            addrFrag  = devices[i]["fragment"]
             tmpStr += '''
     reserved-memory {
         #address-cells = <2>;
@@ -232,8 +231,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             compatible = "shared-dma-pool";
         }; 
     };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
-
+            ''' % (addrBase, _reg_fmt(addrBase, addrFrag, 2, 2))
+            #''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
     tmpStr += '''
     eth0_clk: eth0_clk {
         compatible = "fixed-clock";
