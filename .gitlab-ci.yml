@@ -6,7 +6,7 @@
 workflow:
     rules:
         - !reference [.workflow_default_rules, rules]
-        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
         - if: $CI_PIPELINE_SOURCE == "pipeline"
         - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
           when: never  
@@ -48,10 +48,12 @@ variables:
     rules:
         - !reference [.default_rules, rules]     
         - !reference [.exclude_ariane, rules] 
+        - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
+          when: never
 
 .workflow_default_rules:  
   rules:
-     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
+     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ || $CI_COMMIT_MESSAGE =~ /#TestSim/
 
 
 .multi_target:
@@ -61,12 +63,36 @@ variables:
               
 
 stages:  
+  - simulation
   - synthesis
   - validation
   - deploy-openpiton
   - push-shell
   - clean
   
+###################################
+# Simulations
+###################################
+
+simulation:
+        stage: simulation
+        timeout: 1h        
+        variables:
+            GIT_STRATEGY: clone
+            GIT_SUBMODULE_STRATEGY: normal
+        before_script:
+            - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
+            - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+            # eda env mentor licence 
+            - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
+            - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
+            - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
+        tags: 
+            - MEEP_SIMS
+        script:
+            - echo "Running Regression tests"
+            - "cd build"
+            - source run_all_isa_groups.sh
 
 ###################################
 # Synthesis
