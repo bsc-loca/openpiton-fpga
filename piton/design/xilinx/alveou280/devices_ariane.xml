@@ -25,18 +25,12 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <!-- 6GB, no space for pmem -->
         <length>0x180000000</length>
     </port>
-	<port>
-        <name>ncmem</name>
-        <base>0xf000000000</base>
-        <!-- 8GB non-cacheable -->
-        <length>0x200000000</length>
-        <stream_accessible/>
-    </port>
-	<port>
+	<port>    
         <name>dma_pool</name>
-        <base>0xfff6000000</base>
-        <!-- 256MB -->
-        <length>0x10000000</length>
+        <base>0x40000000</base>
+        <!-- 1GB non-cacheable -->
+        <length>0x40000000</length>
+        <stream_accessible/>
     </port>
     <port>
         <name>iob</name>
@@ -58,12 +52,12 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
         <length>0x400000</length>
         <stream_accessible/>
     </port>
-    <port>
+    <!--port>
         <name>sram</name>
         <base>0xfff0400000</base>
         <length>0x100000</length>
         <stream_accessible/>
-    </port>
+    </port> -->
     <!-- note: the following modules are ariane-specific and are only instantiated in HW when using the ariane core -->
     <port>
         <!-- this is the shared debug module for JTAG access to all cores -->

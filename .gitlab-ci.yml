@@ -81,7 +81,6 @@ simulation:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: normal
         before_script:
-            # TODO: We should list the pre-installed requirements for this Pipeline
             - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
             - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
             # eda env mentor licence 
