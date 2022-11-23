@@ -81,6 +81,7 @@ simulation:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: normal
         before_script:
+            - !reference [.git_clean, before_script]
             - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
             - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
             # eda env mentor licence 
@@ -89,18 +90,22 @@ simulation:
             - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
         tags: 
             - MEEP_SIMS
-        before_script:
-            - !reference [.git_clean, before_script]
         script:
             ############################
             ## First, update the submodule if the pipeline source is a trigger
             ############################
             - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
-            - echo "Running Regression tests"
-            - echo "$PWD"
-            - ls 
+            - echo "Running Regression tests with Questasim"
             - "cd build"
+            - "BUILD_PATH=$PWD"
             - source run_all_isa_groups.sh
+            - "cd $BUILD_PATH"
+            - echo "Running sanity cosimulation test with Questasim"
+            - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU -cosim > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || echo "Sanity Cosimulation with Questasim FAILED" 
+            - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
+            - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || echo "Sanity vector simulation with Questasim FAILED" 
 
 ###################################
 # Synthesis

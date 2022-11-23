@@ -4,6 +4,9 @@ package spike_dpi_pkg;
 
     import EPI_pkg::*;
 
+localparam MAX_VLEN = 1024;
+localparam MAX_64BIT_BLOCKS = MAX_VLEN/64;
+
 // Spike data
 typedef logic [DATA_PATH_WIDTH-1:0] vec_operand_t [MAX_VLEN/MIN_SEW-1:0];
 
@@ -22,8 +25,8 @@ typedef struct
 
 typedef struct
 {
-    vec_operand_t old_vd;
-    vec_operand_t vd;
+    longint old_vd;
+    longint vd;
     vec_operand_t vs1;
     vec_operand_t vs2;
     vec_operand_t vs3;
@@ -55,8 +58,8 @@ typedef struct
     int unsigned vxsat;
     int unsigned vlen;
     int unsigned elen;
-    vector_operands_t vector_operands;
     csrs_t csrs;
+    vector_operands_t vector_operands;
     formatted_vector_operands_t formatted_vector_operands;
 } core_info_t;
 
@@ -88,10 +91,6 @@ typedef struct
   import "DPI-C" function int  get_memory_data(output longint mem_element, input longint mem_addr);
   import "DPI-C" function longint unsigned spike_get_csr(input int csr);
   import "DPI-C" function void spike_set_external_interrupt(input longint mip_val);
-  import "DPI-C" function longint unsigned spike_get_gpr(int unsigned gpr);
-  import "DPI-C" function void override_spike_gpr(longint unsigned hart_id, byte reg_dest, longint unsigned reg_data);
-  import "DPI-C" function void override_spike_csr(longint unsigned hart_id, int csr_addr, longint unsigned csr_data);
-  import "DPI-C" function void override_csr_backdoor(longint unsigned hart_id, int csr_addr, longint unsigned csr_data);
 
 endpackage
 
