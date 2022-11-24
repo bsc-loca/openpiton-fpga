@@ -356,8 +356,6 @@ module chipset(
     output                                  dma_s_axi_rready,
 
    `else
-    input wire                               eth_axi_aclk,
-    input wire                               eth_axi_arstn,
          // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,

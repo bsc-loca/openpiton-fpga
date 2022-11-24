@@ -36,7 +36,7 @@ sleep 5 &&
 
 # Loading Fedora:
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
-$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/fedora-fs-dx.raw  $((0x13ff00000)) &&
+$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/fedora-fs-dx_noswap.raw  $((0x13ff00000)) &&
 sleep 1 &&
 
 offset=0;
@@ -55,9 +55,9 @@ done
 echo -e "\r\nMemory zeroing finished\r\n"
 
 
-$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi.bin  $((0x00000000)) &&
-ln -s -f $FEDORA_IMG_PATH/send-file.sh ./send-file
-ln -s -f $FEDORA_IMG_PATH/get-file.sh  ./get-file
+$FEDORA_IMG_PATH/load_image.sh $FEDORA_IMG_PATH/osbi_noswap.bin  $((0x00000000)) &&
+ln -s -f $FEDORA_IMG_PATH/send-file_noswap.sh ./send-file
+ln -s -f $FEDORA_IMG_PATH/get-file_noswap.sh  ./get-file
 echo "After booting Fedora login on Riscv side with user:riscv, pass:'fedora_rocks!', then: source ./setup.sh"
 echo "Transfering files (Caution: Transfers are *limited to 1MB* in both directions):"
 echo "Host to Riscv:"
@@ -71,4 +71,4 @@ echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma
 sleep 2
 dma-ctl qdma08000 reg write bar 2 0x0 0x3 #Release Ariane's reset
 
-#picocom -b 115200 /dev/ttyUSB2
+sudo picocom -b 115200 /dev/ttyUSB2
