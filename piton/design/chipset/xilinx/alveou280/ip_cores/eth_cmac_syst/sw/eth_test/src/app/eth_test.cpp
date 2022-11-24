@@ -400,27 +400,27 @@ int main(int argc, char *argv[])
           exit(1);
         }
         printf("(virt: 0x%lX) with size %ld -------\n", size_t(sramSys), SRAM_SYST_ADRRANGE);
-        size_t const sramWords = SRAM_SYST_ADRRANGE / sizeof(uint32_t);
+        // size_t const sramWords = SRAM_SYST_ADRRANGE / sizeof(uint32_t);
 
         // Low to High SRAM
         srand(1);
-        for (size_t addr = 0; addr < sramWords/2; ++addr) sramSys[addr] = rand();
+        // for (size_t addr = 0; addr < sramWords/2; ++addr) sramSys[addr] = rand();
 
         timespec sysStart, sysFin;
         clock_gettime(CLOCK_REALTIME, &sysStart);
         XTmrCtr_Start(&ethSyst.timerCnt, 0); // Start Timer 0
-        memcpy((void*)(sramSys + sramWords/2), (const void*)(sramSys), SRAM_SYST_ADRRANGE/2);
+        // memcpy((void*)(sramSys + sramWords/2), (const void*)(sramSys), SRAM_SYST_ADRRANGE/2);
         float ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
         clock_gettime(CLOCK_REALTIME, &sysFin);
         float sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
                         (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
 
         srand(1);
-        for (size_t addr = sramWords/2; addr < sramWords; ++addr)
-         if (sramSys[addr] != uint32_t(rand())) {
-            printf("\nERROR: Incorrect readback of word-32 at addr %lx from High system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
-            exit(1);
-          }
+        // for (size_t addr = sramWords/2; addr < sramWords; ++addr)
+        //  if (sramSys[addr] != uint32_t(rand())) {
+        //     printf("\nERROR: Incorrect readback of word-32 at addr %lx from High system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
+        //     exit(1);
+        //   }
         float ownSpeed = SRAM_SYST_ADRRANGE/2 / ownTime * 1e9/(1024*1024);
         float sysSpeed = SRAM_SYST_ADRRANGE/2 / sysTime * 1e9/(1024*1024);
         printf("Low to High SRAM own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
@@ -428,22 +428,22 @@ int main(int argc, char *argv[])
 
         // High to Low SRAM
         srand(1);
-        for (size_t addr = sramWords/2; addr < sramWords; ++addr) sramSys[addr] = ~rand();
+        // for (size_t addr = sramWords/2; addr < sramWords; ++addr) sramSys[addr] = ~rand();
 
         clock_gettime(CLOCK_REALTIME, &sysStart);
         XTmrCtr_Start(&ethSyst.timerCnt, 1); // Start Timer 1
-        memcpy((void*)(sramSys), (const void*)(sramSys + sramWords/2), SRAM_SYST_ADRRANGE/2);
+        // memcpy((void*)(sramSys), (const void*)(sramSys + sramWords/2), SRAM_SYST_ADRRANGE/2);
         ownTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
         clock_gettime(CLOCK_REALTIME, &sysFin);
         sysTime = (sysFin.tv_sec  - sysStart.tv_sec ) * 1e9 +
                   (sysFin.tv_nsec - sysStart.tv_nsec) * 1.;
 
         srand(1);
-        for (size_t addr = 0; addr < sramWords/2; ++addr)
-         if (sramSys[addr] != uint32_t(~rand())) {
-            printf("\nERROR: Incorrect readback of word-32 at addr %lx from Low system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
-            exit(1);
-          }
+        // for (size_t addr = 0; addr < sramWords/2; ++addr)
+        //  if (sramSys[addr] != uint32_t(~rand())) {
+        //     printf("\nERROR: Incorrect readback of word-32 at addr %lx from Low system SRAM half after memcpy(): %x \n", addr, sramSys[addr]);
+        //     exit(1);
+        //   }
         ownSpeed = SRAM_SYST_ADRRANGE/2 / ownTime * 1e9/(1024*1024);
         sysSpeed = SRAM_SYST_ADRRANGE/2 / sysTime * 1e9/(1024*1024);
         printf("High to Low SRAM own time: %f ns, Speed: %f MB/s \n", ownTime, ownSpeed);
