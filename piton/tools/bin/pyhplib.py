@@ -277,6 +277,7 @@ def ReadDevicesXMLFile():
     # go through each field of device
     base = 0
     length = 0
+    fragment = 0
     name = ""
     noc2_in = False
     virtual = False
@@ -288,6 +289,8 @@ def ReadDevicesXMLFile():
         base = int(text, 0)
       elif tag == "length":
         length = int(text, 0)
+      elif tag == "fragment":
+        fragment = int(text, 0)        
       elif tag == "name":
         name = text
       elif tag == "noc2in":
@@ -306,7 +309,7 @@ def ReadDevicesXMLFile():
     if name == "chip":
         devicesInfo.insert(0, {"name": name, "portnum": portnum, "base": base, "length": length, "noc2_in": noc2_in, "virtual": virtual, "stream_accessible":stream_accessible})
     else:
-        devicesInfo.append({"name": name, "portnum": portnum, "base": base, "length": length, "noc2_in": noc2_in, "virtual": virtual, "stream_accessible":stream_accessible})
+        devicesInfo.append({"name": name, "portnum": portnum, "base": base, "length": length, "fragment": fragment, "noc2_in": noc2_in, "virtual": virtual, "stream_accessible":stream_accessible})
 
   return devicesInfo
 

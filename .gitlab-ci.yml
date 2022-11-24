@@ -12,7 +12,7 @@ workflow:
           when: never  
         - if: $CI_COMMIT_TAG != null 
         - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
-          when: never # Pushing to main doesn't create pipelines unless there is a tag
+          when: never # Pushing to main doesn't create pipelines unless there is a tag        
   
 variables:
     GIT_STRATEGY: none
@@ -25,7 +25,7 @@ variables:
     # Use a preconfigured RISCV toolchain. This is risky.
     # There should be a scheduled task to regenerate it.
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
-    MYSCRIPT: cicd/gitlab_script_op.sh
+    UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
 .test_rules:
     rules:
@@ -81,6 +81,7 @@ simulation:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: normal
         before_script:
+            - !reference [.git_clean, before_script]
             - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
             - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
             # eda env mentor licence 
@@ -90,9 +91,21 @@ simulation:
         tags: 
             - MEEP_SIMS
         script:
-            - echo "Running Regression tests"
+            ############################
+            ## First, update the submodule if the pipeline source is a trigger
+            ############################
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
+            - echo "Running Regression tests with Questasim"
             - "cd build"
+            - "BUILD_PATH=$PWD"
             - source run_all_isa_groups.sh
+            - "cd $BUILD_PATH"
+            - echo "Running sanity cosimulation test with Questasim"
+            - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU -cosim > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || echo "Sanity Cosimulation with Questasim FAILED" 
+            - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
+            - sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || echo "Sanity vector simulation with Questasim FAILED" 
 
 ###################################
 # Synthesis
@@ -111,7 +124,6 @@ synthesis-matrix:
               GIT_STRATEGY: clone
               GIT_SUBMODULE_STRATEGY: recursive
               GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$CONF
-        #retry: 1
         timeout: 6h        
         before_script:
             - !reference [.git_clean, before_script]
@@ -121,7 +133,7 @@ synthesis-matrix:
             ############################
             ## First, update the submodule if the pipeline source is a trigger
             ############################
-            - . $MYSCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
             ### Setup OpenPiton
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
@@ -194,7 +206,7 @@ push-lagarto:
             - git config --global user.email meep-ci@bsc.es
         script:
             # Update the submodule, again, as we are in a different job
-            - . $MYSCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
             - git checkout -b acme_ci/$COMMIT_REF
             - git add piton/design/chip/tile/vas_tile_core
             - git commit -m "CICD triggered by VAS update - $COMMIT_MESG"
@@ -249,7 +261,9 @@ fpga-shell-trigger:
             COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
-                branch: master
+                branch: production
+                # master is a protected branch, which causes permission issues with triggered pipelines
+                # production should be almost a mirror of master
                 strategy: depend
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
