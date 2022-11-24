@@ -81,7 +81,7 @@ if [ x$RISCV == x ]; then
   export RISCV=/home/tools/openpiton/riscv_install
 fi
 
-export VERILATOR_ROOT=$LAGARTO_ROOT/tmp/verilator-4.014/
+export VERILATOR_ROOT=/home/xabancens/apps/verilator_4_34/
 
 # setup paths
 export PATH=$RISCV/bin:$VERILATOR_ROOT/bin:$PATH
