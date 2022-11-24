@@ -25,14 +25,16 @@
 #	export PATH=/home/tools/drivers/$machine/dma_ip_drivers/QDMA/linux-kernel/bin/:$PATH
 #fi
 
+pcienum=`lspci -m -d 10ee:| cut -d' ' -f 1 | cut -d ':' -f 1`
+
 #PCIe GPIO bus: {Timeout_en(bit4), Bootrom_nOS(bit3), UartBoot_en(bit2), Ariane_rstn(bit1), System_rstn(bit0)}
-dma-ctl qdma08000 reg write bar 2 0x0 0x0 && #Both resets
+dma-ctl qdma${pcienum}000 reg write bar 2 0x0 0x0 && #Both resets
 sleep 2 &&
-dma-ctl qdma08000 reg write bar 2 0x0 0x1 && #Release system reset, we must wait until the memory is filled with 0s
+dma-ctl qdma${pcienum}000 reg write bar 2 0x0 0x1 && #Release system reset, we must wait until the memory is filled with 0s
 sleep 5 &&
 
 #Load the bbl linux image (with tetris) into main memory, actually at address 0x0, but should be 0x8000_0000
-# dma-to-device -d /dev/qdma08000-MM-1 -s 14919792 -a 0x0000000 -f bbl8.bin
+# dma-to-device -d /dev/qdma${pcienum}000-MM-1 -s 14919792 -a 0x0000000 -f bbl8.bin
 
 # Loading Fedora:
 FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
@@ -48,7 +50,7 @@ do
         offset=$(( 2 * $i ))
         offsetHex=$( printf "%x" $offset ) ;
         echo -e "Zeroing 512MB starting at address 0x"$offsetHex"0000000\r\n"
-        dma-to-device -d /dev/qdma08000-MM-1 -s 0x2000000 -a 0x"$offsetHex"0000000 0x0
+        dma-to-device -d /dev/qdma${pcienum}000-MM-1 -s 0x2000000 -a 0x"$offsetHex"0000000 0x0
         i=$(($i + 1));
 done
 
@@ -69,6 +71,6 @@ echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above ste
 echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma-to-device/dma-from-device utils"
 
 sleep 2
-dma-ctl qdma08000 reg write bar 2 0x0 0x3 #Release Ariane's reset
+dma-ctl qdma${pcienum}000 reg write bar 2 0x0 0x3 #Release Ariane's reset
 
 sudo picocom -b 115200 /dev/ttyUSB2
