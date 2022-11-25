@@ -126,7 +126,7 @@ EthSyst::EthSyst() {
 //***************** Enforced cache flush on specific addres *****************
 uint8_t volatile EthSyst::cacheFlush(size_t addr) {
   // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
-  return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
+  return *(cacheFlAddr + (((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK) | CACHE_FLUSH_USER6MSB));
 }
 
 uint8_t volatile EthSyst::cacheInvalid(size_t addr) {

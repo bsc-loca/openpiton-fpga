@@ -74,7 +74,7 @@ module noc_axi4_bridge_buffer #(
   input  read_resp_val,
   output read_resp_rdy,
 
-  // read request out
+  // write request out
   output [`AXI4_ADDR_WIDTH-1:0] write_req_addr,
   output [`AXI4_ID_WIDTH  -1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data,
@@ -82,7 +82,7 @@ module noc_axi4_bridge_buffer #(
   output write_req_val,
   input  write_req_rdy,
 
-  // read response in
+  // write response in
   input [`AXI4_ID_WIDTH-1:0] write_resp_id,
   input  write_resp_val,
   output write_resp_rdy,
