@@ -26,7 +26,9 @@ acme)
     ;;
 ariane)
     CORE=ariane
-    echo "Selected build configuration: Ariane 1x1"
+    XTILES=2
+    YTILES=2
+    echo "Selected build configuration: Ariane 2x2"
     ;;
 pronoc)
     CORE=lagarto
