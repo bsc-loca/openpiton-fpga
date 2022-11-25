@@ -247,8 +247,9 @@ class EthSyst {
     CACHE_MEM_ADDR   = DRAM_BASEADDR +
                        DRAM_ADRRANGE         - ETH_SYST_ADRRANGE,
     // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
-    CACHE_FLUSH_BASEADDR = 0xAC00000000 + CACHE_MEM_ADDR,
-    CACHE_FLUSH_ADDRMASK = 0x03FFFFFFC0,
+    CACHE_FLUSH_ADDRMASK =  0x03FFFFFFC0,
+    CACHE_FLUSH_BASEADDR =  0xAC00000000 | (CACHE_MEM_ADDR & CACHE_FLUSH_ADDRMASK),
+    CACHE_FLUSH_USER6MSB = (0xFC00000000 &  CACHE_MEM_ADDR) >> (40-6),
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
   #ifdef DMA_MEM_CACHED

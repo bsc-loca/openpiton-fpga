@@ -399,7 +399,7 @@ int main(int argc, char *argv[])
           printf("Memory mapping of system SRAM failed.\n");
           exit(1);
         }
-        printf("(virt: 0x%lX) with size %ld -------\n", size_t(sramSys), SRAM_SYST_ADRRANGE);
+        printf("(virt: 0x%lX) with size %ld (DUMMY TEST NOW) -------\n", size_t(sramSys), SRAM_SYST_ADRRANGE);
         // size_t const sramWords = SRAM_SYST_ADRRANGE / sizeof(uint32_t);
 
         // Low to High SRAM
