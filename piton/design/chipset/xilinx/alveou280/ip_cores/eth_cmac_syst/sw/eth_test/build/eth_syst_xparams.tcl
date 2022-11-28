@@ -22,10 +22,10 @@ while {[gets $dv_xml line] >= 0} {
   if      {[string first "<name>net</name>" $line] >= 0} {
     while {[string first "</port>"          $line] <  0} {
       gets $dv_xml line
-      if        {[string first "<base>" $line] >= 0} {
+      if        {[string first "<base>"     $line] >= 0} {
         set line [string map  {"<base>"  "ETH_SYST_BASEADDR = "}  $line]
         set line [string map  {"</base>" ","}                     $line]
-      } elseif  {[string first "<length>"         $line] >= 0} {
+      } elseif  {[string first "<length>"   $line] >= 0} {
         set line [string map  {"<length>" "ETH_SYST_ADRRANGE = "} $line]
         set line [string map  {"</length>" ","}                   $line]
       } else {
@@ -36,14 +36,14 @@ while {[gets $dv_xml line] >= 0} {
   }
   # extracting uncached SDRAM address definitions
   if      {[string first "<name>mem</name>" $line] >= 0} {
-    while {[string first "</port>"            $line] <  0} {
+    while {[string first "</port>"          $line] <  0} {
       gets $dv_xml line
-      if        {[string first "<base>" $line] >= 0} {
+      if        {[string first "<base>"     $line] >= 0} {
         set line [string map  {"<base>"  "DRAM_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                         $line]
-      } elseif  {[string first "<length>"         $line] >= 0} {
+        set line [string map  {"</base>" ","}                 $line]
+      } elseif  {[string first "<length>"   $line] >= 0} {
         set line [string map  {"<length>" "DRAM_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}                       $line]
+        set line [string map  {"</length>" ","}               $line]
       } else {
         continue
       }
@@ -51,13 +51,13 @@ while {[gets $dv_xml line] >= 0} {
     }
   }
   # extracting uncached SDRAM address definitions
-  if      {[string first "<name>ncmem</name>" $line] >= 0} {
-    while {[string first "</port>"            $line] <  0} {
+  if      {[string first "<name>dma_pool</name>" $line] >= 0} {
+    while {[string first "</port>"               $line] <  0} {
       gets $dv_xml line
-      if        {[string first "<base>" $line] >= 0} {
+      if        {[string first "<base>"          $line] >= 0} {
         set line [string map  {"<base>"  "DRAM_UNCACHE_BASEADDR = "}  $line]
         set line [string map  {"</base>" ","}                         $line]
-      } elseif  {[string first "<length>"         $line] >= 0} {
+      } elseif  {[string first "<length>"        $line] >= 0} {
         set line [string map  {"<length>" "DRAM_UNCACHE_ADRRANGE = "} $line]
         set line [string map  {"</length>" ","}                       $line]
       } else {
@@ -70,10 +70,10 @@ while {[gets $dv_xml line] >= 0} {
   if      {[string first "<name>sram</name>" $line] >= 0} {
     while {[string first "</port>"           $line] <  0} {
       gets $dv_xml line
-      if        {[string first "<base>" $line] >= 0} {
+      if        {[string first "<base>"      $line] >= 0} {
         set line [string map  {"<base>"  "SRAM_SYST_BASEADDR = "}  $line]
         set line [string map  {"</base>" ","}                      $line]
-      } elseif  {[string first "<length>"         $line] >= 0} {
+      } elseif  {[string first "<length>"    $line] >= 0} {
         set line [string map  {"<length>" "SRAM_SYST_ADRRANGE = "} $line]
         set line [string map  {"</length>" ","}                    $line]
       } else {
@@ -149,13 +149,13 @@ while {[gets $bd_tcl line] >= 0} {
   }
 
   # extracting address definitions
-  if {[string first "get_bd_addr_segs axi_timer_0" $line] >= 0} {
+  if {[string first "get_bd_addr_segs axi_timer_0"          $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "XPAR_TMRCTR_0_BASEADDR ="}  $line]
     set line [string map {"-range"                    ", AXI_TIMER_0_ADRRANGE ="}    $line]
-  } elseif {[string first "get_bd_addr_segs eth100gb" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs eth100gb"       $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "ETH100GB_BASEADDR ="}       $line]
     set line [string map {"-range"                    ", ETH100GB_ADRRANGE ="}       $line]
-  } elseif {[string first "get_bd_addr_segs eth_dma" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs eth_dma"        $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "XPAR_AXIDMA_0_BASEADDR ="}  $line]
     set line [string map {"-range"                    ", ETH_DMA_ADRRANGE ="}        $line]
   } elseif {[string first "get_bd_addr_segs tx_axis_switch" $line] >= 0} {
@@ -164,19 +164,19 @@ while {[gets $bd_tcl line] >= 0} {
   } elseif {[string first "get_bd_addr_segs rx_axis_switch" $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "RX_AXIS_SWITCH_BASEADDR ="} $line]
     set line [string map {"-range"                    ", RX_AXIS_SWITCH_ADRRANGE ="} $line]
-  } elseif {[string first "get_bd_addr_segs tx_mem_cpu" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs tx_mem_cpu"     $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "TX_MEM_CPU_BASEADDR ="}     $line]
     set line [string map {"-range"                    ", TX_MEM_CPU_ADRRANGE ="}     $line]
-  } elseif {[string first "get_bd_addr_segs rx_mem_cpu" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs rx_mem_cpu"     $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "RX_MEM_CPU_BASEADDR ="}     $line]
     set line [string map {"-range"                    ", RX_MEM_CPU_ADRRANGE ="}     $line]
-  } elseif {[string first "get_bd_addr_segs sg_mem_cpu" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs sg_mem_cpu"     $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "SG_MEM_CPU_BASEADDR ="}     $line]
     set line [string map {"-range"                    ", SG_MEM_CPU_ADRRANGE ="}     $line]
   } elseif {[string first "get_bd_addr_segs tx_rx_ctl_stat" $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "TX_RX_CTL_STAT_BASEADDR ="} $line]
     set line [string map {"-range"                    ", TX_RX_CTL_STAT_ADRRANGE ="} $line]
-  } elseif {[string first "get_bd_addr_segs gt_ctl" $line] >= 0} {
+  } elseif {[string first "get_bd_addr_segs gt_ctl"         $line] >= 0} {
     set line [string map {"assign_bd_address -offset"   "GT_CTL_BASEADDR ="}         $line]
     set line [string map {"-range"                    ", GT_CTL_ADRRANGE ="}         $line]
   } else {

@@ -75,20 +75,20 @@ EthSyst::EthSyst() {
   }
 
   uncacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, UNCACHE_MEM_ADDR));
-  if (ethSystBase == MAP_FAILED) {
-    printf("Memory mapping of Ethernet system failed.\n");
+  if (uncacheMem == MAP_FAILED) {
+    printf("Memory mapping of Non-cacheable DMA pool failed.\n");
     exit(1);
   }
 
   cacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_MEM_ADDR));
-  if (ethSystBase == MAP_FAILED) {
-    printf("Memory mapping of Ethernet system failed.\n");
+  if (cacheMem == MAP_FAILED) {
+    printf("Memory mapping of Cacheable DMA pool failed.\n");
     exit(1);
   }
 
   cacheFlAddr = reinterpret_cast<uint8_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR));
   if (cacheFlAddr == MAP_FAILED) {
-    printf("Memory mapping of Cache system failed.\n");
+    printf("Memory mapping of Cache Control failed.\n");
     exit(1);
   }
 
@@ -126,7 +126,7 @@ EthSyst::EthSyst() {
 //***************** Enforced cache flush on specific addres *****************
 uint8_t volatile EthSyst::cacheFlush(size_t addr) {
   // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
-  return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
+  return *(cacheFlAddr + (((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK) | CACHE_FLUSH_USER6MSB));
 }
 
 uint8_t volatile EthSyst::cacheInvalid(size_t addr) {

@@ -12,7 +12,6 @@
 #             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
 #             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 
-# TODO: This script will not work when the PCIe enumeration doesn't return 08
 
 script=${BASH_SOURCE[0]}
 if [ $script == $0 ]; then
@@ -27,18 +26,17 @@ if [ ! -f "$BITSREAM" ]; then
   echo "Native OP bitstream $BITSREAM doesn't exist, trying OP under MEEP_SHELL implementation:"
   BITSREAM=../../../../../../bitstream/system.bit
 fi
-source /home/tools/scripts/load-bitstream-beta.sh qdma $BITSREAM
+source /home/tools/fpga-tools/fpga/load-bitstream.sh qdma $BITSREAM
 
 #Some sanity checks
-# dma-ctl qdma08000 reg dump
-# dma-ctl qdma08001 reg dump
-# dma-ctl qdma08002 reg dump
-# dma-ctl qdma08003 reg dump
 lspci -vd 10ee:
 ls /dev/qdma* -al
 dmesg | grep tty
 
+pcienum=`lspci -m -d 10ee:| cut -d' ' -f 1 | cut -d ':' -f 1`
+# dma-ctl qdma${pcienum}000 reg dump
+
 #Applying both resets to the design
-dma-ctl qdma08000 reg write bar 2 0x0 0x0
+dma-ctl qdma${pcienum}000 reg write bar 2 0x0 0x0
 
 #To setup UART on Nanu after reboot: sudo modprobe ftdi_sio
