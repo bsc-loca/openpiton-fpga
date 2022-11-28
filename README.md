@@ -40,6 +40,20 @@ You can clean the files before to compile for lagarto by doing:
     sims clean
     rm -rf manycore
 
+Compiling and running RISC-V Tests with Lagarto in OpenPiton
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_8.S -lagarto -precompiled
+
+Vector tests don't support cosimulation, yet.
+
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU -cosim
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim
+
+
 ### Building MEEP-VPU with different lanes:
 
 Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:

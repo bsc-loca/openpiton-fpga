@@ -32,7 +32,6 @@
 
 
 module noc_axi4_bridge_buffer #(
-    parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
     parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
     parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
@@ -75,7 +74,7 @@ module noc_axi4_bridge_buffer #(
   input  read_resp_val,
   output read_resp_rdy,
 
-  // write request out
+  // read request out
   output [`AXI4_ADDR_WIDTH-1:0] write_req_addr,
   output [`AXI4_ID_WIDTH  -1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data,
@@ -235,37 +234,15 @@ assign write_req_addr = req_addr;
 
 
 // Transformation of write data according to queueed request
-reg wr_uncacheable;
-reg [6:0] wr_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] wr_offset;
-always @(*) extractSize(req_header, wr_size, wr_offset, wr_uncacheable);
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] wr_size_log;
+always @(*) noc_extractSize(req_header, wr_size_log, wr_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] wdata_swapped = SWAP_ENDIANESS ? swapData(wdata, wr_size) :
-                                                                      wdata;
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] wr_size = 1 << wr_size_log;
+wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
 
-wire [`AXI4_DATA_WIDTH-1:0] wdata_flipped = wr_uncacheable ? swapData(wdata_swapped, 7'b1000000) : 
-								      wdata_swapped;
-
-// wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-wire [`AXI4_STRB_WIDTH-1:0] wstrb = wr_size[0] ? { 1{1'b1}} :
-                                    wr_size[1] ? { 2{1'b1}} :
-                                    wr_size[2] ? { 4{1'b1}} :
-                                    wr_size[3] ? { 8{1'b1}} :
-                                    wr_size[4] ? {16{1'b1}} :
-                                    wr_size[5] ? {32{1'b1}} :
-                                    wr_size[6] ? {64{1'b1}} :
-                                    `AXI4_DATA_WIDTH'h0;
-                                    
-wire [`AXI4_STRB_WIDTH-1:0] wstrb_flipped =  wr_uncacheable ? swapData(wstrb, wr_size) : wstrb;  
-
-wire [`AXI4_DATA_WIDTH -1:0] debug_req_data;                             
-
-assign debug_req_data = wdata_swapped << (8*wr_offset);
-
-assign write_req_data = wdata_flipped << (8*wr_offset);
-assign write_req_strb = wstrb         <<    wr_offset;
-//assign write_req_strb = wstrb_flipped   <<    wr_offset;
-
+assign write_req_data = wdata << (8*wr_offset);
+assign write_req_strb = wstrb <<    wr_offset;
 
 
 //
@@ -519,172 +496,88 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-reg rd_uncacheable;
-reg [6:0] rd_size;
 reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] rd_offset;
-always @(*) extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size, rd_offset, rd_uncacheable);
-
+reg [`MSG_DATA_SIZE_WIDTH      -1:0] rd_size_log;
+always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size_log, rd_offset);
 
 wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
-wire [`AXI4_DATA_WIDTH-1:0] rdata_swapped  = SWAP_ENDIANESS ? swapData(rdata_offseted, rd_size) :
-                                                                       rdata_offseted;
-                                                                       
-// Workaround to tackle the non-existence of uncacheable loads:
-// For some reason, the uncacheable loads are not arriving this module. We need to create our own criteria to identify them
-// wire uncacheable_load = (stor_header[`MSG_ADDR] >= 64'h40000000) && (stor_header[`MSG_ADDR] < 64'h80000000);                                                                      
 
-wire [`AXI4_DATA_WIDTH-1:0] rdata_flipped = rd_uncacheable ? swapData(rdata_swapped, rd_size) : rdata_swapped;
-
-                                                                       
-
-wire [`AXI4_DATA_WIDTH-1:0] rdata = rd_size[0] ? {`AXI4_DATA_WIDTH/8  {rdata_flipped[7  :0]}} :
-                                    rd_size[1] ? {`AXI4_DATA_WIDTH/16 {rdata_flipped[15 :0]}} :
-                                    rd_size[2] ? {`AXI4_DATA_WIDTH/32 {rdata_flipped[31 :0]}} :
-                                    rd_size[3] ? {`AXI4_DATA_WIDTH/64 {rdata_flipped[63 :0]}} :
-                                    rd_size[4] ? {`AXI4_DATA_WIDTH/128{rdata_flipped[127:0]}} :
-                                    rd_size[5] ? {`AXI4_DATA_WIDTH/256{rdata_flipped[255:0]}} :
-                                    rd_size[6] ? {`AXI4_DATA_WIDTH/512{rdata_flipped[511:0]}} :
-                                                  `AXI4_DATA_WIDTH'h0;
-                                              
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] rd_size = 1 << rd_size_log;
+wire [`AXI4_DATA_WIDTH -1:0] rdata = rd_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
+                                     rd_size[1] ? {32 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/32]}} :
+                                     rd_size[2] ? {16 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/16]}} :
+                                     rd_size[3] ? {8  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/8 ]}} :
+                                     rd_size[4] ? {4  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/4 ]}} :
+                                     rd_size[5] ? {2  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/2 ]}} :
+                                     rd_size[6] ?      rdata_offseted     : `AXI4_DATA_WIDTH'h0;
 
 assign ser_val    = stor_hdr_en;
 assign ser_data   = stor_command ? `AXI4_DATA_WIDTH'b0 : rdata;
 assign ser_header = stor_header;
 
 
-
-task automatic extractSize;
-  input  [`MSG_HEADER_WIDTH-1 :0] header;
-  output [6:0] size;
-  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
-  output uncacheable;
-  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
-  reg uncacheable;
-  begin
-  virt_addr = header[`MSG_ADDR];
-  uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-                (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ) ||
-	            (header[`MSG_ADDR] >= 64'h40000000) && (header[`MSG_ADDR] < 64'h80000000);
-  if (uncacheable)
-    case (header[`MSG_DATA_SIZE])
-      `MSG_DATA_SIZE_0B:  size = 7'd0;
-      `MSG_DATA_SIZE_1B:  size = 7'd1;
-      `MSG_DATA_SIZE_2B:  size = 7'd2;
-      `MSG_DATA_SIZE_4B:  size = 7'd4;
-      `MSG_DATA_SIZE_8B:  size = 7'd8;
-      `MSG_DATA_SIZE_16B: size = 7'd16;
-      `MSG_DATA_SIZE_32B: size = 7'd32;
-      `MSG_DATA_SIZE_64B: size = 7'd64;
-      default:            size = 7'b0; // should never end up here
-    endcase
-  else                    size = 7'd64;
-  offset = uncacheable ? virt_addr : 0;  
-  end
-  
-endtask
-
 /*
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [2:0] stor_header_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [6:0] wr_size_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  [6:0] rd_size_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  rd_uncacheable_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg  wr_uncacheable_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH -1:0] wdata_r; 
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH -1:0] wdata_swapped_r; 
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH-1:0] wdata_flipped_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH-1:0] rdata_flipped_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH -1:0] debug_req_data_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] rd_offset_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] wr_offset_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_STRB_WIDTH-1:0] write_req_strb_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH-1:0] write_req_data_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_ADDR_WIDTH-1:0] write_req_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg write_req_val_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg write_req_rdy_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`MSG_ADDR] hd_addr_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`MSG_TYPE] hd_type_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg ser_val_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH -1:0] ser_data_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg [`AXI4_DATA_WIDTH -1:0] read_resp_data_r;
-(* keep="TRUE" *) (* mark_debug="TRUE" *) reg ser_rdy_r;
+ila_buffer ila_buffer (
+  .clk(clk), // input wire clk
 
-always @(posedge clk) begin : p_debug
 
-  stor_header_r    <=  stor_header[`MSG_DATA_SIZE]  ;
-  wr_size_r        <=  wr_size         ;
-  rd_size_r        <=  rd_size         ;
-  rd_uncacheable_r <=  rd_uncacheable  ;
-  wr_uncacheable_r <=  wr_uncacheable  ;
-  rd_offset_r      <=  rd_offset       ;
-  wr_offset_r      <=  wr_offset       ;
-  
-  wdata_r          <= wdata            ;
-  wdata_swapped_r  <= wdata_swapped    ; 
-  wdata_flipped_r  <= wdata_flipped    ;
-  
-  read_resp_data_r <= read_resp_data   ;
-  rdata_flipped_r  <= rdata_flipped    ;
-  
+  .probe0(deser_header), // input wire [191:0]  probe0  
+  .probe1(deser_data), // input wire [511:0]  probe1 
+  .probe2(deser_val), // input wire [0:0]  probe2 
+  .probe3(deser_rdy), // input wire [0:0]  probe3 
+  .probe4(ser_header), // input wire [191:0]  probe4 
+  .probe5(ser_data), // input wire [511:0]  probe5 
+  .probe6(ser_val), // input wire [0:0]  probe6 
+  .probe7(ser_rdy), // input wire [0:0]  probe7 
+  .probe8(req_header), // input wire [191:0]  probe8 
+  .probe9(read_req_id), // input wire [1:0]  probe9 
+  .probe10(read_req_val), // input wire [0:0]  probe10 
+  .probe11(read_req_rdy), // input wire [0:0]  probe11 
+  .probe12(read_resp_data), // input wire [511:0]  probe12 
+  .probe13(read_resp_id), // input wire [1:0]  probe13 
+  .probe14(read_resp_val), // input wire [0:0]  probe14 
+  .probe15(read_resp_rdy), // input wire [0:0]  probe15 
+  .probe16(req_header), // input wire [191:0]  probe16 
+  .probe17(write_req_id), // input wire [1:0]  probe17 
+  .probe18(write_req_data), // input wire [511:0]  probe18 
+  .probe19(write_req_val), // input wire [0:0]  probe19 
+  .probe20(write_req_rdy), // input wire [0:0]  probe20 
+  .probe21(write_resp_id), // input wire [1:0]  probe21 
+  .probe22(write_resp_val), // input wire [0:0]  probe22 
+  .probe23(write_resp_rdy), // input wire [0:0]  probe23 
+  .probe24(fifo_in), // input wire [1:0]  probe24 
+  .probe25(fifo_out), // input wire [1:0]  probe25 
+  .probe26(preser_arb), // input wire [0:0]  probe26 
+  .probe27(bram_rdy), // input wire [3:0]  probe27 
+  .probe28(ser_data_f), // input wire [511:0]  probe28 
+  .probe29(ser_header_f), // input wire [191:0]  probe29 
+  .probe30(ser_val_f), // input wire [0:0]  probe30 
+  .probe31(ser_data_ff), // input wire [511:0]  probe31 
+  .probe32(ser_header_ff), // input wire [191:0]  probe32 
+  .probe33(ser_val_ff), // input wire [0:0]  probe33 
+  .probe34(rst_n) // input wire [0:0]  probe34
+);
 
-  hd_addr_r          <= stor_header[`MSG_ADDR];
-  hd_type_r          <= stor_header[`MSG_TYPE];
-  
-  ser_rdy_r          <= ser_rdy         ;
-  ser_data_r         <= ser_data        ;
-  ser_val_r          <= ser_val         ;
-  
-  write_req_data_r   <= write_req_data   ;
-  write_req_addr_r   <= write_req_addr   ;
-  write_req_strb_r   <= write_req_strb   ;
-  write_req_val_r    <= write_req_val    ;
-  write_req_rdy_r    <= write_req_rdy    ;
+reg [159:0] reqresp_count;
+always @(posedge clk) begin
+    if (~rst_n) begin
+        reqresp_count <= 0;
+    end
+    else begin
+        reqresp_count <= ser_go & deser_go ? reqresp_count     : 
+                                   deser_go ? reqresp_count + 1 :
+                                   ser_go ? reqresp_count - 1 : 
+                                             reqresp_count;
 
+    end
 end
 
+ila_axi_protocol_checker ila_axi_protocol_checker (
+    .clk(clk), // input wire clk
+
+    .probe0(rst_n), // input wire [0:0]  probe0  
+    .probe1(reqresp_count) // input wire [159:0]  probe1
+);
 */
-
-function automatic [`AXI4_DATA_WIDTH-1:0] swapData;
-  input [`AXI4_DATA_WIDTH-1:0] data;
-  input [6:0] size;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] swap_grnlty;
-  reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] itr_swp;
-  begin
-  // swap_grnlty = size - 7'h1;
-  // the following code produces less LUTs
-  swap_grnlty = size[0] ? 6'd0  :
-                size[1] ? 6'd1  :
-                size[2] ? 6'd3  :
-                size[3] ? 6'd7  :
-                size[4] ? 6'd15 :
-                size[5] ? 6'd31 :
-                          6'd63;
-  swapData = `AXI4_DATA_WIDTH'h0;
-  for (itr_swp = 0; itr_swp <= swap_grnlty; itr_swp = itr_swp+1)
-    swapData[itr_swp*8 +: 8] = data[(swap_grnlty - itr_swp)*8 +: 8];
-  end
-endfunction
-
-
-function integer clip2zer;
-  input integer val;
-  clip2zer = val < 0 ? 0 : val;
-endfunction
-
-function automatic [`AXI4_DATA_WIDTH-1:0] swapNibble;
-   input reg [`AXI4_DATA_WIDTH-1:0] DataIn;
-   reg [$clog2(`AXI4_DATA_WIDTH/8)  :0] itLen;
-   integer i;
-   begin  
-   
-   itLen = `AXI4_DATA_WIDTH/8;
-   
-   for (i = 0; i < itLen; i = i + 1)
-     swapNibble[8*i +: 8] = { DataIn[8*i +: 4], DataIn[8*i+4 +: 4]};      
-   end 
-      
-   
-  endfunction
-
 
 endmodule
