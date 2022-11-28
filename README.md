@@ -40,6 +40,15 @@ You can clean the files before to compile for lagarto by doing:
     sims clean
     rm -rf manycore
 
+### Building MEEP-VPU with different lanes:
+
+Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_2_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_4_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_8_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_16_LANES
+
 ### Launch simulation
 
 #### Running RISC-V Tests 
