@@ -123,9 +123,9 @@ int main(int argc, char *argv[])
         bool wrCachMem = memCase & 0x1;
         if (wrCachMem) {
         printf("Filling cacheable memories with random values from %0X to %0X: \n", 0, RAND_MAX);
-        txMemAddr = ethSyst.TX_MEM_ADDR;
-        rxMemAddr = ethSyst.RX_MEM_ADDR;
-        sgMemAddr = ethSyst.SG_MEM_ADDR;
+        txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR;
+        rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR;
+        sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR;
         txMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
         txMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
         txMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);
@@ -213,9 +213,9 @@ int main(int argc, char *argv[])
         bool rdCachMem = memCase & 0x2;
         if (rdCachMem) {
         printf("Reading cacheable memories: \n");
-        txMemAddr = ethSyst.TX_MEM_ADDR;
-        rxMemAddr = ethSyst.RX_MEM_ADDR;
-        sgMemAddr = ethSyst.SG_MEM_ADDR;
+        txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR;
+        rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR;
+        sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR;
         txMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
         txMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
         txMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);

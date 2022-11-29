@@ -242,10 +242,8 @@ class EthSyst {
   enum {
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
-    UNCACHE_MEM_ADDR = DRAM_UNCACHE_BASEADDR +
-                       DRAM_UNCACHE_ADRRANGE - ETH_SYST_ADRRANGE,
-    CACHE_MEM_ADDR   = DRAM_BASEADDR +
-                       DRAM_ADRRANGE         - ETH_SYST_ADRRANGE,
+    UNCACHE_MEM_ADDR =                 DRAM_UNCACHE_BASEADDR,
+    CACHE_MEM_ADDR   = DRAM_BASEADDR + DRAM_UNCACHE_BASEADDR, // choosing the same location, but relative to CPU mem offset in hw
     // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
     CACHE_FLUSH_ADDRMASK =  0x03FFFFFFC0,
     CACHE_FLUSH_BASEADDR =  0xAC00000000 | (CACHE_MEM_ADDR & CACHE_FLUSH_ADDRMASK),
@@ -253,7 +251,7 @@ class EthSyst {
     // DMA physical addresses
 #ifdef DMA_MEM_HBM
   #ifdef DMA_MEM_CACHED
-    DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR,
+    DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR, //removing CPU specific offset for DMA
   #else
     DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,
   #endif
