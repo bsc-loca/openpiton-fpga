@@ -47,7 +47,7 @@ variables:
 .lagarto_rules:
     rules:
         - !reference [.default_rules, rules]     
-        - !reference [.exclude_ariane, rules] 
+        #- !reference [.exclude_ariane, rules] 
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
 
@@ -59,7 +59,7 @@ variables:
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme, ariane, pronoc, meep_dvino]
+            - CONF: [acme, ariane, pronoc, meep_dvino, acme_vpu]
               
 
 stages:  
