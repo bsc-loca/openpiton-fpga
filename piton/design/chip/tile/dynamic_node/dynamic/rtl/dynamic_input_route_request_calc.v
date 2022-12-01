@@ -42,9 +42,9 @@ module dynamic_input_route_request_calc(route_req_n, route_req_e, route_req_s, r
                                         default_ready_n, default_ready_e, default_ready_s, default_ready_w, default_ready_p, 
                                         my_loc_x_in, my_loc_y_in, my_chip_id_in, abs_x, abs_y, abs_chip_id, 
 `ifdef EDGE_ROUTE_ENABLE
-abs_addr,
+                                        abs_addr,
 `endif
-final_bits, length, header_in);
+                                        final_bits, length, header_in);
 
 // begin port declarations
 
@@ -128,12 +128,7 @@ wire [`XY_WIDTH-1 : 0] edge_node_x = dist_west  < dist_east   ?
                                      dist_east >= dist_north ||
                                      dist_east >= dist_south  ? my_loc_x_in : `PITON_X_TILES-1;
 
-wire offchip_confirm =
-  `ifdef PITON_EXTRA_MEMS
-    abs_addr[`PHY_ADDR_WIDTH-1] || final_bits == `FINAL_NONE;
-  `else
-    1'b1;
-  `endif
+wire offchip_confirm = abs_addr[`PHY_ADDR_WIDTH-1] || final_bits == `FINAL_NONE;
 
 assign off_chip = abs_chip_id != my_chip_id_in;
 assign more_x = off_chip ? offchip_confirm ? `OFF_CHIP_NODE_X > my_loc_x_in :

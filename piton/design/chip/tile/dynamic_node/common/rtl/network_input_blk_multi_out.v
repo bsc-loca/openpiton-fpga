@@ -65,26 +65,26 @@ assign yummy_out = yummy_out_f;
 // data_val and data_val1 are the same, just done for buffering
 assign data_val = storage_data_f[head_ptr_f];
 generate 
-if(OUT_2FLITS==0) begin : org
+if(OUT_2FLITS==0) begin : orig
     assign data_val1 = storage_data_f[head_ptr_f];
     assign data_avail = elements_in_array_f != 0;
-end else begin : two_flit
+end else begin : two_flits
     reg [`MSG_LENGTH_WIDTH-1:0] flit_cnt;
     reg wait_2nd_flit;
     wire [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_plus1 = head_ptr_f+1;
     assign data_val1 = {storage_data_f[head_ptr_plus1],
-                    storage_data_f[head_ptr_f    ]};
+                        storage_data_f[head_ptr_f    ]};
     assign data_avail = (elements_in_array_f != 0 && !wait_2nd_flit) ||
-                    (elements_in_array_f > 1);
+                        (elements_in_array_f > 1);
 
     always @ (posedge clk) begin
        if (reset) begin
-           flit_cnt <= 0;
-	   wait_2nd_flit <= 0;
+           flit_cnt      <= 0;
+           wait_2nd_flit <= 0;
        end else begin
            if(valid_in) begin         
               if (!flit_cnt) begin
-                 flit_cnt        <=  data_in[`MSG_LENGTH];
+                 flit_cnt      <=  data_in[`MSG_LENGTH];
                  wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
               end else begin
                  flit_cnt      <= flit_cnt-1;
