@@ -59,7 +59,7 @@ variables:
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme]
+            - CONF: [acme_vpu]
               
 
 stages:  
