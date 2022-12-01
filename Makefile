@@ -19,7 +19,7 @@ RISCV   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-VLANES ?= 4
+VLANES ?= 2
 MULTIMC =
 MULTIMC_INDICES = 
 
