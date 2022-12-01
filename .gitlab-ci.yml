@@ -47,7 +47,7 @@ variables:
 .lagarto_rules:
     rules:
         - !reference [.default_rules, rules]     
-        - !reference [.exclude_ariane, rules] 
+        #- !reference [.exclude_ariane, rules] 
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
 
@@ -60,7 +60,6 @@ variables:
     parallel:
         matrix:
             - CONF: [acme_vpu]
-              
 
 stages:  
   - simulation
