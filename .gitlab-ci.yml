@@ -19,7 +19,7 @@ variables:
     GIT_SUBMODULE_STRATEGY: none
     # We need to define which is the default configuration for the synthesis
     # Pronoc? 2x2? etc
-    DESIGN_OPTIONS: "XTILES=1 YTILES=1 VLANES=4 "
+    DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
     # Use a preconfigured RISCV toolchain. This is risky.
