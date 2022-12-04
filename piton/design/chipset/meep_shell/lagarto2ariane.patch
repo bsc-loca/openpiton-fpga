@@ -1,0 +1,13 @@
+diff --git a/piton/design/chipset/meep_shell/accelerator_build.sh b/piton/design/chipset/meep_shell/accelerator_build.sh
+index 7db3b024..130004db 100644
+--- a/piton/design/chipset/meep_shell/accelerator_build.sh
++++ b/piton/design/chipset/meep_shell/accelerator_build.sh
+@@ -2,7 +2,7 @@
+ 
+ #Use this script to call protosyn
+ 
+-CORE=lagarto
++CORE=ariane
+ 
+ make protosyn CORE=$CORE XTILES=1 YTILES=1 PROTO_OPTIONS="--meep --eth --hbm" MORE_OPTIONS="--debug-brom"
+ 
