@@ -72,7 +72,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/rtl/bram_1r1w_wrapper.v" \
     "${DV_ROOT}/design/common/rtl/synchronizer.v" \
     "${DV_ROOT}/design/chip/rtl/OCI.v" \
-    "${DV_ROOT}/design/chip/rtl/chip.v" \
+    "${DV_ROOT}/design/chip/rtl/chip.sv" \
     "${DV_ROOT}/design/chip/pll/rtl/pll_top.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_mux.v" \
     "${DV_ROOT}/design/chip/pll/rtl/clk_se_to_diff.v" \
@@ -124,6 +124,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2_dir.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2_data.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/l2_amo_alu.v" \
+    "${DV_ROOT}/design/chip/tile/l2/rtl/l2_to_mc.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/sram_wrappers/sram_l2_tag.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/sram_wrappers/sram_l2_state.v" \
     "${DV_ROOT}/design/chip/tile/l2/rtl/sram_wrappers/sram_l2_dir.v" \
