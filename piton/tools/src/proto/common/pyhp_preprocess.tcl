@@ -32,12 +32,19 @@ proc pyhp_preprocess {RTL_IMPL_FILES} {
             puts "Info: ${PYV_IMPL_FILE} exists! Preprocessing..."
     
             # Setup temporary filename for preprocessed verilog
-            set RTL_IMPL_FILENAME_LEN [string length ${RTL_IMPL_FILE}]
-            set GEN_RTL_IMPL_FILE [string range ${RTL_IMPL_FILE} 0 [expr ${RTL_IMPL_FILENAME_LEN} - 2]]
-            append GEN_RTL_IMPL_FILE "tmp."
-            append GEN_RTL_IMPL_FILE [string index ${RTL_IMPL_FILE} [expr ${RTL_IMPL_FILENAME_LEN} - 1]]
-    
+            set RTL_IMPL_FILENAME_LEN [string length ${RTL_IMPL_FILE}]            
+            set EXT               [string range ${RTL_IMPL_FILE}   [expr ${RTL_IMPL_FILENAME_LEN} - 3]  [expr ${RTL_IMPL_FILENAME_LEN} ]]
+            if { $EXT == ".sv"} {  
+            	set GEN_RTL_IMPL_FILE [string range ${RTL_IMPL_FILE} 0 [expr ${RTL_IMPL_FILENAME_LEN} - 3]]
+            	append GEN_RTL_IMPL_FILE "tmp.sv"
+            	#append GEN_RTL_IMPL_FILE [string index ${RTL_IMPL_FILE} [expr ${RTL_IMPL_FILENAME_LEN} - 1]]              
+            } else {
+                set GEN_RTL_IMPL_FILE [string range ${RTL_IMPL_FILE} 0 [expr ${RTL_IMPL_FILENAME_LEN} - 2]]
+            	append GEN_RTL_IMPL_FILE "tmp."
+            	append GEN_RTL_IMPL_FILE [string index ${RTL_IMPL_FILE} [expr ${RTL_IMPL_FILENAME_LEN} - 1]]
+    		}
             # Run PyHP
+            #puts "*******************************************************************************Info: ${PYV_IMPL_FILE} -> ${GEN_RTL_IMPL_FILE} "
             exec pyhp.py ${PYV_IMPL_FILE} > ${GEN_RTL_IMPL_FILE}
     
             # Append to new source file list
