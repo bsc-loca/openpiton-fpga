@@ -86,7 +86,7 @@ pico-amoxor     amoxor_w.S
 </cmp_default>
 </pico_tile1>
 
-<lagarto_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB> 
+<lagarto_tile1 sys=manycore -x_tiles=1 -y_tiles=1 -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU> 
 <cmp_default name=default>
     // note: these asm tests assume that the RISCV tests have been precompiled with the
     // correct environment
@@ -384,6 +384,19 @@ pico-amoxor     amoxor_w.S
         lagarto-rv64ud-v-recoding     rv64ud-v-recoding.S
         </runargs>
     </lagarto_tile1_rv64ud_tests_v>
+
+    <lagarto_tile1_rv64uc_tests_p>
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -rtl_timeout=1000000>
+        lagarto-rv64uc-p-rvc     rv64uc-p-rvc.S
+        </runargs>
+    </lagarto_tile1_rv64uc_tests_p>
+
+    <lagarto_tile1_rv64uc_tests_v>
+        // note: we have to offset the trap here since the core operates in VM
+        <runargs -x_tiles=1 -y_tiles=1 -lagarto -precompiled -trap_offset=0x80000000 -rtl_timeout=1000000>
+        lagarto-rv64uc-v-rvc         rv64uc-v-rvc.S
+        </runargs>
+    </lagarto_tile1_rv64uc_tests_v>
 
 </cmp_default>
 </lagarto_tile1>

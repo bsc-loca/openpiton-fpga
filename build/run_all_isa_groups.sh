@@ -14,7 +14,7 @@ source piton/lagarto_build_tools.sh
 
 echo "***** COMPILE OpenPIton with LAGARTO AS THE CORE *****"
 cd build
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=FPU_ZAGREB > /dev/null
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU 
 
 echo "***** RUNNING all ISA Group Tests, Results in ${FOLDER_NAME}/${RESULT_LOG}"
 mkdir $FOLDER_NAME
