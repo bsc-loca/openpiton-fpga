@@ -40,7 +40,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 module dynamic_input_route_request_calc(route_req_n, route_req_e, route_req_s, route_req_w, route_req_p, 
                                         default_ready_n, default_ready_e, default_ready_s, default_ready_w, default_ready_p, 
-                                        my_loc_x_in, my_loc_y_in, my_chip_id_in, abs_x, abs_y, abs_chip_id, abs_addr, final_bits, length, header_in);
+                                        my_loc_x_in, my_loc_y_in, my_chip_id_in, abs_x, abs_y, abs_chip_id, 
+`ifdef EDGE_ROUTE_ENABLE
+                                        abs_addr,
+`endif
+                                        final_bits, length, header_in);
 
 // begin port declarations
 
@@ -61,8 +65,9 @@ input [`CHIP_ID_WIDTH-1:0] my_chip_id_in;
 input [`XY_WIDTH-1:0] abs_x;
 input [`XY_WIDTH-1:0] abs_y;
 input [`CHIP_ID_WIDTH-1:0] abs_chip_id;
+`ifdef EDGE_ROUTE_ENABLE
 input [`PHY_ADDR_WIDTH-1:0] abs_addr;
-
+`endif
 input [2:0] final_bits;
 input [`PAYLOAD_LEN-1:0] length;
 input header_in;
@@ -70,11 +75,11 @@ input header_in;
 // end port declarations
    
 //fbit declarations
-`define FINAL_NONE	3'b000
-`define FINAL_WEST	3'b010
-`define FINAL_SOUTH	3'b011
-`define FINAL_EAST	3'b100
-`define FINAL_NORTH	3'b101
+`define FINAL_NONE  3'b000
+`define FINAL_WEST  3'b010
+`define FINAL_SOUTH 3'b011
+`define FINAL_EAST  3'b100
+`define FINAL_NORTH 3'b101
 
 //This is the state
 //NONE
@@ -106,6 +111,7 @@ wire south_calc;
 
 //assigns
 
+`ifdef EDGE_ROUTE_ENABLE
 wire [`XY_WIDTH-1 : 0] dist_north =                    my_loc_y_in;
 wire [`XY_WIDTH-1 : 0] dist_south = `PITON_Y_TILES-1 - my_loc_y_in;
 wire [`XY_WIDTH-1 : 0] dist_west  =                    my_loc_x_in;
@@ -122,12 +128,7 @@ wire [`XY_WIDTH-1 : 0] edge_node_x = dist_west  < dist_east   ?
                                      dist_east >= dist_north ||
                                      dist_east >= dist_south  ? my_loc_x_in : `PITON_X_TILES-1;
 
-wire offchip_confirm =
-  `ifdef PITON_EXTRA_MEMS
-    abs_addr[`PHY_ADDR_WIDTH-1] || final_bits == `FINAL_NONE;
-  `else
-    1'b1;
-  `endif
+wire offchip_confirm = abs_addr[`PHY_ADDR_WIDTH-1] || final_bits == `FINAL_NONE;
 
 assign off_chip = abs_chip_id != my_chip_id_in;
 assign more_x = off_chip ? offchip_confirm ? `OFF_CHIP_NODE_X > my_loc_x_in :
@@ -169,7 +170,35 @@ assign north = north_calc | ((final_bits_ext == `FINAL_NORTH) & done);
 assign south = south_calc | ((final_bits_ext == `FINAL_SOUTH) & done);
 assign east  = more_x     | ((final_bits_ext == `FINAL_EAST)  & done);
 assign west  = less_x     | ((final_bits_ext == `FINAL_WEST)  & done);
-assign proc  =              ((final_bits     == `FINAL_NONE)  & done);
+
+
+
+`else 
+
+
+assign off_chip = abs_chip_id != my_chip_id_in;
+assign more_x = off_chip ? `OFF_CHIP_NODE_X > my_loc_x_in : abs_x > my_loc_x_in;
+assign more_y = off_chip ? `OFF_CHIP_NODE_Y > my_loc_y_in : abs_y > my_loc_y_in;
+
+assign less_x = off_chip ? `OFF_CHIP_NODE_X < my_loc_x_in : abs_x < my_loc_x_in;
+assign less_y = off_chip ? `OFF_CHIP_NODE_Y < my_loc_y_in : abs_y < my_loc_y_in;
+
+assign done_x = off_chip ? `OFF_CHIP_NODE_X == my_loc_x_in : abs_x == my_loc_x_in;
+assign done_y = off_chip ? `OFF_CHIP_NODE_Y == my_loc_y_in : abs_y == my_loc_y_in;
+
+assign done = done_x & done_y;
+
+assign north_calc = done_x & less_y;
+assign south_calc = done_x & more_y;
+
+assign north = north_calc | ((final_bits == `FINAL_NORTH) & done);
+assign south = south_calc | ((final_bits == `FINAL_SOUTH) & done);
+assign east = more_x | ((final_bits == `FINAL_EAST) & done);
+assign west = less_x | ((final_bits == `FINAL_WEST) & done);
+
+`endif
+
+assign proc = ((final_bits == `FINAL_NONE) & done);
 
 assign route_req_n = header_in & north;
 assign route_req_e = header_in & east;

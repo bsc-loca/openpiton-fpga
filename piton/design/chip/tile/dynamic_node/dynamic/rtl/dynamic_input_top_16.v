@@ -78,24 +78,39 @@ input thanks_p;
 //wires
 wire thanks_all_temp;
 wire valid_out_internal;
-wire [`DATA_WIDTH*2-1:0] data_out_internal;
-// wire [`DATA_WIDTH-1:0] data_out_internal_pre;
+
+`ifdef EDGE_ROUTE_ENABLE
+        wire [`DATA_WIDTH*2-1:0] data_out_internal;
+`else 
+        wire [`DATA_WIDTH-1:0] data_out_internal;
+        wire [`DATA_WIDTH-1:0] data_out_internal_pre;
+        assign data_out = data_out_internal;
+        assign data_out_internal = data_out_internal_pre;
+`endif
+
+
+
 //wire regs
 
 //assigns
 assign valid_out = valid_out_internal;
-// assign data_out = data_out_internal;
+
 
 //instantiations
 network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(4)
-                              `ifdef PITON_EXTRA_MEMS
-                                ,.OUT_2FLITS(1) // address contained in 2nd flit is needed in case of extra-routing
-                              `endif
-                             ) NIB(.clk(clk), .reset(reset), .data_in(data_in), .valid_in(valid_in), .yummy_out(yummy_out), .thanks_in(thanks_all_temp), .data_val(data_out), .data_val1(data_out_internal), .data_avail(valid_out_internal));
+                              `ifdef EDGE_ROUTE_ENABLE
+                                 ,.OUT_2FLITS(1) // address contained in 2nd flit is needed in case of extra-routing
+                               `endif
+                               ) NIB (.clk(clk), .reset(reset), .data_in(data_in), .valid_in(valid_in), .yummy_out(yummy_out), .thanks_in(thanks_all_temp),
+                               `ifdef EDGE_ROUTE_ENABLE
+                                      .data_val(data_out), .data_val1(data_out_internal),
+                               `else
+                                      .data_val(data_out_internal_pre), .data_val1(),
+                               `endif
+                                      .data_avail(valid_out_internal));
 
 // need buffering for this one
 // rBuffer #(`DATA_WIDTH, 1) NIB_buf(.A(data_out_internal_pre), .Z(data_out_internal));   
-// assign data_out_internal = data_out_internal_pre;
 
 // Change fbits position in order to be compatible   
 dynamic_input_control control(.thanks_all_temp_out(thanks_all_temp), .route_req_n_out(route_req_n_out), .route_req_e_out(route_req_e_out), .route_req_s_out(route_req_s_out), .route_req_w_out(route_req_w_out), .route_req_p_out(route_req_p_out), .default_ready_n(default_ready_n_out), .default_ready_e(default_ready_e_out), .default_ready_s(default_ready_s_out), .default_ready_w(default_ready_w_out), .default_ready_p(default_ready_p_out), .tail_out(tail_out), .clk(clk), .reset(reset), .my_loc_x_in(my_loc_x_in), .my_loc_y_in(my_loc_y_in), 
@@ -103,7 +118,9 @@ dynamic_input_control control(.thanks_all_temp_out(thanks_all_temp), .route_req_
     .abs_x(data_out_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH-`XY_WIDTH]),
     .abs_y(data_out_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-`XY_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH]),
     .abs_chip_id(data_out_internal[`DATA_WIDTH-1:`DATA_WIDTH-`CHIP_ID_WIDTH]),
+`ifdef EDGE_ROUTE_ENABLE
     .abs_addr(data_out_internal[`MSG_ADDR]),
+`endif
     .final_bits(data_out_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-2:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4]), .valid_in(valid_out_internal), .thanks_n(thanks_n), .thanks_e(thanks_e), .thanks_s(thanks_s), .thanks_w(thanks_w), .thanks_p(thanks_p), .length(data_out_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-5:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4-`PAYLOAD_LEN]));
 
 endmodule
