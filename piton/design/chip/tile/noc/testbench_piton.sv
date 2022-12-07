@@ -196,6 +196,7 @@ module testbench_piton;
 			(
        			.ratio (ratio),					
 				.pck_size_in(pck_size_in[i]),
+				.current_r_addr(chan_out_all[i].ctrl_chanel.neighbors_r_addr),
 				.current_e_addr(current_e_addr[i]),
 				.dest_e_addr(dest_e_addr[i]),
 				.pck_class_in(pck_class_in[i]),  
@@ -273,8 +274,6 @@ module testbench_piton;
 				.dest_e_addr(dest_e_addr[i]),
 				.valid_dst(valid_dst[i]),
 				.hotspot_info(hotspot_info),
-				.rnd_discrete( ),
-				.pck_size_o(),
 				.custom_traffic_t(custom_traffic_t[i]),  // defined in sim_param.sv
 				.custom_traffic_en(custom_traffic_en[i])  // defined in sim_param.sv
 			);

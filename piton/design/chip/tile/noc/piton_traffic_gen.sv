@@ -5,13 +5,11 @@
 `define HEAD_DATw  (FPAYw-MSB_BE-1) 
 `define ADDR_CODED (`HEAD_DATw-`PRESERVED_DATw)
 
-`include "pronoc_def.v"
-
 module  piton_traffic_gen_top
 		import pronoc_pkg::*; 
 	#(
 		parameter MAX_RATIO = 1000,
-		parameter ENDP_ID   = 100000
+		parameter ENDP_ID   = 10
 		)
 		(
 					
@@ -22,6 +20,7 @@ module  piton_traffic_gen_top
 			//input 
 			ratio,// real injection ratio  = (MAX_RATIO/100)*ratio
 			pck_size_in,   
+			current_r_addr,
 			current_e_addr,
 			dest_e_addr,
 			pck_class_in,        
@@ -37,7 +36,6 @@ module  piton_traffic_gen_top
 			hdr_flit_sent,
 			update, // update the noc_analayzer
 			src_e_addr,
-		flit_out_class,
 			flit_out_wr,
 			flit_in_wr,
    
@@ -46,7 +44,6 @@ module  piton_traffic_gen_top
 			time_stamp_h2h,
 			time_stamp_h2t,
 			pck_size_o,
-		mcast_dst_num_o,
 			
 			reset,
 			clk
@@ -74,7 +71,7 @@ module  piton_traffic_gen_top
 		W=WEIGHTw,
 		PORT_B = (TOPOLOGY!="FMESH")?  LB :
 		(ENDP_ID < NE_MESH_TORI)? LB :B; // in FMESH, the buffer size of endpoints connected to edge routers non-local ports are B not LB  
-		/* verilator lint_on WIDTH */
+
 	input reset, clk;
 	input  [RATIOw-1                :0] ratio;
 	input                               start,stop;
@@ -82,11 +79,12 @@ module  piton_traffic_gen_top
 	output [CLK_CNTw-1              :0] time_stamp_h2h,time_stamp_h2t;
 	output [DISTw-1                 :0] distance;
 	output [Cw-1                    :0] pck_class_out;
-	
+	// the connected router address
+	input  [RAw-1                   :0] current_r_addr;    
 	// the current endpoint address
 	input  [EAw-1                   :0] current_e_addr;    
 	// the destination endpoint address
-	input  [DAw-1                   :0] dest_e_addr;  
+	input  [EAw-1                   :0] dest_e_addr;  
     
 	output [PCK_CNTw-1              :0] pck_number;
 	input  [PCK_SIZw-1              :0] pck_size_in;
@@ -101,35 +99,26 @@ module  piton_traffic_gen_top
 	// the received packet source endpoint address
 	output [EAw-1        :   0]    src_e_addr;
 	output [PCK_SIZw-1   :   0]    pck_size_o;	
-	output [NEw-1 : 0] mcast_dst_num_o;
 	
 		
 	logic  [Fw-1                   :0] flit_out;     
 	output  logic                       flit_out_wr;   
-	output  [Cw-1 : 0] flit_out_class;
 	logic   [V-1                    :0] credit_in;
     
 	logic   [Fw-1                   :0] flit_in;   
 	output logic                              flit_in_wr;   
 	logic  [V-1                :0] credit_out;     
 		
-	// the connected router address
-	wire  [RAw-1                   :0] current_r_addr;    
 		
 		
-	/* verilator lint_off WIDTH */
-	wire [PCK_SIZw-1 : 0] pck_size_tmp= (PCK_TYPE == "SINGLE_FLIT" )?   1 : pck_size_in;
-	/* verilator lint_on WIDTH */
-	
 	assign 	chan_out.flit_chanel.flit = flit_out; 
 	assign  chan_out.flit_chanel.flit_wr = flit_out_wr;
 	assign  chan_out.flit_chanel.credit = credit_out;
-	assign  chan_out.smart_chanel = {SMART_CHANEL_w {1'b0}};	
+		
 		
 	assign flit_in   =  chan_in.flit_chanel.flit;   
 	assign flit_in_wr=  chan_in.flit_chanel.flit_wr; 
 	assign credit_in =  chan_in.flit_chanel.credit;  
-	assign current_r_addr = chan_in.ctrl_chanel.neighbors_r_addr;
 	
 	genvar i;
 	generate
@@ -138,17 +127,14 @@ module  piton_traffic_gen_top
 		end
 	endgenerate
 		
-	assign chan_out.ctrl_chanel.endp_port =1'b1;
-	assign chan_out.ctrl_chanel.credit_release_en={V{1'b0}};
-	
 	//old traffic.v file
 		
 	reg [2:0]   ps,ns;
 	localparam IDEAL =3'b001, SENT =3'b010, WAIT=3'b100;
 		
 	reg                                 inject_en,cand_wr_vc_en,pck_rd;
-	reg    [PCK_SIZw-1              :0] pck_size;    
-	logic  [DAw-1                   :0] dest_e_addr_reg,dest_e_addr_o;
+	reg    [PCK_SIZw-1              :0] pck_size, pck_size_next;    
+	reg    [EAw-1                    :0] dest_e_addr_reg;
 		
 	// synopsys  translate_off
 	// synthesis translate_off
@@ -183,13 +169,22 @@ module  piton_traffic_gen_top
    
 	wire [HDR_Dw-1 : 0] rd_hdr_data_out;
    
-	pronoc_register #(.W(DAw)) reg2 (.in(dest_e_addr ), .out(dest_e_addr_reg), .reset(reset), .clk(clk));
     
-	
+	`ifdef SYNC_RESET_MODE 
+		always @ (posedge clk )begin 
+		`else 
+			always @ (posedge clk or posedge reset)begin 
+			`endif   
+			if(reset) begin 
+				dest_e_addr_reg<={EAw{1'b0}};           
+			end else begin 
+				dest_e_addr_reg<=dest_e_addr;       
+			end
+		end
    
 		wire    [DSTPw-1                :   0] destport;   
 		wire    [V-1                    :   0] ovc_wr_in;
-		wire    [V-1                    :   0] full_vc,empty_vc,nearly_full_vc;
+		wire    [V-1                    :   0] full_vc,empty_vc;
 		reg     [V-1                    :   0] wr_vc,wr_vc_next;
 		wire    [V-1                    :   0] cand_vc;
     
@@ -201,9 +196,7 @@ module  piton_traffic_gen_top
 		wire                                   rd_hdr_flg,rd_tail_flg;
 		wire    [Cw-1   :   0] rd_class_hdr;
 		//  wire    [P_1-1      :   0] rd_destport_hdr;
-		wire    [DAw-1      :   0] rd_des_e_addr;
-		wire    [EAw-1      :   0] rd_src_e_addr;  
-		
+		wire    [EAw-1      :   0] rd_des_e_addr, rd_src_e_addr;  
 		reg     [CLK_CNTw-1             :   0] rsv_counter;
 		reg     [CLK_CNTw-1             :   0] clk_counter;
 		wire    [Vw-1                   :   0] rd_vc_bin;//,wr_vc_bin;
@@ -224,8 +217,8 @@ module  piton_traffic_gen_top
 		logic [DELAYw-1 : 0] start_delay_counter,start_delay_counter_next;
 		logic  start_en_next , start_en;
 
-		pronoc_register #(.W(1)) streg1 (.reset(reset),.clk(clk), .in(start_en_next), .out(start_en)	);
-		pronoc_register #(.W(DELAYw)) streg2 (.reset(reset),.clk(clk), .in(start_delay_counter_next), .out(start_delay_counter)	);
+		register #(.W(1)) streg1 (.reset(reset),.clk(clk), .in(start_en_next), .out(start_en)	);
+		register #(.W(DELAYw)) streg2 (.reset(reset),.clk(clk), .in(start_delay_counter_next), .out(start_delay_counter)	);
 		
 		
 		
@@ -254,10 +247,7 @@ module  piton_traffic_gen_top
 				.T2(T2),
 				.T3(T3),   
 				.EAw(EAw),
-				.SELF_LOOP_EN(SELF_LOOP_EN),
-				.DAw(DAw),
-				.CAST_TYPE(CAST_TYPE),
-				.NE(NE)
+				.SELF_LOOP_EN(SELF_LOOP_EN)
 			)
 			check_destination_addr(
 				.dest_e_addr(dest_e_addr),
@@ -277,7 +267,7 @@ module  piton_traffic_gen_top
 			pck_inject_ratio_ctrl
 			(
 				.en(inject_en),
-				.pck_size_in(pck_size_tmp),
+				.pck_size_in(pck_size_in),
 				.clk(clk),
 				.reset(reset),
 				.freez(buffer_full),
@@ -297,8 +287,7 @@ module  piton_traffic_gen_top
 				.credit_init_val_in         ( chan_in.ctrl_chanel.credit_init_val),
 				.wr_in                      (ovc_wr_in),   
 				.credit_in                  (credit_in),
-				.nearly_full_vc             (nearly_full_vc),
-				.full_vc                    (full_vc),
+				.nearly_full_vc             (full_vc),
 				.empty_vc                   (empty_vc),
 				.cand_vc                    (cand_vc),
 				.cand_wr_vc_en              (cand_wr_vc_en),
@@ -306,18 +295,23 @@ module  piton_traffic_gen_top
 				.reset                      (reset)
 			);
     
-    
        
     
 		packet_gen #(
-				.P(MAX_P),	
-				.PCK_TYPE(PCK_TYPE),
+				.P(MAX_P),
+				.T1(T1),
+				.T2(T2),
+				.T3(T3),
+				.RAw(RAw),  
+				.EAw(EAw),  
+				.TOPOLOGY(TOPOLOGY),
+				.DSTPw(DSTPw),
+				.ROUTE_NAME(ROUTE_NAME),
 				.ROUTE_TYPE(ROUTE_TYPE),
 				.MAX_PCK_NUM(MAX_PCK_NUM),
 				.MAX_SIM_CLKs(MAX_SIM_CLKs),
 				.TIMSTMP_FIFO_NUM(TIMSTMP_FIFO_NUM),
-				.MIN_PCK_SIZE(MIN_PCK_SIZE),
-				.MAX_PCK_SIZ(MAX_PCK_SIZ)			
+				.MIN_PCK_SIZE(MIN_PCK_SIZE)
 			)
 			packet_buffer
 			(
@@ -329,19 +323,13 @@ module  piton_traffic_gen_top
 				.current_e_addr(current_e_addr),
 				.clk_counter(clk_counter+1'b1),//in case of zero load latency, the flit will be injected in the next clock cycle
 				.pck_number(pck_number),
-				.dest_e_addr_in(dest_e_addr),  
-				.dest_e_addr_o(dest_e_addr_o),     
+				.dest_e_addr(dest_e_addr_reg),        
 				.pck_timestamp(pck_timestamp),
 				.buffer_full(buffer_full),
 				.pck_ready(pck_ready),
 				.valid_dst(valid_dst),
-				.destport(destport),
-				.pck_size_in(pck_size_tmp),
-				.pck_size_o(pck_size)
+				.destport(destport)
 			);
-		
-		
-		
 
     
 		assign wr_timestamp    =pck_timestamp; 
@@ -439,7 +427,7 @@ module  piton_traffic_gen_top
 				.flit_out(hdr_flit_out),
 				.vc_num_in(wr_vc),
 				.class_in(pck_class_in),
-				.dest_e_addr_in(dest_e_addr_o),
+				.dest_e_addr_in(dest_e_addr_reg),
 				.src_e_addr_in(current_e_addr),
 				.weight_in(init_weight),
 				.destport_in(destport),
@@ -447,7 +435,7 @@ module  piton_traffic_gen_top
 				.be_in({BEw{1'b1}} )// Be is not used in simulation as we dont sent real data
 			);
     
-        assign flit_out_class = pck_class_in;
+    
    
 		assign flit_out_hdr = {hdr_flit,tail_flit};
     
@@ -546,10 +534,8 @@ module  piton_traffic_gen_top
     
 		assign  ovc_wr_in   = (flit_out_wr ) ?      wr_vc : {V{1'b0}};
 
-	/* verilator lint_off WIDTH */
-//	assign  wr_vc_is_full           = (SSA_EN=="NO")?  | ( full_vc & wr_vc)  : | (nearly_full_vc & wr_vc);
 	assign  wr_vc_is_full           =   | ( full_vc & wr_vc);
-    /* verilator lint_on WIDTH */ 
+    
     
     
 	generate
@@ -642,10 +628,18 @@ module  piton_traffic_gen_top
 			credit_out_next = rd_vc;
 		end else credit_out_next = {V{1'd0}};
 	end
- 	
+ 
+	always @ (*)begin 
+		pck_size_next    = pck_size;
+		if((tail_flit & flit_out_wr ) || not_yet_sent_aflit) pck_size_next  = pck_size_in;
+	end
     
-		always @ (`pronoc_clk_reset_edge )begin 
-			if(`pronoc_reset) begin 
+	`ifdef SYNC_RESET_MODE 
+		always @ (posedge clk )begin 
+		`else 
+			always @ (posedge clk or posedge reset)begin 
+			`endif   
+			if(reset) begin 
 				inject_en       <= 1'b0;
 				ps              <= IDEAL;
 				wr_vc           <=1; 
@@ -653,6 +647,7 @@ module  piton_traffic_gen_top
 				credit_out      <= {V{1'd0}};
 				rsv_counter     <= 0;
 				clk_counter     <=  0;
+				pck_size        <= 0;
 				not_yet_sent_aflit<=1'b1;          
         
 			end else begin 
@@ -665,7 +660,7 @@ module  piton_traffic_gen_top
 				if (flit_cnt_rst)      flit_counter    <= {PCK_SIZw{1'b0}};
 				else if(flit_cnt_inc)   flit_counter    <= flit_counter + 1'b1;     
 				credit_out      <= credit_out_next;
-
+				pck_size  <= pck_size_next;
            
 				//sink
 				if(flit_in_wr) begin 
@@ -702,132 +697,31 @@ module  piton_traffic_gen_top
         
 			end
 		end//always
+		// synopsys  translate_off
+		// synthesis translate_off
 					
 			
 			
-		
-		
-		
-		wire [NE-1 :0] dest_mcast_all_endp1;	
-		
-		
-		generate 
-			/* verilator lint_off WIDTH */
-			if(CAST_TYPE != "UNICAST") begin :mb_cast
-			/* verilator lint_on WIDTH */
-				
-				wire [NEw-1 : 0] sum_temp;
-				wire is_unicast;
-				
-				mcast_dest_list_decode decode1 (
-						.dest_e_addr(dest_e_addr_o),
-						.dest_o(dest_mcast_all_endp1),
-						.row_has_any_dest(),
-						.is_unicast(is_unicast)
-					);
-				
-				/* verilator lint_off WIDTH */
-				if (CAST_TYPE == "BROADCAST_FULL") begin :bcastf				
-					assign mcast_dst_num_o = (is_unicast) ? 1 : (SELF_LOOP_EN == "NO")? NE-1 : NE;				
-				end else  if ( CAST_TYPE == "BROADCAST_PARTIAL" )  begin :bcastp 
-				
-					if (SELF_LOOP_EN == "NO") begin 
-						//check if injector node is included in partial list
-						wire [NEw-1: 0]  current_enp_id;
-						endp_addr_decoder  #( .TOPOLOGY(TOPOLOGY), .T1(T1), .T2(T2), .T3(T3), .EAw(EAw),  .NE(NE)) decod1 ( .id(current_enp_id), .code(current_e_addr));
-						assign mcast_dst_num_o = (is_unicast) ? 1 : (MCAST_ENDP_LIST[current_enp_id]== 1'b1)?  MCAST_PRTLw-1 :  MCAST_PRTLw;
-						
-					end else begin 
-						assign mcast_dst_num_o = (is_unicast)? 1 :  MCAST_PRTLw;
-					end			
-				/* verilator lint_on WIDTH */
-				end else begin : mcast
-					accumulator #(
-							.INw(NE),
-							.OUTw(NEw),
-							.NUM(NE)
-						)accum
-						(
-							.in_all(dest_mcast_all_endp1),
-							.out(sum_temp)         
-						);				
-					assign mcast_dst_num_o = sum_temp;
-				end			
-			end
-		endgenerate
-		
-		
-		
-		
-		
-/***************************************************************
- * 			simulation code
- * ************************************************************/		
-		
-		
-		
-		
-		
-// synthesis translate_off			
-				
+		localparam NEw=log2(NE);
 		wire [NEw-1: 0]  src_id,dst_id,current_id;
     
 		endp_addr_decoder  #( .TOPOLOGY(TOPOLOGY), .T1(T1), .T2(T2), .T3(T3), .EAw(EAw),  .NE(NE)) decod1 ( .id(current_id), .code(current_e_addr));
-		endp_addr_decoder  #( .TOPOLOGY(TOPOLOGY), .T1(T1), .T2(T2), .T3(T3), .EAw(EAw),  .NE(NE)) decod2 ( .id(dst_id), .code(rd_des_e_addr[EAw-1 : 0]));// only for unicast
+		endp_addr_decoder  #( .TOPOLOGY(TOPOLOGY), .T1(T1), .T2(T2), .T3(T3), .EAw(EAw),  .NE(NE)) decod2 ( .id(dst_id), .code(rd_des_e_addr));
 		endp_addr_decoder  #( .TOPOLOGY(TOPOLOGY), .T1(T1), .T2(T2), .T3(T3), .EAw(EAw),  .NE(NE)) decod3 ( .id(src_id), .code(rd_src_e_addr));
     
-    
-		
-		
-		
-		wire [NE-1 :0] dest_mcast_all_endp2;	
-		generate 
-		if(CAST_TYPE != "UNICAST") begin :no_unicast		
-			mcast_dest_list_decode decode2 (
-					.dest_e_addr(rd_des_e_addr),
-					.dest_o(dest_mcast_all_endp2),
-					.row_has_any_dest(),
-					.is_unicast()
-				);
-		end endgenerate
     
     
     
 		always @(posedge clk) begin     
-			/* verilator lint_off WIDTH */
-			if(CAST_TYPE == "UNICAST") begin
-				/* verilator lint_on WIDTH */	
-				if(flit_out_wr && hdr_flit && dest_e_addr_o [EAw-1 : 0]  == current_e_addr  && SELF_LOOP_EN == "NO") begin 
-					$display("%t: ERROR: The self-loop is not enabled in the router while a packet is injected to the NoC with identical source and destination address in endpoint (%h).: %m",$time, dest_e_addr_o );
+			if(flit_out_wr && hdr_flit && dest_e_addr_reg  == current_e_addr && SELF_LOOP_EN == "NO") begin 
+				$display("%t: ERROR: The self-loop is not enabled in the router while a packet is injected to the NoC with identical source and destination address in endpoint (%h).: %m",$time, dest_e_addr );
 				$finish;
 			end
-				if(flit_in_wr && rd_hdr_flg && (rd_des_e_addr[EAw-1 : 0]  != current_e_addr )) begin 
+			if(flit_in_wr && rd_hdr_flg && (rd_des_e_addr  != current_e_addr )) begin 
 				$display("%t: ERROR: packet with destination %d (code %h) which is sent by source %d (code %h) has been recieved in wrong destination %d (code %h).  %m",$time,dst_id,rd_des_e_addr, src_id,rd_src_e_addr, current_id,current_e_addr);
 				$finish;
 			end
 				
-			end else begin 
-				/* verilator lint_off WIDTH */
-				if((CAST_TYPE == "MULTICAST_FULL") || (CAST_TYPE == "MULTICAST_PARTIAL")) begin
-				/* verilator lint_on WIDTH */
-					
-					if(flit_out_wr && hdr_flit && dest_mcast_all_endp1[current_id]  == 1'b1  && SELF_LOOP_EN == "NO") begin 
-						$display("%t: ERROR: The self-loop is not enabled in the router while a packet is injected to the NoC with identical source and destination address in endpoint %d. destination nodes:0X%h. : %m",$time, current_id,dest_mcast_all_endp1 );
-						$finish;
-					end				
-				end			
-				if(flit_in_wr && rd_hdr_flg && (dest_mcast_all_endp2[current_id] !=1'b1 )) begin 
-					$display("%t: ERROR: packet with destination %b  which is sent by source %d (code %h) has been recieved in wrong destination %d (code %h).  %m",$time, dest_mcast_all_endp2, src_id,rd_src_e_addr, current_id,current_e_addr);
-					$finish;
-				end
-				
-				//check multicast packet size to be smaller than B & LB
-				if(flit_out_wr & hdr_flit & (mcast_dst_num_o>1) & (pck_size >B || pck_size> LB))begin 
-					$display("%t: ERROR: A multicast packat is injected to the NoC which has larger size (%d) than router buffer width.  %m",$time, pck_size);
-					$finish;
-				end
-				
-			end
 			if(update) begin
 				if (hdr_flit_timestamp<= rd_timestamp) begin 
 					$display("%t: ERROR: In destination %d packt which is sent by source %d, the time when header flit is recived (%d) should be larger than the packet timestamp %d.  %m",$time, current_id ,src_e_addr, hdr_flit_timestamp, rd_timestamp);
@@ -845,11 +739,17 @@ module  piton_traffic_gen_top
 				end
 			end
 				
+				
+				
+				
 		end
-
-
+		// synthesis translate_on
+		// synopsys  translate_on
+    
+    
 		`ifdef CHECK_PCKS_CONTENT
-
+			// synopsys  translate_off
+			// synthesis translate_off
     
 			wire     [PCK_SIZw-1             :   0] rsv_flit_counter; 
 			reg      [PCK_SIZw-1             :   0] old_flit_counter    [V-1   :   0];
@@ -867,9 +767,12 @@ module  piton_traffic_gen_top
     
     
 				integer ii;
-				
-				always @ (`pronoc_clk_reset_edge )begin 
-					if(`pronoc_reset) begin
+			`ifdef SYNC_RESET_MODE 
+				always @ (posedge clk )begin 
+				`else 
+					always @ (posedge clk or posedge reset)begin 
+					`endif  
+					if(reset) begin
 						for(ii=0;ii<V;ii=ii+1'b1)begin
 							old_flit_counter[ii]<=0;            
 						end        
@@ -883,10 +786,10 @@ module  piton_traffic_gen_top
 								old_flit_counter[rd_vc_bin]<=rsv_flit_counter;
 							end                    
                 
-						end //flit_in_wr      
+						end       
         
-					end    //reset
-				end//always
+					end    
+				end
     
     
 				always @(posedge clk) begin     
@@ -897,27 +800,10 @@ module  piton_traffic_gen_top
 					end
    
 				end
-				
+				// synthesis translate_on
+				// synopsys  translate_on
     
 			`endif
-    
-// synthesis translate_on
-
-		
-		
-		
-		
-//				`ifdef VERILATOR
-//					logic  endp_is_active   /*verilator public_flat_rd*/ ;
-//			
-//					always @ (*) begin 
-//						endp_is_active  = 1'b0;		
-//						if (chan_out.flit_chanel.flit_wr) endp_is_active=1'b1;
-//						if (chan_out.flit_chanel.credit > {V{1'b0}} ) endp_is_active=1'b1;
-//						if (chan_out.smart_chanel.requests > {SMART_NUM{1'b0}} ) endp_is_active=1'b1;
-//					end	
-//				`endif
-
     
 endmodule
 
