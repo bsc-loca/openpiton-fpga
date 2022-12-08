@@ -1,7 +1,8 @@
 
 FPGA_TARGET ?= alveou280
 ROOT_DIR    =  $(PWD)
-PROJECT_SUBDIR =  $(ROOT_DIR)/build/$(FPGA_TARGET)/system/
+PITON_BUILD_DIR = $(ROOT_DIR)/build
+PROJECT_SUBDIR =  $(PITON_BUILD_DIR)/$(FPGA_TARGET)/system/
 PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
 SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
@@ -14,11 +15,28 @@ VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 CORE        ?= lagarto
 # This needs to match the path set in <core>_setup.sh
-RISCV_DIR   := $(ROOT_DIR)/riscv
+RISCV   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
-PROTO_OPTIONS ?= --vpu --vnpm --eth --hbm
+VLANES ?= 4
+MULTIMC =
+MULTIMC_INDICES = 
+
+
+MC_OPTION = 
+
+ifdef MULTIMC
+	MC_OPTION = --multimc $(MULTIMC)
+	ifdef MULTIMC_INDICES
+	MC_OPTION = --multimc $(MULTIMC) --multimc_indices $(MULTIMC_INDICES)
+	endif
+endif
+
+
+ 
+PROTO_OPTIONS ?= --vnpm --eth --hbm --pronoc
+MORE_OPTIONS ?= ""
 
 #Don't rely on this to call the subprograms
 export PATH := $(VIVADO_PATH):$(PATH)
@@ -32,7 +50,7 @@ test:
 	@echo "Your core is $(CORE)"
 	@echo "FPGA TARGET: $(FPGA_TARGET)"
 
-initialize: $(RISCV_DIR)
+initialize: $(RISCV)
 
 synthesis: $(SYNTH_DCP)
 
@@ -44,18 +62,15 @@ incremental:
 	@echo "Source a tcl so Vivado takes the latest dcp file to configure incremental implementaiton"
 
 
-$(RISCV_DIR):
+$(RISCV):
 	git clone https://github.com/riscv/riscv-gnu-toolchain; \
 	cd riscv-gnu-toolchain; \
 	./configure --prefix=$@ && make -j8; \
 	cd $(ROOT_DIR); \
 
-protosyn: clean_project $(RISCV_DIR)
+protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS)
-
-protosyn_pronoc: clean_project $(RISCV_DIR)
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) --pronoc
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --vlanes $(VLANES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -75,9 +90,11 @@ ci_bitstream:
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
 ### Cleaning calls ###
+
+clean: clean_project
 	
 clean_all: clean_project
-	rm -rf $(PROJECT_SUBDIR)
+	rm -rf $(PITON_BUILD_DIR)/alveo*
 	
 clean_synthesis:	
 	rm -rf dcp/*

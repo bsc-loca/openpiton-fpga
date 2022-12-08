@@ -14,7 +14,8 @@ else
 fi
 
 # Default options
-CORE=lagarto
+# CORE=lagarto
+CORE=ariane
 XTILES=1
 YTILES=1
 #PROTO_OPTIONS="--meep --eth --hbm --vpu"
@@ -26,7 +27,9 @@ acme)
     ;;
 ariane)
     CORE=ariane
-    echo "Selected build configuration: Ariane 1x1"
+    XTILES=2
+    YTILES=2
+    echo "Selected build configuration: Ariane 2x2"
     ;;
 pronoc)
     CORE=lagarto
@@ -50,8 +53,9 @@ acme_vpu)
     CORE=lagarto
     XTILES=2
     YTILES=2
+    VLANES=4
     # Add VPU
-    PROTO_OPTIONS=" --vpu --pronoc"
+    PROTO_OPTIONS=" --vpu --pronoc --acme"
     echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac
@@ -61,5 +65,5 @@ echo "EA configuration is $EA_MOD with $MEEP$PROTO_OPTIONS"
 
 PROTO_OPTIONS=$MEEP$PROTO_OPTIONS
 
-make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES VLANES=$VLANES PROTO_OPTIONS="$PROTO_OPTIONS"
 
