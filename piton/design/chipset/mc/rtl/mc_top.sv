@@ -1077,6 +1077,8 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 
 // system memory base address from devices.xml, unaligned with memory size and thus is subtracted from access memory address
 localparam MEM_BASE_UNALIGN = `AXI4_ADDR_WIDTH'h80000000;
+// localparam MEM_BASE_UNALIGN = '0;
+
 noc_axi4_bridge #(
   `ifdef PITON_ARIANE
     .SWAP_ENDIANESS (1),
@@ -1582,7 +1584,6 @@ axi4_zeroer axi4_zeroer(
  assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
  assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
  assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
- 
 `else // PITONSYS_PCIE
  
 ddr4_axi4 ddr_axi4 (
