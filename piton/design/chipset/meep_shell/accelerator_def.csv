@@ -5,7 +5,7 @@ HBM,yes,mem_axi,1,CLK1,0x0,mem_calib_complete,00
 HBM,yes,ncmem_axi,1,CLK1,0x0,mem_calib_complete,01
 AURORA,no,raw,<name>			
 UART,yes,uart_axi,1,CLK0,0x0,normal,uart_irq
-ETHERNET,yes,eth_axi,1,CLK0,eth_axi_aclk,eth_axi_arstn,10Gb,eth_irq,qsfp1,sram
+ETHERNET,yes,eth_axi,1,CLK0,eth_axi_aclk,eth_axi_arstn,10Gb,eth_irq,qsfp1,hbm
 BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,no,sram_axi,1,CLK0,0x0,none
 CLK0,100000000,chipset_clk
