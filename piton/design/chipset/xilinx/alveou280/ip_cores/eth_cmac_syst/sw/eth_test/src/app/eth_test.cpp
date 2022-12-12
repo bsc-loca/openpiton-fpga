@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
         printf("------- Running DMA Tx/Rx/SG memory test (HBM-based, ");
           #ifdef DMA_MEM_CACHED
             printf("cacheable) -------\n");
-            enum {MEM_TEST_COMBINATIONS = 4};
+            enum {MEM_TEST_COMBINATIONS = 2};
           #else
             printf("non-cacheable) -------\n");
             enum {MEM_TEST_COMBINATIONS = 1};
@@ -210,7 +210,7 @@ int main(int argc, char *argv[])
         uint16_t volatile* sgMemRd16;
         uint32_t volatile* sgMemRd32;
         uint64_t volatile* sgMemRd64;
-        bool rdCachMem = memCase & 0x2;
+        bool rdCachMem = memCase & 0x1;
         if (rdCachMem) {
         printf("Reading cacheable memories: \n");
         txMemAddr = ethSyst.TX_MEM_ADDR;
@@ -306,7 +306,6 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          #ifndef DMA_MEM_HBM // sometimes BD region mapped to system memory doesn't pass check
           // checking readback using different data types
           if (                 sgMemRd8 [addr  ] != val >> 56) {
             printf("\nERROR: Incorrect readback of Byte at addr %lx from BD Mem: %x, expected: %lx \n",
@@ -328,7 +327,6 @@ int main(int argc, char *argv[])
                          addr, sgMemRd64[addr/8],   val);
             exit(1);
           }
-          #endif
         }
 
         ethSyst.timerCntInit(); // initializing Timer
