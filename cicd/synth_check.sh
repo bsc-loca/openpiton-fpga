@@ -18,6 +18,7 @@
 
 #echo "Latches:";     grep -rni . -e "Synth 8-327"
 #echo "Timing loops"; grep -rni . -e "Synth 8-295"
+#echo "Multidriven nets"; grep -rni . -e "Synth 8-6859"
 
 #$ echo "grep -rni . -e \"Synth 8-295\"" >> script_cicd.sh
 ROOT_DIR=$1
@@ -27,10 +28,11 @@ LOG_DIR=$ROOT_DIR/$CONFIG_DIR
 
 LATCHES_ERR="Synth 8-327"
 TM_LOOP_ERR="Synth 8-295"
+MDRVNET_ERR="Synth 8-6859"
 ## Add more error sources here
 ret=0
 
-declare -a ERROR_SRCs=("$LATCHES_ERR" "$TM_LOOP_ERR")
+declare -a ERROR_SRCs=("$LATCHES_ERR" "$TM_LOOP_ERR" "$MDRVNET_ERR")
 
 for i in "${ERROR_SRCs[@]}"
 do 
