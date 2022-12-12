@@ -177,6 +177,7 @@ deploy-lagarto:
             - MEEP_FPGA
         extends: .default_rules
         needs:
+            - synthesis-matrix
             - validation-matrix
         before_script:
             - ls; ls dcp;
