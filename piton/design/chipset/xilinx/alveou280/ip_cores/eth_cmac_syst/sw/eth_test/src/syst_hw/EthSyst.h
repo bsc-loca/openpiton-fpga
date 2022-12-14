@@ -208,7 +208,8 @@ class EthSyst {
   uint8_t  volatile* cacheFlAddr; // Control address for enforced Cache Flush
   uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
   uint32_t volatile* dmaMemBsNC;  // virtual DMA memory non-cacheable base addr
-  //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
+  //100Gb Ethernet subsystem registers: https://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Register-Map
+  //old link: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
     RESET_REG             = RESET_REG_OFFSET             / sizeof(uint32_t),
