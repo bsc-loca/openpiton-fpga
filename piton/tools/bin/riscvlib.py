@@ -149,6 +149,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "uart":
             uartBase = devices[i]["base"]
 
+    ethClkFreq = 156250000
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
 // OpenPiton + %s framework
@@ -163,9 +164,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     model = "%s,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
-    // chosen {
-    //     stdout-path = "/soc/uart@%08x:115200";
-    // };
+    chosen {
+         //stdout-path = "/soc/uart@%08x:115200";
+         //bootargs = "console=ttyS0,115200";
+    };
     cpus {
         #address-cells = <1>;
         #size-cells = <0>;
@@ -213,6 +215,11 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "dma_pool":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
+            # Small hack to be able to access the whole space defined in the devices.xml file
+            # but still using just a fragment (256M) for this dma pool. The remaining space is 
+            # reserved for the Ethernet Over PCIe driver
+            # TODO: The Eth-PCIe driver should be able to use a(nother) reserved-memory node
+            addrFrag  = devices[i]["fragment"]
             tmpStr += '''
     reserved-memory {
         #address-cells = <2>;
@@ -224,7 +231,16 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             compatible = "shared-dma-pool";
         }; 
     };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+            ''' % (addrBase, _reg_fmt(addrBase, addrFrag, 2, 2))
+            #''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+    tmpStr += '''
+    eth0_clk: eth0_clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <%d>;
+    };
+        ''' % (ethClkFreq)
+
 
     tmpStr += '''
     soc {
@@ -233,6 +249,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         compatible = "%s,%s-bare-soc", "simple-bus";
         ranges;
     ''' % (org, core)
+
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
@@ -290,17 +307,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
-            tmpStr += '''
-        debug-controller@%08x {
-            compatible = "riscv,debug-013";
-            interrupts-extended = <''' % (addrBase)
-            for k in range(nCpus):
-                tmpStr += "&CPU%d_intc 65535 " % (k)
-            tmpStr += '''>;
-            reg = <%s>;
-            reg-names = "control";
-        };
-            ''' % (_reg_fmt(addrBase, addrLen, 2, 2))
+
         # UART
         if devices[i]["name"] == "uart":
             addrBase = devices[i]["base"]
@@ -331,22 +338,24 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             xlnx,rxmem = <0x5f2>;
             carv,mtu = <0x5dc>;
             carv,no-mac;
-            compatible = "xlnx,xxv-ethernet-1.0-carv";
             device_type = "network";       
-            axistream-connected = <0xfe>;
             local-mac-address = [00 0a 35 23 07 84];
+            axistream-connected = <0xfe>;
+            compatible = "xlnx,xxv-ethernet-1.0-carv";
             memory-region = <&eth_pool>;
         };
         
         dma_eth: dma@%08x {
             xlnx,include-dre;
             phandle = <0xfe>;
-            #dma-cells = <2>;
+            #dma-cells = <1>;
             compatible = "xlnx,axi-dma-1.00.a";
+            clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "m_axi_sg_aclk";
+            clocks = <&eth0_clk>, <&eth0_clk>, <&eth0_clk>, <&eth0_clk>;
             reg = <%s>;
             interrupt-names = "mm2s_introut", "s2mm_introut";
             interrupt-parent = <&PLIC0>;
-            interrupts = <%d %d>;            
+            interrupts = <%d %d>;
             xlnx,addrwidth = <0x28>;
             xlnx,include-sg;
             xlnx,sg-length-width = <0x17>;
@@ -370,7 +379,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             };
         
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1,  dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
 
     tmpStr += '''
