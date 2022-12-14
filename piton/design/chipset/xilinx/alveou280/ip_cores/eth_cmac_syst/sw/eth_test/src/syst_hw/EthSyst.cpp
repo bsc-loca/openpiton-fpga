@@ -239,7 +239,8 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   
   printf("Ethernet core bring-up.\n");
   physConnOrder = PHYS_CONN_WAIT_INI;
-  // http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
+  // http://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Core-Bring-Up-Sequence
+  // old link: http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
   // via GPIO
   // rxtxCtrl[RX_CTRL] = CONFIGURATION_RX_REG1_CTL_RX_ENABLE_MASK;
   // rxtxCtrl[TX_CTRL] = CONFIGURATION_TX_REG1_CTL_TX_SEND_RFI_MASK;
