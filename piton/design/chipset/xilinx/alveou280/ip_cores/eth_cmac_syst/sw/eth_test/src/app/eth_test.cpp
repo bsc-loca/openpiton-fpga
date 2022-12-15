@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
     printf("  Single board self-diag/loopback tests: l\n");
     printf("  Two boards diag communication tests:   c\n");
     printf("  Two boards IP-based tests:             i\n");
+    printf("  Ethernet core initialization:          e\n");
     printf("  Finish:                                f\n");
     char choice;
     scanf("%s", &choice);
@@ -951,6 +952,14 @@ int main(int argc, char *argv[])
         }
 
         ethSyst.ethTxRxDisable();
+      }
+      break;
+
+      case 'e': {
+        printf("------- Ethernet core initialization -------\n");
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        ethSyst.ethTxRxEnable();
       }
       break;
 
