@@ -105,6 +105,7 @@ EthSyst::EthSyst() {
 #endif
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
+  gtCtrl   = ethSystBase + (GT_CTL_BASEADDR         / sizeof(uint32_t));
 
   txMem   = dmaMemBase + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
   rxMem   = dmaMemBase + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
@@ -166,11 +167,10 @@ uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
 // example: mem8 [addrSwapped  ] = val;
 
 //***************** Initialization of 100Gb Ethernet Core *****************
-void EthSyst::ethCoreInit(bool gtLoopback) {
+void EthSyst::ethCoreInit() {
   printf("------- Initializing Ethernet Core -------\n");
-  // GT control via pins 
-  uint32_t volatile* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
-  enum { GT_CTRL = XGPIO_DATA_OFFSET / sizeof(uint32_t) };
+  //100Gb Ethernet subsystem registers: https://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Register-Map
+  //old link: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum { ETH_FULL_RST_ASSERT = RESET_REG_USR_RX_SERDES_RESET_MASK |
                                RESET_REG_USR_RX_RESET_MASK        |
                                RESET_REG_USR_TX_RESET_MASK,
@@ -212,8 +212,14 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX_STATUS_REG:    %0X \n", ethCore[STAT_TX_STATUS_REG]);
   printf("STAT_RX_STATUS_REG:    %0X \n", ethCore[STAT_RX_STATUS_REG]);
   printf("GT_LOOPBACK_REG:       %0X \n", ethCore[GT_LOOPBACK_REG]);
-  printf("\n");
+  printf("-------\n");
   
+}
+
+
+//***************** Bring-up of 100Gb Ethernet Core *****************
+void EthSyst::ethCoreBringup(bool gtLoopback) {
+  printf("------- Ethernet Core bring-up -------\n");
   if (gtLoopback) {
     printf("Enabling Near-End PMA Loopback\n");
     // gtCtrl[GT_CTRL] = 0x2222; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
@@ -237,7 +243,6 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   }
   printf("\n");
   
-  printf("Ethernet core bring-up.\n");
   physConnOrder = PHYS_CONN_WAIT_INI;
   // http://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Core-Bring-Up-Sequence
   // old link: http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
@@ -291,6 +296,7 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX/RX_STATUS_REGS: %0X/%0X \n", ethCore[STAT_TX_STATUS_REG],
                                                ethCore[STAT_RX_STATUS_REG]);
   printf("This Eth instance is physically connected in order (zero means 1st, non-zero means 2nd): %d \n", physConnOrder);
+  printf("------- Physical connection is established -------\n");
 }
 
 
@@ -425,6 +431,7 @@ void EthSyst::axiDmaInit() {
     printf("Rx_status  reg = %0X \n", dmaCore[S2MM_DMASR]);
     printf("Initial DMA Tx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DEVICE_TO_DMA));
     printf("Initial DMA Rx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DMA_TO_DEVICE));
+    printf("-------\n");
   }
 }
 
@@ -697,19 +704,6 @@ void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
   printf("Control = %0X, Out0 = %0X, Out1 = %0X \n", strSwitch[SW_CTR], strSwitch[MI_MUX], strSwitch[MI_MUX+1]);
   printf("Control = %0X, Out0 = %0X, Out1 = %0X \n", strSwitch[SW_CTR], strSwitch[MI_MUX], strSwitch[MI_MUX+1]);
   printf("\n");
-}
-
-
-//***************** Initialization of Full Ethernet System *****************
-void EthSyst::ethSystInit() {
-  timerCntInit();
-  //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
-  // for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
-  axiDmaInit();
-  switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
-  switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-  ethTxRxEnable();
-  sleep(1); // in seconds
 }
 
 
