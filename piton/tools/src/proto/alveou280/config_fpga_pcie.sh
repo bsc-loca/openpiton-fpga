@@ -26,8 +26,7 @@ if [ ! -f "$BITSREAM" ]; then
   echo "Native OP bitstream $BITSREAM doesn't exist, trying OP under MEEP_SHELL implementation:"
   BITSREAM=../../../../../../bitstream/system.bit
 fi
-# source /home/tools/fpga-tools/fpga/load-bitstream.sh qdma $BITSREAM
-source ~/Projects/MEEP/MEEP_FPGA/Alveo_U280/fpga-tools/fpga/load-bitstream-beta.sh qdma $BITSREAM
+source /home/tools/fpga-tools/fpga/load-bitstream.sh qdma $BITSREAM
 
 #Some sanity checks
 lspci -vd 10ee:
