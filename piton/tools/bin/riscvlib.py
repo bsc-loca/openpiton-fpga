@@ -329,7 +329,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
         # Ethernet
         if devices[i]["name"] == "net":
-            addrBase = devices[i]["base"] + 0x10000
+            addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             dmaChannelMM2S = addrBase + 0x0
             dmaChannelS2MM = addrBase + 0x30
