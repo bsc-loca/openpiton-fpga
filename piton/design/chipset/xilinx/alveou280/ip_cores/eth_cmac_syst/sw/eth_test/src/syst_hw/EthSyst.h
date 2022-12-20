@@ -208,7 +208,6 @@ class EthSyst {
   uint8_t  volatile* cacheFlAddr; // Control address for enforced Cache Flush
   uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
   uint32_t volatile* dmaMemBsNC;  // virtual DMA memory non-cacheable base addr
-  //100Gb Ethernet subsystem registers: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
     RESET_REG             = RESET_REG_OFFSET             / sizeof(uint32_t),
@@ -221,11 +220,12 @@ class EthSyst {
     STAT_RX_STATUS_REG    = STAT_RX_STATUS_REG_OFFSET    / sizeof(uint32_t),
     GT_LOOPBACK_REG       = GT_LOOPBACK_REG_OFFSET       / sizeof(uint32_t)
   };
-  // Ethernet core control via pins
-  uint32_t volatile* rxtxCtrl;
+  uint32_t volatile* rxtxCtrl; // Ethernet core control via pins
+  uint32_t volatile* gtCtrl;   // GT control via pins 
   enum {
     TX_CTRL = XGPIO_DATA_OFFSET  / sizeof(uint32_t),
-    RX_CTRL = XGPIO_DATA2_OFFSET / sizeof(uint32_t)
+    RX_CTRL = XGPIO_DATA2_OFFSET / sizeof(uint32_t),
+    GT_CTRL = XGPIO_DATA_OFFSET  / sizeof(uint32_t)
   };
 
   void     dmaBDSetup(bool);
@@ -294,7 +294,8 @@ class EthSyst {
   uint8_t volatile cacheInvalid(size_t);
   EthSyst();
   // ~EthSyst();
-  void ethCoreInit(bool);
+  void ethCoreInit();
+  void ethCoreBringup(bool);
   void ethTxRxEnable();
   void ethTxRxDisable();
 
@@ -306,8 +307,6 @@ class EthSyst {
   void switch_LB_DMA_Eth   (bool, bool);
 
   void timerCntInit();
-
-  void ethSystInit();
 
   int flushReceive();
   int frameSend(uint8_t*, unsigned);

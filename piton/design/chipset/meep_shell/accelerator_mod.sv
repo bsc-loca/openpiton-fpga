@@ -70,6 +70,7 @@ module openpiton_wrapper (
     input           eth_axi_arstn ,
     input  [1:0]    eth_irq ,
 
+    // Ethernet AXI-lite
     output [63:0]   eth_axi_awaddr ,
     output          eth_axi_awvalid ,
     input           eth_axi_awready ,
@@ -91,6 +92,57 @@ module openpiton_wrapper (
     input  [1:0]    eth_axi_rresp ,
     input           eth_axi_rvalid ,
     output          eth_axi_rready ,
+
+    // Ethernet AXI-full
+    // output  [5:0]     eth_axi_awid ,
+    // output  [21:0]    eth_axi_awaddr ,
+    // output  [7:0]     eth_axi_awlen ,
+    // output  [2:0]     eth_axi_awsize ,
+    // output  [1:0]     eth_axi_awburst ,
+    // output            eth_axi_awlock ,
+    // output  [3:0]     eth_axi_awcache ,
+    // output  [2:0]     eth_axi_awprot ,
+    // //output  [3:0]     eth_axi_awqos ,
+    // //output  [3:0]     eth_axi_awregion ,
+    // output  [10:0]    eth_axi_awuser ,
+    // output            eth_axi_awvalid ,
+    // input             eth_axi_awready ,
+
+    // //input    [5:0]    eth_axi_wid ,
+    // output   [511:0]  eth_axi_wdata ,
+    // output   [63:0]   eth_axi_wstrb ,
+    // output            eth_axi_wlast ,
+    // output   [10:0]   eth_axi_wuser ,
+    // output            eth_axi_wvalid ,
+    // input             eth_axi_wready ,
+
+    // output   [5:0]    eth_axi_arid ,
+    // output   [21:0]   eth_axi_araddr ,
+    // output   [7:0]    eth_axi_arlen ,
+    // output   [2:0]    eth_axi_arsize ,
+    // output   [1:0]    eth_axi_arburst ,
+    // output            eth_axi_arlock ,
+    // output   [3:0]    eth_axi_arcache ,
+    // output   [2:0]    eth_axi_arprot ,
+    // //output   [3:0]    eth_axi_arqos ,
+    // //output   [3:0]    eth_axi_arregion ,
+    // output   [10:0]   eth_axi_aruser ,
+    // output            eth_axi_arvalid ,
+    // input             eth_axi_arready ,
+
+    // input    [5:0]    eth_axi_rid ,
+    // input    [511:0]  eth_axi_rdata ,
+    // input    [1:0]    eth_axi_rresp ,
+    // input             eth_axi_rlast ,
+    // input    [10:0]   eth_axi_ruser ,
+    // input             eth_axi_rvalid ,
+    // output            eth_axi_rready ,
+
+    // input    [5:0]    eth_axi_bid ,
+    // input    [1:0]    eth_axi_bresp ,
+    // input    [10:0]   eth_axi_buser ,
+    // input             eth_axi_bvalid ,
+    // output            eth_axi_bready ,
 
 	
     // AXI interface
