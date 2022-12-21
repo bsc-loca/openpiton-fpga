@@ -75,6 +75,7 @@ int main(int argc, char *argv[])
     printf("  Single board self-diag/loopback tests: l\n");
     printf("  Two boards diag communication tests:   c\n");
     printf("  Two boards IP-based tests:             i\n");
+    printf("  Ethernet link setup:                   s\n");
     printf("  Finish:                                f\n");
     char choice;
     scanf("%s", &choice);
@@ -96,6 +97,7 @@ int main(int argc, char *argv[])
         printf("------- Running DMA Tx/Rx/SG memory test (SRAM-based) -------\n");
         enum {MEM_TEST_COMBINATIONS = 1};
         #endif
+        ethSyst.timerCntInit(); // initializing Timer
         for (size_t memCase = 0; memCase < MEM_TEST_COMBINATIONS; ++memCase) {
         // first clearing previously stored values
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem  [addr] = 0;
@@ -329,7 +331,6 @@ int main(int argc, char *argv[])
           }
         }
 
-        ethSyst.timerCntInit(); // initializing Timer
         printf("Measuring Tx/Rx memory memcpy() bandwidth with size %ld: \n", txrxMemSize);
         timespec sysStart, sysFin;
 
@@ -451,10 +452,10 @@ int main(int argc, char *argv[])
 
 
         ethSyst.axiDmaInit();
-
-        printf("------- Running DMA Short Loopback test -------\n");
         ethSyst.switch_LB_DMA_Eth(true,  true); // Tx switch: DMA->LB, LB->Eth
         ethSyst.switch_LB_DMA_Eth(false, true); // Rx switch: LB->DMA, Eth->LB
+
+        printf("------- Running DMA Short Loopback test -------\n");
         sleep(1); // in seconds
 
         srand(1);
@@ -522,13 +523,14 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
-        ethSyst.ethCoreInit(true);
-
-        printf("------- Running DMA Near-end loopback test -------\n");
+        ethSyst.ethCoreInit();
+        ethSyst.ethCoreBringup(true);  // loopback mode
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
         sleep(1); // in seconds
 
+        printf("------- Running DMA Near-end loopback test -------\n");
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
@@ -536,8 +538,6 @@ int main(int argc, char *argv[])
         // flushing cache
         for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
-
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
 
         packets = txrxMemSize/ETH_MEMPACK_SIZE;
         if (XAxiDma_HasSg(&ethSyst.axiDma))
@@ -632,15 +632,16 @@ int main(int argc, char *argv[])
         printf("%c\n", confirm);
         if (confirm != 'y') break;
 
-        ethSyst.ethCoreInit(false);
-        //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
-        // for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMem[addr] = 0;
+        ethSyst.timerCntInit(); // initializing Timer
+        ethSyst.ethCoreInit();
+        ethSyst.ethCoreBringup(false); // non-loopback mode
         ethSyst.axiDmaInit();
-
-        printf("------- Async DMA 2-boards communication test -------\n");
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
         sleep(1); // in seconds
+
+        printf("------- Async DMA 2-boards communication test -------\n");
 
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
@@ -649,8 +650,6 @@ int main(int argc, char *argv[])
         // flushing cache
         for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
-
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
 
         size_t packets = txrxMemSize/ETH_MEMPACK_SIZE;
         if (XAxiDma_HasSg(&ethSyst.axiDma))
@@ -731,16 +730,10 @@ int main(int argc, char *argv[])
               exit(1);
           }
         }
-
-        ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
         printf("------- Async DMA 2-boards communication test PASSED -------\n\n");
 
 
         printf("------- Round-trip DMA 2-boards communication test -------\n");
-        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
-        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-        sleep(1); // in seconds
-
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
@@ -748,8 +741,6 @@ int main(int argc, char *argv[])
         // flushing cache
         for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
-
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
 
         packets = txrxMemSize/ETH_MEMPACK_SIZE;
         if (XAxiDma_HasSg(&ethSyst.axiDma))
@@ -855,11 +846,15 @@ int main(int argc, char *argv[])
         printf("%c\n", confirm);
         if (confirm != 'y') break;
 
-        ethSyst.ethCoreInit(false); // non-loopback mode
-        printf("\n------- Physical connection is established -------\n");
+        ethSyst.timerCntInit(); // initializing Timer
+        ethSyst.ethCoreInit();
+        ethSyst.ethCoreBringup(false); // non-loopback mode
+        ethSyst.axiDmaInit();
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
 
         while (true) {
-          ethSyst.ethSystInit(); // resetting hardware before any test
           printf("\n------- Please choose particular IP-based test:\n");
           printf("  Ping reply   test:       p\n");
           printf("  Ping request test:       q\n");
@@ -951,6 +946,15 @@ int main(int argc, char *argv[])
         }
 
         ethSyst.ethTxRxDisable();
+      }
+      break;
+
+      case 's': {
+        printf("------- Ethernet link setup -------\n");
+        ethSyst.ethCoreInit();
+        ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
+        ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
       }
       break;
 
