@@ -14,8 +14,7 @@ else
 fi
 
 # Default options
-# CORE=lagarto
-CORE=ariane
+CORE=lagarto
 XTILES=1
 YTILES=1
 #PROTO_OPTIONS="--meep --eth --hbm --vpu"
