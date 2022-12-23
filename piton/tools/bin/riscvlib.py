@@ -166,7 +166,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     // with this configuration. this needs to be fixed.
     chosen {
          //stdout-path = "/soc/uart@%08x:115200";
-         bootargs = "console=ttyS0,115200";
+         //bootargs = "console=ttyS0,115200";
     };
     cpus {
         #address-cells = <1>;
