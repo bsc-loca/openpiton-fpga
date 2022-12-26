@@ -206,8 +206,6 @@ class EthSyst {
   uint32_t volatile* cacheMem;    // cached system memory range for DMA usage
   uint32_t volatile* uncacheMem;  // uncached system memory range for DMA usage
   uint8_t  volatile* cacheFlAddr; // Control address for enforced Cache Flush
-  uint32_t volatile* dmaMemBase;  // virtual DMA memory base addr
-  uint32_t volatile* dmaMemBsNC;  // virtual DMA memory non-cacheable base addr
   enum {
     GT_RESET_REG          = GT_RESET_REG_OFFSET          / sizeof(uint32_t),
     RESET_REG             = RESET_REG_OFFSET             / sizeof(uint32_t),
@@ -248,26 +246,32 @@ class EthSyst {
     CACHE_FLUSH_ADDRMASK =  0x03FFFFFFC0,
     CACHE_FLUSH_BASEADDR =  0xAC00000000 | (CACHE_MEM_ADDR & CACHE_FLUSH_ADDRMASK),
     CACHE_FLUSH_USER6MSB = (0xFC00000000 &  CACHE_MEM_ADDR) >> (40-6),
-    // DMA physical addresses
-#ifdef DMA_MEM_HBM
-  #ifdef DMA_MEM_CACHED
-    DMA_MEM_BASEADDR = CACHE_MEM_ADDR - DRAM_BASEADDR, //removing CPU specific offset for DMA
-  #else
-    DMA_MEM_BASEADDR = UNCACHE_MEM_ADDR,
-  #endif
-    DMA_MEMNC_BSADDR = UNCACHE_MEM_ADDR,
-#else
-    // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory
-    DMA_MEM_BASEADDR = ETH_SYST_BASEADDR,
-    DMA_MEMNC_BSADDR = ETH_SYST_BASEADDR,
-#endif
-    TX_MEM_ADDR    = DMA_MEM_BASEADDR + TX_MEM_CPU_BASEADDR,
-    RX_MEM_ADDR    = DMA_MEM_BASEADDR + RX_MEM_CPU_BASEADDR,
-    SG_MEM_ADDR    = DMA_MEM_BASEADDR + SG_MEM_CPU_BASEADDR,
 
-    TX_MEMNC_ADDR  = DMA_MEMNC_BSADDR + TX_MEM_CPU_BASEADDR,
-    RX_MEMNC_ADDR  = DMA_MEMNC_BSADDR + RX_MEM_CPU_BASEADDR,
-    SG_MEMNC_ADDR  = DMA_MEMNC_BSADDR + SG_MEM_CPU_BASEADDR,
+// DMA physical addresses
+#ifdef DMA_MEM_HBM
+    TX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + TX_MEM_CPU_BASEADDR,
+    RX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + RX_MEM_CPU_BASEADDR,
+    SG_MEMNC_ADDR  = UNCACHE_MEM_ADDR + SG_MEM_CPU_BASEADDR,
+  #ifdef TXRX_MEM_CACHED
+    TX_MEM_ADDR    = CACHE_MEM_ADDR   + TX_MEM_CPU_BASEADDR - DRAM_BASEADDR, //removing CPU specific offset for DMA,
+    RX_MEM_ADDR    = CACHE_MEM_ADDR   + RX_MEM_CPU_BASEADDR - DRAM_BASEADDR, //removing CPU specific offset for DMA,
+  #else
+    TX_MEM_ADDR    = TX_MEMNC_ADDR,
+    RX_MEM_ADDR    = RX_MEMNC_ADDR,
+  #endif
+  #ifdef SG_MEM_CACHED
+    SG_MEM_ADDR    = CACHE_MEM_ADDR   + SG_MEM_CPU_BASEADDR - DRAM_BASEADDR, //removing CPU specific offset for DMA,
+  #else
+    SG_MEM_ADDR    = SG_MEMNC_ADDR,
+  #endif
+#else // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory
+    TX_MEMNC_ADDR  = ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_MEMNC_ADDR  = ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
+    SG_MEMNC_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
+    TX_MEM_ADDR    = TX_MEMNC_ADDR,
+    RX_MEM_ADDR    = RX_MEMNC_ADDR,
+    SG_MEM_ADDR    = SG_MEMNC_ADDR,
+#endif
 
     SG_TX_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
     SG_RX_MEM_SIZE = SG_MEM_CPU_ADRRANGE/2,
