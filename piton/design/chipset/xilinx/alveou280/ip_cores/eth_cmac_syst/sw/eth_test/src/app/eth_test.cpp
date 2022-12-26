@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
         // ETH_PACKET_DECR = 7*sizeof(uint32_t) // optional length decrement for some packets for test purposes
       #endif
   };
-  #ifdef DMA_MEM_CACHED
+  #if defined(TXRX_MEM_CACHED) || defined(SG_MEM_CACHED)
     // Dummy memory for flushing cache
     enum { CACHE_LINE = 0x40,
            CACHE_SIZE = 0x10000*4};
@@ -85,14 +85,8 @@ int main(int argc, char *argv[])
     switch (choice) {
       case 'l': {
         #ifdef DMA_MEM_HBM
-        printf("------- Running DMA Tx/Rx/SG memory test (HBM-based, ");
-          #ifdef DMA_MEM_CACHED
-            printf("cacheable) -------\n");
-            enum {MEM_TEST_COMBINATIONS = 2};
-          #else
-            printf("non-cacheable) -------\n");
-            enum {MEM_TEST_COMBINATIONS = 1};
-          #endif
+        printf("------- Running DMA Tx/Rx/SG memory test (HBM-based) -------\n");
+        enum {MEM_TEST_COMBINATIONS = 2};
         #else
         printf("------- Running DMA Tx/Rx/SG memory test (SRAM-based) -------\n");
         enum {MEM_TEST_COMBINATIONS = 1};
@@ -124,7 +118,7 @@ int main(int argc, char *argv[])
         uint64_t volatile* sgMemWr64;
         bool wrCachMem = memCase & 0x1;
         if (wrCachMem) {
-        printf("Filling cacheable memories with random values from %0X to %0X: \n", 0, RAND_MAX);
+        printf("Filling assigned regions with random values from %0X to %0X: \n", 0, RAND_MAX);
         txMemAddr = ethSyst.TX_MEM_ADDR;
         rxMemAddr = ethSyst.RX_MEM_ADDR;
         sgMemAddr = ethSyst.SG_MEM_ADDR;
@@ -141,7 +135,7 @@ int main(int argc, char *argv[])
         sgMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
         sgMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
         } else {
-        printf("Filling non-cacheable memories with random values from %0X to %0X: \n", 0, RAND_MAX);
+        printf("Filling non-cached regions with random values from %0X to %0X: \n", 0, RAND_MAX);
         txMemAddr = ethSyst.TX_MEMNC_ADDR;
         rxMemAddr = ethSyst.RX_MEMNC_ADDR;
         sgMemAddr = ethSyst.SG_MEMNC_ADDR;
@@ -162,7 +156,10 @@ int main(int argc, char *argv[])
         size_t const axiWidth = 512 / 8;
         srand(1);
         uint64_t val = 0;
-        printf("  TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemWr32), txMemSize);
+        if      (!wrCachMem)                         printf("  ");
+        else if (txMemAddr == ethSyst.TX_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemWr32), txMemSize);
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -173,7 +170,10 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 2) txMemWr32[addr/4] = val >> 32;
           if (axiWordIdx%4 == 3) txMemWr64[addr/8] = val;
         }
-        printf("  RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemWr32), rxMemSize);
+        if      (!wrCachMem)                         printf("  ");
+        else if (rxMemAddr == ethSyst.RX_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemWr32), rxMemSize);
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -184,7 +184,10 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 2) rxMemWr32[addr/4] = val >> 32;
           if (axiWordIdx%4 == 3) rxMemWr64[addr/8] = val;
         }
-        printf("  BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemWr32), sgMemSize);
+        if      (!wrCachMem)                         printf("  ");
+        else if (sgMemAddr == ethSyst.SG_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemWr32), sgMemSize);
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -195,9 +198,9 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 2) sgMemWr32[addr/4] = val >> 32;
           if (axiWordIdx%4 == 3) sgMemWr64[addr/8] = val;
         }
-        #ifdef DMA_MEM_CACHED
-        // flushing cache
-        for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #if defined(TXRX_MEM_CACHED) || defined(SG_MEM_CACHED)
+        if (wrCachMem) // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
         uint8_t  volatile* txMemRd8 ;
@@ -214,7 +217,7 @@ int main(int argc, char *argv[])
         uint64_t volatile* sgMemRd64;
         bool rdCachMem = memCase & 0x1;
         if (rdCachMem) {
-        printf("Reading cacheable memories: \n");
+        printf("Reading assigned regions: \n");
         txMemAddr = ethSyst.TX_MEM_ADDR;
         rxMemAddr = ethSyst.RX_MEM_ADDR;
         sgMemAddr = ethSyst.SG_MEM_ADDR;
@@ -231,7 +234,7 @@ int main(int argc, char *argv[])
         sgMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
         sgMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
         } else {
-        printf("Reading non-cacheable memories: \n");
+        printf("Reading non-cached regions: \n");
         txMemAddr = ethSyst.TX_MEMNC_ADDR;
         rxMemAddr = ethSyst.RX_MEMNC_ADDR;
         sgMemAddr = ethSyst.SG_MEMNC_ADDR;
@@ -252,7 +255,10 @@ int main(int argc, char *argv[])
         // checking written values
         srand(1);
         val = 0;
-        printf("  TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemRd32), txMemSize);
+        if      (!rdCachMem)                         printf("  ");
+        else if (txMemAddr == ethSyst.TX_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemRd32), txMemSize);
         for (size_t addr = 0; addr < txMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -278,7 +284,10 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("  RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemRd32), rxMemSize);
+        if      (!rdCachMem)                         printf("  ");
+        else if (rxMemAddr == ethSyst.RX_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemRd32), rxMemSize);
         for (size_t addr = 0; addr < rxMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -304,7 +313,10 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        printf("  BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemRd32), sgMemSize);
+        if      (!rdCachMem)                         printf("  ");
+        else if (sgMemAddr == ethSyst.SG_MEMNC_ADDR) printf("  Non-cached ");
+        else                                         printf("  Cached ");
+        printf("BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemRd32), sgMemSize);
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
@@ -461,9 +473,9 @@ int main(int argc, char *argv[])
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
-        #ifdef DMA_MEM_CACHED
-        // flushing cache
-        for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #ifdef TXRX_MEM_CACHED
+          // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
         size_t packets = txrxMemSize/DMA_PACKET_LEN;
@@ -534,9 +546,9 @@ int main(int argc, char *argv[])
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
-        #ifdef DMA_MEM_CACHED
-        // flushing cache
-        for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #ifdef TXRX_MEM_CACHED
+          // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
         packets = txrxMemSize/ETH_MEMPACK_SIZE;
@@ -646,9 +658,9 @@ int main(int argc, char *argv[])
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
-        #ifdef DMA_MEM_CACHED
-        // flushing cache
-        for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #ifdef TXRX_MEM_CACHED
+          // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
         size_t packets = txrxMemSize/ETH_MEMPACK_SIZE;
@@ -737,9 +749,9 @@ int main(int argc, char *argv[])
         srand(1);
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMem[addr] = rand();
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMem[addr] = 0;
-        #ifdef DMA_MEM_CACHED
-        // flushing cache
-        for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #ifdef TXRX_MEM_CACHED
+          // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
         packets = txrxMemSize/ETH_MEMPACK_SIZE;
