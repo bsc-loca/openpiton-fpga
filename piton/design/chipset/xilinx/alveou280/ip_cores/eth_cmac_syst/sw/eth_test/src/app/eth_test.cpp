@@ -100,6 +100,10 @@ int main(int argc, char *argv[])
         for (size_t addr = 0; addr < txMemWords; ++addr) ethSyst.txMemNC[addr] = 0;
         for (size_t addr = 0; addr < rxMemWords; ++addr) ethSyst.rxMemNC[addr] = 0;
         for (size_t addr = 0; addr < sgMemWords; ++addr) ethSyst.sgMemNC[addr] = 0;
+        #if defined(TXRX_MEM_CACHED) || defined(SG_MEM_CACHED)
+          // flushing cache
+          for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
+        #endif
 
         size_t txMemAddr;
         size_t rxMemAddr;
@@ -116,47 +120,56 @@ int main(int argc, char *argv[])
         uint16_t volatile* sgMemWr16;
         uint32_t volatile* sgMemWr32;
         uint64_t volatile* sgMemWr64;
-        bool wrCachMem = memCase & 0x1;
-        if (wrCachMem) {
-        printf("Filling assigned regions with random values from %0X to %0X: \n", 0, RAND_MAX);
-        txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR;
-        rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR;
-        sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR;
-        txMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
-        txMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
-        txMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);
-        txMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMem);
-        rxMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMem);
-        rxMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMem);
-        rxMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMem);
-        rxMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMem);
-        sgMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMem);
-        sgMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMem);
-        sgMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
-        sgMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
+        bool wrNonCachMem = !(memCase & 0x1);
+        if (wrNonCachMem) {
+          printf("Filling non-cached regions with random values from %0X to %0X: \n", 0, RAND_MAX);
+          txMemAddr = ethSyst.TX_MEMNC_ADDR;
+          rxMemAddr = ethSyst.RX_MEMNC_ADDR;
+          sgMemAddr = ethSyst.SG_MEMNC_ADDR;
+          txMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMemNC);
+          txMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMemNC);
+          txMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMemNC);
+          txMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMemNC);
+          rxMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMemNC);
+          rxMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMemNC);
+          rxMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMemNC);
+          rxMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMemNC);
+          sgMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMemNC);
+          sgMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMemNC);
+          sgMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMemNC);
+          sgMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMemNC);
         } else {
-        printf("Filling non-cached regions with random values from %0X to %0X: \n", 0, RAND_MAX);
-        txMemAddr = ethSyst.TX_MEMNC_ADDR;
-        rxMemAddr = ethSyst.RX_MEMNC_ADDR;
-        sgMemAddr = ethSyst.SG_MEMNC_ADDR;
-        txMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMemNC);
-        txMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMemNC);
-        txMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMemNC);
-        txMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMemNC);
-        rxMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMemNC);
-        rxMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMemNC);
-        rxMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMemNC);
-        rxMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMemNC);
-        sgMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMemNC);
-        sgMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMemNC);
-        sgMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMemNC);
-        sgMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMemNC);
+          printf("Filling mixed regions with random values from %0X to %0X: \n", 0, RAND_MAX);
+          #ifdef TXRX_MEM_CACHED
+            txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+          #else
+            txMemAddr = ethSyst.TX_MEMNC_ADDR;
+            rxMemAddr = ethSyst.RX_MEMNC_ADDR;
+          #endif
+          #ifdef SG_MEM_CACHED
+            sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+          #else
+            sgMemAddr = ethSyst.SG_MEMNC_ADDR;
+          #endif
+          txMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
+          txMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
+          txMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);
+          txMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMem);
+          rxMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMem);
+          rxMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMem);
+          rxMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMem);
+          rxMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMem);
+          sgMemWr8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMem);
+          sgMemWr16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMem);
+          sgMemWr32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
+          sgMemWr64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
         }
 
         size_t const axiWidth = 512 / 8;
         srand(1);
         uint64_t val = 0;
-        if      (!wrCachMem)                         printf("  ");
+        if      (wrNonCachMem)                       printf("  ");
         else if (txMemAddr == ethSyst.TX_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemWr32), txMemSize);
@@ -170,7 +183,7 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 2) txMemWr32[addr/4] = val >> 32;
           if (axiWordIdx%4 == 3) txMemWr64[addr/8] = val;
         }
-        if      (!wrCachMem)                         printf("  ");
+        if      (wrNonCachMem)                       printf("  ");
         else if (rxMemAddr == ethSyst.RX_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemWr32), rxMemSize);
@@ -184,7 +197,7 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 2) rxMemWr32[addr/4] = val >> 32;
           if (axiWordIdx%4 == 3) rxMemWr64[addr/8] = val;
         }
-        if      (!wrCachMem)                         printf("  ");
+        if      (wrNonCachMem)                       printf("  ");
         else if (sgMemAddr == ethSyst.SG_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemWr32), sgMemSize);
@@ -199,7 +212,7 @@ int main(int argc, char *argv[])
           if (axiWordIdx%4 == 3) sgMemWr64[addr/8] = val;
         }
         #if defined(TXRX_MEM_CACHED) || defined(SG_MEM_CACHED)
-        if (wrCachMem) // flushing cache
+        if (!wrNonCachMem) // flushing cache after write to cached/mixed regions
           for (size_t addr = 0; addr < CACHE_SIZE; addr += CACHE_LINE) dummyMem[addr] = 0;
         #endif
 
@@ -215,47 +228,56 @@ int main(int argc, char *argv[])
         uint16_t volatile* sgMemRd16;
         uint32_t volatile* sgMemRd32;
         uint64_t volatile* sgMemRd64;
-        bool rdCachMem = memCase & 0x2;
-        if (rdCachMem) {
-        printf("Reading assigned regions: \n");
-        txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR;
-        rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR;
-        sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR;
-        txMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
-        txMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
-        txMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);
-        txMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMem);
-        rxMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMem);
-        rxMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMem);
-        rxMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMem);
-        rxMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMem);
-        sgMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMem);
-        sgMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMem);
-        sgMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
-        sgMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
+        bool rdNonCachMem = !(memCase & 0x2);
+        if (rdNonCachMem) {
+          printf("Reading non-cached regions: \n");
+          txMemAddr = ethSyst.TX_MEMNC_ADDR;
+          rxMemAddr = ethSyst.RX_MEMNC_ADDR;
+          sgMemAddr = ethSyst.SG_MEMNC_ADDR;
+          txMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMemNC);
+          txMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMemNC);
+          txMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMemNC);
+          txMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMemNC);
+          rxMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMemNC);
+          rxMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMemNC);
+          rxMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMemNC);
+          rxMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMemNC);
+          sgMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMemNC);
+          sgMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMemNC);
+          sgMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMemNC);
+          sgMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMemNC);
         } else {
-        printf("Reading non-cached regions: \n");
-        txMemAddr = ethSyst.TX_MEMNC_ADDR;
-        rxMemAddr = ethSyst.RX_MEMNC_ADDR;
-        sgMemAddr = ethSyst.SG_MEMNC_ADDR;
-        txMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMemNC);
-        txMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMemNC);
-        txMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMemNC);
-        txMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMemNC);
-        rxMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMemNC);
-        rxMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMemNC);
-        rxMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMemNC);
-        rxMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMemNC);
-        sgMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMemNC);
-        sgMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMemNC);
-        sgMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMemNC);
-        sgMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMemNC);
+          printf("Reading mixed regions: \n");
+          #ifdef TXRX_MEM_CACHED
+            txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+          #else
+            txMemAddr = ethSyst.TX_MEMNC_ADDR;
+            rxMemAddr = ethSyst.RX_MEMNC_ADDR;
+          #endif
+          #ifdef SG_MEM_CACHED
+            sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+          #else
+            sgMemAddr = ethSyst.SG_MEMNC_ADDR;
+          #endif
+          txMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.txMem);
+          txMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.txMem);
+          txMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.txMem);
+          txMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.txMem);
+          rxMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.rxMem);
+          rxMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.rxMem);
+          rxMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.rxMem);
+          rxMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.rxMem);
+          sgMemRd8  = reinterpret_cast<uint8_t  volatile*>(ethSyst.sgMem);
+          sgMemRd16 = reinterpret_cast<uint16_t volatile*>(ethSyst.sgMem);
+          sgMemRd32 = reinterpret_cast<uint32_t volatile*>(ethSyst.sgMem);
+          sgMemRd64 = reinterpret_cast<uint64_t volatile*>(ethSyst.sgMem);
         }
 
         // checking written values
         srand(1);
         val = 0;
-        if      (!rdCachMem)                         printf("  ");
+        if      (rdNonCachMem)                       printf("  ");
         else if (txMemAddr == ethSyst.TX_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("TX at addr 0x%lX(virt: 0x%lX) with size %ld \n", txMemAddr, size_t(txMemRd32), txMemSize);
@@ -284,7 +306,7 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        if      (!rdCachMem)                         printf("  ");
+        if      (rdNonCachMem)                       printf("  ");
         else if (rxMemAddr == ethSyst.RX_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("RX at addr 0x%lX(virt: 0x%lX) with size %ld \n", rxMemAddr, size_t(rxMemRd32), rxMemSize);
@@ -313,14 +335,13 @@ int main(int argc, char *argv[])
             exit(1);
           }
         }
-        if      (!rdCachMem)                         printf("  ");
+        if      (rdNonCachMem)                       printf("  ");
         else if (sgMemAddr == ethSyst.SG_MEMNC_ADDR) printf("  Non-cached ");
         else                                         printf("  Cached ");
         printf("BD at addr 0x%lX(virt: 0x%lX) with size %ld \n", sgMemAddr, size_t(sgMemRd32), sgMemSize);
         for (size_t addr = 0; addr < sgMemSize; ++addr) {
           uint64_t rand64 = rand();
           val = (val >> 8) | (rand64 << 56);
-          #ifndef DMA_MEM_HBM // sometimes BD region mapped to system memory doesn't pass check
           // checking readback using different data types
           if (                 sgMemRd8 [addr  ] != val >> 56) {
             printf("\nERROR: Incorrect readback of Byte at addr %lx from BD Mem: %x, expected: %lx \n",
@@ -342,7 +363,6 @@ int main(int argc, char *argv[])
                          addr, sgMemRd64[addr/8],   val);
             exit(1);
           }
-          #endif
         }
 
         printf("Measuring Tx/Rx memory memcpy() bandwidth with size %ld: \n", txrxMemSize);
