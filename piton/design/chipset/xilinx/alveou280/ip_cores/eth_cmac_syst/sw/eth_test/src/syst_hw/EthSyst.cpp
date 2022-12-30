@@ -92,28 +92,35 @@ EthSyst::EthSyst() {
     exit(1);
   }
 
-#ifdef DMA_MEM_HBM
-  #ifdef DMA_MEM_CACHED
-  dmaMemBase = cacheMem;
-  #else
-  dmaMemBase = uncacheMem;
-  #endif
-  dmaMemBsNC = uncacheMem;
-#else
-  dmaMemBase = ethSystBase;
-  dmaMemBsNC = ethSystBase;
-#endif
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
   gtCtrl   = ethSystBase + (GT_CTL_BASEADDR         / sizeof(uint32_t));
 
-  txMem   = dmaMemBase + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  rxMem   = dmaMemBase + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  sgMem   = dmaMemBase + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
- 
-  txMemNC = dmaMemBsNC + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  rxMemNC = dmaMemBsNC + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  sgMemNC = dmaMemBsNC + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+// DMA mapped regions
+#ifdef DMA_MEM_HBM
+    txMemNC = uncacheMem + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = uncacheMem + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = uncacheMem + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #ifdef TXRX_MEM_CACHED
+    txMem   = cacheMem   + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMem   = cacheMem   + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+  #endif
+  #ifdef SG_MEM_CACHED
+    sgMem   = cacheMem   + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    sgMem   = sgMemNC;
+  #endif
+#else // SRAM case
+    txMemNC = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+    sgMem   = sgMemNC;
+#endif
 
   sgTxMem  = sgMem;
   sgRxMem  = sgTxMem + (SG_TX_MEM_SIZE / sizeof(uint32_t));
@@ -773,7 +780,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output each word destination.
 			 */
       txMem[txAddr] = *From32Ptr++;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -813,7 +820,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -865,7 +872,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer.
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -905,7 +912,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	}
 	if (Length) {
     txMem[txAddr] = AlignBuffer;
-    #ifdef DMA_MEM_CACHED
+    #ifdef TXRX_MEM_CACHED
       cacheFlush(size_t(&txMem[txAddr]));
     #endif
     txAddr++;
@@ -990,7 +997,7 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
   uint32_t volatile* lengthPtr = &rxMem[headerOffset / sizeof(uint32_t)];
-  #ifdef DMA_MEM_CACHED
+  #ifdef TXRX_MEM_CACHED
     cacheInvalid(size_t(lengthPtr));
   #endif
 	uint16_t length = *lengthPtr;
@@ -1041,7 +1048,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Output each word.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       *To32Ptr++ = rxMem[rxAddr];
@@ -1069,7 +1076,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1100,7 +1107,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1139,7 +1146,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	/*
 	 * Read the remaining data.
 	 */
-  #ifdef DMA_MEM_CACHED
+  #ifdef TXRX_MEM_CACHED
     cacheInvalid(size_t(&rxMem[rxAddr]));
   #endif
   AlignBuffer = rxMem[rxAddr];
