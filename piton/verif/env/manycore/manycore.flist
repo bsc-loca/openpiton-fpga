@@ -83,3 +83,6 @@ spike_dpi_pkg.sv
 vpu_scoreboard_pkg.sv
 spike_setup.sv
 spike_scoreboard.sv
+cov_isa_defs.sv
+cov_isa.sv
+cov_priv_isa.sv
