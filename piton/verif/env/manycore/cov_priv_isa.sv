@@ -14,14 +14,13 @@ module cov_priv_isa(
     input [11:0]                            i_csr_addr,
     input [2:0]                             i_csr_cmd,
     input [1:0]                             i_priv_lvl,
-    input ariane_pkg::exception_t           i_pipeline_exc,
-    input ariane_pkg::exception_t           i_csr_exc,
-    input ariane_pkg::exception_t           i_int,
+    input drac_pkg::exception_t             i_pipeline_exc,
+    input drac_pkg::exception_t             i_csr_exc,
+    input drac_pkg::exception_t             i_int,
     input drac_pkg::instr_type_t            i_instr_type
     );
 import riscv::*;
 import drac_pkg::*;
-import ariane_pkg::exception_t;
 import cov_isa_defs::*;
 
 logic exception_valid;
