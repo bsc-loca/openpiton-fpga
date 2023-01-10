@@ -32,7 +32,7 @@
 ../../../design/chip/tile/vas_tile_core/src/package/riscv_pkg.sv
 
 ../../../design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_pkg.sv
-//../../../design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv
+../../../design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv
 //../../../design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_cache_pkg.sv
 
 ../../../design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/fpuv_pkg.sv
