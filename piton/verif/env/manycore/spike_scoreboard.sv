@@ -55,7 +55,7 @@ vreg_elements_t     vpu_res;
 // logic [vpu_scoreboard_pkg::MAX_VLEN-1:0] vrf_vpu [int];
 // logic [vpu_scoreboard_pkg::MAX_VLEN-1:0] vrf_spike [int];
 
-assign instr = exe_to_wb_wb.inst;
+assign instr = exe_to_wb_wb.inst_orig;
 assign is_vector = exe_to_wb_wb.is_vector;
 assign vpu_completed = vpu_resp.valid;
 assign pc_extended = $signed(pc);
@@ -133,8 +133,8 @@ always @(posedge clk) begin
       // as soon as RTL PC reaches start_compare_pc, it should start comparison
       do_comparison <= 1;
       get_spike_commit_info(spike_commit_log, hart_id);
-      $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d]", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid);
-      $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h]", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data);
+      $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d] DASM(0x%4h)", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid, instr);
+      $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h] DASM(0x%4h)", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data, spike_log.ins);
 
       if (is_vector) begin
         // converting structure into a packed array
