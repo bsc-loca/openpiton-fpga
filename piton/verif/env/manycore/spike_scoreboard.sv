@@ -24,10 +24,12 @@ module spike_scoreboard(
   input [63:0]                    commit_data,
   input                           excep,
   input ariane_pkg::exception_t   csr_excep,
+  input [63:0]                    csr_cause,
   input drac_pkg::pipeline_ctrl_t control_intf,
   input drac_pkg::vpu_completed_t vpu_resp,
   input [63:0]                    hart_id,
-  input [63:0]                    ref_hart_id
+  input [63:0]                    ref_hart_id,
+  input [63:0]                    csr_mip
 );
 // hartid must be correct otherwise it could access non-existent hart of spike
 HART_ID_CHECK:  assert property (@(posedge clk) ref_hart_id == hart_id)
@@ -44,12 +46,17 @@ bit                 do_comparison = 0;
 longint unsigned    pc_extended;
 logic               xreg_wr_valid;
 logic               is_exception;
+logic [63:0]        exception_cause;
 logic               vpu_completed;
 logic               scalar_instr_commit;
 logic               vector_instr_commit;
 logic               commit_or_excep;
 logic               is_compressed;
 logic               is_vector;
+logic               is_mip_read;
+logic [11:0]        instr_csr_addr;
+logic               system_instr;
+
 logic [31:0]        instr;
 vreg_elements_t     vpu_res;
 // logic [vpu_scoreboard_pkg::MAX_VLEN-1:0] vrf_vpu [int];
@@ -61,10 +68,16 @@ assign vpu_completed = vpu_resp.valid;
 assign pc_extended = $signed(pc);
 assign xreg_wr_valid = cu_rr_int.write_enable && xreg_dest != 0;
 assign is_exception = excep || csr_excep.valid;
+assign exception_cause = csr_excep.valid ? csr_cause : exe_to_wb_wb.ex.cause;
 assign scalar_instr_commit = commit && !control_intf.stall_exe && !is_vector;
 assign vector_instr_commit = vpu_completed;
 assign commit_or_excep = scalar_instr_commit || vector_instr_commit || is_exception;
 assign is_compressed = ~&instr[1:0];
+
+assign instr_csr_addr = instr[31:20];
+assign system_instr = instr[6:0] == riscv_pkg::OP_SYSTEM;
+assign is_mip_read = xreg_wr_valid && system_instr && instr_csr_addr == riscv::CSR_MIP;
+
 
 vpu_sim_vreg_if vreg_if();
 
@@ -119,7 +132,7 @@ always @(posedge clk) begin
     $display("[MEEP-COSIM][VPU-RTL]   Core [%0d]: V[%h][%h]", hart_id, vdest_rtl, vec_reg_rtl);
     $display("[MEEP-COSIM][VPU-Spike] Core [%0d]: V[%h][%h]", hart_id, vdest_rtl, vec_reg_spike);
 
-    if (vec_reg_rtl != vec_reg_spike) $error("[MEEP-COSIM] Core [%0d]: Vector Reg Mismatch between RTL[%h] and Spike[%h]!", hart_id, vec_reg_rtl, vec_reg_spike);
+    if (vec_reg_rtl != vec_reg_spike) $fatal("[MEEP-COSIM] Core [%0d]: Vector Reg Mismatch between RTL[%h] and Spike[%h]!", hart_id, vec_reg_rtl, vec_reg_spike);
   end
 end
 
@@ -127,11 +140,40 @@ end
 always @(posedge clk) begin
   automatic logic [vpu_scoreboard_pkg::MAX_VLEN-1:0] vec_reg;
 
-  if(commit_or_excep) begin
+  if(commit_or_excep || (commit && is_exception)) begin
     // Instruction comparison
     if (pc_extended == start_compare_pc || do_comparison) begin
       // as soon as RTL PC reaches start_compare_pc, it should start comparison
       do_comparison <= 1;
+
+      // Overriding stuff from RTL
+      // 1. HPM counter CSRs //TODO
+      // 2. mip CSR
+
+      // when there is interrupt on RTL, override mip CSR since it depends upon MMRs in hardware
+      // and Spike may have values reflected immediately in mip, so overriding mip CSR in Spike
+      if (spike_get_csr(riscv::CSR_MIP) != csr_mip && is_exception && exception_cause[63]) begin
+        $display("[MEEP-COSIM] Overridden Spike mip - Hart[%0d] spike old mip[%0h] spike new mip[%16h]" , hart_id, spike_get_csr(riscv::CSR_MIP), csr_mip);
+        override_csr_backdoor(hart_id, riscv::CSR_MIP, csr_mip);
+      end
+
+      // do not increment for 1st instruction, since its already at the correct PC
+      if (do_comparison) begin
+        step(spike_log, hart_id);
+        spike_instr++;
+      end
+
+      // // Counters (instret, cycle and other PMU counters) are not implemented in Spike
+      // // since those counters are already being checked via PMU scoreboard so just
+      // // overriding Spike whenever there is a read from any counter. Also reg data comparison
+      // // for such instruction is not necessary
+      // // mtime MMR and mip CSR read could also contain different values for Spike and RTL so
+      // // overriding those too
+      if (/*is_counter_read || is_mtime_mmr_read || is_mmio_read || */is_mip_read) begin
+        override_spike_gpr(hart_id, xreg_dest, commit_data);
+        $display("[MEEP-COSIM] Overridden Spike - Core[%0d] GPR[%0d][%16h]" , hart_id, xreg_dest, spike_get_gpr(xreg_dest));
+      end
+
       get_spike_commit_info(spike_commit_log, hart_id);
       $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d] DASM(0x%4h)", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid, instr);
       $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h] DASM(0x%4h)", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data, spike_log.ins);
@@ -145,29 +187,49 @@ always @(posedge clk) begin
       end
 
       if (is_exception) begin
-        $display("[MEEP-COSIM] Exception - mcause[%16h]", csr_excep.cause);
+          if (exception_cause[63]) begin
+            $display("[MEEP-COSIM] Interrupt - mcause[%16h]", exception_cause);
+          end else begin
+            $display("[MEEP-COSIM] Exception - mcause[%16h]", exception_cause);
+          end
       // if there is a vector_instr_commit, corresponding PC, instr and scalar reg data would not be for that instruction so skipping in that scenario
       // below check would be for every scalar instruction and vector instruction's PC, instruction. Vector reg contents will be checked on completed_valid from VPU
       end else if (!vector_instr_commit || is_vector) begin
         // PC Comparison
-        if (pc_extended != spike_log.pc) $error("[MEEP-COSIM] Core [%0d]: PC Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, pc_extended, spike_log.pc);
+        if (pc_extended != spike_log.pc) $fatal("[MEEP-COSIM] Core [%0d]: PC Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, pc_extended, spike_log.pc);
 
         // Instruction Comparison
         if (is_compressed) begin
-          if (instr[15:0] != spike_log.ins[15:0]) $error("[MEEP-COSIM] Core [%0d]: Instruction Mismatch between RTL[%8h] and Spike[%8h]!", hart_id, instr[15:0], spike_log.ins[15:0]);
+          if (instr[15:0] != spike_log.ins[15:0]) $fatal("[MEEP-COSIM] Core [%0d]: Instruction Mismatch between RTL[%8h] and Spike[%8h]!", hart_id, instr[15:0], spike_log.ins[15:0]);
         end else begin
-          if (instr != spike_log.ins) $error("[MEEP-COSIM] Core [%0d]: Instruction Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, instr, spike_log.ins);
+          if (instr != spike_log.ins) $fatal("[MEEP-COSIM] Core [%0d]: Instruction Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, instr, spike_log.ins);
         end
 
         // Destination X-Reg Comparison
-        if (xreg_wr_valid && xreg_dest != spike_commit_log.dst) $error("[MEEP-COSIM] Core [%0d]: Destination Register Address Mismatch between RTL[%d] and Spike[%d]!", hart_id, xreg_dest, spike_commit_log.dst);
+        if (xreg_wr_valid && xreg_dest != spike_commit_log.dst) $fatal("[MEEP-COSIM] Core [%0d]: Destination Register Address Mismatch between RTL[%d] and Spike[%d]!", hart_id, xreg_dest, spike_commit_log.dst);
 
         // Destination X-Reg Data Comparison
-        if (xreg_wr_valid && commit_data != spike_commit_log.data) $error("[MEEP-COSIM] Core [%0d]: Destination Register Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, commit_data, spike_commit_log.data);
+        if (xreg_wr_valid && commit_data != spike_commit_log.data /*&& !is_counter_read && !is_mtime_mmr_read && !is_mmio_read*/ && !is_mip_read) begin
+          if (system_instr) begin
+            $fatal(1, "[MEEP-COSIM] Core [%0d]: CSR - 0x%3h Read Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, instr_csr_addr, commit_data, spike_commit_log.data);
+          end else begin
+            $fatal(1, "[MEEP-COSIM] Core [%0d]: Destination Register Data Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, commit_data, spike_commit_log.data);
+          end
+        end
+
+        // Destination F-Reg Comparison
+        if (cu_rr_int.fwrite_enable && exe_to_wb_wb.frd != spike_commit_log.dst) begin
+          $fatal(1, "[MEEP-COSIM] Core [%0d]: Destination Floating Register Address Mismatch between RTL[%d] and Spike[%d]!", hart_id, xreg_dest, spike_commit_log.dst);
+        end
+        // Destination F-Reg Data Comparison
+        if (cu_rr_int.fwrite_enable && commit_data != spike_commit_log.data) begin
+          $fatal(1, "[MEEP-COSIM] Core [%0d]: Destination Floating Register Data Mismatch between RTL[%16h] and Spike[%16h]!", hart_id, commit_data, spike_commit_log.data);
+        end
+        
       end
 
-      step(spike_log, hart_id);
-      spike_instr++;
+      // step(spike_log, hart_id);
+      // spike_instr++;
 
       // if (spike_instr >= 50000) begin
       //   do_comparison <= 0;
