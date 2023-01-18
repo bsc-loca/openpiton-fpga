@@ -457,10 +457,12 @@ for core_id in range(PITON_NUM_TILES) :
                                              .commit_data    (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_data),
                                              .excep          (`CORE_{coreid}.lagarto_m20.datapath_inst.wb_xcpt),
                                              .csr_excep      (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
+                                             .csr_cause      (`CORE_{coreid}.i_csr_regfile.csr_xcpt_cause),
                                              .control_intf   (`CORE_{coreid}.lagarto_m20.datapath_inst.control_int),
                                              .vpu_resp       (`CORE_{coreid}.lagarto_m20.datapath_inst.resp_vpu_cpu_i),
                                              .hart_id        (`CORE_{coreid}.hart_id_i),
-                                             .ref_hart_id    (64'd{coreid}));
+                                             .ref_hart_id    (64'd{coreid}),
+                                             .csr_mip        (`CORE_{coreid}.i_csr_regfile.mip_q));
     """.format(coreid = core_id))
 %>
 `endif
