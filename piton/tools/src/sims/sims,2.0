@@ -1926,7 +1926,7 @@ sub generic_sim_run
       $cmd .= "-sv_lib ";
       $cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture ";
       if ($opt{cosim}) {
-        $cmd .= "-sv_lib $dv_root/verif/env/manycore/spike ";  # Spike's binary used for cosimulation
+        $cmd .= "-sv_lib $dv_root/verif/diag/vendor/spike/spike ";  # Spike's binary used for cosimulation
       }
       if ($opt{cov}) {
         $cmd .= "-coverage ";
