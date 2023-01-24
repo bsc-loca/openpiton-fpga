@@ -75,44 +75,52 @@ EthSyst::EthSyst() {
   }
 
   uncacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, UNCACHE_MEM_ADDR));
-  if (ethSystBase == MAP_FAILED) {
-    printf("Memory mapping of Ethernet system failed.\n");
+  if (uncacheMem == MAP_FAILED) {
+    printf("Memory mapping of Non-cacheable DMA pool failed.\n");
     exit(1);
   }
 
   cacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_MEM_ADDR));
-  if (ethSystBase == MAP_FAILED) {
-    printf("Memory mapping of Ethernet system failed.\n");
+  if (cacheMem == MAP_FAILED) {
+    printf("Memory mapping of Cacheable DMA pool failed.\n");
     exit(1);
   }
 
   cacheFlAddr = reinterpret_cast<uint8_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR));
   if (cacheFlAddr == MAP_FAILED) {
-    printf("Memory mapping of Cache system failed.\n");
+    printf("Memory mapping of Cache Control failed.\n");
     exit(1);
   }
 
-#ifdef DMA_MEM_HBM
-  #ifdef DMA_MEM_CACHED
-  dmaMemBase = cacheMem;
-  #else
-  dmaMemBase = uncacheMem;
-  #endif
-  dmaMemBsNC = uncacheMem;
-#else
-  dmaMemBase = ethSystBase;
-  dmaMemBsNC = ethSystBase;
-#endif
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
+  gtCtrl   = ethSystBase + (GT_CTL_BASEADDR         / sizeof(uint32_t));
 
-  txMem   = dmaMemBase + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  rxMem   = dmaMemBase + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  sgMem   = dmaMemBase + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
- 
-  txMemNC = dmaMemBsNC + (TX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  rxMemNC = dmaMemBsNC + (RX_MEM_CPU_BASEADDR       / sizeof(uint32_t));
-  sgMemNC = dmaMemBsNC + (SG_MEM_CPU_BASEADDR       / sizeof(uint32_t));
+// DMA mapped regions
+#ifdef DMA_MEM_HBM
+    txMemNC = uncacheMem + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = uncacheMem + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = uncacheMem + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #ifdef TXRX_MEM_CACHED
+    txMem   = cacheMem   + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMem   = cacheMem   + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+  #endif
+  #ifdef SG_MEM_CACHED
+    sgMem   = cacheMem   + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    sgMem   = sgMemNC;
+  #endif
+#else // SRAM case
+    txMemNC = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+    sgMem   = sgMemNC;
+#endif
 
   sgTxMem  = sgMem;
   sgRxMem  = sgTxMem + (SG_TX_MEM_SIZE / sizeof(uint32_t));
@@ -126,7 +134,7 @@ EthSyst::EthSyst() {
 //***************** Enforced cache flush on specific addres *****************
 uint8_t volatile EthSyst::cacheFlush(size_t addr) {
   // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
-  return *(cacheFlAddr + ((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK));
+  return *(cacheFlAddr + (((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK) | CACHE_FLUSH_USER6MSB));
 }
 
 uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
@@ -166,11 +174,10 @@ uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
 // example: mem8 [addrSwapped  ] = val;
 
 //***************** Initialization of 100Gb Ethernet Core *****************
-void EthSyst::ethCoreInit(bool gtLoopback) {
+void EthSyst::ethCoreInit() {
   printf("------- Initializing Ethernet Core -------\n");
-  // GT control via pins 
-  uint32_t volatile* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
-  enum { GT_CTRL = XGPIO_DATA_OFFSET / sizeof(uint32_t) };
+  //100Gb Ethernet subsystem registers: https://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Register-Map
+  //old link: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum { ETH_FULL_RST_ASSERT = RESET_REG_USR_RX_SERDES_RESET_MASK |
                                RESET_REG_USR_RX_RESET_MASK        |
                                RESET_REG_USR_TX_RESET_MASK,
@@ -212,8 +219,14 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX_STATUS_REG:    %0X \n", ethCore[STAT_TX_STATUS_REG]);
   printf("STAT_RX_STATUS_REG:    %0X \n", ethCore[STAT_RX_STATUS_REG]);
   printf("GT_LOOPBACK_REG:       %0X \n", ethCore[GT_LOOPBACK_REG]);
-  printf("\n");
+  printf("-------\n");
   
+}
+
+
+//***************** Bring-up of 100Gb Ethernet Core *****************
+void EthSyst::ethCoreBringup(bool gtLoopback) {
+  printf("------- Ethernet Core bring-up -------\n");
   if (gtLoopback) {
     printf("Enabling Near-End PMA Loopback\n");
     // gtCtrl[GT_CTRL] = 0x2222; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
@@ -237,9 +250,9 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   }
   printf("\n");
   
-  printf("Ethernet core bring-up.\n");
   physConnOrder = PHYS_CONN_WAIT_INI;
-  // http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
+  // http://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Core-Bring-Up-Sequence
+  // old link: http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
   // via GPIO
   // rxtxCtrl[RX_CTRL] = CONFIGURATION_RX_REG1_CTL_RX_ENABLE_MASK;
   // rxtxCtrl[TX_CTRL] = CONFIGURATION_TX_REG1_CTL_TX_SEND_RFI_MASK;
@@ -290,6 +303,7 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX/RX_STATUS_REGS: %0X/%0X \n", ethCore[STAT_TX_STATUS_REG],
                                                ethCore[STAT_RX_STATUS_REG]);
   printf("This Eth instance is physically connected in order (zero means 1st, non-zero means 2nd): %d \n", physConnOrder);
+  printf("------- Physical connection is established -------\n");
 }
 
 
@@ -424,6 +438,7 @@ void EthSyst::axiDmaInit() {
     printf("Rx_status  reg = %0X \n", dmaCore[S2MM_DMASR]);
     printf("Initial DMA Tx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DEVICE_TO_DMA));
     printf("Initial DMA Rx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DMA_TO_DEVICE));
+    printf("-------\n");
   }
 }
 
@@ -699,19 +714,6 @@ void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
 }
 
 
-//***************** Initialization of Full Ethernet System *****************
-void EthSyst::ethSystInit() {
-  timerCntInit();
-  //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
-  // for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
-  axiDmaInit();
-  switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
-  switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-  ethTxRxEnable();
-  sleep(1); // in seconds
-}
-
-
 //***************** Flush the Receive buffers. All data will be lost. *****************
 int EthSyst::flushReceive() {
   // Checking if the engine is already in accept process
@@ -778,7 +780,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output each word destination.
 			 */
       txMem[txAddr] = *From32Ptr++;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -818,7 +820,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -870,7 +872,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			 * Output the buffer.
 			 */
       txMem[txAddr] = AlignBuffer;
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheFlush(size_t(&txMem[txAddr]));
       #endif
       txAddr++;
@@ -910,7 +912,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	}
 	if (Length) {
     txMem[txAddr] = AlignBuffer;
-    #ifdef DMA_MEM_CACHED
+    #ifdef TXRX_MEM_CACHED
       cacheFlush(size_t(&txMem[txAddr]));
     #endif
     txAddr++;
@@ -995,7 +997,7 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
   uint32_t volatile* lengthPtr = &rxMem[headerOffset / sizeof(uint32_t)];
-  #ifdef DMA_MEM_CACHED
+  #ifdef TXRX_MEM_CACHED
     cacheInvalid(size_t(lengthPtr));
   #endif
 	uint16_t length = *lengthPtr;
@@ -1046,7 +1048,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Output each word.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       *To32Ptr++ = rxMem[rxAddr];
@@ -1074,7 +1076,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1105,7 +1107,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-      #ifdef DMA_MEM_CACHED
+      #ifdef TXRX_MEM_CACHED
         cacheInvalid(size_t(&rxMem[rxAddr]));
       #endif
       AlignBuffer = rxMem[rxAddr];
@@ -1144,7 +1146,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	/*
 	 * Read the remaining data.
 	 */
-  #ifdef DMA_MEM_CACHED
+  #ifdef TXRX_MEM_CACHED
     cacheInvalid(size_t(&rxMem[rxAddr]));
   #endif
   AlignBuffer = rxMem[rxAddr];

@@ -356,8 +356,6 @@ module chipset(
     output                                  dma_s_axi_rready,
 
    `else
-    input wire                               eth_axi_aclk,
-    input wire                               eth_axi_arstn,
          // AXI interface
     output wire [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    eth_axi_awaddr,
@@ -1585,71 +1583,37 @@ credit_to_valrdy processor_offchip_noc3_c2v(
   wire  [`PITON_EXTRA_MEMS * `NOC_DATA_WIDTH -1:0] intf_mcx_data_noc2;
   wire  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_val_noc2;
   wire  [`PITON_EXTRA_MEMS-1:0]                    intf_mcx_rdy_noc2;
-`endif
 
-//Verilog macro metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
-`define MC_VALRDY_CONV(idx) \
-\
-valrdy_to_credit #(4, 3) mc``idx``_processor_noc3_v2c( \
-    .clk(chipset_clk), \
-    .reset(~chipset_rst_n_ff), \
-\
-    .data_in (mcx_intf_data_noc3[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
-    .valid_in(mcx_intf_val_noc3 [``idx]), \
-    .ready_in(mcx_intf_rdy_noc3 [``idx]), \
-\
-    .data_out (mcx_processor_noc3_data [``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
-    .valid_out(mcx_processor_noc3_valid[``idx]), \
-    .yummy_out(mcx_processor_noc3_yummy[``idx]) \
-); \
-credit_to_valrdy processor_mc``idx``_noc2_c2v( \
-    .clk(chipset_clk), \
-    .reset(~chipset_rst_n_ff), \
-\
-    .data_in (processor_mcx_noc2_data [``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
-    .valid_in(processor_mcx_noc2_valid[``idx]), \
-    .yummy_in(processor_mcx_noc2_yummy[``idx]), \
-\
-    .data_out (intf_mcx_data_noc2[``idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]), \
-    .valid_out(intf_mcx_val_noc2 [``idx]), \
-    .ready_out(intf_mcx_rdy_noc2 [``idx]) \
-);
+  genvar idx;
+  generate
+  for(idx=0; idx<`PITON_EXTRA_MEMS; idx=idx+1) begin: ifconv
+    valrdy_to_credit #(4, 3) mcx_processor_noc3_v2c( 
+      .clk(chipset_clk),
+      .reset(~chipset_rst_n_ff),
 
-`define MC_VALRDY_CONVS(n) `MC_VALRDY_CONVS_``n
-`define MC_VALRDY_CONVS_0
-`define MC_VALRDY_CONVS_1  `MC_VALRDY_CONVS_0  `MC_VALRDY_CONV(0)
-`define MC_VALRDY_CONVS_2  `MC_VALRDY_CONVS_1  `MC_VALRDY_CONV(1)
-`define MC_VALRDY_CONVS_3  `MC_VALRDY_CONVS_2  `MC_VALRDY_CONV(2)
-`define MC_VALRDY_CONVS_4  `MC_VALRDY_CONVS_3  `MC_VALRDY_CONV(3)
-`define MC_VALRDY_CONVS_5  `MC_VALRDY_CONVS_4  `MC_VALRDY_CONV(4)
-`define MC_VALRDY_CONVS_6  `MC_VALRDY_CONVS_5  `MC_VALRDY_CONV(5)
-`define MC_VALRDY_CONVS_7  `MC_VALRDY_CONVS_6  `MC_VALRDY_CONV(6)
-`define MC_VALRDY_CONVS_8  `MC_VALRDY_CONVS_7  `MC_VALRDY_CONV(7)
-`define MC_VALRDY_CONVS_9  `MC_VALRDY_CONVS_8  `MC_VALRDY_CONV(8)
-`define MC_VALRDY_CONVS_10 `MC_VALRDY_CONVS_9  `MC_VALRDY_CONV(9)
-`define MC_VALRDY_CONVS_11 `MC_VALRDY_CONVS_10 `MC_VALRDY_CONV(10)
-`define MC_VALRDY_CONVS_12 `MC_VALRDY_CONVS_11 `MC_VALRDY_CONV(11)
-`define MC_VALRDY_CONVS_13 `MC_VALRDY_CONVS_12 `MC_VALRDY_CONV(12)
-`define MC_VALRDY_CONVS_14 `MC_VALRDY_CONVS_13 `MC_VALRDY_CONV(13)
-`define MC_VALRDY_CONVS_15 `MC_VALRDY_CONVS_14 `MC_VALRDY_CONV(14)
-`define MC_VALRDY_CONVS_16 `MC_VALRDY_CONVS_15 `MC_VALRDY_CONV(15)
-`define MC_VALRDY_CONVS_17 `MC_VALRDY_CONVS_16 `MC_VALRDY_CONV(16)
-`define MC_VALRDY_CONVS_18 `MC_VALRDY_CONVS_17 `MC_VALRDY_CONV(17)
-`define MC_VALRDY_CONVS_19 `MC_VALRDY_CONVS_18 `MC_VALRDY_CONV(18)
-`define MC_VALRDY_CONVS_20 `MC_VALRDY_CONVS_19 `MC_VALRDY_CONV(19)
-`define MC_VALRDY_CONVS_21 `MC_VALRDY_CONVS_20 `MC_VALRDY_CONV(20)
-`define MC_VALRDY_CONVS_22 `MC_VALRDY_CONVS_21 `MC_VALRDY_CONV(21)
-`define MC_VALRDY_CONVS_23 `MC_VALRDY_CONVS_22 `MC_VALRDY_CONV(22)
-`define MC_VALRDY_CONVS_24 `MC_VALRDY_CONVS_23 `MC_VALRDY_CONV(23)
-`define MC_VALRDY_CONVS_25 `MC_VALRDY_CONVS_24 `MC_VALRDY_CONV(24)
-`define MC_VALRDY_CONVS_26 `MC_VALRDY_CONVS_25 `MC_VALRDY_CONV(25)
-`define MC_VALRDY_CONVS_27 `MC_VALRDY_CONVS_26 `MC_VALRDY_CONV(26)
-`define MC_VALRDY_CONVS_28 `MC_VALRDY_CONVS_27 `MC_VALRDY_CONV(27)
-`define MC_VALRDY_CONVS_29 `MC_VALRDY_CONVS_28 `MC_VALRDY_CONV(28)
-`define MC_VALRDY_CONVS_30 `MC_VALRDY_CONVS_29 `MC_VALRDY_CONV(29)
+      .data_in (mcx_intf_data_noc3[idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]),
+      .valid_in(mcx_intf_val_noc3 [idx]), 
+      .ready_in(mcx_intf_rdy_noc3 [idx]),
 
-`ifdef PITON_EXTRA_MEMS
-  `MC_VALRDY_CONVS(`PITON_EXTRA_MEMS)
+      .data_out (mcx_processor_noc3_data [idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]),
+      .valid_out(mcx_processor_noc3_valid[idx]),
+      .yummy_out(mcx_processor_noc3_yummy[idx])
+    );
+
+    credit_to_valrdy processor_mcx_noc2_c2v(
+      .clk(chipset_clk),
+      .reset(~chipset_rst_n_ff),
+
+      .data_in (processor_mcx_noc2_data [idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]),
+      .valid_in(processor_mcx_noc2_valid[idx]),
+      .yummy_in(processor_mcx_noc2_yummy[idx]),
+
+      .data_out (intf_mcx_data_noc2[idx * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]),
+      .valid_out(intf_mcx_val_noc2 [idx]),
+      .ready_out(intf_mcx_rdy_noc2 [idx])
+    );
+  end
+  endgenerate
 `endif
 
 

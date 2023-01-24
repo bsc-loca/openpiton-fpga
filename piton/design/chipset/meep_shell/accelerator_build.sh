@@ -52,8 +52,9 @@ acme_vpu)
     CORE=lagarto
     XTILES=2
     YTILES=2
+    VLANES=2
     # Add VPU
-    PROTO_OPTIONS=" --vpu --pronoc"
+    PROTO_OPTIONS=" --vpu --pronoc --acme --vlanes $VLANES"
     echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac

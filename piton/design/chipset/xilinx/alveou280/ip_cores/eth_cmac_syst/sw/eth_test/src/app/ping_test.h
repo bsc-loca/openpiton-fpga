@@ -21,7 +21,7 @@ class PingReqstTest {
   enum {
     NUM_OF_PING_REQ_PKTS   = 11, // Number of ping req it generates, change this parameter to limit the number of ping requests sent by this program.
     NUM_RX_PACK_CHECK_REQ  = 10, // Max num of got unsuccessful Rx packets before sending another request
-    #ifndef DMA_MEM_CACHED
+    #ifndef SG_MEM_CACHED
       NUM_PACK_CHECK_RX_PACK = 100000 // Max number of polls to get an Rx packet (Rx packet waiting time-out)
     #else
       NUM_PACK_CHECK_RX_PACK = 30 // Reduced polls because of inserted delay in DMA polling as workaround of absent cache Invalidate operation

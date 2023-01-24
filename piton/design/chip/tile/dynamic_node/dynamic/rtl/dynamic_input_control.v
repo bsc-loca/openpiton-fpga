@@ -47,9 +47,9 @@ module dynamic_input_control(thanks_all_temp_out,
                              my_loc_x_in, my_loc_y_in, my_chip_id_in,
                              abs_x, abs_y, abs_chip_id,
 `ifdef EDGE_ROUTE_ENABLE
- abs_addr, 
+                             abs_addr,
 `endif
-final_bits, valid_in,
+                             final_bits, valid_in,
                              thanks_n, thanks_e, thanks_s, thanks_w, thanks_p,
                              length);
 

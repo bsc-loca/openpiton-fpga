@@ -1917,6 +1917,8 @@ sub generic_sim_run
       if (!$opt{gui}) {
         $cmd .= " -c " ;
       }
+      # remove suppressible error for meep_vpu
+      $cmd .= " -suppress 13174 " ;
       if ($opt{log_all}) {
       	# this logs everything such that the sim can be inspected later on
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");

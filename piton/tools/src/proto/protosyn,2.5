@@ -169,6 +169,10 @@ def usage():
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
     print("\n       --pronoc", file=sys.stderr)
     print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr)   
+    print("\n       --acme", file=sys.stderr)
+    print("              The VPU is configured in ACME mode", file=sys.stderr) 
+    print("\n       --vlanes", file=sys.stderr)
+    print("              Configures the numer of vector lanes per VPU instance", file=sys.stderr) 
     print("\n       -h, --help", file=sys.stderr)
     print("              Display this help message and exit", file=sys.stderr)
     print("\n", file=sys.stderr)
@@ -567,6 +571,8 @@ def setParserOptions(parser):
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
+    parser.add_option("--acme", dest="acme", action="store_true", default=False)
+    parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
     parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
     parser.add_option("--debug-brom", dest="debug_brom", action="store_true", default=False)
@@ -605,6 +611,19 @@ def makeDefList(options):
         if options.vpu:
             defines.append("VPU_ENABLE")
             defines.append("MEEP_VPU")
+            if options.vlanes == "2":
+                defines.append("VPU_2_LANES")
+            elif options.vlanes == "4":
+                defines.append("VPU_4_LANES")
+            elif options.vlanes == "8":
+                defines.append("VPU_8_LANES")
+            elif options.vlanes == "16":
+                defines.append("VPU_16_LANES")
+            else:
+                defines.append("VPU_4_LANES")
+            # Acme mode?            
+            if options.acme:
+                defines.append("ACME_MODE")
         else:
             defines.append("VPU_DISABLE")
     if (options.board == "f1"):

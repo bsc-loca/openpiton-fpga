@@ -19,6 +19,7 @@ RISCV   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
 XTILES ?= 1
 YTILES ?= 1
+VLANES ?= 2
 MULTIMC =
 MULTIMC_INDICES = 
 
@@ -69,7 +70,7 @@ $(RISCV):
 
 protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --vlanes $(VLANES) --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
