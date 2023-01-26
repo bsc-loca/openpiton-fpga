@@ -468,6 +468,7 @@ for core_id in range(PITON_NUM_TILES) :
 `endif
 
 // Lagarto coverage instance for ISA coverage
+`ifdef PITON_LAGARTO
 // `ifndef PITON_LAGARTO_TILE
 <%
 for core_id in range(PITON_NUM_TILES) :
@@ -505,6 +506,7 @@ cov_priv_isa cov_priv_isa_inst{coreid}(.i_clk             (core_ref_clk),
                             .i_instr_type       (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.instr_type));
   """.format(coreid = core_id))
 %>
+`endif // endif PITON_LAGARTO
 
 `ifndef DISABLE_ALL_MONITORS
 
