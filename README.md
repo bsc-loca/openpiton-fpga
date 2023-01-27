@@ -11,7 +11,7 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
 
 ### Cloning the repo and move to the stable branch
     
-    git clone https://gitlab.bsc.es/meep/rtl_designs/openpiton_lagarto.git -b openpiton-dev
+    git clone https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/meep_openpiton.git -b rtl/HV_GC5-L1Ar-V_ACME --recurse-submodules
 
 ### Set env for EDA tools
 
@@ -20,7 +20,7 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
 
 ### Setup and submodules initialization
 
-    cd openpiton_lagarto
+    cd meep_openpiton
     source piton/lagarto_setup.sh
     source piton/lagarto_build_tools.sh
 
@@ -28,7 +28,7 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
     
     cd build
 
-Compiling Openpiton with Lagarto
+Compiling Openpiton with Lagarto. Right now, only MEEP_VPU is supported, that is why -config_rtl=MEEP_VPU flag is mandatory.
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
 
@@ -36,9 +36,21 @@ Compiling with torture (to generate signature file for spike):
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
-You can clean the files before to compile for lagarto by doing:
+Compiling MEEP-VPU with different lanes. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_2_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_4_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_8_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_16_LANES
+    
+### Clean builds
+
+You can clean-up the environment and meta data among compilations by doing:
+
     sims clean
     rm -rf manycore
+
+### Compile and launch simulations
 
 Compiling and running RISC-V Tests with Lagarto in OpenPiton
 
@@ -53,23 +65,23 @@ Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation a
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU -cosim
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim
 
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with coverage
 
-### Building MEEP-VPU with different lanes:
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -cov
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cov
 
-Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
+ARIANE core: Compiling and running requires to setup ariane's paths and variables:
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_2_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_4_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_8_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_16_LANES
-
-### Launch simulation
+    source piton/ariane_setup.sh && source piton/ariane_build_tools.sh
+    cd build && sims clean && rm -rf manycore
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled
 
 #### Running RISC-V Tests 
 
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -gui
 
-#### Running RISC-V benchmarks   
+### Running RISC-V benchmarks   
 
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 dhrystone.riscv -lagarto -precompiled
 
