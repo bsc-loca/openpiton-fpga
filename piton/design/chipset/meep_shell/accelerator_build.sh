@@ -50,11 +50,11 @@ acme_v2)
     ;;
 acme_vpu)
     CORE=lagarto
-    XTILES=1
-    YTILES=1
+    XTILES=2
+    YTILES=2
     VLANES=2
     # Add VPU
-    PROTO_OPTIONS=" --vpu --pronoc --acme"
+    PROTO_OPTIONS=" --vpu --pronoc --acme --vlanes $VLANES"
     echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac
@@ -64,5 +64,5 @@ echo "EA configuration is $EA_MOD with $MEEP$PROTO_OPTIONS"
 
 PROTO_OPTIONS=$MEEP$PROTO_OPTIONS
 
-make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES VLANES=$VLANES PROTO_OPTIONS="$PROTO_OPTIONS"
+make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
 

@@ -4,12 +4,12 @@ DDR4,no,mem_axi
 HBM,yes,mem_axi,1,CLK1,0x0,mem_calib_complete,00			
 HBM,yes,ncmem_axi,1,CLK1,0x0,mem_calib_complete,01
 AURORA,no,raw,<name>			
-UART,yes,uart_axi,1,CLK0,0x0,normal,uart_irq
-ETHERNET,yes,eth_axi,1,CLK0,eth_axi_aclk,eth_axi_arstn,10Gb,eth_irq,qsfp1,hbm
+UART,yes,uart_axi,1,CLK2,0x0,normal,uart_irq
+ETHERNET,yes,eth_axi,1,CLK0,eth_axi_aclk,eth_axi_arstn,100Gb,eth_irq,qsfp1,hbm
 BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,no,sram_axi,1,CLK0,0x0,none
-CLK0,100000000,chipset_clk
+CLK0,50000000,chipset_clk
 CLK1,150000000,mc_clk,mc_rstn,LOW
-CLK2,50000000,vpu_clk
+CLK2,100000000,vpu_clk
 GPIO,5,pcie_gpio,0x00
 ARST,LOW,ExtArstn
