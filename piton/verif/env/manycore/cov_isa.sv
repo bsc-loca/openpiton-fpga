@@ -1,11 +1,10 @@
 
 module cov_isa(
     input                                   i_clk,
-    input                                   i_rsn, 
+    input                                   i_rsn,
     input                                   i_valid,
-    input cov_isa_defs::instruction_t       i_instruction
+    input var cov_isa_defs::instruction_t   i_instruction
     );
-import riscv::*;
 import cov_isa_defs::*;
 
 function is_f_instruction (int inst);
@@ -38,22 +37,22 @@ endfunction : is_c_instruction
             bins XOR        = {F3_XOR};
             bins SRL_SRA    = {F3_SRL_SRA};
             bins OR         = {F3_OR};
-            bins AND        = {F3_AND};            
+            bins AND        = {F3_AND};
         }
 
         cp_r_funct7: coverpoint i_instruction.r_type.funct7 iff ( i_rsn && i_valid ){ //funct7 all possible values
             bins ARIT       = {F7_ARITH};
-            bins LOGIC      = {F7_LOGIC};        
+            bins LOGIC      = {F7_LOGIC};
         }
 
         cp_r_cross_all: cross cp_r_opcode, cp_r_funct3 iff ( i_rsn && i_valid ) ; //all possible combinations of R opcode and type of operation
 
         cp_r_cross_arith_logic: cross cp_r_opcode, cp_r_funct3, cp_r_funct7 iff ( i_rsn && i_valid ){ //for operations that can be arithmetic or logic
-            option.cross_auto_bin_max = 0; //we only care about two, defined below
+            // option.cross_auto_bin_max = 0; //we only care about two, defined below
             bins ADD_SUB = binsof( cp_r_funct3) intersect { (F3_ADD_SUB) } && binsof( cp_r_opcode ) && binsof( cp_r_funct7 );
             bins SRL_SRA = binsof( cp_r_funct3) intersect { (F3_SRL_SRA) } && binsof( cp_r_opcode ) && binsof( cp_r_funct7 );
-            //ignore bins not_legal = binsof ( cp_r_funct3.SSL ) & binsof ( cp_r_funct3.SLT ) & binsof ( cp_r_funct3.SLTU ) & binsof ( cp_r_funct3.XOR ) & binsof ( cp_r_funct3.XOR ) & binsof ( cp_r_funct3.AND );
-        }        
+            ignore_bins others = cp_r_cross_arith_logic with (!(cp_r_funct3 inside {F3_ADD_SUB, F3_SRL_SRA}));
+        }
 
     endgroup: cg_rv32i_r_type
 
@@ -72,17 +71,18 @@ endfunction : is_c_instruction
 
         cp_r_funct7: coverpoint i_instruction.r_type.funct7 iff ( i_rsn && i_valid ){ //funct7 all possible values
             bins ARIT       = {F7_ARITH};
-            bins LOGIC      = {F7_LOGIC};        
+            bins LOGIC      = {F7_LOGIC};
         }
 
         cp_r_cross_all: cross cp_r_opcode, cp_r_funct3 iff ( i_rsn && i_valid ); //all possible combinations of R opcode and type of operation
 
         cp_r_cross_arith_logic: cross cp_r_opcode, cp_r_funct3, cp_r_funct7 iff ( i_rsn && i_valid ){ //for operations that can be arithmetic or logic
-            option.cross_auto_bin_max = 0; //we only care about two, defined below
+            // option.cross_auto_bin_max = 0; //we only care about two, defined below
             bins ADDW_SUBW = binsof( cp_r_funct3) intersect { (F3_ADD_SUB) } && binsof( cp_r_opcode ) && binsof( cp_r_funct7 );
             bins SRLW_SRAW = binsof( cp_r_funct3) intersect { (F3_SRL_SRA) } && binsof( cp_r_opcode ) && binsof( cp_r_funct7 );
+            ignore_bins others = cp_r_cross_arith_logic with  (!(cp_r_funct3 inside {F3_ADD_SUB, F3_SRL_SRA}));
             //ignore bins not_legal = binsof ( cp_r_funct3.SSL ) & binsof ( cp_r_funct3.SLT ) & binsof ( cp_r_funct3.SLTU ) & binsof ( cp_r_funct3.XOR ) & binsof ( cp_r_funct3.XOR ) & binsof ( cp_r_funct3.AND );
-        }        
+        }
 
     endgroup: cg_rv64i_r_type
 
@@ -102,20 +102,21 @@ endfunction : is_c_instruction
             bins XORI       = {F3_XOR};     //XORI
             bins SRLI_SRAI  = {F3_SRL_SRA}; //SRLI or SRAI
             bins ORI        = {F3_OR};      //ORI
-            bins ANDI       = {F3_AND};      //ANDI      
+            bins ANDI       = {F3_AND};      //ANDI
         }
 
         cp_i_funct7: coverpoint i_instruction.r_type.funct7 iff ( i_rsn && i_valid ){ //funct7 all possible values
             bins ARIT       = {F7_ARITH};   //SRAI
-            bins LOGIC      = {F7_LOGIC};   //SRLI     
+            bins LOGIC      = {F7_LOGIC};   //SRLI
         }
-        
+
         cp_i_cross_all: cross cp_i_opcode, cp_i_funct3 iff ( i_rsn && i_valid ); //all possible combinations of I opcode and type of operation
 
         cp_i_cross_arith_logic: cross cp_i_opcode, cp_i_funct3, cp_i_funct7 iff ( i_rsn && i_valid ){ //for operations that can be arithmetic or logic
-            option.cross_auto_bin_max = 0; //we only care about one, defined below
-            bins SRLI_SRAI   = binsof (cp_i_funct3) intersect {(F3_SRL_SRA)} && binsof( cp_i_opcode) && binsof(cp_i_funct7);                        
-        }   
+            // option.cross_auto_bin_max = 0; //we only care about one, defined below
+            bins SRLI_SRAI   = binsof (cp_i_funct3) intersect {(F3_SRL_SRA)} && binsof( cp_i_opcode) && binsof(cp_i_funct7);
+            ignore_bins others = cp_i_cross_arith_logic with (cp_i_funct3 != F3_SRL_SRA);
+        }
     endgroup: cg_rv32i_i_type
 
     cg_rv32i_i_type u_cg_rv32i_i_type;
@@ -133,19 +134,20 @@ endfunction : is_c_instruction
 
         cp_i_funct7_32: coverpoint i_instruction.r_type.funct7 iff ( i_rsn && i_valid ){ //funct7 all possible values
             bins ARIT       = {F7_ARITH};   //SRAI
-            bins LOGIC      = {F7_LOGIC};   //SRLI     
+            bins LOGIC      = {F7_LOGIC};   //SRLI
         }
-        
+
         cp_i_cross_all_32: cross cp_i_opcode_32, cp_i_funct3_32 iff ( i_rsn && i_valid ) ; //all possible combinations of I opcode and type of operation
 
         cp_i_cross_arith_logic_32: cross cp_i_opcode_32, cp_i_funct3_32, cp_i_funct7_32 iff ( i_rsn && i_valid ){ //for operations that can be arithmetic or logic
-            option.cross_auto_bin_max = 0; //we only care about one, defined below
+            // option.cross_auto_bin_max = 0; //we only care about one, defined below
             bins SRLIW_SRAIW   = binsof (cp_i_funct3_32) intersect {(F3_SRL_SRA)} && binsof( cp_i_opcode_32) && binsof(cp_i_funct7_32);
-        } 
+            ignore_bins others = cp_i_cross_arith_logic_32 with (cp_i_funct3_32 != F3_SRL_SRA);
+        }
 
         cp_i_opcode: coverpoint i_instruction.i_type.opcode iff ( i_rsn && i_valid ){
             bins opcide = {OP_IMM};
-        }  
+        }
 
         cp_i_funct3 : coverpoint i_instruction.i_type.funct3 iff ( i_rsn && i_valid ){
             bins SLLI       = {F3_SLL};
@@ -158,11 +160,12 @@ endfunction : is_c_instruction
         }
 
         cp_cross_all_64 : cross cp_i_opcode, cp_i_funct3 iff ( i_rsn && i_valid ) ;
-        
+
         cp_i_cross_arith_logic: cross cp_i_opcode, cp_i_funct3, cp_i_imm11_6 iff ( i_rsn && i_valid ){ //for operations that can be arithmetic or logic
-            option.cross_auto_bin_max = 0; //we only care about one, defined below
+            // option.cross_auto_bin_max = 0; //we only care about one, defined below
             bins SRLI_SRAI   = binsof (cp_i_funct3) intersect {(F3_SRL_SRA)} && binsof( cp_i_opcode) && binsof(cp_i_imm11_6);
-        } 
+            ignore_bins others = cp_i_cross_arith_logic with (cp_i_funct3 != F3_SRL_SRA);
+        }
     endgroup: cg_rv64i_i_type
 
     cg_rv64i_i_type u_cg_rv64i_i_type;
@@ -192,7 +195,7 @@ endfunction : is_c_instruction
     covergroup cg_jalr_type @(posedge i_clk);
         cp_jalr_opcode: coverpoint i_instruction.i_type.opcode iff ( i_rsn && i_valid ){
             bins opcode = {JALR};
-        }        
+        }
     endgroup: cg_jalr_type
 
     cg_jalr_type u_cg_jalr_type;
@@ -215,7 +218,7 @@ endfunction : is_c_instruction
 
     cg_j_type u_cg_j_type;
 
-    //B TYPE instructions 
+    //B TYPE instructions
     covergroup cg_b_type @(posedge i_clk);
         cp_b_opcode: coverpoint i_instruction.b_type.opcode iff ( i_rsn && i_valid ){
             bins opcode = {BRANCH};
@@ -230,7 +233,7 @@ endfunction : is_c_instruction
             bins BGEU   = {F3_BGEU};
         }
 
-        cp_cross_b_all: cross cp_b_opcode, cp_b_funct3 iff ( i_rsn && i_valid ); 
+        cp_cross_b_all: cross cp_b_opcode, cp_b_funct3 iff ( i_rsn && i_valid );
     endgroup
 
     cg_b_type u_cg_b_type;
@@ -280,12 +283,14 @@ endfunction : is_c_instruction
 
         cp_rv32m : cross cp_m_opcode_32, cp_m_funct7, cp_m_funct3 iff ( i_rsn && i_valid );
         cp_rv64m : cross cp_m_opcode_64, cp_m_funct7, cp_m_funct3 iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins MULW   = binsof (cp_m_funct3) intersect {(F3_MUL_MULW)} && binsof( cp_m_opcode_64) && binsof(cp_m_funct7);
             bins DIVW   = binsof (cp_m_funct3) intersect {(F3_DIV_DIVW)} && binsof( cp_m_opcode_64) && binsof(cp_m_funct7);
             bins DUVUW  = binsof (cp_m_funct3) intersect {(F3_DIVU_DIVUW)} && binsof( cp_m_opcode_64) && binsof(cp_m_funct7);
             bins REMW   = binsof (cp_m_funct3) intersect {(F3_REM_REMW)} && binsof( cp_m_opcode_64) && binsof(cp_m_funct7);
             bins REMUW  = binsof (cp_m_funct3) intersect {(F3_REMU_REMUW)} && binsof( cp_m_opcode_64) && binsof(cp_m_funct7);
+
+            ignore_bins others = cp_rv64m with (!(cp_m_funct3 inside {F3_MULH, F3_MULHSU, F3_MULHU}));
         }
     endgroup
 
@@ -320,7 +325,7 @@ endfunction : is_c_instruction
         }
 
         cp_a32: cross cp_a_opcode, cp_a_funct3_32, cp_a_funct5 iff ( i_rsn && i_valid );
-        cp_a64: cross cp_a_opcode, cp_a_funct3_64, cp_a_funct5 iff ( i_rsn && i_valid );           
+        cp_a64: cross cp_a_opcode, cp_a_funct3_64, cp_a_funct5 iff ( i_rsn && i_valid );
     endgroup :  cg_a_extension
 
     cg_a_extension u_cg_a_extension;
@@ -395,19 +400,19 @@ endfunction : is_c_instruction
         }
 
         cp_fd_ld_inst: cross cp_fd_ld_opcode, cp_fd_width iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins FLW = binsof (cp_fd_width) intersect {(WIDTH_WORD)} && binsof (cp_fd_ld_opcode);
             bins FLD = binsof (cp_fd_width) intersect {(WIDTH_DWORD)} && binsof (cp_fd_ld_opcode);
         }
 
         cp_fd_st_inst: cross cp_fd_st_opcode, cp_fd_width iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins FSW = binsof (cp_fd_width) intersect {(WIDTH_WORD)} && binsof (cp_fd_st_opcode);
             bins FSD = binsof (cp_fd_width) intersect {(WIDTH_DWORD)} && binsof (cp_fd_st_opcode);
         }
 
         cp_fd_arith_inst: cross cp_fd_arith_opcode, cp_fd_rm, cp_fd_fmt, cp_fd_funct5  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins FADD_S   = binsof (cp_fd_funct5) intersect {(F5_FADD)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
             bins FSUB_S   = binsof (cp_fd_funct5) intersect {(F5_FSUB)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
             bins FMUL_S   = binsof (cp_fd_funct5) intersect {(F5_FMUL)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
@@ -421,8 +426,8 @@ endfunction : is_c_instruction
             bins FEQ_S    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_rm) intersect {(F_RM_EQ)}  && binsof (cp_fd_arith_opcode);
             bins FLT_S    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_rm) intersect {(F_RM_LT)}  && binsof (cp_fd_arith_opcode);
             bins FLE_S    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_rm) intersect {(F_RM_LE)}  && binsof (cp_fd_arith_opcode);
-            bins FCLASS_S = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
-            bins FMV_X_W  = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
+            bins FCLASS_S = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_rm) intersect {(F_RM_LT)} && binsof (cp_fd_arith_opcode);
+            bins FMV_X_W  = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_rm) intersect {(F_RM_LE)} && binsof (cp_fd_arith_opcode);
             bins FMV_W_X  = binsof (cp_fd_funct5) intersect {(F5_FMV_W_X)} && binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_arith_opcode);
 
 
@@ -439,14 +444,19 @@ endfunction : is_c_instruction
             bins FEQ_D    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_rm) intersect {(F_RM_EQ)}  && binsof (cp_fd_arith_opcode);
             bins FLT_D    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_rm) intersect {(F_RM_LT)}  && binsof (cp_fd_arith_opcode);
             bins FLE_D    = binsof (cp_fd_funct5) intersect {(F5_FCMP)}    && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_rm) intersect {(F_RM_LE)}  && binsof (cp_fd_arith_opcode);
-            bins FCLASS_D = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_arith_opcode);
-            bins FMV_X_D  = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_arith_opcode);
+            bins FCLASS_D = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_rm) intersect {(F_RM_LT)} && binsof (cp_fd_arith_opcode);
+            bins FMV_X_D  = binsof (cp_fd_funct5) intersect {(F5_FCLASS)}  && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_rm) intersect {(F_RM_LE)} && binsof (cp_fd_arith_opcode);
             bins FMV_D_X  = binsof (cp_fd_funct5) intersect {(F5_FMV_W_X)} && binsof (cp_fd_fmt) intersect {(FMT_D)} && binsof (cp_fd_arith_opcode);
 
+            ignore_bins others_funct = cp_fd_arith_inst with (cp_fd_funct5 inside {F5_FCVT_W_S, F5_FCVT_S_W, F5_FCVT_S_D});
+            ignore_bins others_rm = cp_fd_arith_inst with (!(cp_fd_rm inside {F_RM_J, F_RM_JN, F_RM_JX, F_RM_EQ, F_RM_LT, F_RM_LE}));
+            ignore_bins others_fsgnj = cp_fd_arith_inst with (cp_fd_funct5 == F5_FSGNJ && !(cp_fd_rm inside {F_RM_J, F_RM_JN, F_RM_JX}));
+            ignore_bins others_fcmp = cp_fd_arith_inst with (cp_fd_funct5 == F5_FCMP && !(cp_fd_rm inside {F_RM_EQ, F_RM_LT, F_RM_LE}));
+            ignore_bins others_fclass = cp_fd_arith_inst with (cp_fd_funct5 == F5_FCLASS && !(cp_fd_rm inside {F_RM_LT, F_RM_LE}));
         }
 
         cp_fd_fcvt_inst: cross cp_fd_arith_opcode, cp_fd_fmt, cp_fd_funct5, cp_fd_rs2_fcvt iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins FCVT_W_S   = binsof (cp_fd_funct5) intersect {(F5_FCVT_W_S)}  && binsof (cp_fd_fmt) intersect {(FMT_S)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT)}    && binsof (cp_fd_arith_opcode);
             bins FCVT_WU_S  = binsof (cp_fd_funct5) intersect {(F5_FCVT_W_S)}  && binsof (cp_fd_fmt) intersect {(FMT_S)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT_U)}  && binsof (cp_fd_arith_opcode);
             bins FCVT_S_W   = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_W)}  && binsof (cp_fd_fmt) intersect {(FMT_S)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT)}    && binsof (cp_fd_arith_opcode);
@@ -458,7 +468,7 @@ endfunction : is_c_instruction
             bins FCVT_S_LU  = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_W)}  && binsof (cp_fd_fmt) intersect {(FMT_S)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVTL_U)} && binsof (cp_fd_arith_opcode);
 
             bins FCVT_S_D   = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_D)}  && binsof (cp_fd_fmt) intersect {(FMT_S)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT_U)}  && binsof (cp_fd_arith_opcode);
-            bins FCVT_D_S   = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_D)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT)}    && binsof (cp_fd_arith_opcode);    
+            bins FCVT_D_S   = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_D)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT)}    && binsof (cp_fd_arith_opcode);
 
             bins FCVT_W_D   = binsof (cp_fd_funct5) intersect {(F5_FCVT_W_S)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT)}    && binsof (cp_fd_arith_opcode);
             bins FCVT_WU_D  = binsof (cp_fd_funct5) intersect {(F5_FCVT_W_S)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVT_U)}  && binsof (cp_fd_arith_opcode);
@@ -470,10 +480,14 @@ endfunction : is_c_instruction
             bins FCVT_D_L   = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_W)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVTL)}   && binsof (cp_fd_arith_opcode);
             bins FCVT_D_LU  = binsof (cp_fd_funct5) intersect {(F5_FCVT_S_W)}  && binsof (cp_fd_fmt) intersect {(FMT_D)}  && binsof (cp_fd_rs2_fcvt) intersect {(FCVTL_U)} && binsof (cp_fd_arith_opcode);
 
+            ignore_bins others_funct = cp_fd_fcvt_inst with (!(cp_fd_funct5 inside {F5_FCVT_W_S, F5_FCVT_S_W, F5_FCVT_S_D}));
+            ignore_bins others1 = cp_fd_fcvt_inst with (cp_fd_funct5 == F5_FCVT_S_D && (cp_fd_rs2_fcvt == FCVTL_U || cp_fd_rs2_fcvt == FCVTL));
+            ignore_bins others2 = cp_fd_fcvt_inst with (cp_fd_fmt == FMT_D && cp_fd_rs2_fcvt == FCVT_U);
+            ignore_bins others3 = cp_fd_fcvt_inst with (cp_fd_fmt == FMT_S && cp_fd_rs2_fcvt == FCVT);
         }
 
         cp_fd_fused_inst: cross cp_fd_fused_opcode, cp_fd_fmt iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0;
+            // option.cross_auto_bin_max = 0;
             bins FMADD_S   = binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_fused_opcode) intersect {(FMADD)};
             bins FNMADD_S  = binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_fused_opcode) intersect {(FNMADD)};
             bins FMSUB_S   = binsof (cp_fd_fmt) intersect {(FMT_S)} && binsof (cp_fd_fused_opcode) intersect {(FMSUB)};
@@ -509,7 +523,7 @@ endfunction : is_c_instruction
         cp_funct2 : coverpoint i_instruction.ca_type.funct2 iff ( i_rsn && i_valid ){
             bins C_SUB_SUBW = {C_SUB_SUBW_FUNCT2};
             bins C_XOR_ADDW = {C_XOR_ADDW_FUNCT2};
-            bins C_OR       = {C_OR_FUNCT2};    
+            bins C_OR       = {C_OR_FUNCT2};
             bins C_AND      = {C_AND_FUNCT2};
         }
 
@@ -550,16 +564,19 @@ endfunction : is_c_instruction
         }
 
         cp_cr_type : cross cp_funct4, cp_opcode, cp_rs1, cp_rs2 iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_JR     = binsof (cp_funct4) intersect {(C_MV_JR_FUNCT4)}       && binsof (cp_rs1) intersect {[5'd1 : 5'd31]} && binsof (cp_rs2) intersect {5'd0}           && binsof (cp_opcode) intersect {C2};
             bins C_MV     = binsof (cp_funct4) intersect {(C_MV_JR_FUNCT4)}       && binsof (cp_rs1) intersect {[5'd1 : 5'd31]} && binsof (cp_rs2) intersect {[5'd1 : 5'd31]} && binsof (cp_opcode) intersect {C2};
             bins C_EBREAK = binsof (cp_funct4) intersect {(C_ADD_EB_JALR_FUNCT4)} && binsof (cp_rs1) intersect {5'd0}           && binsof (cp_rs2) intersect {5'd0}           && binsof (cp_opcode) intersect {C2};
             bins C_JALR   = binsof (cp_funct4) intersect {(C_ADD_EB_JALR_FUNCT4)} && binsof (cp_rs1) intersect {[5'd1 : 5'd31]} && binsof (cp_rs2) intersect {5'd0}           && binsof (cp_opcode) intersect {C2};
             bins C_ADD    = binsof (cp_funct4) intersect {(C_ADD_EB_JALR_FUNCT4)} && binsof (cp_rs1) intersect {[5'd1 : 5'd31]} && binsof (cp_rs2) intersect {[5'd1 : 5'd31]} && binsof (cp_opcode) intersect {C2};
+
+            ignore_bins others_op = cp_cr_type with (cp_opcode != C2 || (cp_rs1 == 0 && cp_funct4 == C_MV_JR_FUNCT4));
+            ignore_bins others2 = cp_cr_type with (cp_rs1 == 0 && cp_rs2 != 0);
         }
 
         cp_ci_type : cross cp_funct3, cp_opcode, cp_rd  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_LWSP     = binsof (cp_funct3) intersect {(C_LWSP_FUNCT3)}     && binsof (cp_opcode) intersect {C2};
             bins C_LDSP     = binsof (cp_funct3) intersect {(C_LDSP_FUNCT3)}     && binsof (cp_opcode) intersect {C2};
             bins C_FLDSP    = binsof (cp_funct3) intersect {(C_FLDSP_FUNCT3)}    && binsof (cp_opcode) intersect {C2};
@@ -569,56 +586,77 @@ endfunction : is_c_instruction
             bins C_ADDI16SP = binsof (cp_funct3) intersect {(C_ADDI16SP_LUI_FUNCT3)} && binsof (cp_opcode) intersect {C1} && binsof (cp_rd) intersect {5'd2};
             bins C_LUI      = binsof (cp_funct3) intersect {(C_ADDI16SP_LUI_FUNCT3)} && binsof (cp_opcode) intersect {C1} && binsof (cp_rd) intersect {5'd1, [5'd3:5'd31]};
             bins C_SLLI     = binsof (cp_funct3) intersect {(C_SLLI_FUNCT3)}     && binsof (cp_opcode) intersect {C1} && binsof (cp_rd) intersect {5'd1, [5'd3:5'd31]};
+
+            ignore_bins others_op = cp_ci_type with (cp_opcode == C0);
+            ignore_bins others2 = cp_ci_type with (cp_opcode == C2 && !(cp_funct3 inside {C_LWSP_FUNCT3, C_LDSP_FUNCT3, C_FLDSP_FUNCT3}));
+            ignore_bins others3 = cp_ci_type with (cp_opcode == C1 && !(cp_funct3 inside {C_ADDI_FUNCT3, C_ADDIW_FUNCT3, C_LI_FUNCT3, C_ADDI16SP_LUI_FUNCT3, C_SLLI_FUNCT3}));
+            ignore_bins others4 = cp_ci_type with (cp_opcode == C1 && cp_funct3 == C_ADDI16SP_LUI_FUNCT3 && cp_rd == 0);
+            ignore_bins others5 = cp_ci_type with (cp_opcode == C1 && cp_funct3 == C_SLLI_FUNCT3 && cp_rd == 2);
         }
 
         cp_css_type : cross cp_funct3, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_SWSP     = binsof (cp_funct3) intersect {(C_SWSP_FUNCT3)}     && binsof (cp_opcode) intersect {C2};
             bins C_SDSP     = binsof (cp_funct3) intersect {(C_SDSP_FUNCT3)}     && binsof (cp_opcode) intersect {C2};
             bins C_FSDSP    = binsof (cp_funct3) intersect {(C_FSDSP_FUNCT3)}    && binsof (cp_opcode) intersect {C2};
+
+            ignore_bins others_op = cp_css_type with (cp_opcode != C2 || !(cp_funct3 inside {C_SWSP_FUNCT3, C_SDSP_FUNCT3, C_FSDSP_FUNCT3}));
         }
 
         cp_ciw_type : cross cp_funct3, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_ADDI4SPN     = binsof (cp_funct3) intersect {(C_ADDI4SPN_FUNCT3)} && binsof (cp_opcode) intersect {C0};
+
+            ignore_bins others_op = cp_ciw_type with (cp_opcode != C0 || cp_funct3 != C_ADDI4SPN_FUNCT3);
         }
 
         cp_cl_type : cross cp_funct3, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_LW     = binsof (cp_funct3) intersect {(C_LW_FUNCT3)} && binsof (cp_opcode) intersect {C0};
             bins C_LD     = binsof (cp_funct3) intersect {(C_LD_FUNCT3)} && binsof (cp_opcode) intersect {C0};
             bins C_FLD    = binsof (cp_funct3) intersect {(C_FLD_FUNCT3)} && binsof (cp_opcode) intersect {C0};
+
+            ignore_bins others_op = cp_cl_type with (cp_opcode != C0 || !(cp_funct3 inside {C_LW_FUNCT3, C_LD_FUNCT3, C_FLD_FUNCT3}));
         }
 
         cp_cs_type : cross cp_funct3, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_SW     = binsof (cp_funct3) intersect {(C_SW_FUNCT3)} && binsof (cp_opcode) intersect {C0};
             bins C_SD     = binsof (cp_funct3) intersect {(C_SD_FUNCT3)} && binsof (cp_opcode) intersect {C0};
             bins C_FSD    = binsof (cp_funct3) intersect {(C_FSD_FUNCT3)} && binsof (cp_opcode) intersect {C0};
+
+            ignore_bins others_op = cp_cs_type with (cp_opcode != C0 || !(cp_funct3 inside {C_SW_FUNCT3, C_SD_FUNCT3, C_FSD_FUNCT3}));
         }
 
         cp_ca_type : cross cp_funct6, cp_funct2, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_AND    = binsof (cp_funct6) intersect {(C_ARITH1_FUNCT6)} && binsof (cp_funct2) intersect {(C_AND_FUNCT2)}      && binsof (cp_opcode) intersect {C1};
             bins C_OR     = binsof (cp_funct6) intersect {(C_ARITH1_FUNCT6)} && binsof (cp_funct2) intersect {(C_OR_FUNCT2)}       && binsof (cp_opcode) intersect {C1};
             bins C_XOR    = binsof (cp_funct6) intersect {(C_ARITH1_FUNCT6)} && binsof (cp_funct2) intersect {(C_XOR_ADDW_FUNCT2)} && binsof (cp_opcode) intersect {C1};
             bins C_SUB    = binsof (cp_funct6) intersect {(C_ARITH1_FUNCT6)} && binsof (cp_funct2) intersect {(C_SUB_SUBW_FUNCT2)} && binsof (cp_opcode) intersect {C1};
             bins C_ADDW   = binsof (cp_funct6) intersect {(C_ARITH2_FUNCT6)} && binsof (cp_funct2) intersect {(C_XOR_ADDW_FUNCT2)} && binsof (cp_opcode) intersect {C1};
             bins C_SUBW   = binsof (cp_funct6) intersect {(C_ARITH2_FUNCT6)} && binsof (cp_funct2) intersect {(C_SUB_SUBW_FUNCT2)} && binsof (cp_opcode) intersect {C1};
+
+            ignore_bins others_op = cp_ca_type with (cp_opcode != C1);
+            ignore_bins others_funct = cp_ca_type with (cp_funct2 inside {C_OR_FUNCT2, C_AND_FUNCT2} && cp_funct6 == C_ARITH2_FUNCT6);
         }
 
         cp_cb_type : cross cp_funct3, cp_opcode, cp_cb_imm2  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_BEQZ    = binsof (cp_funct3) intersect {(C_BEQZ_FUNCT3)} && binsof (cp_opcode) intersect {C1};
             bins C_BNEZ    = binsof (cp_funct3) intersect {(C_BNEZ_FUNCT3)} && binsof (cp_opcode) intersect {C1};
             bins C_SRLI64  = binsof (cp_funct3) intersect {(C_COMMON_Q1_FUNCT3)} && binsof (cp_opcode) intersect {C1} && binsof (cp_cb_imm2) intersect {3'b000};
             bins C_SRAI64  = binsof (cp_funct3) intersect {(C_COMMON_Q1_FUNCT3)} && binsof (cp_opcode) intersect {C1} && binsof (cp_cb_imm2) intersect {3'b001};
             bins C_ANDI    = binsof (cp_funct3) intersect {(C_COMMON_Q1_FUNCT3)} && binsof (cp_opcode) intersect {C1} && binsof (cp_cb_imm2) intersect {3'b010,3'b110};
+
+            ignore_bins others_op = cp_cb_type with (!(cp_funct3 inside {C_BEQZ_FUNCT3, C_BNEZ_FUNCT3, C_COMMON_Q1_FUNCT3}) || cp_opcode != C1);
         }
 
         cp_cj_type : cross cp_funct3, cp_opcode  iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins C_J      = binsof (cp_funct3) intersect {(C_J_FUNCT3)} && binsof (cp_opcode) intersect {C1};
+
+            ignore_bins others = cp_cj_type with (cp_funct3 != C_J_FUNCT3 || cp_opcode != C1);
             // bins C_JAL    = binsof (cp_funct3) intersect {(C_JAL_)} && binsof (cp_opcode) intersect {C1}; // TODO: only RV32, need to confirm
         }
 
@@ -669,7 +707,7 @@ endfunction : is_c_instruction
             bins CSRRSI         = {F3_CSRRSI};
             bins CSRRCI         = {F3_CSRRCI};
         }
-        
+
         cp_csr : coverpoint i_instruction.csr_type.csr iff ( i_rsn && i_valid ){
             bins ECALL  = {ECALL};
             bins EBREAK = {EBREAK};
@@ -677,9 +715,11 @@ endfunction : is_c_instruction
 
         cp_system_csr : cross cp_opcode, cp_funct3 iff ( i_rsn && i_valid );
         cp_ecall_ebreak : cross cp_opcode, cp_funct3, cp_csr iff ( i_rsn && i_valid ){
-            option.cross_auto_bin_max = 0; 
+            // option.cross_auto_bin_max = 0;
             bins ecall   = binsof (cp_funct3) intersect {(F3_ECALL_EBREAK)} && binsof( cp_opcode) && binsof(cp_csr) intersect {(ECALL)};
             bins ebreak   = binsof (cp_funct3) intersect {(F3_ECALL_EBREAK)} && binsof( cp_opcode) && binsof(cp_csr) intersect {(EBREAK)};
+
+            ignore_bins others1 = !binsof (cp_funct3) intersect {(F3_ECALL_EBREAK)};
         }
 
     endgroup : cg_csr
