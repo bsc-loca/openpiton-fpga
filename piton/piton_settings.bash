@@ -11,7 +11,7 @@
 
 export DV_ROOT=$PITON_ROOT/piton
 export MODEL_DIR=$PITON_ROOT/build
-export MEEP_DIR=$PITON_ROOT/meep_shell
+export MEEP_DIR=$DV_ROOT/design/chipset/meep_shell
 
 if [ `uname -s` = "SunOS" ]
 then
