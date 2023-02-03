@@ -264,7 +264,7 @@ fpga-shell-trigger:
             COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
-                branch: production
+                branch: develop/cicd_fixes
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
