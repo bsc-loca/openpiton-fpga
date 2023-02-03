@@ -16,23 +16,27 @@ NC='\033[0m'
 
 function help(){
 
-while getopts 'lh' OPTION; do
+while getopts 'sh' OPTION; do
   case "$OPTION" in
-    l)
-        
-        echo "linuxconfig"
+    s)       
+        echo -e ${LR} "ACME_EA Naming Convention" >&2${NC} 
+        echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " >&2
+        echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" >&2
+        echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" >&2
+        echo -e       "  ACME_EA aHbVcM; where:" >&2
+        echo -e       "   "a" means the number of cores in the system" >&2
+        echo -e       "   "b" means the number of vector lanes" >&2
+        echo -e       "   "c" means the number of MT " >&2 ${NC}
+        exit 0
     ;;
     h)
       echo -e ${LR}"Help menu "
       echo -e "script usage: $(basename "$0") <EA_name>" >&2  ${NC} 
       echo -e "<EA_name> available combinatios :" >&2
-      echo -e ${WH}"  acme: CORE=lagarto" >&2
-      echo -e "  ariane: CORE=ariane x_tiles=2 y_tyles=2" >&2
-      echo -e "  pronoc: CORE=lagarto x_tiles=2 y_tyles=2 PROTO_OPTIONS=--pronoc" >&2
-      echo -e "  meep_dvino: CORE=lagarto PROTO_OPTIONS=--vpu" >&2
-      echo -e "  acme_v2: CORE=lagarto x_tiles=2 y_tyles=2 " >&2
-      echo -e "  acme_vpu: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2 PROTO_OPTIONS=--vpu --pronoc --acme --vlanes" >&2 ${NC}
-	  exit 0
+      echo -e ${WH} "  acme_ea_4A: CORE=ariane x_tiles=2 y_tyles=2" >&2
+      echo -e       "  acme_ea_1H16V: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" >&2
+      echo -e       "  acme_ea_4H2V: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" >&2
+      exit 0
       ;;
     ?)
       echo "script usage: ./$(basename "$0") <EA_name>" >&2
@@ -65,44 +69,30 @@ fi
 function ea_flavours() {
     local __eaName=$1
 
+
     case "$1" in
-        acme)
-            CORE=lagarto
-            echo -e ${LP}"    Selected build configuration: Lagarto 1x1" ${NC}
-            ;;
-        ariane)
+        acme_ea_4A)
             CORE=ariane
             XTILES=2
             YTILES=2
+            echo -e ${LP}"    Selected build configuration: Lagarto 1x1" ${NC}
+            ;;
+        acme_ea_1H16V)
+            CORE=lagarto
+            XTILES=1
+            YTILES=1
+            VLANES=16
+            PROTO_OPTIONS=" --vpu --vlanes $VLANES"
             echo -e ${LP}"    Selected build configuration: Ariane 2x2" ${NC}
             ;;
-        pronoc)
-            CORE=lagarto
-            XTILES=2
-            YTILES=2
-            PROTO_OPTIONS=" --pronoc"
-            echo -e ${LP}"    Selected build configuration: Lagarto 2x2 with Pronoc" ${NC}
-            ;; 
-        meep_dvino)
-            CORE=lagarto
-            PROTO_OPTIONS=" --vpu"
-            echo -e ${LP}"    Selected build configuration: MEEP DVINO" ${NC}
-            ;; 
-        acme_v2)
-            CORE=lagarto
-            XTILES=2
-            YTILES=2
-            echo -e ${LP}"    Selected build configuration: Lagarto 2x2" ${NC}
-            ;;
-        acme_vpu)
+        acme_ea_4H2V)
             CORE=lagarto
             XTILES=2
             YTILES=2
             VLANES=2
-            # Add VPU
-            PROTO_OPTIONS=" --vpu --pronoc --acme --vlanes $VLANES"
-            echo -e ${LP}"Selected build configuration: Lagarto 2x2 plus VPU and pronoc" ${NC}
-            ;;
+            PROTO_OPTIONS=" --vpu --vlanes $VLANES"
+            echo -e ${LP}"    Selected build configuration: Lagarto 2x2 with Pronoc" ${NC}
+            ;; 
         default)
             # Default options
             CORE=lagarto
@@ -118,7 +108,7 @@ function ea_flavours() {
 # Check the input arguments
 # The first one must be the EA, second one will be MEEP 
 
-declare -A map=( [acme]=1 [ariane]=1 [pronoc]=1 [meep_dvino]=1 [acme_v2]=1 [acme_vpu]=1 [default]=1)
+declare -A map=( [acme_ea_4A]=1 [acme_ea_1H16V]=1 [acme_ea_4H2V]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo -e ${YELLOW}"EA selection is supported: $ea_is" ${NC}
