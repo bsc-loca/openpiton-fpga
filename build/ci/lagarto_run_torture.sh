@@ -44,7 +44,7 @@ TORTURE_SIZE=$2
 [ -f signature.txt ] && rm signature.txt 
 [ -f $TORTURE_CONFIG.report ] && rm $TORTURE_CONFIG.report
 
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
 echo -e "${green}**********************************************${clear}"
 echo -e "${green}*           Running Torture Tests            *${clear}"
