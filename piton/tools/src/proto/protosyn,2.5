@@ -476,7 +476,7 @@ def checkCmdOptions(options):
     if options.board == "f1":
         design_data = find_design_block("piton_aws")
     else:
-        design_data = find_design_block(options.design)
+        design_data = find_design_block(options.design, options.meep_mode)
     if (design_data == None):
         print_error("Could not find design module '" + options.design + "'")
         usage()
