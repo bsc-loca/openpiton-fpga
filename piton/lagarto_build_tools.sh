@@ -56,7 +56,7 @@ else
   ISA_TEST_MODULE_PATH=${VAS_TILE_CORE_PATH}/modules/riscv-tests
   BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
 
-#  git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
+  git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
 
   # parallel compilation
   export NUM_JOBS=4

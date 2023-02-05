@@ -75,7 +75,7 @@ stages:
 
 simulation:
         stage: simulation
-        timeout: 2h        
+        timeout: 1h        
         variables:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: recursive
@@ -98,7 +98,7 @@ simulation:
             - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
             - "cd $BUILD_PATH"
             - echo "Running sanity cosimulation test with Questasim"
-            - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -cosim > /dev/null
+            - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
             - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
             - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
             - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
