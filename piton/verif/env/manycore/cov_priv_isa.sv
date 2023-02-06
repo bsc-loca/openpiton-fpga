@@ -3,8 +3,8 @@ module cov_priv_isa(
     input                                   i_clk,
     input                                   i_rsn, 
     input                                   i_valid,
-    input cov_isa_defs::instruction_t       i_instruction,
-    input riscv::status_rv64_t              i_mstatus,
+    input var cov_isa_defs::instruction_t   i_instruction,
+    input var riscv::status_rv64_t          i_mstatus,
     input [63:0]                            i_mcause,
     input [63:0]                            i_scause,
     input [63:0]                            i_mtvec,
@@ -14,10 +14,10 @@ module cov_priv_isa(
     input [11:0]                            i_csr_addr,
     input [2:0]                             i_csr_cmd,
     input [1:0]                             i_priv_lvl,
-    input drac_pkg::exception_t             i_pipeline_exc,
-    input drac_pkg::exception_t             i_csr_exc,
-    input drac_pkg::exception_t             i_int,
-    input drac_pkg::instr_type_t            i_instr_type
+    input var drac_pkg::exception_t         i_pipeline_exc,
+    input var drac_pkg::exception_t         i_csr_exc,
+    input var drac_pkg::exception_t         i_int,
+    input var drac_pkg::instr_type_t        i_instr_type
     );
 import riscv::*;
 import drac_pkg::*;

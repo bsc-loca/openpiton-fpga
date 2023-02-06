@@ -28,20 +28,20 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
     
     cd build
 
-Compiling Openpiton with Lagarto. Right now, only MEEP_VPU is supported, that is why -config_rtl=MEEP_VPU flag is mandatory.
+Compiling Openpiton with Lagarto.
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
 
 Compiling with torture (to generate signature file for spike):
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
 Compiling MEEP-VPU with different lanes. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_2_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_4_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_8_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -config_rtl=VPU_16_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_2_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_4_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_8_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_16_LANES
     
 ### Clean builds
 
@@ -54,7 +54,7 @@ You can clean-up the environment and meta data among compilations by doing:
 
 Compiling and running RISC-V Tests with Lagarto in OpenPiton
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_8.S -lagarto -precompiled
 
@@ -62,12 +62,12 @@ Vector tests don't support cosimulation, yet.
 
 Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  -config_rtl=MEEP_VPU -cosim
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim
 
 Compiling and running RISC-V Tests with Lagarto in OpenPiton with coverage
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU -cov
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -cov
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cov
 
 ARIANE core: Compiling and running requires to setup ariane's paths and variables:
@@ -106,7 +106,7 @@ After the execution of the benchmark you can display the result with:
 
 First build the system with the number of tiles that you desire. The below example use 4 tiles.
 
-    sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=MEEP_VPU
+    sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
 
 Then recompile the benchmark to work with 4 tiles:
 
