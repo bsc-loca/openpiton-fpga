@@ -55,12 +55,12 @@ help $1
 #####################
 
 # /bin/true is a command that returns 0 (a truth value in the shell)
-if [ x$1 == x--dryrun ]; then
-	dryrun=/bin/true
-	shift
-else
-	dryrun=/bin/false
-fi
+# if [ x$1 == x--dryrun ]; then
+# 	dryrun=/bin/true
+# 	shift
+# else
+# 	dryrun=/bin/false
+# fi
 
 ## Check the input arguments: no empty vaules
 
@@ -107,8 +107,7 @@ function ea_flavours() {
             XTILES=1
             YTILES=1
             echo -e ${LP}"Selected build configuration: Lagarto 1x1 " ${NC}
-            #PROTO_OPTIONS="--meep --eth --hbm --vpu"
-        ;;
+            ;;
     esac
     
     
@@ -137,7 +136,7 @@ function ea_options() {
 declare -A map=( [acme_ea-4a]=1 [acme_ea-1h16v]=1 [acme_ea-4h2v]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
-    echo -e ${YELLOW}"EA selection is supported: $ea_is" ${NC}
+    echo -e ${YELLOW}"EA_selection: $ea_is" ${NC}
     ea_flavours $ea_is
 else
     echo -e ${RED}"EA selection is not supported" ${NC}
@@ -147,7 +146,6 @@ shift
 ## Build configurations
  declare -A map1=( [pronoc]=1  [default]=1)
  ea_conf=$1
-
 
 if [ x$1 == x ]; then
     echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
