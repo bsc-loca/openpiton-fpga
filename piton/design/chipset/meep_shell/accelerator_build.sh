@@ -19,27 +19,27 @@ function help(){
 while getopts 'sh' OPTION; do
   case "$OPTION" in
     s)       
-        echo -e ${LR} "ACME_EA Naming Convention" >&2${NC} 
-        echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " >&2
-        echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" >&2
-        echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" >&2
-        echo -e       "  ACME_EA aHbVcM; where:" >&2
-        echo -e       "   "a" means the number of cores in the system" >&2
-        echo -e       "   "b" means the number of vector lanes" >&2
-        echo -e       "   "c" means the number of MT " >&2 ${NC}
+        echo -e ${LR} "ACME_EA Naming Convention" ${NC} 
+        echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
+        echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" 
+        echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" 
+        echo -e       "  ACME_EA aHbVcM; where:" 
+        echo -e       "   "a" means the number of cores in the system" 
+        echo -e       "   "b" means the number of vector lanes" 
+        echo -e       "   "c" means the number of MT "  ${NC}
         exit 0
     ;;
     h)
       echo -e ${LR}"Help menu "
-      echo -e "script usage: $(basename "$0") <EA_name>" >&2  ${NC} 
-      echo -e "<EA_name> available combinatios :" >&2
-      echo -e ${WH} "  acme_ea-4a: CORE=ariane x_tiles=2 y_tyles=2" >&2
-      echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" >&2
-      echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" >&2
+      echo -e "script usage: $(basename "$0") <EA_name> <protosyn_flag>"   ${NC} 
+      echo -e "<EA_name> available combinatios :" 
+      echo -e ${WH} "  acme_ea-4a: CORE=ariane x_tiles=2 y_tyles=2" 
+      echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
+      echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
       exit 0
       ;;
     ?)
-      echo "script usage: ./$(basename "$0") <EA_name>" >&2
+      echo "script usage: ./$(basename "$0") <EA_name>" 
       exit 1
       ;;
   esac
