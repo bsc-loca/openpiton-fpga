@@ -6,6 +6,7 @@
 
 FOLDER_NAME=$(date +%y%m%d_%H%M_%S)
 RESULT_LOG=report_isa_groups.txt
+SECONDS=0
 
 echo "***** SETUP LAGARTO AS THE CORE *****"
 cd ..
@@ -14,7 +15,7 @@ source piton/lagarto_build_tools.sh
 
 echo "***** COMPILE OpenPIton with LAGARTO AS THE CORE *****"
 cd build
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -config_rtl=MEEP_VPU 
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_DISABLE 
 
 echo "***** RUNNING all ISA Group Tests, Results in ${FOLDER_NAME}/${RESULT_LOG}"
 mkdir $FOLDER_NAME
@@ -31,6 +32,8 @@ do
   regreport $(ls -td -- */ | head -n 1) -summary |tee -a $RESULT_LOG
   
 done < ../isa_group_list.txt
+
+echo "Elapsed Time: $SECONDS seconds"
 
 # Perform the report once all sims are finished
 #for d in */ ; do
