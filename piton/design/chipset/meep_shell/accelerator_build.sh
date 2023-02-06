@@ -33,9 +33,9 @@ while getopts 'sh' OPTION; do
       echo -e ${LR}"Help menu "
       echo -e "script usage: $(basename "$0") <EA_name>" >&2  ${NC} 
       echo -e "<EA_name> available combinatios :" >&2
-      echo -e ${WH} "  acme_ea_4A: CORE=ariane x_tiles=2 y_tyles=2" >&2
-      echo -e       "  acme_ea_1H16V: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" >&2
-      echo -e       "  acme_ea_4H2V: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" >&2
+      echo -e ${WH} "  acme_ea-4a: CORE=ariane x_tiles=2 y_tyles=2" >&2
+      echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" >&2
+      echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" >&2
       exit 0
       ;;
     ?)
@@ -46,7 +46,9 @@ while getopts 'sh' OPTION; do
 done
 }
 
+# Execute the help function
 help $1
+#####################
 
 # /bin/true is a command that returns 0 (a truth value in the shell)
 if [ x$1 == x--dryrun ]; then
@@ -56,42 +58,44 @@ else
 	dryrun=/bin/false
 fi
 
+## Check the input arguments: no empty vaules
 
 if [ x$1 == x ]; then
    echo Missing arguments
-   echo Usage: $0 [--dryrun] EA_flavours meep_config
-   echo -e ${RED}"    EAflavours supported: acme ariane pronoc meep_dvino acme_v2 acme_vpu" ${NC}
+   echo Usage: $0 EA_flavours meep_config
+   echo -e ${RED}"    EA_flavours supported: acme_ea-4a acme_ea-1h16v acme_ea-4h2v default" ${NC}
    exit 1
 fi
 
-#EA Flavours function
+#EA Flavours function: Selection of the production and test bitstreams
+#There we have the mandatories protsyn flags
+PROTO_OPTIONS="--meep --eth --ncmem --hbm "
 
 function ea_flavours() {
     local __eaName=$1
-
-
+    
     case "$1" in
-        acme_ea_4A)
+        acme_ea-4a)
             CORE=ariane
             XTILES=2
             YTILES=2
-            echo -e ${LP}"    Selected build configuration: Lagarto 1x1" ${NC}
+            echo -e ${LP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
             ;;
-        acme_ea_1H16V)
+        acme_ea-1h16v)
             CORE=lagarto
             XTILES=1
             YTILES=1
             VLANES=16
-            PROTO_OPTIONS=" --vpu --vlanes $VLANES"
-            echo -e ${LP}"    Selected build configuration: Ariane 2x2" ${NC}
+            PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
+            echo -e ${LP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
-        acme_ea_4H2V)
+        acme_ea-4h2v)
             CORE=lagarto
             XTILES=2
             YTILES=2
             VLANES=2
-            PROTO_OPTIONS=" --vpu --vlanes $VLANES"
-            echo -e ${LP}"    Selected build configuration: Lagarto 2x2 with Pronoc" ${NC}
+            PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
+            echo -e ${LP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;; 
         default)
             # Default options
@@ -104,11 +108,23 @@ function ea_flavours() {
     esac
 }
 
-
+function ea_options() {
+    
+    case "$1" in
+        pronoc)
+        PROTO_OPTIONS+=--pronoc 
+        echo -e ${LP}"    ProNoc routers " ${NC}
+        ;;
+        vpu)
+        PROTO_OPTIONS+=--vpu
+        echo -e ${LP}"    vpu " ${NC}
+        ;;
+    esac
+}
 # Check the input arguments
 # The first one must be the EA, second one will be MEEP 
 
-declare -A map=( [acme_ea_4A]=1 [acme_ea_1H16V]=1 [acme_ea_4H2V]=1  [default]=1)
+declare -A map=( [acme_ea-4a]=1 [acme_ea-1h16v]=1 [acme_ea-4h2v]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo -e ${YELLOW}"EA selection is supported: $ea_is" ${NC}
@@ -119,17 +135,33 @@ else
 fi
 shift
 ## Build configurations
+ declare -A map=( [pronoc]=1  [default]=1)
+ ea_conf=$1
+# if [[ ${map["$ea_conf"]} ]] ; then
+#     echo -e ${RED}"    Missing meep optional configuration arguments" ${NC}
+#     # MEEP="--meep --eth --ncmem --hbm "
+#     exit 1
+# # else
+# #     MEEP="--vnpm --hbm "
+# fi
+
 if [ x$1 == x ]; then
     echo -e ${RED}"    Missing meep optional configuration arguments" ${NC}
     # MEEP="--meep --eth --ncmem --hbm "
     exit 1
-# else
+elif [[ ${map["$ea_conf"]} ]]; then
 #     MEEP="--vnpm --hbm "
+   ea_options $ea_conf
+else
+    echo -e ${RED}"     EA protosyn flags is not supported" ${NC}
+    exit 1
 fi
+
 
 # echo "EA configuration is $EA_MOD with $MEEP$PROTO_OPTIONS"
 
-PROTO_OPTIONS=$MEEP$PROTO_OPTIONS
+echo "final result : $CORE $XTILES $YTILES, $PROTO_OPTIONS"
 
+# Execute protosyn command to build the infrastructure with OP
 make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
 
