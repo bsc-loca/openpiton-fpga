@@ -31,11 +31,14 @@ while getopts 'sh' OPTION; do
     ;;
     h)
       echo -e ${LR}"Help menu "
-      echo -e "script usage: $(basename "$0") <EA_name> <protosyn_flag>"   ${NC} 
+      echo -e "Accelerator_build: A script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
+      echo -e "script usage: ./$(basename "$0") <EA_name> <protosyn_flag>"   ${NC} 
       echo -e "<EA_name> available combinatios :" 
       echo -e ${WH} "  acme_ea-4a: CORE=ariane x_tiles=2 y_tyles=2" 
       echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
       echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
+      echo -e "<protosyn_flag> available combinatios :"
+      echo -e  "  --pronoc: ProNoC routers" ${NC}
       exit 0
       ;;
     ?)
