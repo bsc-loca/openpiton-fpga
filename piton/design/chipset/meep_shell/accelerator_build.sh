@@ -72,9 +72,9 @@ fi
 PROTO_OPTIONS="--meep --eth --ncmem --hbm "
 
 function ea_flavours() {
-    local __eaName=$1
     
-    case "$1" in
+    local eaName=$1
+    case "$eaName" in
         acme_ea-4a)
             CORE=ariane
             XTILES=2
@@ -106,6 +106,8 @@ function ea_flavours() {
             #PROTO_OPTIONS="--meep --eth --hbm --vpu"
         ;;
     esac
+    
+    
 }
 
 function ea_options() {
@@ -137,18 +139,11 @@ shift
 ## Build configurations
  declare -A map=( [pronoc]=1  [default]=1)
  ea_conf=$1
-# if [[ ${map["$ea_conf"]} ]] ; then
-#     echo -e ${RED}"    Missing meep optional configuration arguments" ${NC}
-#     # MEEP="--meep --eth --ncmem --hbm "
-#     exit 1
-# # else
-# #     MEEP="--vnpm --hbm "
-# fi
+
 
 if [ x$1 == x ]; then
-    echo -e ${RED}"    Missing meep optional configuration arguments" ${NC}
-    # MEEP="--meep --eth --ncmem --hbm "
-    exit 1
+    echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
+        
 elif [[ ${map["$ea_conf"]} ]]; then
 #     MEEP="--vnpm --hbm "
    ea_options $ea_conf
@@ -158,9 +153,8 @@ else
 fi
 
 
-# echo "EA configuration is $EA_MOD with $MEEP$PROTO_OPTIONS"
 
-echo "final result : $CORE $XTILES $YTILES, $PROTO_OPTIONS"
+echo "[DEBUG] final result : $CORE $XTILES $YTILES, $PROTO_OPTIONS"
 
 # Execute protosyn command to build the infrastructure with OP
 make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
