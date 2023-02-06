@@ -37,6 +37,7 @@ set DESIGN_DEFAULT_VERILOG_MACROS "PITON_FULL_SYSTEM PITON_FPGA_NO_DMBR MERGE_L1
 
 
 if {$::env(PITON_ARIANE) != "0"} {	
+    source $ARIANE_ROOT/parseFlistAriane.tcl
     set CORE_RTL_FILES [concat \
         ${OTHER_RTL_FILES} \
 	${ARIANE_RTL_FILES} \
@@ -49,7 +50,6 @@ if {$::env(PITON_LAGARTO) != "0" } {
     set CORE_RTL_FILES [concat \
 	${OTHER_RTL_FILES} \
 	${LAGARTO_RTL_FILES} \
-	${MEEP_VPU_FILES} \
     ]
     puts "Including Lagarto RTL files"
 }

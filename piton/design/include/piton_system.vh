@@ -171,3 +171,9 @@
 `elsif ALVEOU280_BOARD
     `define PITONSYS_DDR4	
 `endif
+
+
+`ifdef PITONSYS_MEEP
+ `undef PITONSYS_MC_SRAM
+ `undef PITONSYS_PCIE
+`endif

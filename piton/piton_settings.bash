@@ -11,6 +11,7 @@
 
 export DV_ROOT=$PITON_ROOT/piton
 export MODEL_DIR=$PITON_ROOT/build
+export MEEP_DIR=$DV_ROOT/design/chipset/meep_shell
 
 if [ `uname -s` = "SunOS" ]
 then
@@ -61,7 +62,11 @@ fi
 #export LM_LICENSE_FILE=
 
 # define vivado version if it deviates from the default
-export VIVADO_BIN="/opt/Xilinx/Vivado/2021.2/bin/vivado"
+export VIVADO_BIN=$(which vivado)
+
+if [  "x$VIVADO_BIN" == "x" ]; then
+	export VIVADO_BIN=/opt/Xilinx/Vivado/2021.2/bin/vivado
+fi
 
 # Please define MODELSIM_HOME only if you have MODELSIM, otherwise comment it out.
 

@@ -74,14 +74,56 @@ EthSyst::EthSyst() {
     exit(1);
   }
 
+  uncacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, UNCACHE_MEM_ADDR));
+  if (uncacheMem == MAP_FAILED) {
+    printf("Memory mapping of Non-cacheable DMA pool failed.\n");
+    exit(1);
+  }
+
+  cacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_MEM_ADDR));
+  if (cacheMem == MAP_FAILED) {
+    printf("Memory mapping of Cacheable DMA pool failed.\n");
+    exit(1);
+  }
+
+  cacheFlAddr = reinterpret_cast<uint8_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR));
+  if (cacheFlAddr == MAP_FAILED) {
+    printf("Memory mapping of Cache Control failed.\n");
+    exit(1);
+  }
+
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
-  txMem    = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  rxMem    = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  sgMem    = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
-  sgTxMem  = sgMem;
-  sgRxMem  = sgMem + (TX_SG_MEM_SIZE / sizeof(uint32_t));
+  gtCtrl   = ethSystBase + (GT_CTL_BASEADDR         / sizeof(uint32_t));
 
+// DMA mapped regions
+#ifdef DMA_MEM_HBM
+    txMemNC = uncacheMem + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = uncacheMem + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = uncacheMem + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #ifdef TXRX_MEM_CACHED
+    txMem   = cacheMem   + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMem   = cacheMem   + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+  #endif
+  #ifdef SG_MEM_CACHED
+    sgMem   = cacheMem   + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+  #else
+    sgMem   = sgMemNC;
+  #endif
+#else // SRAM case
+    txMemNC = ethSystBase + (TX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    rxMemNC = ethSystBase + (RX_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    sgMemNC = ethSystBase + (SG_MEM_CPU_BASEADDR     / sizeof(uint32_t));
+    txMem   = txMemNC;
+    rxMem   = rxMemNC;
+    sgMem   = sgMemNC;
+#endif
+
+  sgTxMem  = sgMem;
+  sgRxMem  = sgTxMem + (SG_TX_MEM_SIZE / sizeof(uint32_t));
 }
 
 // EthSyst::~EthSyst() {
@@ -89,12 +131,53 @@ EthSyst::EthSyst() {
 // }
 
 
+//***************** Enforced cache flush on specific addres *****************
+uint8_t volatile EthSyst::cacheFlush(size_t addr) {
+  // dummy read of special address according to https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
+  return *(cacheFlAddr + (((addr - size_t(cacheMem)) & CACHE_FLUSH_ADDRMASK) | CACHE_FLUSH_USER6MSB));
+}
+
+uint8_t volatile EthSyst::cacheInvalid(size_t addr) {
+  // dummy function so far
+  return 0;
+}
+
+//***************** Endianess swap funtions *****************
+// example: size_t addrSwapped = addr ^ (sizeof(uint64_t)-1);
+
+// uint64_t EthSyst::swap64(uint64_t val) {
+//   return ((val << 56) & 0xFF00000000000000) |
+//          ((val << 40) & 0x00FF000000000000) |
+//          ((val << 24) & 0x0000FF0000000000) |
+//          ((val << 8 ) & 0x000000FF00000000) |
+//          ((val >> 8 ) & 0x00000000FF000000) |
+//          ((val >> 24) & 0x0000000000FF0000) |
+//          ((val >> 40) & 0x000000000000FF00) |
+//          ((val >> 56) & 0x00000000000000FF) ;
+// }
+// example: mem64[addr/8] = swap64(val);
+
+// uint32_t EthSyst::swap32(uint32_t val) {
+//   return ((val << 24) & 0xFF000000) |
+//          ((val << 8 ) & 0x00FF0000) |
+//          ((val >> 8 ) & 0x0000FF00) |
+//          ((val >> 24) & 0x000000FF) ;
+// }
+// example: mem32[addrSwapped/4] = swap32(val);
+
+// uint16_t EthSyst::swap16(uint16_t val) {
+//   return ((val << 8 ) & 0xFF00) |
+//          ((val >> 8 ) & 0x00FF) ;
+// }
+// example: mem16[addrSwapped/2] = swap16(val);
+
+// example: mem8 [addrSwapped  ] = val;
+
 //***************** Initialization of 100Gb Ethernet Core *****************
-void EthSyst::ethCoreInit(bool gtLoopback) {
+void EthSyst::ethCoreInit() {
   printf("------- Initializing Ethernet Core -------\n");
-  // GT control via pins 
-  uint32_t volatile* gtCtrl = ethSystBase + (GT_CTL_BASEADDR / sizeof(uint32_t));
-  enum { GT_CTRL = XGPIO_DATA_OFFSET / sizeof(uint32_t) };
+  //100Gb Ethernet subsystem registers: https://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Register-Map
+  //old link: https://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=177
   enum { ETH_FULL_RST_ASSERT = RESET_REG_USR_RX_SERDES_RESET_MASK |
                                RESET_REG_USR_RX_RESET_MASK        |
                                RESET_REG_USR_TX_RESET_MASK,
@@ -136,8 +219,14 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX_STATUS_REG:    %0X \n", ethCore[STAT_TX_STATUS_REG]);
   printf("STAT_RX_STATUS_REG:    %0X \n", ethCore[STAT_RX_STATUS_REG]);
   printf("GT_LOOPBACK_REG:       %0X \n", ethCore[GT_LOOPBACK_REG]);
-  printf("\n");
+  printf("-------\n");
   
+}
+
+
+//***************** Bring-up of 100Gb Ethernet Core *****************
+void EthSyst::ethCoreBringup(bool gtLoopback) {
+  printf("------- Ethernet Core bring-up -------\n");
   if (gtLoopback) {
     printf("Enabling Near-End PMA Loopback\n");
     // gtCtrl[GT_CTRL] = 0x2222; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
@@ -161,9 +250,9 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   }
   printf("\n");
   
-  printf("Ethernet core bring-up.\n");
   physConnOrder = PHYS_CONN_WAIT_INI;
-  // http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
+  // http://docs.xilinx.com/r/en-US/pg203-cmac-usplus/Core-Bring-Up-Sequence
+  // old link: http://www.xilinx.com/support/documentation/ip_documentation/cmac_usplus/v3_1/pg203-cmac-usplus.pdf#page=204
   // via GPIO
   // rxtxCtrl[RX_CTRL] = CONFIGURATION_RX_REG1_CTL_RX_ENABLE_MASK;
   // rxtxCtrl[TX_CTRL] = CONFIGURATION_TX_REG1_CTL_TX_SEND_RFI_MASK;
@@ -214,6 +303,7 @@ void EthSyst::ethCoreInit(bool gtLoopback) {
   printf("STAT_TX/RX_STATUS_REGS: %0X/%0X \n", ethCore[STAT_TX_STATUS_REG],
                                                ethCore[STAT_RX_STATUS_REG]);
   printf("This Eth instance is physically connected in order (zero means 1st, non-zero means 2nd): %d \n", physConnOrder);
+  printf("------- Physical connection is established -------\n");
 }
 
 
@@ -323,7 +413,7 @@ void EthSyst::axiDmaInit() {
   printf("XAxiDma is initialized and reset: \n");
   printf("HasSg       = %d  \n", axiDma.HasSg);
   printf("Initialized = %d  \n", axiDma.Initialized);
-  if (0) {
+  if (1) {
     printf("RegBase                  = %lX \n", axiDma.RegBase);
     printf("HasMm2S                  = %d  \n", axiDma.HasMm2S);
     printf("HasS2Mm                  = %d  \n", axiDma.HasS2Mm);
@@ -348,9 +438,8 @@ void EthSyst::axiDmaInit() {
     printf("Rx_status  reg = %0X \n", dmaCore[S2MM_DMASR]);
     printf("Initial DMA Tx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DEVICE_TO_DMA));
     printf("Initial DMA Rx busy state: %d \n", XAxiDma_Busy(&axiDma,XAXIDMA_DMA_TO_DEVICE));
+    printf("-------\n");
   }
-
-  timerCntInit(); // initializing Timer as we use it in DMA transfer measurements
 }
 
 
@@ -376,8 +465,8 @@ void EthSyst::dmaBDSetup(bool RxnTx)
 
   // Setup BD space
   size_t const sgMemVirtAddr = reinterpret_cast<size_t>(RxnTx ? sgRxMem        : sgTxMem);
-  size_t const sgMemPhysAddr =                          RxnTx ? RX_SG_MEM_ADDR : TX_SG_MEM_ADDR;
-  size_t const sgMemSize     =                          RxnTx ? RX_SG_MEM_SIZE : TX_SG_MEM_SIZE;
+  size_t const sgMemPhysAddr =                          RxnTx ? SG_RX_MEM_ADDR : SG_TX_MEM_ADDR;
+  size_t const sgMemSize     =                          RxnTx ? SG_RX_MEM_SIZE : SG_TX_MEM_SIZE;
 
 	uint32_t BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT, sgMemSize);
 	Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
@@ -625,26 +714,13 @@ void EthSyst::switch_LB_DMA_Eth(bool txNrx, bool lbEn) {
 }
 
 
-//***************** Initialization of Full Ethernet System *****************
-void EthSyst::ethSystInit() {
-  timerCntInit();
-  //resetting BD memory to probably flush its cache before BD ring initialization, not needed anymore
-  // for (size_t addr = 0; addr < (SG_MEM_CPU_ADRRANGE/ sizeof(uint32_t)); ++addr) sgMem[addr] = 0;
-  axiDmaInit();
-  switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
-  switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-  ethTxRxEnable();
-  sleep(1); // in seconds
-}
-
-
 //***************** Flush the Receive buffers. All data will be lost. *****************
 int EthSyst::flushReceive() {
   // Checking if the engine is already in accept process
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
 	  uint32_t rxdBDs = 0;
 	  do {
-        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
+        XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_MEM_ADDR);
         dmaBDTransfer(true, 1, 1, BdPtr);
         rxdBDs = dmaBDCheck(true);
         printf("Flushing %d Rx transfers \n", rxdBDs);
@@ -652,10 +728,10 @@ int EthSyst::flushReceive() {
   } else // in simple mode
     while ((XAxiDma_ReadReg(axiDma.RxBdRing[0].ChanBase, XAXIDMA_SR_OFFSET) & XAXIDMA_HALTED_MASK) ||
            !XAxiDma_Busy  (&axiDma, XAXIDMA_DEVICE_TO_DMA)) {
-      int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+      int status = XAxiDma_SimpleTransfer(&axiDma, RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
       if (XST_SUCCESS != status) {
-        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
-                RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
+        printf("\nERROR: Initial Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
+                RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
         return status;
       }
       printf("Flushing Rx data... \n");
@@ -685,16 +761,14 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 	unsigned Index;
 	unsigned Length = ByteCount;
 	volatile uint32_t AlignBuffer;
-	volatile uint32_t *To32Ptr;
 	uint32_t* From32Ptr;
 	volatile uint16_t* To16Ptr;
 	uint16_t* From16Ptr;
 	volatile uint8_t* To8Ptr;
 	uint8_t* From8Ptr;
+  size_t txAddr = 0;
 
-	To32Ptr = (volatile uint32_t*)txMem;
-
-	if ((((uint32_t) SrcPtr) & 0x00000003) == 0) {
+	if ((size_t(SrcPtr) & 0x00000003) == 0) {
 
 		/*
 		 * Word aligned buffer, no correction needed.
@@ -705,7 +779,11 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output each word destination.
 			 */
-			*To32Ptr++ = *From32Ptr++;
+      txMem[txAddr] = *From32Ptr++;
+      #ifdef TXRX_MEM_CACHED
+        cacheFlush(size_t(&txMem[txAddr]));
+      #endif
+      txAddr++;
 
 			/*
 			 * Adjust length accordingly
@@ -722,7 +800,7 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 		From8Ptr = (uint8_t*) From32Ptr;
 
 	}
-	else if ((((uint32_t) SrcPtr) & 0x00000001) != 0) {
+	else if ((size_t(SrcPtr) & 0x00000001) != 0) {
 		/*
 		 * Byte aligned buffer, correct.
 		 */
@@ -741,7 +819,12 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output the buffer
 			 */
-			*To32Ptr++ = AlignBuffer;
+      txMem[txAddr] = AlignBuffer;
+      #ifdef TXRX_MEM_CACHED
+        cacheFlush(size_t(&txMem[txAddr]));
+      #endif
+      txAddr++;
+
 
 			/*.
 			 * Reset the temporary buffer pointer and adjust length.
@@ -788,7 +871,12 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 			/*
 			 * Output the buffer.
 			 */
-			*To32Ptr++ = AlignBuffer;
+      txMem[txAddr] = AlignBuffer;
+      #ifdef TXRX_MEM_CACHED
+        cacheFlush(size_t(&txMem[txAddr]));
+      #endif
+      txAddr++;
+
 
 			/*
 			 * Reset the temporary buffer pointer and adjust length.
@@ -823,7 +911,12 @@ void EthSyst::alignedWrite(void* SrcPtr, unsigned ByteCount)
 		*To8Ptr++ = *From8Ptr++;
 	}
 	if (Length) {
-		*To32Ptr++ = AlignBuffer;
+    txMem[txAddr] = AlignBuffer;
+    #ifdef TXRX_MEM_CACHED
+      cacheFlush(size_t(&txMem[txAddr]));
+    #endif
+    txAddr++;
+
 	}
 }
 
@@ -875,14 +968,14 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 	 */
     ByteCount = std::max((unsigned)ETH_MIN_PACK_SIZE, std::min(ByteCount, (unsigned)XAE_MAX_TX_FRAME_SIZE));
     if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, TX_DMA_MEM_ADDR);
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(false, 1, ByteCount, ByteCount, TX_MEM_ADDR);
       dmaBDTransfer(false, 1, 1, BdPtr);
 	    return XST_SUCCESS;
     } else { // in simple mode
-      int status = XAxiDma_SimpleTransfer(&axiDma, TX_DMA_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
+      int status = XAxiDma_SimpleTransfer(&axiDma, TX_MEM_ADDR, ByteCount, XAXIDMA_DMA_TO_DEVICE);
       if (XST_SUCCESS != status) {
-         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%X with lenth %d failed with status %d\n",
-                TX_DMA_MEM_ADDR, ByteCount, status);
+         printf("\nERROR: Ethernet XAxiDma Tx transfer from addr 0x%lX with lenth %d failed with status %d\n",
+                TX_MEM_ADDR, ByteCount, status);
       }
 	  return status;
 	}
@@ -903,7 +996,11 @@ int EthSyst::frameSend(uint8_t* FramePtr, unsigned ByteCount)
 ******************************************************************************/
 uint16_t EthSyst::getReceiveDataLength(uint16_t headerOffset) {
 
-	uint16_t length = rxMem[headerOffset / sizeof(uint32_t)];
+  uint32_t volatile* lengthPtr = &rxMem[headerOffset / sizeof(uint32_t)];
+  #ifdef TXRX_MEM_CACHED
+    cacheInvalid(size_t(lengthPtr));
+  #endif
+	uint16_t length = *lengthPtr;
 	length = ((length & 0xFF00) >> 8) | ((length & 0x00FF) << 8);
 
   printf("   Accepting packet at mem addr 0x%lX, extracting length/type %d(0x%X) at offset %d \n",
@@ -934,15 +1031,13 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	unsigned Length = ByteCount;
 	volatile uint32_t AlignBuffer;
 	uint32_t* To32Ptr;
-	volatile uint32_t* From32Ptr;
 	uint16_t* To16Ptr;
 	volatile uint16_t* From16Ptr;
 	uint8_t* To8Ptr;
 	volatile uint8_t* From8Ptr;
+  size_t rxAddr = 0;
 
-	From32Ptr = (uint32_t*)rxMem;
-
-	if ((((uint32_t) DestPtr) & 0x00000003) == 0) {
+	if ((size_t(DestPtr) & 0x00000003) == 0) {
 
 		/*
 		 * Word aligned buffer, no correction needed.
@@ -953,7 +1048,11 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Output each word.
 			 */
-			*To32Ptr++ = *From32Ptr++;
+      #ifdef TXRX_MEM_CACHED
+        cacheInvalid(size_t(&rxMem[rxAddr]));
+      #endif
+      *To32Ptr++ = rxMem[rxAddr];
+      rxAddr++;
 
 			/*
 			 * Adjust length accordingly.
@@ -967,7 +1066,7 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 		To8Ptr = (uint8_t*) To32Ptr;
 
 	}
-	else if ((((uint32_t) DestPtr) & 0x00000001) != 0) {
+	else if ((size_t(DestPtr) & 0x00000001) != 0) {
 		/*
 		 * Byte aligned buffer, correct.
 		 */
@@ -977,7 +1076,11 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-			AlignBuffer = *From32Ptr++;
+      #ifdef TXRX_MEM_CACHED
+        cacheInvalid(size_t(&rxMem[rxAddr]));
+      #endif
+      AlignBuffer = rxMem[rxAddr];
+      rxAddr++;
 			From8Ptr = (uint8_t*) &AlignBuffer;
 
 			/*
@@ -1004,7 +1107,11 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 			/*
 			 * Copy each word into the temporary buffer.
 			 */
-			AlignBuffer = *From32Ptr++;
+      #ifdef TXRX_MEM_CACHED
+        cacheInvalid(size_t(&rxMem[rxAddr]));
+      #endif
+      AlignBuffer = rxMem[rxAddr];
+      rxAddr++;
 
 			/*
 			 * This is a funny looking cast. The new gcc, version
@@ -1039,7 +1146,11 @@ void EthSyst::alignedRead(void* DestPtr, unsigned ByteCount)
 	/*
 	 * Read the remaining data.
 	 */
-	AlignBuffer = *From32Ptr++;
+  #ifdef TXRX_MEM_CACHED
+    cacheInvalid(size_t(&rxMem[rxAddr]));
+  #endif
+  AlignBuffer = rxMem[rxAddr];
+  rxAddr++;
 	From8Ptr = (uint8_t*) &AlignBuffer;
 
 	for (Index = 0; Index < Length; Index++) {
@@ -1130,13 +1241,13 @@ uint16_t EthSyst::frameRecv(uint8_t* FramePtr)
 
   // Acknowledge the frame.
   if(XAxiDma_HasSg(&axiDma)) { // in SG mode
-      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_DMA_MEM_ADDR);
+      XAxiDma_Bd* BdPtr = dmaBDAlloc(true, 1, XAE_MAX_FRAME_SIZE, XAE_MAX_FRAME_SIZE, RX_MEM_ADDR);
       dmaBDTransfer(true, 1, 1, BdPtr);
   } else { // in simple mode
-    int status = XAxiDma_SimpleTransfer(&axiDma, RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
+    int status = XAxiDma_SimpleTransfer(&axiDma, RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, XAXIDMA_DEVICE_TO_DMA);
     if (XST_SUCCESS != status) {
-      printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%X with max lenth %d failed with status %d\n",
-             RX_DMA_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
+      printf("\nERROR: Ethernet XAxiDma Rx transfer to addr 0x%lX with max lenth %d failed with status %d\n",
+             RX_MEM_ADDR, XAE_MAX_FRAME_SIZE, status);
     }
   }
 

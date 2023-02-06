@@ -30,7 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 `include "network_define.v"
 module network_input_blk_multi_out 
    #(parameter LOG2_NUMBER_FIFO_ELEMENTS = 2,
-     parameter OUT_2FLITS = 0 // enables output of 2 deserialized flits, adds 1 clock latency if input fifo was empty
+     parameter OUT_2FLITS = 0, // enables output of 2 deserialized flits, adds 1 clock latency if input fifo was empty
+     parameter DAT1_w = (OUT_2FLITS==0)? `DATA_WIDTH : `DATA_WIDTH*2
     )
 (
    input wire clk, 
@@ -42,8 +43,8 @@ module network_input_blk_multi_out
    output wire yummy_out, 
    // data_val and data_val1 are the same, this is just done for buffering to
    // convince the synthesis tool to buffer up these high fanout nets
-   output wire [`DATA_WIDTH  -1:0] data_val, 
-   output wire [`DATA_WIDTH*2-1:0] data_val1, 
+   output wire [`DATA_WIDTH-1:0] data_val, 
+   output wire [DAT1_w-1:0] data_val1, 
    output wire data_avail 
 );
 
@@ -52,8 +53,6 @@ reg [`DATA_WIDTH-1:0] storage_data_f [0:(1<<LOG2_NUMBER_FIFO_ELEMENTS)-1];
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_f;
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] tail_ptr_f;
 reg [LOG2_NUMBER_FIFO_ELEMENTS:0] elements_in_array_f;
-reg [`MSG_LENGTH_WIDTH-1:0] flit_cnt;
-reg wait_2nd_flit;
 
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_next;
 reg [LOG2_NUMBER_FIFO_ELEMENTS-1:0] tail_ptr_next;
@@ -65,11 +64,38 @@ assign yummy_out = yummy_out_f;
 
 // data_val and data_val1 are the same, just done for buffering
 assign data_val = storage_data_f[head_ptr_f];
-wire [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_plus1 = head_ptr_f+1;
-assign data_val1 = {storage_data_f[head_ptr_plus1],
-                    storage_data_f[head_ptr_f    ]};
-assign data_avail = (elements_in_array_f != 0 && !wait_2nd_flit) ||
-                    (elements_in_array_f > 1);
+generate 
+if(OUT_2FLITS==0) begin : orig
+    assign data_val1 = storage_data_f[head_ptr_f];
+    assign data_avail = elements_in_array_f != 0;
+end else begin : two_flits
+    reg [`MSG_LENGTH_WIDTH-1:0] flit_cnt;
+    reg wait_2nd_flit;
+    wire [LOG2_NUMBER_FIFO_ELEMENTS-1:0] head_ptr_plus1 = head_ptr_f+1;
+    assign data_val1 = {storage_data_f[head_ptr_plus1],
+                        storage_data_f[head_ptr_f    ]};
+    assign data_avail = (elements_in_array_f != 0 && !wait_2nd_flit) ||
+                        (elements_in_array_f > 1);
+
+    always @ (posedge clk) begin
+       if (reset) begin
+           flit_cnt      <= 0;
+           wait_2nd_flit <= 0;
+       end else begin
+           if(valid_in) begin         
+              if (!flit_cnt) begin
+                 flit_cnt      <=  data_in[`MSG_LENGTH];
+                 wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
+              end else begin
+                 flit_cnt      <= flit_cnt-1;
+                 wait_2nd_flit <= 0;
+              end // flit_cnt
+           end //valid
+       end //reset
+    end//always
+
+end
+endgenerate
 
 always @ *
 begin
@@ -114,8 +140,6 @@ begin
       head_ptr_f <= 0;
       tail_ptr_f <= 0;
       elements_in_array_f <= 0;
-      flit_cnt <= 0;
-      wait_2nd_flit <= 0;
    end
    else
    begin
@@ -126,17 +150,42 @@ begin
       if(valid_in)
       begin
          storage_data_f[tail_ptr_f] <= data_in;
-         if (!flit_cnt) begin
-           flit_cnt        <=  data_in[`MSG_LENGTH];
-           if (OUT_2FLITS)
-             wait_2nd_flit <= (data_in[`MSG_LENGTH] != 0);
-         end
-         else begin
-           flit_cnt      <= flit_cnt-1;
-           wait_2nd_flit <= 0;
-         end
       end
    end
 end
+
+
+
+//synthesis translate_off
+//synopsys  translate_off
+        localparam IGNORE_SAME_LOC_RD_WR_WARNING = "YES";
+        
+        wire  full = elements_in_array_f == 1<<LOG2_NUMBER_FIFO_ELEMENTS;
+        wire  empty =elements_in_array_f == 0;
+        
+        always @(posedge clk)
+        begin
+            if(~reset)begin
+                if (valid_in & ~thanks_in & full) begin
+                    $display("%t: ERROR: Attempt to write to full FIFO:FIFO size is %d. %m",$time,1<<LOG2_NUMBER_FIFO_ELEMENTS);
+                    $finish;
+                end
+                /* verilator lint_off WIDTH */
+                if (thanks_in & empty & IGNORE_SAME_LOC_RD_WR_WARNING == "NO") begin
+                    $display("%t ERROR: Attempt to read an empty FIFO: %m", $time);
+                    $finish;
+                end
+                if (thanks_in & ~valid_in & empty & (IGNORE_SAME_LOC_RD_WR_WARNING == "YES")) begin
+                    $display("%t ERROR: Attempt to read an empty FIFO: %m", $time);
+                    $finish;
+                end
+                /* verilator lint_on WIDTH */
+            end //~reset
+        end // always @ (posedge clk)
+    
+//synopsys  translate_on
+//synthesis translate_on  
+
+
 
 endmodule

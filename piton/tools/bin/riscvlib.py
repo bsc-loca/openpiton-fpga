@@ -132,12 +132,24 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
     assert nCpus >= 1
 
+
+    # Core dependant parameters  
+    if core == "Lagarto":
+        riscv_isa = "rv64imafdcv"
+        dts_core = "lagarto"
+        org = "BSC"
+    elif core == "Ariane":
+        riscv_isa = "rv64imafdc"
+        dts_core = "ariane"
+        org = "eth"
+
     # get UART base
     uartBase = 0xDEADBEEF
     for i in range(len(devices)):
         if devices[i]["name"] == "uart":
             uartBase = devices[i]["base"]
 
+    ethClkFreq = 156250000
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
 // OpenPiton + %s framework
@@ -148,25 +160,19 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 / {
     #address-cells = <2>;
     #size-cells = <2>;
-    compatible = "eth,%s-bare-dev";
-    model = "eth,%s-bare";
+    compatible = "%s,%s-bare-dev";
+    model = "%s,%s-bare";
     // TODO: interrupt-based UART is currently very slow
     // with this configuration. this needs to be fixed.
-    // chosen {
-    //     stdout-path = "/soc/uart@%08x:115200";
-    // };
+    chosen {
+         //stdout-path = "/soc/uart@%08x:115200";
+         //bootargs = "console=ttyS0,115200";
+    };
     cpus {
         #address-cells = <1>;
         #size-cells = <0>;
         timebase-frequency = <%d>;
-    ''' % (core, timeStamp, core, core, uartBase, timeBaseFreq)
-
-    if core == "Lagarto":
-        riscv_isa = "rv64ima"
-        dts_core = "lagarto"
-    elif core == "Ariane":
-        riscv_isa = "rv64imafdc"
-        dts_core = "ariane"
+    ''' % (core, timeStamp, org, core, org, core, uartBase, timeBaseFreq)
 
     for k in range(nCpus):
         tmpStr += '''
@@ -175,7 +181,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "cpu";
             reg = <%d>;
             status = "okay";
-            compatible = "eth, %s", "riscv";
+            compatible = "%s, %s", "riscv";
             riscv,isa = "%s";
             mmu-type = "riscv,sv39";
             tlb-split;
@@ -186,7 +192,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
                 compatible = "riscv,cpu-intc";
             };
         };
-        ''' % (k,k,cpuFreq,k,core,riscv_isa,k)
+        ''' % (k,k,cpuFreq,k,org,core,riscv_isa,k)
 
     tmpStr += '''
     };
@@ -204,22 +210,60 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         reg = <%s>;
     };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+    
+    for i in range(len(devices)):
+        if devices[i]["name"] == "dma_pool":
+            addrBase = devices[i]["base"]
+            addrLen  = devices[i]["length"]
+            # Small hack to be able to access the whole space defined in the devices.xml file
+            # but still using just a fragment (256M) for this dma pool. The remaining space is 
+            # reserved for the Ethernet Over PCIe driver
+            # TODO: The Eth-PCIe driver should be able to use a(nother) reserved-memory node
+            addrFrag  = devices[i]["fragment"]
+            tmpStr += '''
+    reserved-memory {
+        #address-cells = <2>;
+        #size-cells = <2>;
+        ranges;
+        
+        eth_pool: dma_pool@%08x {
+            reg = <%s>;
+            compatible = "shared-dma-pool";
+        }; 
+    };
+            ''' % (addrBase, _reg_fmt(addrBase, addrFrag, 2, 2))
+            #''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+    tmpStr += '''
+    eth0_clk: eth0_clk {
+        compatible = "fixed-clock";
+        #clock-cells = <0>;
+        clock-frequency = <%d>;
+    };
+        ''' % (ethClkFreq)
+
 
     tmpStr += '''
     soc {
         #address-cells = <2>;
         #size-cells = <2>;
-        compatible = "eth,%s-bare-soc", "simple-bus";
+        compatible = "%s,%s-bare-soc", "simple-bus";
         ranges;
-    ''' % (core)
+    ''' % (org, core)
+
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
+    # When using Ethernet + DMA, the number of IRQs for Ethernet is 2 instead of 1
+    # TODO: Make a difference in the devices_$(core).xml between "net" and "dma_net", as the number of interrupts is different.
+    # TODO: An alternative is to add a field in the device xml file that holds the number of interrupts.
     numIrqs = 0
     devWithIrq = ["uart", "net"];
     for i in range(len(devices)):
         if devices[i]["name"] in devWithIrq:
-            numIrqs += 1
+            if devices[i]["name"] == "net":
+                numIrqs += 2
+            else:
+                numIrqs += 1
 
 
     # get the remaining periphs
@@ -263,17 +307,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
-            tmpStr += '''
-        debug-controller@%08x {
-            compatible = "riscv,debug-013";
-            interrupts-extended = <''' % (addrBase)
-            for k in range(nCpus):
-                tmpStr += "&CPU%d_intc 65535 " % (k)
-            tmpStr += '''>;
-            reg = <%s>;
-            reg-names = "control";
-        };
-            ''' % (_reg_fmt(addrBase, addrLen, 2, 2))
+
         # UART
         if devices[i]["name"] == "uart":
             addrBase = devices[i]["base"]
@@ -284,8 +318,10 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
+            device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
+            reg-offset = <0x1000>;
             reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
@@ -295,52 +331,64 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "net":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
+            dmaChannelMM2S = addrBase + 0x0
+            dmaChannelS2MM = addrBase + 0x30
             tmpStr += '''
-        eth: ethernet@%08x {
-            compatible = "xlnx,xps-ethernetlite-1.00.a";
-            device_type = "network";
-            reg = <%s>;
-            interrupt-parent = <&PLIC0>;
-            interrupts = <%d>;
-            local-mac-address = [ 00 18 3E 02 E3 E5 ];
-            phy-handle = <&phy0>;
-            xlnx,duplex = <0x1>;
-            xlnx,include-global-buffers = <0x1>;
-            xlnx,include-internal-loopback = <0x0>;
-            xlnx,include-mdio = <0x1>;
-            xlnx,rx-ping-pong = <0x1>;
-            xlnx,s-axi-id-width = <0x1>;
-            xlnx,tx-ping-pong = <0x1>;
-            xlnx,use-internal = <0x0>;
-            axi_ethernetlite_0_mdio: mdio {
-                #address-cells = <1>;
-                #size-cells = <0>;
-                phy0: phy@1 {
-                    compatible = "ethernet-phy-id001C.C915";
-                    device_type = "ethernet-phy";
-                    reg = <1>;
-                };
-            };
+        ethernet0 {
+            xlnx,rxmem = <0x5f2>;
+            carv,mtu = <0x5dc>;
+            carv,no-mac;
+            device_type = "network";       
+            local-mac-address = [00 0a 35 23 07 84];
+            axistream-connected = <0xfe>;
+            compatible = "xlnx,xxv-ethernet-1.0-carv";
+            memory-region = <&eth_pool>;
         };
-            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr)
-            ioDeviceNr+=1
-
-        # eth: lowrisc-eth@%08x {
-        #     compatible = "lowrisc-eth";
-        #     device_type = "network";
-        #     interrupt-parent = <&PLIC0>;
-        #     interrupts = <3 0>;
-        #     local-mac-address = [ee e1 e2 e3 e4 e5];
-        #     reg = <%s>;
-        # };
+        
+        dma_eth: dma@%08x {
+            xlnx,include-dre;
+            phandle = <0xfe>;
+            #dma-cells = <1>;
+            compatible = "xlnx,axi-dma-1.00.a";
+            clock-names = "s_axi_lite_aclk", "m_axi_mm2s_aclk", "m_axi_s2mm_aclk", "m_axi_sg_aclk";
+            clocks = <&eth0_clk>, <&eth0_clk>, <&eth0_clk>, <&eth0_clk>;
+            reg = <%s>;
+            interrupt-names = "mm2s_introut", "s2mm_introut";
+            interrupt-parent = <&PLIC0>;
+            interrupts = <%d %d>;
+            xlnx,addrwidth = <0x28>;
+            xlnx,include-sg;
+            xlnx,sg-length-width = <0x17>;
+            
+            dma-channel@%08x {
+                compatible = "xlnx,axi-dma-mm2s-channel";
+                dma-channels = <1>;
+                interrupts = <%d>;
+                xlnx,datawidth = <0x40>;
+                xlnx,device-id = <0x00>;
+                xlnx,include-dre;                        
+            };
+            
+            dma-channel@%08x {
+                compatible = "xlnx,axi-dma-s2mm-channel";
+                dma-channels = <1>;
+                interrupts = <%d>;
+                xlnx,datawidth = <0x40>;
+                xlnx,device-id = <0x00>;
+                xlnx,include-dre;            
+            };
+        
+        };
+            ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
+            ioDeviceNr+=2                       
 
     tmpStr += '''
     };
 };
     '''
 
-    # this needs to match
-    assert ioDeviceNr-1 == numIrqs
+    # this needs to match // 20/08/2022: This doesn't match if the device has more than 1 interrupt, as the Ethernet DMA
+    # assert ioDeviceNr-1 == numIrqs
 
     with open(dtsPath + '/' + dts_core + '.dts','w') as file:
         file.write(tmpStr)

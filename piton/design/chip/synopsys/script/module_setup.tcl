@@ -113,7 +113,7 @@ set ADDITIONAL_SPICE_MERGE_FILES  "FFU_SRAM_LVS_SPICE_HERE (.cdl/.sp) L1I_DATA_S
 # Enter the list of source RTL files if reading from RTL
 
 # Chip top-level
-set RTL_SOURCE_FILES           "${DV_ROOT}/design/chip/rtl/chip.v "
+set RTL_SOURCE_FILES           "${DV_ROOT}/design/chip/rtl/chip.sv "
 append RTL_SOURCE_FILES        "${DV_ROOT}/design/common/rtl/synchronizer.v "
 append RTL_SOURCE_FILES        "${DV_ROOT}/design/chip/rtl/OCI.v "
 

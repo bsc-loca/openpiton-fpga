@@ -54,12 +54,14 @@ module mc_top (
   `endif
 
     input                           uart_boot_en,
-    
 `ifdef PITONSYS_DDR4
     // directly feed in 250MHz ref clock
+    `ifndef PITONSYS_MEEP
     input                           sys_clk_p,
     input                           sys_clk_n,
-
+    `else
+    input mc_clk,    
+    `endif
     output                          ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]     ddr_bg,
 `else // PITONSYS_DDR4
@@ -96,8 +98,66 @@ module mc_top (
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
 `elsif ALVEOU280_BOARD
+
+    `ifdef PITONSYS_MEEP
+    input                           init_calib_complete,
+    
+    //
+    	    // AXI interface
+    output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
+    output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
+    output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
+    output wire [`AXI4_SIZE_WIDTH   -1:0]    m_axi_awsize,
+    output wire [`AXI4_BURST_WIDTH  -1:0]    m_axi_awburst,
+    output wire                              m_axi_awlock,
+    output wire [`AXI4_CACHE_WIDTH  -1:0]    m_axi_awcache,
+    output wire [`AXI4_PROT_WIDTH   -1:0]    m_axi_awprot,
+    output wire [`AXI4_QOS_WIDTH    -1:0]    m_axi_awqos,
+    output wire [`AXI4_REGION_WIDTH -1:0]    m_axi_awregion,
+    output wire [`AXI4_USER_WIDTH   -1:0]    m_axi_awuser,
+    output wire                              m_axi_awvalid,
+    input  wire                              m_axi_awready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid,
+    output wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata,
+    output wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb,
+    output wire                               m_axi_wlast,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser,
+    output wire                               m_axi_wvalid,
+    input  wire                               m_axi_wready,
+
+    output wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid,
+    output wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr,
+    output wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen,
+    output wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize,
+    output wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst,
+    output wire                               m_axi_arlock,
+    output wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache,
+    output wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot,
+    output wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos,
+    output wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion,
+    output wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser,
+    output wire                               m_axi_arvalid,
+    input  wire                               m_axi_arready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid,
+    input  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp,
+    input  wire                               m_axi_rlast,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser,
+    input  wire                               m_axi_rvalid,
+    output wire                               m_axi_rready,
+
+    input  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid,
+    input  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp,
+    input  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser,
+    input  wire                               m_axi_bvalid,
+    output wire                               m_axi_bready,
+    `else
     output                          ddr_parity,
     output                          hbm_cattrip,
+    
+    `endif
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -124,68 +184,75 @@ module mc_top (
 );
 
 localparam HBM_WIDTH = 256;
+localparam HBM_SIZE_LOG2 = 33; // 8GB
+localparam HBM_MCS_LOG2  = 0;  //  0 to disable "interleaving", 5 for 32 MC channels to participate in "interleaving"
+localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels in AXI address
 
 `ifdef PITONSYS_MC_SRAM
-wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
-wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
-wire [`AXI4_LEN_WIDTH    -1:0]     sram_axi_awlen;
-wire [`AXI4_SIZE_WIDTH   -1:0]     sram_axi_awsize;
-wire [`AXI4_BURST_WIDTH  -1:0]     sram_axi_awburst;
-wire                               sram_axi_awlock;
-wire [`AXI4_CACHE_WIDTH  -1:0]     sram_axi_awcache;
-wire [`AXI4_PROT_WIDTH   -1:0]     sram_axi_awprot;
-wire [`AXI4_QOS_WIDTH    -1:0]     sram_axi_awqos;
-wire [`AXI4_REGION_WIDTH -1:0]     sram_axi_awregion;
-wire [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser;
-wire                               sram_axi_awvalid;
-wire                               sram_axi_awready;
+ wire [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid;
+ wire [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr;
+ wire [`AXI4_LEN_WIDTH    -1:0]     sram_axi_awlen;
+ wire [`AXI4_SIZE_WIDTH   -1:0]     sram_axi_awsize;
+ wire [`AXI4_BURST_WIDTH  -1:0]     sram_axi_awburst;
+ wire                               sram_axi_awlock;
+ wire [`AXI4_CACHE_WIDTH  -1:0]     sram_axi_awcache;
+ wire [`AXI4_PROT_WIDTH   -1:0]     sram_axi_awprot;
+ wire [`AXI4_QOS_WIDTH    -1:0]     sram_axi_awqos;
+ wire [`AXI4_REGION_WIDTH -1:0]     sram_axi_awregion;
+ wire [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser;
+ wire                               sram_axi_awvalid;
+ wire                               sram_axi_awready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata;
+ wire  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb;
+ wire                               sram_axi_wlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser;
+ wire                               sram_axi_wvalid;
+ wire                               sram_axi_wready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid;
+ wire  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr;
+ wire  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen;
+ wire  [`AXI4_SIZE_WIDTH   -1:0]    sram_axi_arsize;
+ wire  [`AXI4_BURST_WIDTH  -1:0]    sram_axi_arburst;
+ wire                               sram_axi_arlock;
+ wire  [`AXI4_CACHE_WIDTH  -1:0]    sram_axi_arcache;
+ wire  [`AXI4_PROT_WIDTH   -1:0]    sram_axi_arprot;
+ wire  [`AXI4_QOS_WIDTH    -1:0]    sram_axi_arqos;
+ wire  [`AXI4_REGION_WIDTH -1:0]    sram_axi_arregion;
+ wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser;
+ wire                               sram_axi_arvalid;
+ wire                               sram_axi_arready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
+ wire                               sram_axi_rlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
+ wire                               sram_axi_rvalid;
+ wire                               sram_axi_rready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
+ wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
+ wire                               sram_axi_bvalid;
+ wire                               sram_axi_bready;
 
-wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata;
-wire  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb;
-wire                               sram_axi_wlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser;
-wire                               sram_axi_wvalid;
-wire                               sram_axi_wready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid;
-wire  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr;
-wire  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen;
-wire  [`AXI4_SIZE_WIDTH   -1:0]    sram_axi_arsize;
-wire  [`AXI4_BURST_WIDTH  -1:0]    sram_axi_arburst;
-wire                               sram_axi_arlock;
-wire  [`AXI4_CACHE_WIDTH  -1:0]    sram_axi_arcache;
-wire  [`AXI4_PROT_WIDTH   -1:0]    sram_axi_arprot;
-wire  [`AXI4_QOS_WIDTH    -1:0]    sram_axi_arqos;
-wire  [`AXI4_REGION_WIDTH -1:0]    sram_axi_arregion;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser;
-wire                               sram_axi_arvalid;
-wire                               sram_axi_arready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
-wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
-wire                               sram_axi_rlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
-wire                               sram_axi_rvalid;
-wire                               sram_axi_rready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
-wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
-wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
-wire                               sram_axi_bvalid;
-wire                               sram_axi_bready;
-
-noc_axi4_bridge #(
+ noc_axi4_bridge #(
     `ifdef PITON_ARIANE
+      .SWAP_ENDIANESS (1),
+    `elsif PITON_LAGARTO
       .SWAP_ENDIANESS (1),
     `endif
     `ifndef PITON_FPGA_MC_DDR3
       // applying the same parameters as for SDRAM in case it is absent
       `ifdef PITON_FPGA_MC_HBM
-      .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+        .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+      `else
+        .OUTSTAND_QUEUE_BRAM (0),
       `endif
-      .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+      .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4)),
       // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
       // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
       .NUM_REQ_YTHREADS (`PITON_Y_TILES),
@@ -336,7 +403,9 @@ noc_axi4_bridge #(
 
 reg     [31:0]                      delay_cnt;
 reg                                 ui_clk_syn_rst_delayed;
+`ifndef PITONSYS_MEEP
 wire                                init_calib_complete;
+`endif
 wire                                afifo_rst_1;
 wire                                afifo_rst_2;
 
@@ -378,62 +447,63 @@ wire                                zero_app_wdf_end;
 wire                                init_calib_complete_zero;
 `endif
 
-wire                                noc_mig_bridge_rst;
-wire                                noc_mig_bridge_init_done;
+ wire                                noc_mig_bridge_rst;
+ wire                                noc_mig_bridge_init_done;
 
 `else // PITONSYS_AXI4_MEM
 
 // AXI4 interface
-wire [`AXI4_ID_WIDTH     -1:0]     m_axi_awid;
-wire [`AXI4_ADDR_WIDTH   -1:0]     m_axi_awaddr;
-wire [`AXI4_LEN_WIDTH    -1:0]     m_axi_awlen;
-wire [`AXI4_SIZE_WIDTH   -1:0]     m_axi_awsize;
-wire [`AXI4_BURST_WIDTH  -1:0]     m_axi_awburst;
-wire                               m_axi_awlock;
-wire [`AXI4_CACHE_WIDTH  -1:0]     m_axi_awcache;
-wire [`AXI4_PROT_WIDTH   -1:0]     m_axi_awprot;
-wire [`AXI4_QOS_WIDTH    -1:0]     m_axi_awqos;
-wire [`AXI4_REGION_WIDTH -1:0]     m_axi_awregion;
-wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser;
-wire                               m_axi_awvalid;
-wire                               m_axi_awready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata;
-wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb;
-wire                               m_axi_wlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser;
-wire                               m_axi_wvalid;
-wire                               m_axi_wready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid;
-wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr;
-wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen;
-wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize;
-wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst;
-wire                               m_axi_arlock;
-wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache;
-wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot;
-wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos;
-wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion;
-wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser;
-wire                               m_axi_arvalid;
-wire                               m_axi_arready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata;
-wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp;
-wire                               m_axi_rlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser;
-wire                               m_axi_rvalid;
-wire                               m_axi_rready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid;
-wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp;
-wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser;
-wire                               m_axi_bvalid;
-wire                               m_axi_bready;
-
+`ifndef PITONSYS_MEEP
+ wire [`AXI4_ID_WIDTH     -1:0]     m_axi_awid;
+ wire [`AXI4_ADDR_WIDTH   -1:0]     m_axi_awaddr;
+ wire [`AXI4_LEN_WIDTH    -1:0]     m_axi_awlen;
+ wire [`AXI4_SIZE_WIDTH   -1:0]     m_axi_awsize;
+ wire [`AXI4_BURST_WIDTH  -1:0]     m_axi_awburst;
+ wire                               m_axi_awlock;
+ wire [`AXI4_CACHE_WIDTH  -1:0]     m_axi_awcache;
+ wire [`AXI4_PROT_WIDTH   -1:0]     m_axi_awprot;
+ wire [`AXI4_QOS_WIDTH    -1:0]     m_axi_awqos;
+ wire [`AXI4_REGION_WIDTH -1:0]     m_axi_awregion;
+ wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser;
+ wire                               m_axi_awvalid;
+ wire                               m_axi_awready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata;
+ wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb;
+ wire                               m_axi_wlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser;
+ wire                               m_axi_wvalid;
+ wire                               m_axi_wready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid;
+ wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr;
+ wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen;
+ wire  [`AXI4_SIZE_WIDTH   -1:0]    m_axi_arsize;
+ wire  [`AXI4_BURST_WIDTH  -1:0]    m_axi_arburst;
+ wire                               m_axi_arlock;
+ wire  [`AXI4_CACHE_WIDTH  -1:0]    m_axi_arcache;
+ wire  [`AXI4_PROT_WIDTH   -1:0]    m_axi_arprot;
+ wire  [`AXI4_QOS_WIDTH    -1:0]    m_axi_arqos;
+ wire  [`AXI4_REGION_WIDTH -1:0]    m_axi_arregion;
+ wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser;
+ wire                               m_axi_arvalid;
+ wire                               m_axi_arready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp;
+ wire                               m_axi_rlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser;
+ wire                               m_axi_rvalid;
+ wire                               m_axi_rready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp;
+ wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser;
+ wire                               m_axi_bvalid;
+ wire                               m_axi_bready;
+`endif
 wire [`AXI4_ID_WIDTH     -1:0]     core_axi_awid;
 wire [`AXI4_ADDR_WIDTH   -1:0]     core_axi_awaddr;
 wire [`AXI4_LEN_WIDTH    -1:0]     core_axi_awlen;
@@ -485,57 +555,57 @@ wire                               core_axi_bvalid;
 wire                               core_axi_bready;
 
 `ifdef PITONSYS_MEM_ZEROER
-wire [`AXI4_ID_WIDTH     -1:0]     zeroer_axi_awid;
-wire [`AXI4_ADDR_WIDTH   -1:0]     zeroer_axi_awaddr;
-wire [`AXI4_LEN_WIDTH    -1:0]     zeroer_axi_awlen;
-wire [`AXI4_SIZE_WIDTH   -1:0]     zeroer_axi_awsize;
-wire [`AXI4_BURST_WIDTH  -1:0]     zeroer_axi_awburst;
-wire                               zeroer_axi_awlock;
-wire [`AXI4_CACHE_WIDTH  -1:0]     zeroer_axi_awcache;
-wire [`AXI4_PROT_WIDTH   -1:0]     zeroer_axi_awprot;
-wire [`AXI4_QOS_WIDTH    -1:0]     zeroer_axi_awqos;
-wire [`AXI4_REGION_WIDTH -1:0]     zeroer_axi_awregion;
-wire [`AXI4_USER_WIDTH   -1:0]     zeroer_axi_awuser;
-wire                               zeroer_axi_awvalid;
-wire                               zeroer_axi_awready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_wid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_wdata;
-wire  [`AXI4_STRB_WIDTH   -1:0]    zeroer_axi_wstrb;
-wire                               zeroer_axi_wlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_wuser;
-wire                               zeroer_axi_wvalid;
-wire                               zeroer_axi_wready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_arid;
-wire  [`AXI4_ADDR_WIDTH   -1:0]    zeroer_axi_araddr;
-wire  [`AXI4_LEN_WIDTH    -1:0]    zeroer_axi_arlen;
-wire  [`AXI4_SIZE_WIDTH   -1:0]    zeroer_axi_arsize;
-wire  [`AXI4_BURST_WIDTH  -1:0]    zeroer_axi_arburst;
-wire                               zeroer_axi_arlock;
-wire  [`AXI4_CACHE_WIDTH  -1:0]    zeroer_axi_arcache;
-wire  [`AXI4_PROT_WIDTH   -1:0]    zeroer_axi_arprot;
-wire  [`AXI4_QOS_WIDTH    -1:0]    zeroer_axi_arqos;
-wire  [`AXI4_REGION_WIDTH -1:0]    zeroer_axi_arregion;
-wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_aruser;
-wire                               zeroer_axi_arvalid;
-wire                               zeroer_axi_arready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_rid;
-wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_rdata;
-wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_rresp;
-wire                               zeroer_axi_rlast;
-wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_ruser;
-wire                               zeroer_axi_rvalid;
-wire                               zeroer_axi_rready;
-
-wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_bid;
-wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_bresp;
-wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_buser;
-wire                               zeroer_axi_bvalid;
-wire                               zeroer_axi_bready;
-
-wire                               init_calib_complete_zero;
+ wire [`AXI4_ID_WIDTH     -1:0]     zeroer_axi_awid;
+ wire [`AXI4_ADDR_WIDTH   -1:0]     zeroer_axi_awaddr;
+ wire [`AXI4_LEN_WIDTH    -1:0]     zeroer_axi_awlen;
+ wire [`AXI4_SIZE_WIDTH   -1:0]     zeroer_axi_awsize;
+ wire [`AXI4_BURST_WIDTH  -1:0]     zeroer_axi_awburst;
+ wire                               zeroer_axi_awlock;
+ wire [`AXI4_CACHE_WIDTH  -1:0]     zeroer_axi_awcache;
+ wire [`AXI4_PROT_WIDTH   -1:0]     zeroer_axi_awprot;
+ wire [`AXI4_QOS_WIDTH    -1:0]     zeroer_axi_awqos;
+ wire [`AXI4_REGION_WIDTH -1:0]     zeroer_axi_awregion;
+ wire [`AXI4_USER_WIDTH   -1:0]     zeroer_axi_awuser;
+ wire                               zeroer_axi_awvalid;
+ wire                               zeroer_axi_awready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_wid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_wdata;
+ wire  [`AXI4_STRB_WIDTH   -1:0]    zeroer_axi_wstrb;
+ wire                               zeroer_axi_wlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_wuser;
+ wire                               zeroer_axi_wvalid;
+ wire                               zeroer_axi_wready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_arid;
+ wire  [`AXI4_ADDR_WIDTH   -1:0]    zeroer_axi_araddr;
+ wire  [`AXI4_LEN_WIDTH    -1:0]    zeroer_axi_arlen;
+ wire  [`AXI4_SIZE_WIDTH   -1:0]    zeroer_axi_arsize;
+ wire  [`AXI4_BURST_WIDTH  -1:0]    zeroer_axi_arburst;
+ wire                               zeroer_axi_arlock;
+ wire  [`AXI4_CACHE_WIDTH  -1:0]    zeroer_axi_arcache;
+ wire  [`AXI4_PROT_WIDTH   -1:0]    zeroer_axi_arprot;
+ wire  [`AXI4_QOS_WIDTH    -1:0]    zeroer_axi_arqos;
+ wire  [`AXI4_REGION_WIDTH -1:0]    zeroer_axi_arregion;
+ wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_aruser;
+ wire                               zeroer_axi_arvalid;
+ wire                               zeroer_axi_arready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_rid;
+ wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_rdata;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_rresp;
+ wire                               zeroer_axi_rlast;
+ wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_ruser;
+ wire                               zeroer_axi_rvalid;
+ wire                               zeroer_axi_rready;
+ 
+ wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_bid;
+ wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_bresp;
+ wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_buser;
+ wire                               zeroer_axi_bvalid;
+ wire                               zeroer_axi_bready;
+ 
+ wire                               init_calib_complete_zero;
 `endif
 
 wire                               noc_axi4_bridge_rst;
@@ -610,33 +680,33 @@ assign app_zq_req = 1'b0;
 
 `ifndef PITONSYS_AXI4_MEM
 `ifdef PITONSYS_MEM_ZEROER
-assign app_en                   = zero_app_en;
-assign app_cmd                  = zero_app_cmd;
-assign app_addr                 = zero_app_addr;
-assign app_wdf_wren             = zero_app_wdf_wren;
-assign app_wdf_data             = zero_app_wdf_data;
-assign app_wdf_mask             = zero_app_wdf_mask;
-assign app_wdf_end              = zero_app_wdf_end;
-assign noc_mig_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
-assign noc_mig_bridge_init_done = init_calib_complete_zero;
-assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
-`else
-assign app_en                   = core_app_en;
-assign app_cmd                  = core_app_cmd;
-assign app_addr                 = core_app_addr;
-assign app_wdf_wren             = core_app_wdf_wren;
-assign app_wdf_data             = core_app_wdf_data;
-assign app_wdf_mask             = core_app_wdf_mask;
-assign app_wdf_end              = core_app_wdf_end;
-assign noc_mig_bridge_rst       = ui_clk_sync_rst;
-assign noc_mig_bridge_init_done = init_calib_complete;
-assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
-`endif
-assign core_app_rdy             = app_rdy;
-assign core_app_wdf_rdy         = app_wdf_rdy;
-assign core_app_rd_data_valid   = app_rd_data_valid;
-assign core_app_rd_data_end     = app_rd_data_end;
-assign core_app_rd_data         = app_rd_data;
+ assign app_en                   = zero_app_en;
+ assign app_cmd                  = zero_app_cmd;
+ assign app_addr                 = zero_app_addr;
+ assign app_wdf_wren             = zero_app_wdf_wren;
+ assign app_wdf_data             = zero_app_wdf_data;
+ assign app_wdf_mask             = zero_app_wdf_mask;
+ assign app_wdf_end              = zero_app_wdf_end;
+ assign noc_mig_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
+ assign noc_mig_bridge_init_done = init_calib_complete_zero;
+ assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
+ `else
+ assign app_en                   = core_app_en;
+ assign app_cmd                  = core_app_cmd;
+ assign app_addr                 = core_app_addr;
+ assign app_wdf_wren             = core_app_wdf_wren;
+ assign app_wdf_data             = core_app_wdf_data;
+ assign app_wdf_mask             = core_app_wdf_mask;
+ assign app_wdf_end              = core_app_wdf_end;
+ assign noc_mig_bridge_rst       = ui_clk_sync_rst;
+ assign noc_mig_bridge_init_done = init_calib_complete;
+ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
+ `endif
+ assign core_app_rdy             = app_rdy;
+ assign core_app_wdf_rdy         = app_wdf_rdy;
+ assign core_app_rd_data_valid   = app_rd_data_valid;
+ assign core_app_rd_data_end     = app_rd_data_end;
+ assign core_app_rd_data         = app_rd_data;
 
 `else //ifndef PITONSYS_AXI4_MEM
 assign noc_mig_bridge_rst       = ui_clk_sync_rst;
@@ -674,35 +744,35 @@ noc_bidir_afifo  mig_afifo  (
 `ifndef PITONSYS_AXI4_MEM
 
 `ifdef PITONSYS_MEM_ZEROER
-assign app_en                   = zero_app_en;
-assign app_cmd                  = zero_app_cmd;
-assign app_addr                 = zero_app_addr;
-assign app_wdf_wren             = zero_app_wdf_wren;
-assign app_wdf_data             = zero_app_wdf_data;
-assign app_wdf_mask             = zero_app_wdf_mask;
-assign app_wdf_end              = zero_app_wdf_end;
-assign noc_mig_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
-assign noc_mig_bridge_init_done = init_calib_complete_zero;
-assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
+ assign app_en                   = zero_app_en;
+ assign app_cmd                  = zero_app_cmd;
+ assign app_addr                 = zero_app_addr;
+ assign app_wdf_wren             = zero_app_wdf_wren;
+ assign app_wdf_data             = zero_app_wdf_data;
+ assign app_wdf_mask             = zero_app_wdf_mask;
+ assign app_wdf_end              = zero_app_wdf_end;
+ assign noc_mig_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
+ assign noc_mig_bridge_init_done = init_calib_complete_zero;
+ assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
 `else
-assign app_en                   = core_app_en;
-assign app_cmd                  = core_app_cmd;
-assign app_addr                 = core_app_addr;
-assign app_wdf_wren             = core_app_wdf_wren;
-assign app_wdf_data             = core_app_wdf_data;
-assign app_wdf_mask             = core_app_wdf_mask;
-assign app_wdf_end              = core_app_wdf_end;
-assign noc_mig_bridge_rst       = ui_clk_sync_rst;
-assign noc_mig_bridge_init_done = init_calib_complete;
-assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
+ assign app_en                   = core_app_en;
+ assign app_cmd                  = core_app_cmd;
+ assign app_addr                 = core_app_addr;
+ assign app_wdf_wren             = core_app_wdf_wren;
+ assign app_wdf_data             = core_app_wdf_data;
+ assign app_wdf_mask             = core_app_wdf_mask;
+ assign app_wdf_end              = core_app_wdf_end;
+ assign noc_mig_bridge_rst       = ui_clk_sync_rst;
+ assign noc_mig_bridge_init_done = init_calib_complete;
+ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif
-assign core_app_rdy             = app_rdy;
-assign core_app_wdf_rdy         = app_wdf_rdy;
-assign core_app_rd_data_valid   = app_rd_data_valid;
-assign core_app_rd_data_end     = app_rd_data_end;
-assign core_app_rd_data         = app_rd_data;
+ assign core_app_rdy             = app_rdy;
+ assign core_app_wdf_rdy         = app_wdf_rdy;
+ assign core_app_rd_data_valid   = app_rd_data_valid;
+ assign core_app_rd_data_end     = app_rd_data_end;
+ assign core_app_rd_data         = app_rd_data;
 
-noc_mig_bridge    #  (
+ noc_mig_bridge    #  (
     .MIG_APP_ADDR_WIDTH (`MIG_APP_ADDR_WIDTH        ),
     .MIG_APP_DATA_WIDTH (`MIG_APP_DATA_WIDTH        )
 )   noc_mig_bridge   (
@@ -735,7 +805,7 @@ noc_mig_bridge    #  (
 );
 
 `ifdef PITONSYS_MEM_ZEROER
-memory_zeroer #(
+ memory_zeroer #(
     .MIG_APP_ADDR_WIDTH (`MIG_APP_ADDR_WIDTH        ),
     .MIG_APP_DATA_WIDTH (`MIG_APP_DATA_WIDTH        )
 )    memory_zeroer (
@@ -769,8 +839,8 @@ memory_zeroer #(
 `ifdef PITONSYS_DDR4
 
 // reserved, tie to 0
-wire app_hi_pri;
-assign app_hi_pri = 1'b0;
+ wire app_hi_pri;
+ assign app_hi_pri = 1'b0;
   
 ddr4_0 i_ddr4_0 (
   .sys_rst                   ( ~sys_rst_n                ),
@@ -895,59 +965,59 @@ mig_7series_0   mig_7series_0 (
 `else // PITONSYS_AXI4_MEM
 
 `ifdef PITONSYS_MEM_ZEROER
-assign m_axi_awid = zeroer_axi_awid;
-assign m_axi_awaddr = zeroer_axi_awaddr;
-assign m_axi_awlen = zeroer_axi_awlen;
-assign m_axi_awsize = zeroer_axi_awsize;
-assign m_axi_awburst = zeroer_axi_awburst;
-assign m_axi_awlock = zeroer_axi_awlock;
-assign m_axi_awcache = zeroer_axi_awcache;
-assign m_axi_awprot = zeroer_axi_awprot;
-assign m_axi_awqos = zeroer_axi_awqos;
-assign m_axi_awregion = zeroer_axi_awregion;
-assign m_axi_awuser = zeroer_axi_awuser;
-assign m_axi_awvalid = zeroer_axi_awvalid;
-assign zeroer_axi_awready = m_axi_awready;
-
-assign m_axi_wid = zeroer_axi_wid;
-assign m_axi_wdata = zeroer_axi_wdata;
-assign m_axi_wstrb = zeroer_axi_wstrb;
-assign m_axi_wlast = zeroer_axi_wlast;
-assign m_axi_wuser = zeroer_axi_wuser;
-assign m_axi_wvalid = zeroer_axi_wvalid;
-assign zeroer_axi_wready = m_axi_wready;
-
-assign m_axi_arid = zeroer_axi_arid;
-assign m_axi_araddr = zeroer_axi_araddr;
-assign m_axi_arlen = zeroer_axi_arlen;
-assign m_axi_arsize = zeroer_axi_arsize;
-assign m_axi_arburst = zeroer_axi_arburst;
-assign m_axi_arlock = zeroer_axi_arlock;
-assign m_axi_arcache = zeroer_axi_arcache;
-assign m_axi_arprot = zeroer_axi_arprot;
-assign m_axi_arqos = zeroer_axi_arqos;
-assign m_axi_arregion = zeroer_axi_arregion;
-assign m_axi_aruser = zeroer_axi_aruser;
-assign m_axi_arvalid = zeroer_axi_arvalid;
-assign zeroer_axi_arready = m_axi_arready;
-
-assign zeroer_axi_rid = m_axi_rid;
-assign zeroer_axi_rdata = m_axi_rdata;
-assign zeroer_axi_rresp = m_axi_rresp;
-assign zeroer_axi_rlast = m_axi_rlast;
-assign zeroer_axi_ruser = m_axi_ruser;
-assign zeroer_axi_rvalid = m_axi_rvalid;
-assign m_axi_rready = zeroer_axi_rready;
-
-assign zeroer_axi_bid = m_axi_bid;
-assign zeroer_axi_bresp = m_axi_bresp;
-assign zeroer_axi_buser = m_axi_buser;
-assign zeroer_axi_bvalid = m_axi_bvalid;
-assign m_axi_bready = zeroer_axi_bready;
-
-assign noc_axi4_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
-assign noc_axi4_bridge_init_done = init_calib_complete_zero;
-assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
+ assign m_axi_awid = zeroer_axi_awid;
+ assign m_axi_awaddr = zeroer_axi_awaddr;
+ assign m_axi_awlen = zeroer_axi_awlen;
+ assign m_axi_awsize = zeroer_axi_awsize;
+ assign m_axi_awburst = zeroer_axi_awburst;
+ assign m_axi_awlock = zeroer_axi_awlock;
+ assign m_axi_awcache = zeroer_axi_awcache;
+ assign m_axi_awprot = zeroer_axi_awprot;
+ assign m_axi_awqos = zeroer_axi_awqos;
+ assign m_axi_awregion = zeroer_axi_awregion;
+ assign m_axi_awuser = zeroer_axi_awuser;
+ assign m_axi_awvalid = zeroer_axi_awvalid;
+ assign zeroer_axi_awready = m_axi_awready;
+ 
+ assign m_axi_wid = zeroer_axi_wid;
+ assign m_axi_wdata = zeroer_axi_wdata;
+ assign m_axi_wstrb = zeroer_axi_wstrb;
+ assign m_axi_wlast = zeroer_axi_wlast;
+ assign m_axi_wuser = zeroer_axi_wuser;
+ assign m_axi_wvalid = zeroer_axi_wvalid;
+ assign zeroer_axi_wready = m_axi_wready;
+ 
+ assign m_axi_arid = zeroer_axi_arid;
+ assign m_axi_araddr = zeroer_axi_araddr;
+ assign m_axi_arlen = zeroer_axi_arlen;
+ assign m_axi_arsize = zeroer_axi_arsize;
+ assign m_axi_arburst = zeroer_axi_arburst;
+ assign m_axi_arlock = zeroer_axi_arlock;
+ assign m_axi_arcache = zeroer_axi_arcache;
+ assign m_axi_arprot = zeroer_axi_arprot;
+ assign m_axi_arqos = zeroer_axi_arqos;
+ assign m_axi_arregion = zeroer_axi_arregion;
+ assign m_axi_aruser = zeroer_axi_aruser;
+ assign m_axi_arvalid = zeroer_axi_arvalid;
+ assign zeroer_axi_arready = m_axi_arready;
+ 
+ assign zeroer_axi_rid = m_axi_rid;
+ assign zeroer_axi_rdata = m_axi_rdata;
+ assign zeroer_axi_rresp = m_axi_rresp;
+ assign zeroer_axi_rlast = m_axi_rlast;
+ assign zeroer_axi_ruser = m_axi_ruser;
+ assign zeroer_axi_rvalid = m_axi_rvalid;
+ assign m_axi_rready = zeroer_axi_rready;
+ 
+ assign zeroer_axi_bid = m_axi_bid;
+ assign zeroer_axi_bresp = m_axi_bresp;
+ assign zeroer_axi_buser = m_axi_buser;
+ assign zeroer_axi_bvalid = m_axi_bvalid;
+ assign m_axi_bready = zeroer_axi_bready;
+ 
+ assign noc_axi4_bridge_rst       = ui_clk_sync_rst & ~init_calib_complete_zero;
+ assign noc_axi4_bridge_init_done = init_calib_complete_zero;
+ assign init_calib_complete_out  = init_calib_complete_zero & ~ui_clk_syn_rst_delayed;
 `else // PITONSYS_MEM_ZEROER
 
 assign m_axi_awid = core_axi_awid;
@@ -1005,16 +1075,30 @@ assign noc_axi4_bridge_init_done = init_calib_complete;
 assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 `endif // PITONSYS_MEM_ZEROER
 
+// system memory base address from devices.xml, unaligned with memory size and thus is subtracted from access memory address
+localparam MEM_BASE_UNALIGN = `AXI4_ADDR_WIDTH'h80000000;
+// localparam MEM_BASE_UNALIGN = '0;
+
 noc_axi4_bridge #(
+  `ifdef PITON_ARIANE
+    .SWAP_ENDIANESS (1),
+  `elsif PITON_LAGARTO
+    .SWAP_ENDIANESS (1),
+  `endif
   `ifdef PITON_FPGA_MC_HBM
     .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
+    .ADDR_SWAP_LBITS(HBM_MCS_LOG2),
+    .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
+    .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
+  `else
+    .OUTSTAND_QUEUE_BRAM (0), // speed-up of the bridge if working at DDR clock
   `endif
-    .ADDR_OFFSET(64'h80000000),
-    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4),
+    .ADDR_OFFSET(MEM_BASE_UNALIGN),
+    .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
     // .NUM_REQ_MSHRID_LBIT (`L15_MSHR_ID_WIDTH),
     // .NUM_REQ_MSHRID_BITS (`L15_THREADID_WIDTH),
-    .NUM_REQ_YTHREADS (`PITON_Y_TILES),
-    .NUM_REQ_XTHREADS (`PITON_X_TILES)
+    // .NUM_REQ_YTHREADS (`PITON_Y_TILES),
+    // .NUM_REQ_XTHREADS (`PITON_X_TILES)
 )
  noc_axi4_bridge  (
     .clk                (ui_clk                    ),  
@@ -1137,11 +1221,16 @@ wire                               m_axi``idx``_bvalid; \
 wire                               m_axi``idx``_bready; \
 \
 noc_axi4_bridge #( \
+    .SWAP_ENDIANESS (1), \
     .AXI4_DAT_WIDTH_USED(HBM_WIDTH), \
-    .ADDR_OFFSET(64'h80000000), \
-    .NUM_REQ_OUTSTANDING (`PITON_NUM_TILES * 4), \
-    .NUM_REQ_YTHREADS (`PITON_Y_TILES), \
-    .NUM_REQ_XTHREADS (`PITON_X_TILES), \
+    .ADDR_OFFSET(MEM_BASE_UNALIGN), \
+    .ADDR_SWAP_LBITS(HBM_MCS_LOG2), \
+    .ADDR_SWAP_MSB  (HBM_SIZE_LOG2), \
+    .ADDR_SWAP_LSB  (HBM_MCS_ADDR), \
+    .NUM_REQ_OUTSTANDING_LOG2 (4), \
+    /* for 2d-mesh having pure internal tiles (like 3x3) usage of either SRC_X/Y or INI_X/Y NOC fields as AXI ID results in Fedora kernel panic */ \
+    .NUM_REQ_YTHREADS (`PITON_EXTRA_MEMS == `PITON_NUM_TILES ? `PITON_Y_TILES : 1), \
+    .NUM_REQ_XTHREADS (`PITON_EXTRA_MEMS == `PITON_NUM_TILES ? `PITON_X_TILES : 1), \
     .SRCXY_AS_AXIID   (1) \
 ) noc_axi4_bridge_mc``idx ( \
     .clk                (core_ref_clk), \
@@ -1356,16 +1445,110 @@ axi4_zeroer axi4_zeroer(
 );
 `endif // PITONSYS_MEM_ZEROER
 
+`ifndef PITONSYS_MEEP
 `ifdef PITONSYS_DDR4
-
 `ifdef PITONSYS_PCIE
 
-meep_shell meep_shell
-       (
-         .*, // connecting all AXI's at once 
 
+ wire [`AXI4_ADDR_WIDTH  -1:0]  pci2hbm_maxi_araddr;
+ wire [`AXI4_BURST_WIDTH -1:0]  pci2hbm_maxi_arburst;
+ wire [`AXI4_CACHE_WIDTH -1:0]  pci2hbm_maxi_arcache;
+ wire [`AXI4_LEN_WIDTH   -1:0]  pci2hbm_maxi_arlen;
+ wire                           pci2hbm_maxi_arlock;
+ wire [`AXI4_PROT_WIDTH  -1:0]  pci2hbm_maxi_arprot;
+ wire [`AXI4_QOS_WIDTH   -1:0]  pci2hbm_maxi_arqos;
+ wire                           pci2hbm_maxi_arready;
+ wire [`AXI4_SIZE_WIDTH  -1:0]  pci2hbm_maxi_arsize;
+ wire [`AXI4_USER_WIDTH  -1:0]  pci2hbm_maxi_aruser;
+ wire                           pci2hbm_maxi_arvalid;
+ wire [`AXI4_ADDR_WIDTH  -1:0]  pci2hbm_maxi_awaddr;
+ wire [`AXI4_BURST_WIDTH -1:0]  pci2hbm_maxi_awburst;
+ wire [`AXI4_CACHE_WIDTH -1:0]  pci2hbm_maxi_awcache;
+ wire [`AXI4_LEN_WIDTH   -1:0]  pci2hbm_maxi_awlen;
+ wire                           pci2hbm_maxi_awlock;
+ wire [`AXI4_PROT_WIDTH  -1:0]  pci2hbm_maxi_awprot;
+ wire [`AXI4_QOS_WIDTH   -1:0]  pci2hbm_maxi_awqos;
+ wire                           pci2hbm_maxi_awready;
+ wire [`AXI4_SIZE_WIDTH  -1:0]  pci2hbm_maxi_awsize;
+ wire [`AXI4_USER_WIDTH  -1:0]  pci2hbm_maxi_awuser;
+ wire                           pci2hbm_maxi_awvalid;
+ wire                           pci2hbm_maxi_bready;
+ wire [`AXI4_RESP_WIDTH  -1:0]  pci2hbm_maxi_bresp;
+ wire                           pci2hbm_maxi_bvalid;
+ wire [`AXI4_DATA_WIDTH  -1:0]  pci2hbm_maxi_rdata;
+ wire                           pci2hbm_maxi_rlast;
+ wire                           pci2hbm_maxi_rready;
+ wire [`AXI4_RESP_WIDTH  -1:0]  pci2hbm_maxi_rresp;
+ wire                           pci2hbm_maxi_rvalid;
+ wire [`AXI4_DATA_WIDTH  -1:0]  pci2hbm_maxi_wdata;
+ wire                           pci2hbm_maxi_wlast;
+ wire                           pci2hbm_maxi_wready;
+ wire [`AXI4_STRB_WIDTH  -1:0]  pci2hbm_maxi_wstrb;
+ wire                           pci2hbm_maxi_wvalid;
+
+// making address swapping for interleaving of HBM MC channels
+ wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_raddr;
+ wire [`AXI4_ADDR_WIDTH-1 : 0] pci2hbm_waddr;
+ generate
+  if (HBM_MCS_LOG2) begin
+    assign pci2hbm_raddr = {pci2hbm_maxi_araddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_araddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_araddr[HBM_MCS_ADDR -1    : 0]};
+    assign pci2hbm_waddr = {pci2hbm_maxi_awaddr[`AXI4_ADDR_WIDTH-1 : HBM_SIZE_LOG2              ],
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR      +: HBM_MCS_LOG2               ], // Low address part moved up
+                            pci2hbm_maxi_awaddr[HBM_SIZE_LOG2-1    : HBM_MCS_ADDR + HBM_MCS_LOG2], // High address part shifted down
+                            pci2hbm_maxi_awaddr[HBM_MCS_ADDR -1    : 0]};
+  end
+  else begin
+    assign pci2hbm_raddr =  pci2hbm_maxi_araddr;
+    assign pci2hbm_waddr =  pci2hbm_maxi_awaddr;
+  end
+ endgenerate
+
+ meep_shell meep_shell
+       (
+         .*, // implicit connection of all AXI's at once
+
+  `ifdef PITON_FPGA_MC_HBM
+        .pci2hbm_saxi_araddr  (pci2hbm_raddr),
+        .pci2hbm_saxi_awaddr  (pci2hbm_waddr),
+  `else
+        .pci2hbm_saxi_araddr  (pci2hbm_maxi_araddr),
+        .pci2hbm_saxi_awaddr  (pci2hbm_maxi_awaddr),
+  `endif
+        .pci2hbm_saxi_arburst (pci2hbm_maxi_arburst),
+        .pci2hbm_saxi_arid    ('0),
+        .pci2hbm_saxi_arlen   (pci2hbm_maxi_arlen),
+        .pci2hbm_saxi_arready (pci2hbm_maxi_arready),
+        .pci2hbm_saxi_arsize  (pci2hbm_maxi_arsize),
+        .pci2hbm_saxi_arvalid (pci2hbm_maxi_arvalid),
+        .pci2hbm_saxi_awburst (pci2hbm_maxi_awburst),
+        .pci2hbm_saxi_awid    ('0),
+        .pci2hbm_saxi_awlen   (pci2hbm_maxi_awlen),
+        .pci2hbm_saxi_awready (pci2hbm_maxi_awready),
+        .pci2hbm_saxi_awsize  (pci2hbm_maxi_awsize),
+        .pci2hbm_saxi_awvalid (pci2hbm_maxi_awvalid),
+        .pci2hbm_saxi_bid     (),
+        .pci2hbm_saxi_bready  (pci2hbm_maxi_bready),
+        .pci2hbm_saxi_bresp   (pci2hbm_maxi_bresp),
+        .pci2hbm_saxi_bvalid  (pci2hbm_maxi_bvalid),
+        .pci2hbm_saxi_rdata   (pci2hbm_maxi_rdata),
+        .pci2hbm_saxi_rid     (),
+        .pci2hbm_saxi_rlast   (pci2hbm_maxi_rlast),
+        .pci2hbm_saxi_rready  (pci2hbm_maxi_rready),
+        .pci2hbm_saxi_rresp   (pci2hbm_maxi_rresp),
+        .pci2hbm_saxi_rvalid  (pci2hbm_maxi_rvalid),
+        .pci2hbm_saxi_wdata   (pci2hbm_maxi_wdata),
+        .pci2hbm_saxi_wlast   (pci2hbm_maxi_wlast),
+        .pci2hbm_saxi_wready  (pci2hbm_maxi_wready),
+        .pci2hbm_saxi_wstrb   (pci2hbm_maxi_wstrb),
+        .pci2hbm_saxi_wvalid  (pci2hbm_maxi_wvalid),
+
+        .mem_clk(ui_clk),
+        .mem_rst(ui_clk_sync_rst),
         .mem_calib_complete(init_calib_complete),
-        
+
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),
         .ddr4_sdram_c0_ba(ddr_ba),
@@ -1382,12 +1565,12 @@ meep_shell meep_shell
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
         
         .hbm_cattrip(hbm_cattrip),
-        
+
         .ddr_clk_clk_n(sys_clk_n),
         .ddr_clk_clk_p(sys_clk_p),
         .sys_rst(~sys_rst_n),
         .sys_clk(core_ref_clk),
-        
+
         .pci_express_x16_rxn(pci_express_x16_rxn),
         .pci_express_x16_rxp(pci_express_x16_rxp),
         .pci_express_x16_txn(pci_express_x16_txn),
@@ -1397,14 +1580,10 @@ meep_shell meep_shell
         .pcie_refclk_clk_n( pcie_refclk_n),
         .pcie_refclk_clk_p( pcie_refclk_p)
         );
-assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
-assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
-assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
-assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
-
-assign ui_clk_sync_rst = ~sys_rst_n;
-assign ui_clk = core_ref_clk;
-  
+ assign m_axi_ruser    = `AXI4_USER_WIDTH'h0;
+ assign m_axi_buser    = `AXI4_USER_WIDTH'h0;
+ assign sram_axi_ruser = `AXI4_USER_WIDTH'h0;
+ assign sram_axi_buser = `AXI4_USER_WIDTH'h0;
 `else // PITONSYS_PCIE
  
 ddr4_axi4 ddr_axi4 (
@@ -1582,7 +1761,16 @@ mig_7series_axi4 u_mig_7series_axi4 (
 );
 
 `endif // PITONSYS_DDR4
+`else
+
+    assign ui_clk_sync_rst = ~sys_rst_n;
+    assign ui_clk = mc_clk;
+
+`endif
+
 `endif // PITONSYS_AXI4_MEM
+
+
 
 `ifdef PITON_PROTO
 `ifndef PITON_PROTO_NO_MON

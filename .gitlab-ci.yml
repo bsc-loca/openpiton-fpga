@@ -2,363 +2,309 @@
 # Date: 29.09.2021
 # Description: GitLab CI configuration script.
 
-# Tests over the FPGA set to manual temporarily until one specific machine is devoted 
-# to that task.
-#
-# The CI/CD flow generates a bitstream both for Lagarto and Ariane. The synthesis and
-# implementation scripts run by Vivado doesn't differentiate and search the dcp files
-# in a general folder (./dcp). Files are moved in this script to create separate 
-# artifacts for both implementations.
-#
-# More jobs can be created if we want to check different number of cores. It is currently
-# set to a generic 2x2 configuration.
+
+workflow:
+    rules:
+        - !reference [.workflow_default_rules, rules]
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
+        - if: $CI_PIPELINE_SOURCE == "pipeline"
+        - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+          when: never  
+        - if: $CI_COMMIT_TAG != null 
+        - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+          when: never # Pushing to main doesn't create pipelines unless there is a tag        
   
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
-  FPGA_LOG_FILE: fpga.log
-  BITSTREAM: system_${CI_PIPELINE_ID}.bit
-  BOOT_SCRIPT: piton/tools/src/proto/alveou280/boot_linux.sh
-  TOOLS_DIR: /home/fpga-runnerMEEP/tools/scripts
-  QDMA_DRIVERS: /home/dmazure/git_repo/dma_ip_drivers/QDMA/linux-kernel/bin
-  DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
-  GOLDEN_MESSAGE: "Welcome to the Fedora/RISC-V disk image"
-  ## Temp variables while lagarto+Fedora is developed
-  GOLDEN_MESSAGE_LAGARTO: "io scheduler kyber registered" 
-  OPENSBI_BIN: /home/dmazure/pcie/linux_images/osbi.bin
-  BOOT_SCRIPT_LAGARTO: /home/dmazure/pcie/linux_images/boot_lagarto.sh
-  DEPLOY_DIR: /home/fpga-runnerMEEP/ACME_deploy
+    GIT_STRATEGY: none
+    GIT_SUBMODULE_STRATEGY: none
+    # We need to define which is the default configuration for the synthesis
+    # Pronoc? 2x2? etc
+    DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
+    REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
+    DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
+    # Use a preconfigured RISCV toolchain. This is risky.
+    # There should be a scheduled task to regenerate it.
+    CI_RISCV_DIR: /home/tools/openpiton/riscv_install
+    UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
+.test_rules:
+    rules:
+        if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
+        #- when: always
+
+.exclude_ariane:
+    rules:
+        # Don't do Ariane if this is a Lagarto update
+        - if: $CI_PIPELINE_SOURCE == "pipeline" && $CONF=="ariane"
+          when: never
 
 .default_rules:
-  rules:
-    if: ($CI_COMMIT_BRANCH =~ /^production/ || $CI_COMMIT_MESSAGE =~ /^#TestCICD/ || $CI_PIPELINE_SOURCE == "schedule")
+    rules:
+        - !reference [.test_rules, rules]        
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+        - if: $CI_PIPELINE_SOURCE == "pipeline"  
 
-stages:
-  - protosyn
-  - implementation
-  - bitstream
+.lagarto_rules:
+    rules:
+        - !reference [.default_rules, rules]     
+        #- !reference [.exclude_ariane, rules] 
+        - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
+          when: never
+
+.workflow_default_rules:  
+  rules:
+     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ || $CI_COMMIT_MESSAGE =~ /#TestSim/
+
+
+.multi_target:
+    parallel:
+        matrix:
+            - CONF: [acme_vpu]
+
+stages:  
+  - simulation
+  - synthesis
   - validation
-  - fpga-test
-  - deploy
+  - deploy-openpiton
+  - push-shell
+  - clean
+  
+###################################
+# Simulations
+###################################
+
+simulation:
+        stage: simulation
+        timeout: 1h        
+        variables:
+            GIT_STRATEGY: clone
+            GIT_SUBMODULE_STRATEGY: recursive
+        before_script:
+            - !reference [.git_clean, before_script]
+            - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
+            - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+            # eda env mentor licence 
+            - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
+            - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
+            - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
+        tags: 
+            - MEEP_SIMS
+        script:
+            ############################
+            ## First, update the submodule if the pipeline source is a trigger
+            ############################
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
+            - echo "Running Regression tests with Questasim"
+            - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
+            - "cd $BUILD_PATH"
+            - echo "Running sanity cosimulation test with Questasim"
+            - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
+            - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
+            - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
+            # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
+            - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
+            - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+            - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
 
 ###################################
 # Synthesis
 ###################################
 
-synthesis-ariane:
-        stage: protosyn
-        tags: 
-            - MEEP_FPGA 
-        rules:
-            - !reference [.default_rules, rules]
-        retry: 1
-        timeout: 6h
-        
-        before_script:
-            - export PITON_ROOT=`pwd`
-            - mkdir -p ariane
-              #- git submodule update --init --recursive
-        script:
-            - echo "ROOT= $PITON_ROOT"
-            - source piton/ariane_setup.sh
-            - make initialize CORE=ariane
-            - echo "RISCV = $RISCV"
-            - echo "VIVADO = $VIVADO_BIN"
-            - make protosyn_pronoc $DESIGN_OPTIONS CORE=ariane
-        after_script:
-            - cp -rf build/alveou280/system/protosyn_logs ariane           
-
-        artifacts:
-            when: always
-            paths:        
-                - ariane
-                - dcp/synthesis.dcp
-
-synthesis-lagarto:
-        stage: protosyn
+synthesis-matrix:
+        stage: synthesis
         tags:
             - MEEP_FPGA
-        rules:
-            - !reference [.default_rules, rules]
+        extends: .lagarto_rules 
+        parallel: !reference [.multi_target, parallel]       
+        interruptible: true
         retry: 1
+        variables:        
+              #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
+              GIT_STRATEGY: clone
+              GIT_SUBMODULE_STRATEGY: recursive
+              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$CONF
         timeout: 6h        
         before_script:
+            - !reference [.git_clean, before_script]
             - export PITON_ROOT=`pwd`
             - mkdir -p lagarto
-              #- git submodule update --init --recursive
         script:
+            ############################
+            ## First, update the submodule if the pipeline source is a trigger
+            ############################
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE 
+            ### Setup OpenPiton
             - echo "ROOT= $PITON_ROOT"
             - source piton/lagarto_setup.sh
-            - make initialize CORE=lagarto
+            # Clone RISCV toolchain, if the RISCV variable doesn't exists
+            # Protosyn target in the Makefile will skip the toolchain configuration            
+            - export RISCV=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
-            - make protosyn $DESIGN_OPTIONS CORE=lagarto
+            # 2x2 by default
+            # A matrix can be created here to synthesize all different options
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF nomeep
+            #- make protosyn $DESIGN_OPTIONS CORE=lagarto
+            - !reference [.check_synth_dcp, script]            
         after_script:
-            - mkdir -p lagarto
-            - cp -rf build/alveou280/system/protosyn_logs lagarto
-
+            - mkdir -p logs/${CONF}
+            - mkdir -p dcp/${CONF}
+            - cp -rf build/alveou280/system/protosyn_logs logs/${CONF}
+            - mv dcp/synthesis.dcp dcp/${CONF}/synthesis_${CONF}.dcp
         artifacts:
             when: always
             paths:
-                - lagarto
-                - dcp/synthesis.dcp
+                - logs
+                - dcp
 
-###################################
-# Implementation
-###################################           
-
-implementation-ariane:
-        stage: implementation
-        needs:
-            - synthesis-ariane
-        rules:
-            - !reference [.default_rules, rules]
-        timeout: 12h
-        tags:
-            - MEEP_FPGA
-        before_script:
-            - echo -e "Implementation stage"
-            - echo -e "List dcps:"; ls dcp
-        script:
-            - make ci_implementation
-        after_script:            
-            - cp -rf reports ariane            
-        dependencies:
-            - synthesis-ariane
-
-        artifacts:
-            when: on_success
-            expire_in: 20 days
-            paths:
-                - dcp/implementation.dcp
-                - ariane/reports
-
-implementation-lagarto:
-        stage: implementation
-        needs:
-            - synthesis-lagarto
-        rules:
-            - !reference [.default_rules, rules]
-        timeout: 12h
-        tags:
-            - MEEP_FPGA
-        before_script:
-            - echo -e "Implementation stage"
-            - echo -e "List dcps:"; ls dcp
-        script:
-            - make ci_implementation
-        after_script:            
-            - cp -rf reports lagarto
-
-        dependencies:
-            - synthesis-lagarto
-
-        artifacts:
-            when: on_success
-            expire_in: 20 days
-            paths:
-                - dcp/implementation.dcp
-                - lagarto/reports
-
-###################################
-# Bitstream
-###################################                 
-
-bitstream-ariane:
-        stage: bitstream
-        needs:
-            - synthesis-ariane
-            - implementation-ariane
-        rules:
-            - !reference [.default_rules, rules]
-        tags:
-            - MEEP_FPGA
-        before_script:
-            - mkdir -p ariane/bitstream
-            - echo -e "List dcps:"; ls dcp
-        script:
-            - make ci_bitstream
-        after_script:
-            - mv bitstream/*.bit ariane/bitstream/ariane_$BITSTREAM
-        dependencies:
-            - synthesis-ariane
-            - implementation-ariane
-        artifacts:
-            when: always
-            expire_in: 1 month
-            paths:
-                - ariane/bitstream
-
-bitstream-lagarto:
-        stage: bitstream
-        needs:
-            - synthesis-lagarto
-            - implementation-lagarto
-        rules:
-            - !reference [.default_rules, rules]
-        tags:
-            - MEEP_FPGA
-        before_script:            
-            - mkdir -p lagarto/bitstream
-            - echo -e "List dcps:"; ls dcp
-        script:
-            - make ci_bitstream
-        after_script:
-            - mv bitstream/*.bit lagarto/bitstream/lagarto_$BITSTREAM
-        dependencies:
-            - synthesis-lagarto
-            - implementation-lagarto
-        artifacts:
-            when: always
-            expire_in: 1 month
-            paths:
-                - lagarto/bitstream
-                  
-###################################
-# Validation
-###################################
-                  
-validation-ariane:
+validation-matrix:
         stage: validation
-        needs: 
-            - implementation-ariane        
-        rules:
-            - !reference [.default_rules, rules]
-        tags:
-            - MEEP_FPGA
-        before_script:            
-            - cp -rf ariane/reports .
-        script:
-            - echo "Checking implementation reports ..."
-            - source $TOOLS_DIR/check_reports.sh
-        allow_failure: true
-        dependencies:
-            - implementation-ariane
-
-validation-lagarto:
-        stage: validation
-        needs: 
-            - implementation-lagarto        
-        rules:
-            - !reference [.default_rules, rules]
-        tags:
-            - MEEP_FPGA
-        before_script:
-            - cp -rf lagarto/reports .
-        script:
-            - echo "Checking implementation reports ..."
-            - source $TOOLS_DIR/check_reports.sh
-        allow_failure: true
-        dependencies:
-            - implementation-lagarto
-
-###################################
-# HW Test (Set to manual temporarily)
-###################################              
-                            
-fpga-test-ariane:
-        stage: fpga-test
+        variables:                      
+              GIT_STRATEGY: clone
+        parallel: !reference [.multi_target, parallel]
+        tags: 
+            - MEEP_FPGA                
+        extends: .lagarto_rules
         needs:
-            - synthesis-ariane
-            - implementation-ariane
-            - bitstream-ariane        
-        rules:
-            - !reference [.default_rules, rules]
-              #when: manual         
-        retry: 2
-        tags:
-            - FPGA_TEST
-        before_script:
-            - export PATH=$PATH:$QDMA_DRIVERS
-            - sudo $TOOLS_DIR/givememyuart
+            - synthesis-matrix
         script:
-            - $TOOLS_DIR/load-bitstream.sh qdma ariane/bitstream/ariane_$BITSTREAM
-            - source $BOOT_SCRIPT
-            - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE 
-            - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE
-        after_script:
-            - cp $FPGA_LOG_FILE ariane
-        dependencies:
-            - bitstream-ariane
-        artifacts:
-            when: always
-            paths:
-                - ariane
-                  
-fpga-test-lagarto:
-        stage: fpga-test
-        needs:
-            - synthesis-lagarto
-            - implementation-lagarto
-            - bitstream-lagarto  
-        rules:
-            - !reference [.default_rules, rules]
-              #when: manual      
-        retry: 2
-        tags:
-            - FPGA_TEST
-        before_script:
-            - export PATH=$PATH:$QDMA_DRIVERS
-            - sudo $TOOLS_DIR/givememyuart
-        script:
-            - $TOOLS_DIR/load-bitstream.sh qdma lagarto/bitstream/lagarto_$BITSTREAM
-            - source $BOOT_SCRIPT_LAGARTO $OPENSBI_BIN
-            - source $TOOLS_DIR/fpga_test.sh $FPGA_LOG_FILE
-            - $TOOLS_DIR/check_fpga_log.sh $FPGA_LOG_FILE $GOLDEN_MESSAGE_LAGARTO
-        after_script:
-            - cp $FPGA_LOG_FILE lagarto
-        dependencies:
-            - bitstream-lagarto
-        artifacts:
-            when: always
-            paths:
-                - lagarto
-
-deploy-ariane:
-        stage: deploy
-        tags:
-            - MEEP_FPGA
-        rules:
-            - !reference [.default_rules, rules]
-        before_script:
-            - mkdir -p $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA            
-        script:
-            - cp -rf dcp $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
-            - date >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/date.txt
-            - cp -r ariane/* $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA
-            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/ariane_$CI_COMMIT_SHORT_SHA/commit_message.txt
-        needs:
-            - synthesis-ariane
-            - implementation-ariane
-            - bitstream-ariane
-            - fpga-test-ariane
-        dependencies:
-            - synthesis-ariane
-            - implementation-ariane
-            - bitstream-ariane
-            - fpga-test-ariane
+            - . cicd/synth_check.sh . logs/${CONF}
+        allow_failure: true # pass with errors ...
 
 deploy-lagarto:
-        stage: deploy
+        stage: deploy-openpiton
+        tags:
+            - MEEP_FPGA
+        extends: .default_rules
+        needs:
+            - synthesis-matrix
+            - validation-matrix
+        before_script:
+            - ls; ls dcp;
+            - export TODAY=$(date +"%y%m%d")
+            - export OPDIRNAME=${TODAY}_${CI_PIPELINE_ID}
+            - export ABSDIR=$DEPLOY_DIR/$OPDIRNAME
+            - mkdir -p $ABSDIR 
+        script:            
+            - cp -rf logs $ABSDIR/
+            - cp -rf dcp $ABSDIR/
+       
+
+push-lagarto:
+        stage: deploy-openpiton
         tags:
             - MEEP_FPGA
         rules:
-            - !reference [.default_rules, rules]
-        before_script:
-            - mkdir -p $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
-        script:
-            - cp -rf dcp $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA
-            - date >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/date.txt
-            - cp -r lagarto/* $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA            
-            - echo "$CI_COMMIT_MESSAGE" >> $DEPLOY_DIR/lagarto_$CI_COMMIT_SHORT_SHA/commit_message.txt
+            - if: $CI_PIPELINE_SOURCE == "pipeline"           
         needs:
-            - synthesis-lagarto
-            - implementation-lagarto
-            - bitstream-lagarto
-            - fpga-test-lagarto
-        dependencies:
-            - synthesis-lagarto
-            - implementation-lagarto
-            - bitstream-lagarto
-            - fpga-test-lagarto
+            - validation-matrix
+        variables:
+                GIT_STRATEGY: clone
+                GIT_SUBMODULES_STRATEGY: normal 
+        before_script:
+            - git config --global user.name  meep-ci-runner
+            - git config --global user.email meep-ci@bsc.es
+        script:
+            # Update the submodule, again, as we are in a different job
+            - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
+            - git checkout -b acme_ci/$COMMIT_REF
+            - git add piton/design/chip/tile/vas_tile_core
+            - git commit -m "CICD triggered by VAS update - $COMMIT_MESG"
+            - git remote set-url --push origin "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY"
+            - git push --set-upstream "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY" acme_ci/$COMMIT_REF
+            #### Get the new SHA, and store it so it can be passed to the FPGA trigger job ###
+            - NEW_BRANCH=$(git branch --show-current) 
+            - echo NEW_BRANCH=$NEW_BRANCH >> branch_info.env
+            - echo NEW_BRANCH_SHA=$(git rev-parse $NEW_BRANCH) >> branch_info.env
+        artifacts:
+            when: always            
+            reports:
+             dotenv: branch_info.env
 
+# This job is generated when the push-lagarto is not. It is needed
+# to create the variables that the fpga-shell-trigger job consumes.
+# Those variables need to be created when the pipeline trigger
+# is a merge request event too, not only because when is a triggered
+# pipeline.
+
+shell-prelaunch:
+        stage: deploy-openpiton   
+        tags:
+            - MEEP_FPGA
+        variables:
+            GIT_STRATEGY: clone            
+        rules:
+            - if: $CI_PIPELINE_SOURCE != "pipeline"              
+        needs:
+            - validation-matrix
+        script:
+            - NEW_BRANCH=$CI_COMMIT_REF_NAME
+            - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
+            - echo "NEW_BRANCH_SHA=$CI_COMMIT_SHA" >> branch_info.env
+        artifacts:
+            when: always            
+            reports:
+             dotenv: branch_info.env
+
+               
+# This is the last job in the triggered pipeline, which triggers the FPGA shell CICD
+# The shell will receive the CI_COMMIT_SHA variable, so it can update the ea_url.txt file
+# @ support/acme/ea_url.txt, and do things normally. (make update_sha)
+# if the pipeline success, the new ea_url needs to be commited
+
+fpga-shell-trigger:
+        stage: push-shell
+        extends: .default_rules           
+        variables:        
+            GIT_STRATEGY: clone
+            COMMIT_SHA: $NEW_BRANCH_SHA 
+            COMMIT_REF: $NEW_BRANCH
+            COMMIT_MESG: $CI_COMMIT_MESSAGE
+        trigger: 
+                project: meep/FPGA_implementations/AlveoU280/fpga_shell                
+                branch: production
+                # master is a protected branch, which causes permission issues with triggered pipelines
+                # production should be almost a mirror of master
+                strategy: depend
+
+# TODO: on_failure will not get the trigger dependency, doesn't work.
+# We need to decide if it is necessary remove from OpenPiton's repo  
+# the release candidates.
+
+clean-on-failure:
+    stage: clean
+    tags:
+        - MEEP_FPGA
+    rules:
+        - !reference [.default_rules, rules]
+        - if: $CI_PIPELINE_SOURCE != "pipeline" 
+          when: never          
+    when: on_failure
+    needs:
+        - job: push-lagarto
+          optional: true
+    script:
+        # If the shell pipeline fails, remove the release commit from OpenPiton repo
+        - | 
+            if git show-ref --quiet refs/heads/acme_ci/$COMMIT_REF; then
+                echo "Deleting acme_ci/$COMMIT_REF branch"
+                git push -d origin acme_ci/$COMMIT_REF
+            fi
+
+#TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
+##
+
+.git_clean:
+    before_script:
+        - git config --local --unset http.proxy || true
+        - git config --local --unset https.proxy || true
+
+.check_synth_dcp:
+  script:
+    - |
+      if [ ! -f dcp/synthesis.dcp ]; then 
+        echo "dcp file has not been created"
+        exit 23; 
+      fi;        

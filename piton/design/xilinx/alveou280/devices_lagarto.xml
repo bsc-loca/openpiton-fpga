@@ -11,8 +11,7 @@ specific language governing permissions and limitations under the License.
 
 Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 Date: 26.11.2018
-Modified: 01/09/2021 daniel.jimenez2@bsc.es, BSC
-Description: Peripheral address map for OpenPiton+Lagarto configurations.
+Description: Peripheral address map for OpenPiton+Ariane configurations.
 -->
 <devices>
     <!--The first entry should always be the filter/chip to xbar connection-->
@@ -25,6 +24,14 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <base>0x80000000</base>
         <!-- 8GB -->
         <length>0x200000000</length>
+    </port>
+	<port>    
+        <name>dma_pool</name>
+        <base>0x40000000</base>
+        <!-- 1GB non-cacheable -->
+        <length>0x40000000</length>
+        <fragment>0x10000000</fragment>
+        <stream_accessible/>
     </port>
     <port>
         <name>iob</name>
@@ -39,14 +46,20 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <length>0xd4000</length>
         <noc2in/>
         <stream_accessible/>
-    </port>
+    </port>	    
     <port>
         <name>net</name>
         <base>0xfff0800000</base>
         <length>0x400000</length>
         <stream_accessible/>
     </port>
-    <!-- note: the following modules are ariane-specific and are only instantiated in HW when using the ariane core -->
+    <!--port>
+        <name>sram</name>
+        <base>0xfff0400000</base>
+        <length>0x100000</length>
+        <stream_accessible/>
+    </port> -->
+    <!-- note: the following modules are lagarto-specific and are only instantiated in HW when using the lagarto core -->
     <port>
         <!-- this is the shared debug module for JTAG access to all cores -->
         <name>lagarto_debug</name>
@@ -74,13 +87,6 @@ Description: Peripheral address map for OpenPiton+Lagarto configurations.
         <base>0xfff1100000</base>
         <length>0x4000000</length>
         <stream_accessible/>
-    </port>
-    <!-- performance monitoring unit -->
-    <port>
-        <name>lagarto_pmu</name>
-        <base>0xfff5100000</base>
-        <length>0x10000</length>
-	<stream_accessible/>
     </port>
     <!-- end lagarto specific periphs -->
 </devices>

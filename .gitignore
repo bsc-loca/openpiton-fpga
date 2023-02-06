@@ -30,7 +30,7 @@ piton/design/*/*/*/*/*/*/*/*/*/synopsys/*
 piton/design/*/*/*/*/*/*/*/*/*/*/synopsys/*
 !piton/design/*/*/*/*/*/*/*/*/*/*/synopsys/script
 
-# IP for FPGA designs is generated in palce
+# IP for FPGA designs is generated in place
 # where .xci file is located, so need to ignore
 # these generated files.
 # Good for 10 levels of hierarchy
@@ -87,6 +87,11 @@ piton/verif/env/dmbr_test/test_cases/simple_sink.vmh
 piton/verif/env/dmbr_test/test_cases/simple_src.vmh
 piton/verif/diag/assembly/princeton/dmbr_assembly.s
 
+
+piton/design/chip/tile/noc/benchmark/app-scalar/*/bin/*
+piton/design/chip/tile/noc/benchmark/app-scalar/*/dataset.h
+piton/tools/verilator/mcs_map_info.h
+
 # Ignore Vivado
 .Xil/*
 vivado*.log
@@ -101,6 +106,7 @@ ucli.key
 *.v.tmp
 *.h.tmp
 *.tmp.v
+*.tmp.sv
 *.tmp.h
 
 # Ignore generated .pyc files (specifically for pyhplib)
@@ -164,3 +170,12 @@ cov*/
 transcript*
 sc_dpiheader.h
 vsim.dbg
+
+#####################
+# MEEP Shell symlink
+#####################
+
+# ignore the folder (symlink) but not the contents
+#/meep_shell
+#!/meep_shell/
+*.xci

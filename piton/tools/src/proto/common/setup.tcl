@@ -45,7 +45,7 @@ set ISE_PROJECT_FILE "${PROJECT_DIR}/${PROJECT_NAME}.xise"
 # Combined variables from global, design, and board
 set ALL_INCLUDE_DIRS [concat ${GLOBAL_INCLUDE_DIRS} ${DESIGN_INCLUDE_DIRS}]
 
-set ALL_RTL_IMPL_FILES [concat ${DESIGN_RTL_IMPL_FILES}]
+set ALL_RTL_IMPL_FILES [concat ${DESIGN_RTL_IMPL_FILES} ${MEEP_RTL_FILES}] 
 
 set ALL_INCLUDE_FILES [concat ${GLOBAL_INCLUDE_FILES} ${DESIGN_INCLUDE_FILES}]
 
@@ -82,6 +82,11 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
 
 ################# CORE SPECIFIC SECTION #################
 #
+
+if  {$::env(PITON_ARIANE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${ARIANE_INCLUDE_DIRS}]
+  puts "Add Ariane include directories"
+}
 
 if  {$::env(PITON_LAGARTO) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
@@ -174,9 +179,9 @@ if  {$::env(PITON_ARIANE) != "0"} {
   exec make clean 2> /dev/null
   exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
   puts "INFO: done"
-  # two targets per hart (M,S) and two interrupt sources (UART, Ethernet)
+  # two targets per hart (M,S) and two interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
-  set NUM_SOURCES 2
+  set NUM_SOURCES 3
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
   cd $::env(ARIANE_ROOT)/src/rv_plic/rtl
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
@@ -202,9 +207,9 @@ if  { $::env(PITON_LAGARTO) != "0"} {
   exec make clean 2> /dev/null
   exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
   puts "INFO: done"
-  # two targets per hart (M,S) and two interrupt sources (UART, Ethernet)
+  # two targets per hart (M,S) and three interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
-  set NUM_SOURCES 2
+  set NUM_SOURCES 3
   puts "INFO: generating PLIC for Lagarto ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
   cd $::env(LAGARTO_ROOT)/src/rv_plic/rtl
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
@@ -215,3 +220,10 @@ if  { $::env(PITON_LAGARTO) != "0"} {
 
 set ::env(PYTHONPATH) $tmp_PYTHONPATH
 set ::env(PYTHONHOME) $tmp_PYTHONHOME
+
+if { [info exists ::env(BROM_ONLY) ]} {
+	puts "Boot ROM created. Finishing protosyn..."
+	exec kill [pid]
+	exec kill $::env(PROTOPID)
+}	
+

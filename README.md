@@ -1,5 +1,160 @@
-# MEEP_openpiton
-=======
+# OpenPiton MEEP: ACME
+## Description
+
+This repository is a fork from OpenPiton: https://github.com/PrincetonUniversity/openpiton
+
+We are using openpiton-dev as our stable main branch.
+
+All new feature will be develop using feature branch. Like feature/lagarto_ari
+
+All new bug will be investigated and resolved using bug branch. like bug/1232
+
+### Cloning the repo and move to the stable branch
+    
+    git clone https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/meep_openpiton.git -b rtl/HV_GC5-L1Ar-V_ACME --recurse-submodules
+
+### Set env for EDA tools
+
+    source /home/tools/riscv_vector_toolchain/set_env.sh
+    source /apps/env.sh
+
+### Setup and submodules initialization
+
+    cd meep_openpiton
+    source piton/lagarto_setup.sh
+    source piton/lagarto_build_tools.sh
+
+### Building the simulation model
+    
+    cd build
+
+Compiling Openpiton with Lagarto.
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+
+Compiling with torture (to generate signature file for spike):
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
+
+Compiling MEEP-VPU with different lanes. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_2_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_4_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_8_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=VPU_16_LANES
+    
+### Clean builds
+
+You can clean-up the environment and meta data among compilations by doing:
+
+    sims clean
+    rm -rf manycore
+
+### Compile and launch simulations
+
+Compiling and running RISC-V Tests with Lagarto in OpenPiton
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_8.S -lagarto -precompiled
+
+Vector tests don't support cosimulation, yet.
+
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim
+
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with coverage
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -cov
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cov
+
+ARIANE core: Compiling and running requires to setup ariane's paths and variables:
+
+    source piton/ariane_setup.sh && source piton/ariane_build_tools.sh
+    cd build && sims clean && rm -rf manycore
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled
+
+#### Running RISC-V Tests 
+
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -gui
+
+### Running RISC-V benchmarks   
+
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 dhrystone.riscv -lagarto -precompiled
+
+List of supported benchmarks:
+
+- median
+- qsort
+- rsort
+- towers
+- vvadd
+- multiply
+- dhrystone
+- matmul
+- pmp
+
+After the execution of the benchmark you can display the result with:
+    
+    cat fake_uart.log
+
+
+#### Running RISC-V MT Benchmarks
+
+First build the system with the number of tiles that you desire. The below example use 4 tiles.
+
+    sims -sys=manycore -x_tiles=2 -y_tiles=2 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS
+
+Then recompile the benchmark to work with 4 tiles:
+
+    cd $PITON_ROOT/piton/design/chip/tile/vas_tile_core/tmp/riscv-tests/build
+    make clean
+    make benchmarks NUMTILES=-DPITON_NUMTILES=4
+    cd $PITON_ROOT/build
+
+Then run the benchmarks as below:
+
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-vvadd.riscv -rtl_timeout=100000000
+
+
+or
+    
+    sims -sys=manycore -msm_run -x_tiles=2 -y_tiles=2 -lagarto -precompiled mt-matmul.riscv -rtl_timeout=100000000
+
+After the execution of the benchmark you can display the result with:
+    
+    cat fake_uart.log
+
+#### Regressions
+
+The RISC-V ISA tests, benchmarks and some additonal simple example programs have been added to the regression suite of OpenPiton, and can be invoked as described below.
+RISC-V ISA tests are grouped into the following four batches, where the last two are the regressions for atomic memory operations (AMOs):
+
+    sims -group=lagarto_tile1_asm_tests_p -sim_type=msm
+
+List of regression tests supported:
+
+- lagarto_tile1_rv64ui_tests_p 
+- lagarto_tile1_rv64ui_tests_v 
+- lagarto_tile1_rv64ua_tests_p
+- lagarto_tile1_rv64ua_tests_v
+- lagarto_tile1_rv64um_tests_p
+- lagarto_tile1_rv64um_tests_v
+- lagarto_tile1_rv64mi_tests_p
+- lagarto_tile1_rv64si_tests_p
+- lagarto_tile1_rv64uf_tests_p
+- lagarto_tile1_rv64uf_tests_v
+- lagarto_tile1_rv64ud_tests_p
+- lagarto_tile1_rv64ud_tests_v
+
+If you would like to get an overview of the exit status of a regression batch, step into the regression subfolder and call
+
+    regreport . -summary
+
+
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
 # OpenPiton Research Platform   [![Build Status](https://jenkins.princeton.edu/buildStatus/icon?job=cloud/piton_git_push_master)](https://jenkins.princeton.edu/job/cloud/job/piton_git_push_master/)
@@ -560,4 +715,5 @@ The following items are currently under development and will be released soon.
 - Synthesis flow for large FPGAs.
 - Performance enhancements (cache re-parameterization, write-buffer throughput).
 
-Stay tuned!
+Stay tuned!!
+
