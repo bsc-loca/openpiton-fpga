@@ -38,7 +38,8 @@ while getopts 'sh' OPTION; do
       echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
       echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
       echo -e "<protosyn_flag> available combinatios :"
-      echo -e  "  --pronoc: ProNoC routers" ${NC}
+      echo -e  "  --pronoc: ProNoC routers"
+      echo -e  "  --vnpm: Vivado non project mode" ${NC}
       exit 0
       ;;
     ?)
@@ -124,6 +125,10 @@ function ea_options() {
         PROTO_OPTIONS+=--vpu
         echo -e ${LP}"    vpu " ${NC}
         ;;
+        vpu)
+        PROTO_OPTIONS+=--vnpm 
+        echo -e ${LP}"    Vivado Non Project mode " ${NC}
+        ;;
     esac
 }
 # Check the input arguments
@@ -140,14 +145,14 @@ else
 fi
 shift
 ## Build configurations
- declare -A map=( [pronoc]=1  [default]=1)
+ declare -A map1=( [pronoc]=1  [default]=1)
  ea_conf=$1
 
 
 if [ x$1 == x ]; then
     echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
         
-elif [[ ${map["$ea_conf"]} ]]; then
+elif [[ ${map1["$ea_conf"]} ]]; then
 #     MEEP="--vnpm --hbm "
    ea_options $ea_conf
 else
