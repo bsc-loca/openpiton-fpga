@@ -537,13 +537,8 @@ uart_mux   uart_mux (
       assign s_axi_rvalid = uart_axi_rvalid;
       assign uart_axi_rready = s_axi_rready;
       
-      
     `else
-        
-    // 25/10/2022 @dmazure: The riscvlib.py has been updated to 16550a. This mismatch won't let OpenPiton to
-    // be used without the Shell. To revert this, the uart-xilinx device-tree entry needs to be recovered. 
-    // Otherwise, MEEP FPGA Shell UART could be referenced as an IP and used here.
-    
+
       uart_16550   uart_16550 (
         .s_axi_aclk       (axi_clk          ),  // input wire s_axi_aclk
         .s_axi_aresetn    (rst_n            ),  // input wire s_axi_aresetn
@@ -576,7 +571,6 @@ uart_mux   uart_mux (
         .s_axi_rresp      (s_axi_rresp      ),  // output wire [1 : 0] s_axi_rresp
         .s_axi_rvalid     (s_axi_rvalid     ),  // output wire s_axi_rvalid
         .s_axi_rready     (s_axi_rready     ),  // input wire s_axi_rready
-        
 
         .baudoutn         (),   
         .ctsn             (1'b0),  
