@@ -476,6 +476,7 @@ print(s)
     /////////////////////////////////////////////////////
     // Configuration Registers Needing to be Hooked Up //
     /////////////////////////////////////////////////////
+`ifndef FPGA_SYN
 `ifndef DISABLE_ALL_MONITORS
 `ifndef MINIMAL_MONITORING
 always @ (posedge clk) begin 
@@ -495,6 +496,7 @@ always @ (posedge clk) begin
 	if(buffer_router_yummy_noc3)$display("%t: rsv noc3 credit",$time);	
 			
 end
+`endif
 `endif
 `endif
 
