@@ -23,7 +23,7 @@ while getopts 'sh' OPTION; do
         echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
         echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" 
         echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" 
-        echo -e       "  ACME_EA aHbVcM; where:" 
+        echo -e       "  ACME_EA_aHbVcM; where:" 
         echo -e       "   "a" means the number of cores in the system" 
         echo -e       "   "b" means the number of vector lanes" 
         echo -e       "   "c" means the number of MT "  ${NC}
@@ -34,9 +34,9 @@ while getopts 'sh' OPTION; do
       echo -e "Accelerator_build: A script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
       echo -e "script usage: ./$(basename "$0") <EA_name> <protosyn_flag>"   ${NC} 
       echo -e "<EA_name> available combinatios :" 
-      echo -e ${WH} "  acme_ea-4a: CORE=ariane x_tiles=2 y_tyles=2" 
-      echo -e       "   acme_ea-1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
-      echo -e       "   acme_ea-4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
+      echo -e ${WH} "  acme_ea_4a: CORE=ariane x_tiles=2 y_tyles=2" 
+      echo -e       "   acme_ea_1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
+      echo -e       "   acme_ea_4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
       echo -e "<protosyn_flag> available combinatios :"
       echo -e  "  --pronoc: ProNoC routers"
       echo -e  "  --vnpm: Vivado non project mode" ${NC}
@@ -67,7 +67,7 @@ help $1
 if [ x$1 == x ]; then
    echo Missing arguments
    echo Usage: $0 EA_flavours meep_config
-   echo -e ${RED}"    EA_flavours supported: acme_ea-4a acme_ea-1h16v acme_ea-4h2v default" ${NC}
+   echo -e ${RED}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v default" ${NC}
    exit 1
 fi
 
@@ -79,13 +79,13 @@ function ea_flavours() {
     
     local eaName=$1
     case "$eaName" in
-        acme_ea-4a)
+        acme_ea_4a)
             CORE=ariane
             XTILES=2
             YTILES=2
             echo -e ${LP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
             ;;
-        acme_ea-1h16v)
+        acme_ea_1h16v)
             CORE=lagarto
             XTILES=1
             YTILES=1
@@ -93,7 +93,7 @@ function ea_flavours() {
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
             echo -e ${LP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
-        acme_ea-4h2v)
+        acme_ea_4h2v)
             CORE=lagarto
             XTILES=2
             YTILES=2
@@ -118,13 +118,13 @@ function ea_options() {
     case "$1" in
         pronoc)
         PROTO_OPTIONS+=--pronoc 
-        echo -e ${LP}"    ProNoc routers " ${NC}
+        echo -e ${LP}"   Added ProNoc routers " ${NC}
         ;;
         vpu)
         PROTO_OPTIONS+=--vpu
         echo -e ${LP}"    vpu " ${NC}
         ;;
-        vpu)
+        vnpm)
         PROTO_OPTIONS+=--vnpm 
         echo -e ${LP}"    Vivado Non Project mode " ${NC}
         ;;
@@ -133,10 +133,10 @@ function ea_options() {
 # Check the input arguments
 # The first one must be the EA, second one will be MEEP 
 
-declare -A map=( [acme_ea-4a]=1 [acme_ea-1h16v]=1 [acme_ea-4h2v]=1  [default]=1)
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
-    echo -e ${YELLOW}"EA_selection: $ea_is" ${NC}
+    echo "EA_selection: $ea_is" 
     ea_flavours $ea_is
 else
     echo -e ${RED}"EA selection is not supported" ${NC}
@@ -160,7 +160,7 @@ fi
 
 
 
-echo "[DEBUG] final result : $CORE $XTILES $YTILES, $PROTO_OPTIONS"
+echo "Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS"
 
 # Execute protosyn command to build the infrastructure with OP
 make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"

@@ -59,7 +59,7 @@ variables:
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme_vpu]
+            - CONF: [acme_ea-4a,acme_ea-1h16v,acme_ea-4h2v]
 
 stages:  
   - simulation
@@ -264,7 +264,7 @@ fpga-shell-trigger:
             COMMIT_MESG: $CI_COMMIT_MESSAGE
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
-                branch: production
+                branch: develop/cicd_improvements
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
