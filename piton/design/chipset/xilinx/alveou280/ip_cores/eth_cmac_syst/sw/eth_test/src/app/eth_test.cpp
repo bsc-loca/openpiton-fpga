@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
       case 'l': {
         #ifdef DMA_MEM_HBM
         printf("------- Running DMA Tx/Rx/SG memory test (HBM-based) -------\n");
-        enum {MEM_TEST_COMBINATIONS = 4};
+        enum {MEM_TEST_COMBINATIONS = 2};
         #else
         printf("------- Running DMA Tx/Rx/SG memory test (SRAM-based) -------\n");
         enum {MEM_TEST_COMBINATIONS = 1};
@@ -141,14 +141,14 @@ int main(int argc, char *argv[])
         } else {
           printf("Filling mixed regions with random values from %0X to %0X: \n", 0, RAND_MAX);
           #ifdef TXRX_MEM_CACHED
-            txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
-            rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            txMemAddr = ethSyst.TX_MEM_ADDR;
+            rxMemAddr = ethSyst.RX_MEM_ADDR;
           #else
             txMemAddr = ethSyst.TX_MEMNC_ADDR;
             rxMemAddr = ethSyst.RX_MEMNC_ADDR;
           #endif
           #ifdef SG_MEM_CACHED
-            sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            sgMemAddr = ethSyst.SG_MEM_ADDR;
           #else
             sgMemAddr = ethSyst.SG_MEMNC_ADDR;
           #endif
@@ -228,7 +228,7 @@ int main(int argc, char *argv[])
         uint16_t volatile* sgMemRd16;
         uint32_t volatile* sgMemRd32;
         uint64_t volatile* sgMemRd64;
-        bool rdNonCachMem = !(memCase & 0x2);
+        bool rdNonCachMem = !(memCase & 0x1);
         if (rdNonCachMem) {
           printf("Reading non-cached regions: \n");
           txMemAddr = ethSyst.TX_MEMNC_ADDR;
@@ -249,14 +249,14 @@ int main(int argc, char *argv[])
         } else {
           printf("Reading mixed regions: \n");
           #ifdef TXRX_MEM_CACHED
-            txMemAddr = ethSyst.TX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
-            rxMemAddr = ethSyst.RX_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            txMemAddr = ethSyst.TX_MEM_ADDR;
+            rxMemAddr = ethSyst.RX_MEM_ADDR;
           #else
             txMemAddr = ethSyst.TX_MEMNC_ADDR;
             rxMemAddr = ethSyst.RX_MEMNC_ADDR;
           #endif
           #ifdef SG_MEM_CACHED
-            sgMemAddr = ethSyst.SG_MEM_ADDR + DRAM_BASEADDR; // adding CPU specific offset to DMA address
+            sgMemAddr = ethSyst.SG_MEM_ADDR;
           #else
             sgMemAddr = ethSyst.SG_MEMNC_ADDR;
           #endif
