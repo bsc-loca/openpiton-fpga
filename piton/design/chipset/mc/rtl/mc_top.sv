@@ -101,7 +101,7 @@ module mc_top (
 
   `ifdef PITONSYS_MEEP
     input                           init_calib_complete,
-    // single SDRAM AXI bus
+    // regular MC AXI bus
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
@@ -153,7 +153,7 @@ module mc_top (
     output wire                               m_axi_bready,
 
     `ifdef PITON_EXTRA_MEMS
-      // vectorized multi-SDRAM AXI bus
+      // vectorized multi-MC AXI bus
       output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid;
       output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr;
       output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen;
@@ -1374,7 +1374,7 @@ assign mcx_axi_bvalid[idx                                         ] = m_axi``idx
 
   genvar idx;
   generate
-  for(idx=0; idx<`PITON_EXTRA_MEMS; idx=idx+1) begin: axi4_bridges_mcx
+  for(idx=0; idx<`PITON_EXTRA_MEMS; idx=idx+1) begin: mcx_bridges
   noc_axi4_bridge #(
     .SWAP_ENDIANESS (1),
     .AXI4_DAT_WIDTH_USED(HBM_WIDTH),
