@@ -274,10 +274,9 @@ module chipset(
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
 `elsif ALVEOU280_BOARD
-    `ifdef PITONSYS_MEEP
+  `ifdef PITONSYS_MEEP
     input                           hbm_calib_complete,    
-    //
-    	    // AXI interface
+    // regular MC AXI bus
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    m_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    m_axi_awlen,
@@ -525,11 +524,64 @@ module chipset(
     output wire                               ncmem_axi_bready,
     `endif // NON_CACHE_MEM
 
-    `else
-    output                          ddr_parity,
-    output                          hbm_cattrip,
-    
-    `endif
+    `ifdef PITON_EXTRA_MEMS
+      // vectorized multi-MC AXI bus
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid;
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr;
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen;
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_awsize;
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_awburst;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awlock;
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_awcache;
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_awprot;
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_awqos;
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_awregion;
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_awuser;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awvalid;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awready;
+
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_wid;
+      output [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_wdata;
+      output [`PITON_EXTRA_MEMS * `AXI4_STRB_WIDTH   -1:0]   mcx_axi_wstrb;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wlast;
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_wuser;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wvalid;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wready;
+
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_arid;
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_araddr;
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_arlen;
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_arsize;
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_arburst;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arlock;
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_arcache;
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_arprot;
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_arqos;
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_arregion;
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_aruser;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arvalid;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arready;
+
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_rid;
+      input  [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_rdata;
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_rresp;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rlast;
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_ruser;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rvalid;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rready;
+
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_bid;
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_bresp;
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser;
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid;
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready;
+    `endif //`ifdef PITON_EXTRA_MEMS
+
+  `else //`ifdef PITONSYS_MEEP
+      output                          ddr_parity,
+      output                          hbm_cattrip,
+  `endif //`ifdef PITONSYS_MEEP
+
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -1742,7 +1794,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
                 `elsif ALVEOU280_BOARD
-                     `ifdef PITONSYS_MEEP
+                  `ifdef PITONSYS_MEEP
                     .hbm_calib_complete (hbm_calib_complete),
                     
                     .m_axi_awid      (m_axi_awid     ),
@@ -1822,7 +1874,6 @@ chipset_impl_noc_power_test  chipset_impl (
            .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
            .dma_s_axi_rready   (dma_s_axi_rready ) ,
           `else
-					
 
 				    .eth_axi_araddr(eth_axi_araddr),
 				    .eth_axi_arburst(eth_axi_arburst),
@@ -1990,10 +2041,63 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .ncmem_axi_wvalid(ncmem_axi_wvalid),
 				    `endif //NONC_CHACH_MEM
 
-                    `else
+            `ifdef PITON_EXTRA_MEMS
+             // vectorized multi-MC AXI bus
+            .mcx_axi_awid      (mcx_axi_awid     ),
+            .mcx_axi_awaddr    (mcx_axi_awaddr   ),
+            .mcx_axi_awlen     (mcx_axi_awlen    ),
+            .mcx_axi_awsize    (mcx_axi_awsize   ),
+            .mcx_axi_awburst   (mcx_axi_awburst  ),
+            .mcx_axi_awlock    (mcx_axi_awlock   ),
+            .mcx_axi_awcache   (mcx_axi_awcache  ),
+            .mcx_axi_awprot    (mcx_axi_awprot   ),
+            .mcx_axi_awqos     (mcx_axi_awqos    ),
+            .mcx_axi_awregion  (mcx_axi_awregion ),
+            .mcx_axi_awuser    (mcx_axi_awuser   ),
+            .mcx_axi_awvalid   (mcx_axi_awvalid  ),
+            .mcx_axi_awready   (mcx_axi_awready  ),
+            
+            .mcx_axi_wid       (mcx_axi_wid      ),
+            .mcx_axi_wdata     (mcx_axi_wdata    ),
+            .mcx_axi_wstrb     (mcx_axi_wstrb    ),
+            .mcx_axi_wlast     (mcx_axi_wlast    ),
+            .mcx_axi_wuser     (mcx_axi_wuser    ),
+            .mcx_axi_wvalid    (mcx_axi_wvalid   ),
+            .mcx_axi_wready    (mcx_axi_wready   ),
+            
+            .mcx_axi_arid      (mcx_axi_arid     ),
+            .mcx_axi_araddr    (mcx_axi_araddr   ),
+            .mcx_axi_arlen     (mcx_axi_arlen    ),
+            .mcx_axi_arsize    (mcx_axi_arsize   ),
+            .mcx_axi_arburst   (mcx_axi_arburst  ),
+            .mcx_axi_arlock    (mcx_axi_arlock   ),
+            .mcx_axi_arcache   (mcx_axi_arcache  ),
+            .mcx_axi_arprot    (mcx_axi_arprot   ),
+            .mcx_axi_arqos     (mcx_axi_arqos    ),
+            .mcx_axi_arregion  (mcx_axi_arregion ),
+            .mcx_axi_aruser    (mcx_axi_aruser   ),
+            .mcx_axi_arvalid   (mcx_axi_arvalid  ),
+            .mcx_axi_arready   (mcx_axi_arready  ),
+            
+            .mcx_axi_rid       (mcx_axi_rid      ),
+            .mcx_axi_rdata     (mcx_axi_rdata    ),
+            .mcx_axi_rresp     (mcx_axi_rresp    ),
+            .mcx_axi_rlast     (mcx_axi_rlast    ),
+            .mcx_axi_ruser     (mcx_axi_ruser    ),
+            .mcx_axi_rvalid    (mcx_axi_rvalid   ),
+            .mcx_axi_rready    (mcx_axi_rready   ),
+            
+            .mcx_axi_bid       (mcx_axi_bid      ),
+            .mcx_axi_bresp     (mcx_axi_bresp    ),
+            .mcx_axi_buser     (mcx_axi_buser    ),
+            .mcx_axi_bvalid    (mcx_axi_bvalid   ),
+            .mcx_axi_bready    (mcx_axi_bready   ),
+            `endif //`ifdef PITON_EXTRA_MEMS
+
+                  `else //`ifdef PITONSYS_MEEP
                     .ddr_parity(ddr_parity),
                     .hbm_cattrip(hbm_cattrip),       
-                    `endif
+                  `endif //`ifdef PITONSYS_MEEP
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
