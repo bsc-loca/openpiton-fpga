@@ -266,7 +266,7 @@ shell-prelaunch:
 fpga-shell-trigger-production:
         stage: push-shell
         rules: 
-            - !reference [.test_rules,rules]           
+            - !reference [.production_rules,rules]           
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
@@ -278,7 +278,7 @@ fpga-shell-trigger-production:
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
-        rules:
+
 
 fpga-shell-trigger-test:
         stage: push-shell
@@ -295,7 +295,7 @@ fpga-shell-trigger-test:
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
-        rules:
+
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo  
