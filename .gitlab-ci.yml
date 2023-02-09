@@ -186,7 +186,9 @@ deploy-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        extends: .default_rules
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]
         needs:
             - synthesis-matrix
             - validation-matrix
@@ -205,8 +207,9 @@ push-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        rules:
-            - if: $CI_PIPELINE_SOURCE == "pipeline"           
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]
         needs:
             - validation-matrix
         variables:
@@ -244,8 +247,9 @@ shell-prelaunch:
             - MEEP_FPGA
         variables:
             GIT_STRATEGY: clone            
-        rules:
-            - if: $CI_PIPELINE_SOURCE != "pipeline"              
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]             
         needs:
             - validation-matrix
         script:
