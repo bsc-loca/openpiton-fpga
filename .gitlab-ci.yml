@@ -65,8 +65,6 @@ variables:
           when: never
 
 
-
-
 .multi_target:
     parallel:
         matrix:
