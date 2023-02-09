@@ -283,11 +283,10 @@ fpga-shell-trigger-production:
                 # production should be almost a mirror of master
                 strategy: depend
 
-
 fpga-shell-trigger-test:
         stage: push-shell
         rules: 
-            - !reference [.test_rules,rules]           
+            - !reference [.test_rules,rules]
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
