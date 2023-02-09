@@ -5,7 +5,6 @@
 
 workflow:
     rules:
-        - !reference [.workflow_default_rules, rules]
         - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
         - if: $CI_PIPELINE_SOURCE == "schedule" #A schedule pipeline: production monthly
         - if: $CI_PIPELINE_SOURCE == "pipeline"
@@ -15,7 +14,9 @@ workflow:
         - if: $CI_COMMIT_TAG != null 
         - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
           when: never # Pushing to main doesn't create pipelines unless there is a tag        
-  
+        - !reference [.test_rules, rules]
+        - !reference [.production_rules, rules]
+
 variables:
     GIT_STRATEGY: none
     GIT_SUBMODULE_STRATEGY: none
@@ -29,10 +30,20 @@ variables:
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
+.production_rules:
+  rules:    
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production" #Can be trigger for a mer_request to the The target branch "production"
+    - if: $CI_PIPELINE_SOURCE == "schedule" #A schedule pipeline: production monthly
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never  
+    - if: $CI_COMMIT_TAG != null 
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: never #
+
 .test_rules:
-    rules:
-        if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
-        #- when: always
+  rules:
+      if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
 
 .exclude_ariane:
     rules:
@@ -53,15 +64,13 @@ variables:
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
 
-.workflow_default_rules:  
-  rules:
-     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ || $CI_COMMIT_MESSAGE =~ /#TestSim/
+
 
 
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme_ea-4a,acme_ea-1h16v,acme_ea-4h2v]
+            - CONF: [acme_ea_4a,acme_ea_1h16v,acme_ea_4h2v]
 
 stages:  
   - simulation
@@ -147,7 +156,7 @@ synthesis-matrix:
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
             # A matrix can be created here to synthesize all different options
-            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF nomeep
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF 
             #- make protosyn $DESIGN_OPTIONS CORE=lagarto
             - !reference [.check_synth_dcp, script]            
         after_script:
@@ -256,9 +265,10 @@ shell-prelaunch:
 # @ support/acme/ea_url.txt, and do things normally. (make update_sha)
 # if the pipeline success, the new ea_url needs to be commited
 
-fpga-shell-trigger:
+fpga-shell-trigger-production:
         stage: push-shell
-        extends: .default_rules           
+        rules: 
+            - !reference [.test_rules,rules]           
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
@@ -270,6 +280,24 @@ fpga-shell-trigger:
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
+        rules:
+
+fpga-shell-trigger-test:
+        stage: push-shell
+        rules: 
+            - !reference [.test_rules,rules]           
+        variables:        
+            GIT_STRATEGY: clone
+            COMMIT_SHA: $NEW_BRANCH_SHA 
+            COMMIT_REF: $NEW_BRANCH
+            COMMIT_MESG: $CI_COMMIT_MESSAGE
+        trigger: 
+                project: meep/FPGA_implementations/AlveoU280/fpga_shell                
+                branch: develop/cicd_improvements
+                # master is a protected branch, which causes permission issues with triggered pipelines
+                # production should be almost a mirror of master
+                strategy: depend
+        rules:
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo  
