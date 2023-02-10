@@ -70,7 +70,7 @@ fi
 
 #EA Flavours function: Selection of the production and test bitstreams
 #There we have the mandatories protsyn flags
-PROTO_OPTIONS=""
+PROTO_OPTIONS=
 
 function ea_flavours() {
     
