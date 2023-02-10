@@ -152,7 +152,7 @@ synthesis-matrix:
             - echo "VIVADO = $VIVADO_BIN"
             # 2x2 by default
             # A matrix can be created here to synthesize all different options
-            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF vnpm
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF vnpm hbm
             #- make protosyn $DESIGN_OPTIONS CORE=lagarto
             - !reference [.check_synth_dcp, script]            
         after_script:
