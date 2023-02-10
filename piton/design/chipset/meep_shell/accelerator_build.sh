@@ -23,7 +23,7 @@ while getopts 'sh' OPTION; do
         echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
         echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" 
         echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" 
-        echo -e       "  ACME_EA_aHbVcM; where:" 
+        echo -e       "  acme_ea_ahbvcm; where:" 
         echo -e       "   "a" means the number of cores in the system" 
         echo -e       "   "b" means the number of vector lanes" 
         echo -e       "   "c" means the number of MT "  ${NC}
@@ -38,8 +38,8 @@ while getopts 'sh' OPTION; do
       echo -e       "   acme_ea_1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
       echo -e       "   acme_ea_4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
       echo -e "<protosyn_flag> available combinatios :"
-      echo -e  "  --pronoc: ProNoC routers"
-      echo -e  "  --vnpm: Vivado non project mode" ${NC}
+      echo -e  "  pronoc: ProNoC routers"
+      echo -e  "  vnpm: Vivado non project mode" ${NC}
       exit 0
       ;;
     ?)
@@ -144,7 +144,7 @@ else
 fi
 shift
 ## Build configurations
- declare -A map1=( [pronoc]=1  [default]=1)
+ declare -A map1=( [pronoc]=1  [vnpm]=1)
  ea_conf=$1
 
 if [ x$1 == x ]; then
