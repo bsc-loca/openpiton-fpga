@@ -14,6 +14,7 @@ NC='\033[0m'
 
 #help fuction
 
+
 function help(){
 
 while getopts 'sh' OPTION; do
@@ -54,15 +55,7 @@ done
 help $1
 #####################
 
-# /bin/true is a command that returns 0 (a truth value in the shell)
-# if [ x$1 == x--dryrun ]; then
-# 	dryrun=/bin/true
-# 	shift
-# else
-# 	dryrun=/bin/false
-# fi
 
-## Check the input arguments: no empty vaules
 
 if [ x$1 == x ]; then
    echo Missing arguments
@@ -73,7 +66,7 @@ fi
 
 #EA Flavours function: Selection of the production and test bitstreams
 #There we have the mandatories protsyn flags
-
+PROTO_OPTIONS=""
 
 function ea_flavours() {
     
@@ -117,26 +110,27 @@ function ea_options() {
     
     case "$1" in
         pronoc)
-        PROTO_OPTIONS+=--pronoc 
-        echo -e ${LP}"   Added ProNoc routers " ${NC}
-        ;;
-        vpu)
-        PROTO_OPTIONS+=--vpu
-        echo -e ${LP}"    vpu " ${NC}
-        ;;
+        PROTO_OPTIONS+=" --pronoc"
+        echo -e ${LC}"    Added ProNoc routers " ${NC}
+        ;;        
         vnpm)
-        PROTO_OPTIONS+=--vnpm 
-        echo -e ${LP}"    Vivado Non Project mode " ${NC}
+        PROTO_OPTIONS+=" --vnpm " 
+        echo -e ${LC}"    Vivado Non Project mode " ${NC}
         ;;
         hbm)
-        PROTO_OPTIONS+=--hbm 
-        echo -e ${LP}"    HBM " ${NC}
+        PROTO_OPTIONS+=" --hbm"  
+        echo -e ${LC}"    HBM " ${NC}
+        ;;
+        meep)
+        PROTO_OPTIONS+=" --meep " 
+        echo -e ${LC}"    MEEP " ${NC}
         ;;
     esac
 }
 # Check the input arguments
 # The first one must be the EA, second one will be MEEP 
 
+function ea_selected() {
 declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
@@ -147,22 +141,34 @@ else
     exit 1
 fi
 shift
+}
 ## Build configurations
- declare -A map1=( [pronoc]=1  [vnpm]=1)
+function protosyn_flags() {
+ declare -A map1=( [pronoc]=1 [vpu]=1 [vnpm]=1 [hbm]=1 [meep]=1)
  ea_conf=$1
 
 if [ x$1 == x ]; then
     echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
         PROTO_OPTIONS="--meep --eth --ncmem --hbm "
-elif [[ ${map1["$ea_conf"]} ]]; then
-     PROTO_OPTIONS="--hbm "
-   ea_options $ea_conf
+elif [[ ${map1["$ea_conf"]} ]]; then     
+   ea_options $ea_conf   
 else
     echo -e ${RED}"     EA protosyn flags is not supported" ${NC}
     exit 1
 fi
+}
 
+#read the input array and set the specific flags
+array=("$@")
 
+for i in "${array[@]}"
+do
+    if [[ $i  == *"acme"* ]]; then
+         ea_selected $i         
+    else
+         protosyn_flags $i         
+    fi
+done
 
 echo "Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS"
 
