@@ -605,6 +605,7 @@ def makeDefList(options):
     if options.core == 'lagarto':
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
+        defines.append("FPU_ZAGREB")
         if options.vpu:
             defines.append("VPU_ENABLE")
             if options.vlanes == "2":
