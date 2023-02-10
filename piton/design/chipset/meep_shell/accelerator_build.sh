@@ -73,7 +73,7 @@ fi
 
 #EA Flavours function: Selection of the production and test bitstreams
 #There we have the mandatories protsyn flags
-PROTO_OPTIONS="--meep --eth --ncmem --hbm "
+
 
 function ea_flavours() {
     
@@ -128,6 +128,10 @@ function ea_options() {
         PROTO_OPTIONS+=--vnpm 
         echo -e ${LP}"    Vivado Non Project mode " ${NC}
         ;;
+        hbm)
+        PROTO_OPTIONS+=--hbm 
+        echo -e ${LP}"    HBM " ${NC}
+        ;;
     esac
 }
 # Check the input arguments
@@ -149,9 +153,9 @@ shift
 
 if [ x$1 == x ]; then
     echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
-        
+        PROTO_OPTIONS="--meep --eth --ncmem --hbm "
 elif [[ ${map1["$ea_conf"]} ]]; then
-#     MEEP="--vnpm --hbm "
+     PROTO_OPTIONS="--hbm "
    ea_options $ea_conf
 else
     echo -e ${RED}"     EA protosyn flags is not supported" ${NC}
