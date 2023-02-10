@@ -20,27 +20,31 @@ function help(){
 while getopts 'sh' OPTION; do
   case "$OPTION" in
     s)       
-        echo -e ${LR} "ACME_EA Naming Convention" ${NC} 
+        echo -e ${LR} " ACME_EA Naming Convention" 
         echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
         echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" 
         echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" 
-        echo -e       "  acme_ea_ahbvcm; where:" 
-        echo -e       "   "a" means the number of cores in the system" 
-        echo -e       "   "b" means the number of vector lanes" 
-        echo -e       "   "c" means the number of MT "  ${NC}
+        echo -e      ${YELLOW} " ( acme_ea_ahbvcm ); where:" 
+        echo -e      ${GREEN} "  "a" means the number of cores in the system" 
+        echo -e               "   "b" means the number of vector lanes" 
+        echo -e               "   "c" means the number of MT "  ${NC}
         exit 0
     ;;
     h)
       echo -e ${LR}"Help menu "
       echo -e "Accelerator_build: A script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
-      echo -e "script usage: ./$(basename "$0") <EA_name> <protosyn_flag>"   ${NC} 
-      echo -e "<EA_name> available combinatios :" 
+      echo -e "script usage: ./$(basename "$0") <EA_name> <protosyn_flags>"   
+      echo -e ${LC}"<EA_name> available combinatios :" 
       echo -e ${WH} "  acme_ea_4a: CORE=ariane x_tiles=2 y_tyles=2" 
       echo -e       "   acme_ea_1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
-      echo -e       "   acme_ea_4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2" 
-      echo -e "<protosyn_flag> available combinatios :"
-      echo -e  "  pronoc: ProNoC routers"
-      echo -e  "  vnpm: Vivado non project mode" ${NC}
+      echo -e       "   acme_ea_4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2"
+      echo -e ${LC}"<protosyn_flag> available combinatios :"
+      echo -e  ${WH}"  pronoc: ProNoC routers"
+      echo -e  "  vnpm: Vivado non project mode" 
+      echo -e  "  hbm: High Bandwidth Memory. Implement design with HBM memory going first"
+      echo -e  "  meep: Generate a file list and a define list to called by the MEEP Shell project flow"
+      echo -e  "  eth: Add Ethernet controller to implementation"
+      echo -e  "  ncmem: Create an alias of the main memory bypassing the cache. Only available with meep option" ${NC}
       exit 0
       ;;
     ?)
@@ -125,6 +129,14 @@ function ea_options() {
         PROTO_OPTIONS+=" --meep " 
         echo -e ${LC}"    MEEP " ${NC}
         ;;
+        eth)
+        PROTO_OPTIONS+=" --eth " 
+        echo -e ${LC}"    Ethernet " ${NC}
+        ;;
+        ncmem)
+        PROTO_OPTIONS+=" --ncmem " 
+        echo -e ${LC}"    Ethernet " ${NC}
+        ;;
     esac
 }
 # Check the input arguments
@@ -143,13 +155,14 @@ fi
 shift
 }
 ## Build configurations
+#Right flag names
 function protosyn_flags() {
- declare -A map1=( [pronoc]=1 [vpu]=1 [vnpm]=1 [hbm]=1 [meep]=1)
+ declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1)
  ea_conf=$1
 
 if [ x$1 == x ]; then
     echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
-        PROTO_OPTIONS="--meep --eth --ncmem --hbm "
+    PROTO_OPTIONS+="--meep --eth --ncmem --hbm "
 elif [[ ${map1["$ea_conf"]} ]]; then     
    ea_options $ea_conf   
 else
@@ -164,11 +177,18 @@ array=("$@")
 for i in "${array[@]}"
 do
     if [[ $i  == *"acme"* ]]; then
-         ea_selected $i         
-    else
-         protosyn_flags $i         
+         ea_selected $i  
+
+        #the case we don't set any flag. We use mandatory ones        
+        if [ $# == 1 ]; then 
+            protosyn_flags 
+        fi  
+    else 
+        #the case we want to add specifics flags. It can be more than one       
+        protosyn_flags $i    
     fi
 done
+
 
 echo "Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS"
 
