@@ -277,6 +277,7 @@ fpga-shell-trigger-production:
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
+            ENV_WORK: "PRODUCTION"
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
                 branch: develop/cicd_improvements
@@ -293,6 +294,7 @@ fpga-shell-trigger-test:
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
+            ENV_WORK: "TEST"
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
                 branch: develop/cicd_improvements
