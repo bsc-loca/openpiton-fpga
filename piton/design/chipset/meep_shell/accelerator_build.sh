@@ -3,14 +3,22 @@
 # Use this script to call protosyn using the OpenPIton Framework. Here you can choose the differents "flavours" we can implement
 
 #Colors debug porpuses
-RED='\033[0;31m'
-GREEN='\033[0;32m'   
-YELLOW='\033[0;93m'
-LC='\033[1;36m'
-LP='\033[1;35m'
-LR='\033[1;31m'
-WH='\033[1;37m'
-NC='\033[0m'
+R='\033[0;0;31m'    #Red
+BR='\033[1;31m'     #Bold Red 
+BIR='\033[1;3;31m'  #Bold Italic Red
+
+Y='\033[0;0;93m'    #Yellow
+BY='\033[1;0;93m'   #Bold Yellow
+
+BC='\033[1;36m'     #Bold Cyan
+
+G='\033[0;32m'      #Green
+
+BP='\033[1;35m'     #Bold Purple
+
+BW='\033[1;37m'     #Bold White
+
+NC='\033[0;0;0m'        #NO COLOR
 
 #help fuction
 
@@ -20,31 +28,31 @@ function help(){
 while getopts 'sh' OPTION; do
   case "$OPTION" in
     s)       
-        echo -e ${LR} " ACME_EA Naming Convention" 
-        echo -e ${WH} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
+        echo -e ${BR} " ACME_EA Naming Convention" 
+        echo -e ${BW} "First letter: to designate the core (A: Ariane; H: Lagarto Hun) " 
         echo -e       " Second letter: to identify the accelerator (x: no accelerator; V: VPU; G: VPU+SA-HEVC+SA-NN)" 
         echo -e       " Thrid letter: to identify the Memory Tile (x: no MT, M: Memory Tile)" 
-        echo -e      ${YELLOW} " ( acme_ea_ahbvcm ); where:" 
-        echo -e      ${GREEN} "  "a" means the number of cores in the system" 
+        echo -e      ${Y} " ( acme_ea_ahbvcm ); where:" 
+        echo -e      ${G} "  "a" means the number of cores in the system" 
         echo -e               "   "b" means the number of vector lanes" 
         echo -e               "   "c" means the number of MT "  ${NC}
         exit 0
     ;;
     h)
-      echo -e ${LR}"Help menu "
-      echo -e "Accelerator_build: A script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
-      echo -e "script usage: ./$(basename "$0") <EA_name> <protosyn_flags>"   
-      echo -e ${LC}"<EA_name> available combinatios :" 
-      echo -e ${WH} "  acme_ea_4a: CORE=ariane x_tiles=2 y_tyles=2" 
-      echo -e       "   acme_ea_1h16v: CORE=lagarto x_tiles=1 y_tyles=1 vlanes=16" 
-      echo -e       "   acme_ea_4h2v: CORE=lagarto x_tiles=2 y_tyles=2 vlanes=2"
-      echo -e ${LC}"<protosyn_flag> available combinatios :"
-      echo -e  ${WH}"  pronoc: ProNoC routers"
-      echo -e  "  vnpm: Vivado non project mode" 
-      echo -e  "  hbm: High Bandwidth Memory. Implement design with HBM memory going first"
-      echo -e  "  meep: Generate a file list and a define list to called by the MEEP Shell project flow"
-      echo -e  "  eth: Add Ethernet controller to implementation"
-      echo -e  "  ncmem: Create an alias of the main memory bypassing the cache. Only available with meep option" ${NC}
+      echo -e ${BR}"Help menu "
+      echo -e ${BC}"Accelerator_build:"${BW}"\tA script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
+      echo -e ${BC}"script usage:"${BW}"\t\t./$(basename "$0") <EA_name> <protosyn_flags>"   
+      echo -e ${BC}"<EA_name> available combinations :" 
+      echo -e ${BW} "  acme_ea_4a: \t\tCORE=ariane \tx_tiles=2 \ty_tyles=2" 
+      echo -e       "   acme_ea_1h16v: \tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=16" 
+      echo -e       "   acme_ea_4h2v: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2"
+      echo -e ${BC}"<protosyn_flag> available combinations :"
+      echo -e  ${BW}"  pronoc: ProNoC routers"
+      echo -e  "  vnpm: \tVivado non project mode" 
+      echo -e  "  hbm: \t\tHigh Bandwidth Memory. Implement design with HBM memory going first"
+      echo -e  "  meep: \tGenerate a file list and a define list to called by the MEEP Shell project flow"
+      echo -e  "  eth: \t\tAdd Ethernet controller to implementation"
+      echo -e  "  ncmem: \tCreate an alias of the main memory bypassing the cache. Only available with meep option" ${NC}
       exit 0
       ;;
     ?)
@@ -64,7 +72,7 @@ help $1
 if [ x$1 == x ]; then
    echo Missing arguments
    echo Usage: $0 EA_flavours meep_config
-   echo -e ${RED}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v default" ${NC}
+   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v default" ${NC}
    exit 1
 fi
 
@@ -80,7 +88,7 @@ function ea_flavours() {
             CORE=ariane
             XTILES=2
             YTILES=2
-            echo -e ${LP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
+            echo -e ${BP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
             ;;
         acme_ea_1h16v)
             CORE=lagarto
@@ -88,7 +96,7 @@ function ea_flavours() {
             YTILES=1
             VLANES=16
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
-            echo -e ${LP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
         acme_ea_4h2v)
             CORE=lagarto
@@ -96,14 +104,14 @@ function ea_flavours() {
             YTILES=2
             VLANES=2
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
-            echo -e ${LP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;; 
         default)
             # Default options
             CORE=lagarto
             XTILES=1
             YTILES=1
-            echo -e ${LP}"Selected build configuration: Lagarto 1x1 " ${NC}
+            echo -e ${BP}"Selected build configuration: Lagarto 1x1 " ${NC}
             ;;
     esac
     
@@ -115,27 +123,27 @@ function ea_options() {
     case "$1" in
         pronoc)
         PROTO_OPTIONS+=" --pronoc"
-        echo -e ${LC}"    Added ProNoc routers " ${NC}
+        echo -e ${BC}"    Added ProNoc routers " ${NC}
         ;;        
         vnpm)
         PROTO_OPTIONS+=" --vnpm " 
-        echo -e ${LC}"    Vivado Non Project mode " ${NC}
+        echo -e ${BC}"    Vivado Non Project mode " ${NC}
         ;;
         hbm)
         PROTO_OPTIONS+=" --hbm"  
-        echo -e ${LC}"    HBM " ${NC}
+        echo -e ${BC}"    HBM " ${NC}
         ;;
         meep)
         PROTO_OPTIONS+=" --meep " 
-        echo -e ${LC}"    MEEP " ${NC}
+        echo -e ${BC}"    MEEP " ${NC}
         ;;
         eth)
         PROTO_OPTIONS+=" --eth " 
-        echo -e ${LC}"    Ethernet " ${NC}
+        echo -e ${BC}"    Ethernet " ${NC}
         ;;
         ncmem)
         PROTO_OPTIONS+=" --ncmem " 
-        echo -e ${LC}"    Ethernet " ${NC}
+        echo -e ${BC}"    Main memory bypassing the cache " ${NC}
         ;;
     esac
 }
@@ -149,7 +157,7 @@ if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
     ea_flavours $ea_is
 else
-    echo -e ${RED}"EA selection is not supported" ${NC}
+    echo -e ${R}"EA selection is not supported" ${NC}
     exit 1
 fi
 shift
@@ -161,12 +169,12 @@ function protosyn_flags() {
  ea_conf=$1
 
 if [ x$1 == x ]; then
-    echo -e ${RED}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
+    echo -e ${R}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
     PROTO_OPTIONS+="--meep --eth --ncmem --hbm "
 elif [[ ${map1["$ea_conf"]} ]]; then     
    ea_options $ea_conf   
 else
-    echo -e ${RED}"     EA protosyn flags is not supported" ${NC}
+    echo -e ${BY}"     EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
 fi
 }
