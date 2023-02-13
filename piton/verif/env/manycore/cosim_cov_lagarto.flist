@@ -1,4 +1,5 @@
 ../../../design/chip/tile/vas_tile_core/modules/drac-inorder/modules/fpnew/src/fpnew_pkg.sv
+../../../design/chip/tile/vas_tile_core/modules/drac-inorder/rtl/datapath/rtl/exe_stage/rtl/fpu/zagreb_fpuv_pkg.sv
 ../../../design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_pkg.sv
 ../../../design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv
 spike_setup.sv
