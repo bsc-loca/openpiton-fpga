@@ -56,7 +56,7 @@ while getopts 'sh' OPTION; do
       exit 0
       ;;
     ?)
-      echo "script usage: ./$(basename "$0") <EA_name>" 
+      echo "script usage: ./$(basename "$0") <EA_name> <protosyn_flags>"
       exit 1
       ;;
   esac
@@ -157,7 +157,7 @@ if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
     ea_flavours $ea_is
 else
-    echo -e ${R}"EA selection is not supported" ${NC}
+    echo -e ${BY}"EA selection: ${BIR}  $ea_is ${BY} is not supported" ${NC}
     exit 1
 fi
 shift
@@ -174,7 +174,7 @@ if [ x$1 == x ]; then
 elif [[ ${map1["$ea_conf"]} ]]; then     
    ea_options $ea_conf   
 else
-    echo -e ${BY}"     EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
+    echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
 fi
 }
@@ -184,17 +184,20 @@ array=("$@")
 
 for i in "${array[@]}"
 do
-    if [[ $i  == *"acme"* ]]; then
-         ea_selected $i  
+    if [ $# -eq 0 ]; then
+        echo "No arguments passed. Please provide some arguments."
+    elif [ $# -eq 1 ]; then
+        ea_selected $1
+        protosyn_flags 
+    elif [ $# -gt 1 ]; then 
 
-        #the case we don't set any flag. We use mandatory ones        
-        if [ $# == 1 ]; then 
-            protosyn_flags 
-        fi  
-    else 
-        #the case we want to add specifics flags. It can be more than one       
-        protosyn_flags $i    
+        if [[ $i  != *"acme_ea"* ]]; then        
+            protosyn_flags $i
+        else 
+            ea_selected $1
+        fi
     fi
+
 done
 
 
