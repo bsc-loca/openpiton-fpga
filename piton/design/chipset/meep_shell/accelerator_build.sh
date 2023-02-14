@@ -6,18 +6,12 @@
 R='\033[0;0;31m'    #Red
 BR='\033[1;31m'     #Bold Red 
 BIR='\033[1;3;31m'  #Bold Italic Red
-
 Y='\033[0;0;93m'    #Yellow
 BY='\033[1;0;93m'   #Bold Yellow
-
 BC='\033[1;36m'     #Bold Cyan
-
 G='\033[0;32m'      #Green
-
 BP='\033[1;35m'     #Bold Purple
-
 BW='\033[1;37m'     #Bold White
-
 NC='\033[0;0;0m'        #NO COLOR
 
 #help fuction
@@ -190,7 +184,6 @@ do
         ea_selected $1
         protosyn_flags 
     elif [ $# -gt 1 ]; then 
-
         if [[ $i  != *"acme_ea"* ]]; then        
             protosyn_flags $i
         else 
