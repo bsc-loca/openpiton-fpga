@@ -60,8 +60,8 @@ variables:
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme_ea_4a,acme_ea_1h16v,acme_ea_4h2v]
-
+            - CONF: [acme_ea_4a,acme_ea_4h2v]
+        #acme_ea_1h16v: Not using right now to speed the pipeline
 stages:  
   - simulation
   - synthesis

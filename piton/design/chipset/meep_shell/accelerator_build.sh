@@ -72,7 +72,7 @@ help $1
 if [ x$1 == x ]; then
    echo Missing arguments
    echo Usage: $0 EA_flavours meep_config
-   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v default" ${NC}
+   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v " ${NC}
    exit 1
 fi
 
