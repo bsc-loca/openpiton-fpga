@@ -2,7 +2,6 @@
 # Date: 29.09.2021
 # Description: GitLab CI configuration script.
 
-
 workflow:
     rules:
         - if: $CI_PIPELINE_SOURCE == "pipeline"
