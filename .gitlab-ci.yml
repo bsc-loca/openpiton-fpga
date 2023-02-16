@@ -263,7 +263,7 @@ shell-prelaunch:
             - if: $CI_PIPELINE_SOURCE != "pipeline"
             - !reference [.test_rules, rules]
             - !reference [.production_rules, rules] 
-        needs:
+        dependencies:
             - validation-matrix
         script:
             - NEW_BRANCH=$CI_COMMIT_REF_NAME
