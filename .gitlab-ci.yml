@@ -47,6 +47,8 @@ variables:
 
 .test_rules:
   rules:
+      if: $CI_PIPELINE_SOURCE == "schedule" && $CI_COMMIT_MESSAGE =~ /#TestCICD/
+      when: never
       if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
 
 .sim_rules:
