@@ -33,7 +33,6 @@ variables:
 #                   schedule(Every moth).
 # Test rules: We just want some jobs runs when the user include in the commit message #TestCICD.
 # Sim rules: We just want some jobs runs when the user include in the commit message #TestSim
-
 .production_rules:
   rules:    
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production" #Can be trigger for a mer_request to the The target branch "production"
