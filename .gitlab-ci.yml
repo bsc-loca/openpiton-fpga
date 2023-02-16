@@ -203,7 +203,7 @@ deploy-lagarto:
         rules:
         - !reference [.test_rules, rules]
         - !reference [.production_rules, rules]
-        needs:
+        dependencies:
             - synthesis-matrix
             - validation-matrix
         before_script:
