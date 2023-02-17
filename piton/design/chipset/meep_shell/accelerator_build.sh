@@ -100,7 +100,7 @@ function ea_flavours() {
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;; 
-        default)
+        *)
             # Default options
             CORE=lagarto
             XTILES=1
