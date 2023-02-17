@@ -71,9 +71,6 @@ if [ x$1 == x ]; then
 fi
 
 #EA Flavours function: Selection of the production and test bitstreams
-#There we have the mandatories protsyn flags
-PROTO_OPTIONS=
-
 function ea_flavours() {
     
     local eaName=$1
@@ -141,11 +138,12 @@ function ea_options() {
         ;;
     esac
 }
+
 # Check the input arguments
-# The first one must be the EA, second one will be MEEP 
+# The first one must be the EA, second one will be PROTOSYN_FLAG 
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [default]=1)
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [ * ]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
