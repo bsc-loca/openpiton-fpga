@@ -97,7 +97,7 @@ function ea_flavours() {
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;; 
-        *)
+        default)
             # Default options
             CORE=lagarto
             XTILES=1
@@ -143,7 +143,7 @@ function ea_options() {
 # The first one must be the EA, second one will be PROTOSYN_FLAG 
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [ * ]=1)
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
@@ -192,8 +192,15 @@ do
 done
 
 
-echo "Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS"
+echo -e ${BW}"Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS" ${NC}
 
-# Execute protosyn command to build the infrastructure with OP
-make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+#check the variables are not empty
+
+if [ -z "$CORE" ] || [ -z "$XTILES" ] || [ -z "$YTILES" ] || [ -z "$PROTO_OPTIONS" ]; then
+      echo "Can't execute protosyn command"
+else
+      
+      echo "Execute protosyn command to build the infrastructure with OP"
+      make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+fi
 
