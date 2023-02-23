@@ -697,3 +697,5 @@ set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
 
 set PRONOC_ROOT "${DV_ROOT}/design/chip/tile/noc"
 
+set SA_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/sa-shell_sa-hevc"
+
