@@ -54,6 +54,12 @@ if {$::env(PITON_LAGARTO) != "0" } {
     puts "Including Lagarto RTL files"
 }
 
+if {$::env(PITON_SA_ENABLE) != "0" } {
+	source $SA_ROOT/parseFileListSA.tcl
+	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_RTL_FILES}]	
+  	puts "Add Systolic Arrays RTL files"	
+}
+
 if {$::env(PITON_PRONOC) != "0" } {
 	source $PRONOC_ROOT/parseFileListProNoC.tcl
 	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${PRONOC_RTL_FILES}]	
