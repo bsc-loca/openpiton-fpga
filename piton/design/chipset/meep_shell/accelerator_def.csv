@@ -10,6 +10,6 @@ BROM,no,sram_axi,1,CLK0,0x0,initFile.mem
 BRAM,no,sram_axi,1,CLK0,0x0,none
 CLK0,50000000,chipset_clk
 CLK1,150000000,mc_clk,mc_rstn,LOW
-CLK2,50000000,vpu_clk
+CLK2,100000000,vpu_clk
 GPIO,5,pcie_gpio,0x00
 ARST,LOW,ExtArstn
