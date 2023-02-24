@@ -1,6 +1,7 @@
 # Author: Daniel J.Mazure
 # Date: 29.09.2021
 # Description: GitLab CI configuration script.
+# Updates: Francelly Cano
 
 workflow:
     rules:
@@ -19,8 +20,6 @@ variables:
     GIT_STRATEGY: none
     GIT_SUBMODULE_STRATEGY: none
     # We need to define which is the default configuration for the synthesis
-    # Pronoc? 2x2? etc
-    DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
     # Use a preconfigured RISCV toolchain. This is risky.
@@ -70,8 +69,8 @@ variables:
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme_ea_4a,acme_ea_4h2v]
-        #acme_ea_1h16v: Not using right now to speed the pipeline
+            - CONF: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h16v]
+        #acme_ea_1h16v: the synthesis is "heavy"
 stages:  
   - simulation
   - synthesis
@@ -162,10 +161,9 @@ synthesis-matrix:
             - export RISCV=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
-            # 2x2 by default
             # A matrix can be created here to synthesize all different options
+            - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
             - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF vnpm hbm
-            #- make protosyn $DESIGN_OPTIONS CORE=lagarto
             - !reference [.check_synth_dcp, script]            
         after_script:
             - mkdir -p logs/${CONF}
@@ -280,6 +278,9 @@ shell-prelaunch:
 # The shell will receive the CI_COMMIT_SHA variable, so it can update the ea_url.txt file
 # @ support/acme/ea_url.txt, and do things normally. (make update_sha)
 # if the pipeline success, the new ea_url needs to be commited
+
+#We are using two different environments in the ttriggered pipepline  (production and test). For this reason, we send a variable
+# "ENV_WORK" to choose the correct environment and execute specific instructions.
 
 fpga-shell-trigger-production:
         stage: push-shell
