@@ -1,5 +1,5 @@
 EANAME=acme
-PCIE,yes,pcie_axi,1,PCIE_CLK,pcie_clk,pcie_rstn,dma,0, ,00
+PCIE,yes,pcie_axi,1,PCIE_CLK,pcie_clk,pcie_rstn,dma,0,,00
 DDR4,no,mem_axi
 HBM,yes,mem_axi,1,CLK1,0x0,mem_calib_complete,01
 HBM,yes,ncmem_axi,1,CLK1,0x0,mem_calib_complete,02
