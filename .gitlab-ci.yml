@@ -1,25 +1,25 @@
 # Author: Daniel J.Mazure
 # Date: 29.09.2021
 # Description: GitLab CI configuration script.
-
+# Updates: Francelly Cano
 
 workflow:
     rules:
-        - !reference [.workflow_default_rules, rules]
-        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
         - if: $CI_PIPELINE_SOURCE == "pipeline"
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production"
         - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
           when: never  
         - if: $CI_COMMIT_TAG != null 
         - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
           when: never # Pushing to main doesn't create pipelines unless there is a tag        
-  
+        - !reference [.test_rules, rules]
+        - !reference [.production_rules, rules]
+        - !reference [.sim_rules, rules]
+
 variables:
     GIT_STRATEGY: none
     GIT_SUBMODULE_STRATEGY: none
     # We need to define which is the default configuration for the synthesis
-    # Pronoc? 2x2? etc
-    DESIGN_OPTIONS: "XTILES=2 YTILES=2 "
     REPOSITORY: meep/FPGA_implementations/AlveoU280/meep_openpiton.git
     DEPLOY_DIR: /home/fpga-runnerMEEP/openpiton_deploy
     # Use a preconfigured RISCV toolchain. This is risky.
@@ -27,40 +27,50 @@ variables:
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
-.test_rules:
-    rules:
-        if: ($CI_COMMIT_MESSAGE =~ /#TestCICD/)
-        #- when: always
+# Rules:
+# Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
+#                   schedule(Every moth).
+# Test rules: We just want some jobs runs when the user include in the commit message #TestCICD.
+# Sim rules: We just want some jobs runs when the user include in the commit message #TestSim
+.production_rules:
+  rules:    
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production" #Can be trigger for a mer_request to the The target branch "production"
+    - if: $CI_PIPELINE_SOURCE == "schedule" #A schedule pipeline: production monthly
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never  
+    - if: $CI_COMMIT_TAG != null 
+    - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
+      when: never #
 
-.exclude_ariane:
-    rules:
-        # Don't do Ariane if this is a Lagarto update
-        - if: $CI_PIPELINE_SOURCE == "pipeline" && $CONF=="ariane"
-          when: never
+.test_rules:
+  rules:
+    #   if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ && $CI_PIPELINE_SOURCE == "schedule"  
+    #   when: never
+      if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
+
+.sim_rules:
+  rules:
+      if: $CI_COMMIT_MESSAGE =~ /#TestSim/
 
 .default_rules:
     rules:
         - !reference [.test_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
-        - if: $CI_PIPELINE_SOURCE == "pipeline"  
+        - if: $CI_PIPELINE_SOURCE == "pipeline"
 
 .lagarto_rules:
     rules:
         - !reference [.default_rules, rules]     
-        #- !reference [.exclude_ariane, rules] 
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
-
-.workflow_default_rules:  
-  rules:
-     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ || $CI_COMMIT_MESSAGE =~ /#TestSim/
 
 
 .multi_target:
     parallel:
         matrix:
-            - CONF: [acme_vpu]
-
+            - CONF: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h16v]
+        #acme_ea_1h16v: the synthesis is "heavy"
 stages:  
   - simulation
   - synthesis
@@ -79,6 +89,10 @@ simulation:
         variables:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: recursive
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]
+            - !reference [.sim_rules, rules]
         before_script:
             - !reference [.git_clean, before_script]
             - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
@@ -116,8 +130,12 @@ synthesis-matrix:
         stage: synthesis
         tags:
             - MEEP_FPGA
-        extends: .lagarto_rules 
-        parallel: !reference [.multi_target, parallel]       
+        rules: 
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]
+            - !reference [.lagarto_rules, rules]
+        parallel: !reference [.multi_target, parallel]
         interruptible: true
         retry: 1
         variables:        
@@ -143,10 +161,9 @@ synthesis-matrix:
             - export RISCV=$CI_RISCV_DIR
             - echo "RISCV = $RISCV"
             - echo "VIVADO = $VIVADO_BIN"
-            # 2x2 by default
             # A matrix can be created here to synthesize all different options
-            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF nomeep
-            #- make protosyn $DESIGN_OPTIONS CORE=lagarto
+            - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF vnpm hbm
             - !reference [.check_synth_dcp, script]            
         after_script:
             - mkdir -p logs/${CONF}
@@ -159,14 +176,18 @@ synthesis-matrix:
                 - logs
                 - dcp
 
+
 validation-matrix:
         stage: validation
         variables:                      
               GIT_STRATEGY: clone
         parallel: !reference [.multi_target, parallel]
         tags: 
-            - MEEP_FPGA                
-        extends: .lagarto_rules
+            - MEEP_FPGA
+        rules: 
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules]
+            - !reference [.lagarto_rules, rules]
         needs:
             - synthesis-matrix
         script:
@@ -177,8 +198,10 @@ deploy-lagarto:
         stage: deploy-openpiton
         tags:
             - MEEP_FPGA
-        extends: .default_rules
-        needs:
+        rules:
+        - !reference [.test_rules, rules]
+        - !reference [.production_rules, rules]
+        dependencies:
             - synthesis-matrix
             - validation-matrix
         before_script:
@@ -236,8 +259,10 @@ shell-prelaunch:
         variables:
             GIT_STRATEGY: clone            
         rules:
-            - if: $CI_PIPELINE_SOURCE != "pipeline"              
-        needs:
+            - if: $CI_PIPELINE_SOURCE != "pipeline"
+            - !reference [.test_rules, rules]
+            - !reference [.production_rules, rules] 
+        dependencies:
             - validation-matrix
         script:
             - NEW_BRANCH=$CI_COMMIT_REF_NAME
@@ -254,20 +279,43 @@ shell-prelaunch:
 # @ support/acme/ea_url.txt, and do things normally. (make update_sha)
 # if the pipeline success, the new ea_url needs to be commited
 
-fpga-shell-trigger:
+#We are using two different environments in the ttriggered pipepline  (production and test). For this reason, we send a variable
+# "ENV_WORK" to choose the correct environment and execute specific instructions.
+
+fpga-shell-trigger-production:
         stage: push-shell
-        extends: .default_rules           
+        rules: 
+            - !reference [.production_rules,rules]           
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
             COMMIT_REF: $NEW_BRANCH
             COMMIT_MESG: $CI_COMMIT_MESSAGE
+            ENV_WORK: "PRODUCTION"
         trigger: 
                 project: meep/FPGA_implementations/AlveoU280/fpga_shell                
                 branch: production
                 # master is a protected branch, which causes permission issues with triggered pipelines
                 # production should be almost a mirror of master
                 strategy: depend
+
+fpga-shell-trigger-test:
+        stage: push-shell
+        rules: 
+            - !reference [.test_rules,rules]
+        variables:        
+            GIT_STRATEGY: clone
+            COMMIT_SHA: $NEW_BRANCH_SHA 
+            COMMIT_REF: $NEW_BRANCH
+            COMMIT_MESG: $CI_COMMIT_MESSAGE
+            ENV_WORK: "TEST"
+        trigger: 
+                project: meep/FPGA_implementations/AlveoU280/fpga_shell                
+                branch: production
+                # master is a protected branch, which causes permission issues with triggered pipelines
+                # production should be almost a mirror of master
+                strategy: depend
+
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo  
@@ -278,7 +326,8 @@ clean-on-failure:
     tags:
         - MEEP_FPGA
     rules:
-        - !reference [.default_rules, rules]
+        - !reference [.test_rules, rules]
+        - !reference [.production_rules, rules] 
         - if: $CI_PIPELINE_SOURCE != "pipeline" 
           when: never          
     when: on_failure
