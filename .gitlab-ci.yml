@@ -186,7 +186,6 @@ synthesis-matrix:
                 - logs
                 - dcp
 
-
 validation-matrix:
         stage: validation
         extends:
@@ -197,7 +196,7 @@ validation-matrix:
         tags: 
             - MEEP_FPGA
         rules: 
-            - !reference [.lagarto_rules, rules]        
+            - !reference [.lagarto_rules, rules]
         needs:
             - synthesis-matrix
         script:
