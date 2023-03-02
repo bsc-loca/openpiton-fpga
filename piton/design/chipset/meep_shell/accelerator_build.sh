@@ -96,7 +96,19 @@ function ea_flavours() {
             VLANES=2
             PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
+            ;;
+        acme_ea_1h)
+            CORE=lagarto
+            XTILES=1
+            YTILES=1   
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1  " ${NC}
             ;; 
+        acme_ea_16h)
+            CORE=lagarto
+            XTILES=4
+            YTILES=4   
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 4x4  " ${NC}
+            ;;
         default)
             # Default options
             CORE=lagarto

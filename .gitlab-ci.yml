@@ -12,8 +12,8 @@ workflow:
         - if: $CI_COMMIT_TAG != null 
         - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
           when: never # Pushing to main doesn't create pipelines unless there is a tag        
-        - !reference [.test_rules, rules]
-        - !reference [.production_rules, rules]
+        - !reference [.test_conf_rules, rules]
+        - !reference [.production_conf_rules, rules]
         - !reference [.sim_rules, rules]
 
 variables:
@@ -32,7 +32,7 @@ variables:
 #                   schedule(Every moth).
 # Test rules: We just want some jobs runs when the user include in the commit message #TestCICD.
 # Sim rules: We just want some jobs runs when the user include in the commit message #TestSim
-.production_rules:
+.production_conf_rules:
   rules:    
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production" #Can be trigger for a mer_request to the The target branch "production"
     - if: $CI_PIPELINE_SOURCE == "schedule" #A schedule pipeline: production monthly
@@ -42,12 +42,15 @@ variables:
     - if: $CI_COMMIT_TAG != null 
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: never #
+  parallel: !reference [.multi_target_production, parallel]
 
-.test_rules:
+.test_conf_rules:
   rules:
     #   if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ && $CI_PIPELINE_SOURCE == "schedule"  
     #   when: never
       if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
+  parallel: !reference [.multi_target_test, parallel]
+     
 
 .sim_rules:
   rules:
@@ -55,7 +58,7 @@ variables:
 
 .default_rules:
     rules:
-        - !reference [.test_rules, rules]        
+        - !reference [.test_conf_rules, rules]        
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
         - if: $CI_PIPELINE_SOURCE == "pipeline"
 
@@ -65,12 +68,20 @@ variables:
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
 
-
-.multi_target:
+# The Parallel Matrix allow you to create jobs at runtime based on specified variables.
+# Here we can specify the target EA.
+#For production we have the following:
+.multi_target_production:
     parallel:
         matrix:
-            - CONF: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h16v]
+            - EA: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h]
         #acme_ea_1h16v: the synthesis is "heavy"
+#For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
+.multi_target_test:
+    parallel:
+        matrix:
+            - EA: [acme_ea_1h,acme_ea_1h16v]
+
 stages:  
   - simulation
   - synthesis
@@ -90,8 +101,8 @@ simulation:
             GIT_STRATEGY: clone
             GIT_SUBMODULE_STRATEGY: recursive
         rules: 
-            - !reference [.test_rules, rules]
-            - !reference [.production_rules, rules]
+            - !reference [.test_conf_rules, rules]
+            - !reference [.production_conf_rules, rules]
             - !reference [.sim_rules, rules]
         before_script:
             - !reference [.git_clean, before_script]
@@ -128,21 +139,20 @@ simulation:
 
 synthesis-matrix:
         stage: synthesis
+        extends:
+            - .test_conf_rules
+            - .production_conf_rules
         tags:
             - MEEP_FPGA
         rules: 
-        rules: 
-            - !reference [.test_rules, rules]
-            - !reference [.production_rules, rules]
-            - !reference [.lagarto_rules, rules]
-        parallel: !reference [.multi_target, parallel]
+            - !reference [.lagarto_rules, rules]        
         interruptible: true
         retry: 1
         variables:        
               #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
               GIT_STRATEGY: clone
               GIT_SUBMODULE_STRATEGY: recursive
-              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$CONF
+              GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$EA
         timeout: 6h        
         before_script:
             - !reference [.git_clean, before_script]
@@ -163,13 +173,13 @@ synthesis-matrix:
             - echo "VIVADO = $VIVADO_BIN"
             # A matrix can be created here to synthesize all different options
             - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
-            - . piton/design/chipset/meep_shell/accelerator_build.sh $CONF vnpm hbm
+            - . piton/design/chipset/meep_shell/accelerator_build.sh $EA vnpm hbm
             - !reference [.check_synth_dcp, script]            
         after_script:
-            - mkdir -p logs/${CONF}
-            - mkdir -p dcp/${CONF}
-            - cp -rf build/alveou280/system/protosyn_logs logs/${CONF}
-            - mv dcp/synthesis.dcp dcp/${CONF}/synthesis_${CONF}.dcp
+            - mkdir -p logs/${EA}
+            - mkdir -p dcp/${EA}
+            - cp -rf build/alveou280/system/protosyn_logs logs/${EA}
+            - mv dcp/synthesis.dcp dcp/${EA}/synthesis_${EA}.dcp
         artifacts:
             when: always
             paths:
@@ -179,19 +189,19 @@ synthesis-matrix:
 
 validation-matrix:
         stage: validation
-        variables:                      
+        extends:
+            - .test_conf_rules
+            - .production_conf_rules
+        variables:
               GIT_STRATEGY: clone
-        parallel: !reference [.multi_target, parallel]
         tags: 
             - MEEP_FPGA
         rules: 
-            - !reference [.test_rules, rules]
-            - !reference [.production_rules, rules]
-            - !reference [.lagarto_rules, rules]
+            - !reference [.lagarto_rules, rules]        
         needs:
             - synthesis-matrix
         script:
-            - . cicd/synth_check.sh . logs/${CONF}
+            - . cicd/synth_check.sh . logs/${EA}
         allow_failure: true # pass with errors ...
 
 deploy-lagarto:
@@ -199,8 +209,8 @@ deploy-lagarto:
         tags:
             - MEEP_FPGA
         rules:
-        - !reference [.test_rules, rules]
-        - !reference [.production_rules, rules]
+        - !reference [.test_conf_rules, rules]
+        - !reference [.production_conf_rules, rules]
         dependencies:
             - synthesis-matrix
             - validation-matrix
@@ -260,8 +270,8 @@ shell-prelaunch:
             GIT_STRATEGY: clone            
         rules:
             - if: $CI_PIPELINE_SOURCE != "pipeline"
-            - !reference [.test_rules, rules]
-            - !reference [.production_rules, rules] 
+            - !reference [.test_conf_rules, rules]
+            - !reference [.production_conf_rules, rules] 
         dependencies:
             - validation-matrix
         script:
@@ -285,7 +295,7 @@ shell-prelaunch:
 fpga-shell-trigger-production:
         stage: push-shell
         rules: 
-            - !reference [.production_rules,rules]           
+            - !reference [.production_conf_rules,rules]           
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
@@ -302,7 +312,7 @@ fpga-shell-trigger-production:
 fpga-shell-trigger-test:
         stage: push-shell
         rules: 
-            - !reference [.test_rules,rules]
+            - !reference [.test_conf_rules,rules]
         variables:        
             GIT_STRATEGY: clone
             COMMIT_SHA: $NEW_BRANCH_SHA 
@@ -326,8 +336,8 @@ clean-on-failure:
     tags:
         - MEEP_FPGA
     rules:
-        - !reference [.test_rules, rules]
-        - !reference [.production_rules, rules] 
+        - !reference [.test_conf_rules, rules]
+        - !reference [.production_conf_rules, rules] 
         - if: $CI_PIPELINE_SOURCE != "pipeline" 
           when: never          
     when: on_failure
