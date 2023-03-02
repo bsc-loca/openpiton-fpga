@@ -98,6 +98,11 @@ if  {$::env(PITON_SA_ENABLE) != "0"} {
   puts "Add Systolic Arrays include directories"
 }
 
+if  {$::env(PITON_VPU_ENABLE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${VPU_INCLUDE_DIRS}]
+  puts "Add VPU include directories"
+}
+
 if  {$::env(PITON_PRONOC) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
   puts "Add ProNoC include directories"
@@ -132,6 +137,10 @@ if  {$::env(PITON_LAGARTO) != "0"} {
 
 if  {$::env(PITON_SA_ENABLE) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_SA_ENABLE"
+}
+
+if  {$::env(PITON_VPU_ENABLE) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_VPU_ENABLE"
 }
 
 if  {$::env(PITON_PRONOC) != "0"} {
