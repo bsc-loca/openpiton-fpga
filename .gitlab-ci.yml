@@ -27,6 +27,19 @@ variables:
     CI_RISCV_DIR: /home/tools/openpiton/riscv_install
     UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
+# The Parallel Matrix allow you to create jobs at runtime based on specified variables.
+# Here we can specify the target EA.
+#For production we have the following:
+.multi_target_production:
+    parallel:
+        matrix:
+            - EA: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h]
+        #acme_ea_1h16v: the synthesis is "heavy"
+#For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
+.multi_target_test:
+    parallel:
+        matrix:
+            - EA: [acme_ea_1h,acme_ea_1h16v]
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
 #                   schedule(Every moth).
@@ -68,19 +81,7 @@ variables:
         - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
           when: never
 
-# The Parallel Matrix allow you to create jobs at runtime based on specified variables.
-# Here we can specify the target EA.
-#For production we have the following:
-.multi_target_production:
-    parallel:
-        matrix:
-            - EA: [acme_ea_4a,acme_ea_4h2v,acme_ea_1h]
-        #acme_ea_1h16v: the synthesis is "heavy"
-#For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
-.multi_target_test:
-    parallel:
-        matrix:
-            - EA: [acme_ea_1h,acme_ea_1h16v]
+
 
 stages:  
   - simulation
