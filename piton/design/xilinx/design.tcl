@@ -60,7 +60,7 @@ if {$::env(PITON_SA_ENABLE) != "0" } {
   	puts "Add Systolic Arrays RTL files"	
 }
 
-if {$::env(PITON_VPU_ENABLE) != "0" } {
+if {$::env(VPU_DISABLE) == "0" } {
     source $VPU_ROOT/parseFileListVPU.tcl
     set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${VPU_RTL_FILES}]
     puts "Add VPU RTL files"    

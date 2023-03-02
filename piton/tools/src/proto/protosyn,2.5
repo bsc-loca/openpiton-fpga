@@ -58,7 +58,7 @@ FLOW_STEP_OPTIONS = ["project", "impl"]
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_enable] [--vpu_enable] [--pronoc] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_enable] [--VPU_DISABLE] [--pronoc] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -169,8 +169,8 @@ def usage():
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
     print("         --sa_enable", file.sys.stderr)
     print("              Implement design with Systolic Arrays", file=sys.stderr) 
-    print("         --vpu_enable", file.sys.stderr)
-    print("              Implement design with VPU", file=sys.stderr)
+    print("         --VPU_DISABLE", file.sys.stderr)
+    print("              Implement design without VPU", file=sys.stderr)
     print("\n       --pronoc", file=sys.stderr)
     print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr) 
     print("\n       --vlanes", file=sys.stderr)
@@ -573,7 +573,7 @@ def setParserOptions(parser):
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--sa_enable", dest="sa_enable", action="store_true", default=False)
-    parser.add_option("--vpu_enable", dest="vpu_enable", action="store_true", default=False)
+    parser.add_option("--VPU_DISABLE", dest="VPU_DISABLE", action="store_true", default=False)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
@@ -1015,11 +1015,11 @@ def main():
 
 
     # VPU
-    os.environ['PITON_VPU_ENABLE'] = "0"
+    os.environ['VPU_DISABLE'] = "0"
     if options.vpu_enable:
-        defines.append('PITON_VPU_ENABLE')
-        os.environ['PITON_VPU_ENABLE'] = "1"
-        print_info('setenv PITON_VPU_ENABLE')
+        defines.append('VPU_DISABLE')
+        os.environ['VPU_DISABLE'] = "1"
+        print_info('setenv VPU_DISABLE')
 
 
     # ProNoC
