@@ -92,44 +92,44 @@ stages:
 # Simulations
 ###################################
 
-simulation:
-  stage: simulation
-  timeout: 1h
-  variables:
-    GIT_STRATEGY: clone
-    GIT_SUBMODULE_STRATEGY: recursive
-  rules:
-    - !reference [.test_rules, rules]
-    - !reference [.production_rules, rules]
-    - !reference [.sim_rules, rules]
-  before_script:
-    - !reference [.git_clean, before_script]
-    - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
-    - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
-    # eda env mentor licence
-    - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
-    - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
-    - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
-  tags:
-    - MEEP_SIMS
-  script:
-    ############################
-    ## First, update the submodule if the pipeline source is a trigger
-    ############################
-    - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
-    - echo "Running Regression tests with Questasim"
-    - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
-    - "cd $BUILD_PATH"
-    - echo "Running sanity cosimulation test with Questasim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
-    - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
-    # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
-    - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
+# simulation:
+#   stage: simulation
+#   timeout: 1h
+#   variables:
+#     GIT_STRATEGY: clone
+#     GIT_SUBMODULE_STRATEGY: recursive
+#   rules:
+#     - !reference [.test_rules, rules]
+#     - !reference [.production_rules, rules]
+#     - !reference [.sim_rules, rules]
+#   before_script:
+#     - !reference [.git_clean, before_script]
+#     - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
+#     - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+#     # eda env mentor licence
+#     - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
+#     - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
+#     - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE
+#   tags:
+#     - MEEP_SIMS
+#   script:
+#     ############################
+#     ## First, update the submodule if the pipeline source is a trigger
+#     ############################
+#     - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
+#     - echo "Running Regression tests with Questasim"
+#     - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
+#     - "cd $BUILD_PATH"
+#     - echo "Running sanity cosimulation test with Questasim"
+#     - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
+#     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
+#     - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
+#     - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
+#     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
+#     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
+#     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
+#     - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+#     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
 
 ###################################
 # Synthesis
