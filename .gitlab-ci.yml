@@ -303,7 +303,6 @@ push-lagarto-production:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-    - !reference [.production_rules, rules]
   needs:
     - validation-matrix-production
   variables:
@@ -335,7 +334,6 @@ push-lagarto-test:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-    - !reference [.test_rules, rules]
   needs:
     - validation-matrix-test
   variables:
@@ -375,7 +373,6 @@ shell-prelaunch-production:
     GIT_STRATEGY: clone
   rules:
     - if: $CI_PIPELINE_SOURCE != "pipeline"
-    - !reference [.production_rules, rules]
   dependencies:
     - validation-matrix-production
   script:
@@ -395,7 +392,6 @@ shell-prelaunch-test:
     GIT_STRATEGY: clone
   rules:
     - if: $CI_PIPELINE_SOURCE != "pipeline"
-    - !reference [.test_rules, rules]
   dependencies:
     - validation-matrix-test
   script:
