@@ -238,7 +238,6 @@ validation-matrix-production:
     - MEEP_FPGA
   rules:
     - !reference [.production_rules, rules]
-    - !reference [.lagarto_rules, rules]
   dependencies:
     - synthesis-matrix-production
   script:
@@ -254,7 +253,6 @@ validation-matrix-test:
     - MEEP_FPGA
   rules:
     - !reference [.test_rules, rules]
-    - !reference [.lagarto_rules, rules]
   dependencies:
     - synthesis-matrix-test
   script:
