@@ -155,7 +155,7 @@ function ea_options() {
 # The first one must be the EA, second one will be PROTOSYN_FLAG 
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1  [default]=1)
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h]=1 [acme_ea_16h]=1 [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
