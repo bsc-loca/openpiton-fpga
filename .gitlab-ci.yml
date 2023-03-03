@@ -12,8 +12,8 @@ workflow:
     - if: $CI_COMMIT_TAG != null
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: never # Pushing to main doesn't create pipelines unless there is a tag
-    - !reference [.test_conf_rules, rules]
-    - !reference [.production_conf_rules, rules]
+    - !reference [.test_rules, rules]
+    - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
 
 variables:
@@ -47,7 +47,7 @@ variables:
 #                   schedule(Every moth).
 # Test rules: We just want some jobs runs when the user include in the commit message #TestCICD.
 # Sim rules: We just want some jobs runs when the user include in the commit message #TestSim
-.production_conf_rules:
+.production_rules:
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "production" #Can be trigger for a mer_request to the The target branch "production"
     - if: $CI_PIPELINE_SOURCE == "schedule" #A schedule pipeline: production monthly
@@ -58,7 +58,7 @@ variables:
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: never #
 
-.test_conf_rules:
+.test_rules:
   rules:
     #   if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ && $CI_PIPELINE_SOURCE == "schedule"
     #   when: never
@@ -70,7 +70,7 @@ variables:
 
 .default_rules:
   rules:
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
     - if: $CI_PIPELINE_SOURCE == "pipeline"
 
@@ -99,8 +99,8 @@ simulation:
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
   rules:
-    - !reference [.test_conf_rules, rules]
-    - !reference [.production_conf_rules, rules]
+    - !reference [.test_rules, rules]
+    - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
   before_script:
     - !reference [.git_clean, before_script]
@@ -140,7 +140,7 @@ synthesis-matrix-production:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
     - !reference [.lagarto_rules, rules]
   interruptible: true
   retry: 1
@@ -188,7 +188,7 @@ synthesis-matrix-test:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
     - !reference [.lagarto_rules, rules]
   parallel: !reference [.multi_target_test, parallel]
   interruptible: true
@@ -239,7 +239,7 @@ validation-matrix-production:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
     - !reference [.lagarto_rules, rules]
   needs:
     - synthesis-matrix-production
@@ -255,7 +255,7 @@ validation-matrix-test:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
     - !reference [.lagarto_rules, rules]
   needs:
     - synthesis-matrix-test
@@ -268,7 +268,7 @@ deploy-lagarto-production:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
   dependencies:
     - synthesis-matrix-production
     - validation-matrix-production
@@ -287,7 +287,7 @@ deploy-lagarto-test:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
   dependencies:
     - synthesis-matrix-test
     - validation-matrix-test
@@ -307,7 +307,7 @@ push-lagarto-production:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
   needs:
     - validation-matrix-production
   variables:
@@ -339,7 +339,7 @@ push-lagarto-test:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
   needs:
     - validation-matrix-test
   variables:
@@ -379,7 +379,7 @@ shell-prelaunch-production:
     GIT_STRATEGY: clone
   rules:
     - if: $CI_PIPELINE_SOURCE != "pipeline"
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
   dependencies:
     - validation-matrix-production
   script:
@@ -399,7 +399,7 @@ shell-prelaunch-test:
     GIT_STRATEGY: clone
   rules:
     - if: $CI_PIPELINE_SOURCE != "pipeline"
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
   dependencies:
     - validation-matrix-test
   script:
@@ -422,7 +422,7 @@ shell-prelaunch-test:
 fpga-shell-trigger-production:
   stage: push-shell
   rules:
-    - !reference [.production_conf_rules, rules]
+    - !reference [.production_rules, rules]
   variables:
     GIT_STRATEGY: clone
     COMMIT_SHA: $NEW_BRANCH_SHA
@@ -439,7 +439,7 @@ fpga-shell-trigger-production:
 fpga-shell-trigger-test:
   stage: push-shell
   rules:
-    - !reference [.test_conf_rules, rules]
+    - !reference [.test_rules, rules]
   variables:
     GIT_STRATEGY: clone
     COMMIT_SHA: $NEW_BRANCH_SHA
@@ -462,8 +462,8 @@ clean-on-failure:
   tags:
     - MEEP_FPGA
   rules:
-    - !reference [.test_conf_rules, rules]
-    - !reference [.production_conf_rules, rules]
+    - !reference [.test_rules, rules]
+    - !reference [.production_rules, rules]
     - if: $CI_PIPELINE_SOURCE != "pipeline"
       when: never
   when: on_failure
