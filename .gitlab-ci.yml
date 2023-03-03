@@ -40,7 +40,7 @@ variables:
 .multi_target_test:
   parallel:
     matrix:
-      - EA: [acme_ea_1h, acme_ea_1h16v]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v, acme_ea_16h]
 
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
@@ -57,7 +57,6 @@ variables:
     - if: $CI_COMMIT_TAG != null
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: never #
-  parallel: !reference [.multi_target_production, parallel]
 
 .test_conf_rules:
   rules:
@@ -139,7 +138,6 @@ simulation:
 
 synthesis-matrix-production:
   stage: synthesis
-  extends: .production_conf_rules
   tags:
     - MEEP_FPGA
   rules:
@@ -147,6 +145,7 @@ synthesis-matrix-production:
     - !reference [.lagarto_rules, rules]
   interruptible: true
   retry: 1
+  parallel: !reference [.multi_target_production, parallel]
   variables:
     #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
     GIT_STRATEGY: clone
@@ -187,12 +186,12 @@ synthesis-matrix-production:
 
 synthesis-matrix-test:
   stage: synthesis
-  extends: .test_conf_rules
   tags:
     - MEEP_FPGA
   rules:
     - !reference [.test_conf_rules, rules]
     - !reference [.lagarto_rules, rules]
+  parallel: !reference [.multi_target_test, parallel]
   interruptible: true
   retry: 1
   variables:
@@ -235,9 +234,9 @@ synthesis-matrix-test:
 
 validation-matrix-production:
   stage: validation
-  extends: .production_conf_rules
   variables:
     GIT_STRATEGY: clone
+  parallel: !reference [.multi_target_production, parallel]
   tags:
     - MEEP_FPGA
   rules:
@@ -251,9 +250,9 @@ validation-matrix-production:
 
 validation-matrix-test:
   stage: validation
-  extends: .test_conf_rules
   variables:
     GIT_STRATEGY: clone
+  parallel: !reference [.multi_target_test, parallel]
   tags:
     - MEEP_FPGA
   rules:
