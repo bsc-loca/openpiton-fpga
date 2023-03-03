@@ -40,6 +40,7 @@ variables:
   parallel:
     matrix:
       - EA: [acme_ea_1h, acme_ea_1h16v]
+
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
 #                   schedule(Every moth).
