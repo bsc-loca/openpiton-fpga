@@ -36,6 +36,7 @@ variables:
       - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h]
     #acme_ea_1h16v: the synthesis is "heavy"
 #For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
+
 .multi_target_test:
   parallel:
     matrix:
