@@ -62,8 +62,7 @@ variables:
   rules:
     #   if: $CI_COMMIT_MESSAGE =~ /#TestCICD/ && $CI_PIPELINE_SOURCE == "schedule"
     #   when: never
-    - if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
-  parallel: !reference [.multi_target_test, parallel]
+    if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
 
 .sim_rules:
   rules:
