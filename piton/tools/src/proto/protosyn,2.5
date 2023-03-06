@@ -58,7 +58,7 @@ FLOW_STEP_OPTIONS = ["project", "impl"]
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_enable] [--VPU_DISABLE] [--pronoc] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_enable] [--vpu_disable] [--pronoc] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -169,7 +169,7 @@ def usage():
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
     print("         --sa_enable", file.sys.stderr)
     print("              Implement design with Systolic Arrays", file=sys.stderr) 
-    print("         --VPU_DISABLE", file.sys.stderr)
+    print("         --vpu_disable", file.sys.stderr)
     print("              Implement design without VPU", file=sys.stderr)
     print("\n       --pronoc", file=sys.stderr)
     print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr) 
@@ -573,7 +573,7 @@ def setParserOptions(parser):
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--sa_enable", dest="sa_enable", action="store_true", default=False)
-    parser.add_option("--VPU_DISABLE", dest="VPU_DISABLE", action="store_true", default=False)
+    parser.add_option("--vpu_disable", dest="vpu_disable", action="store_true", default=False)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
@@ -613,7 +613,6 @@ def makeDefList(options):
         defines.append("BSC_RTL_SRAMS")
         defines.append("FPU_ZAGREB")
         if options.vpu:
-            defines.append("VPU_ENABLE")
             if options.vlanes == "2":
                 defines.append("VPU_2_LANES")
             elif options.vlanes == "4":
@@ -1016,7 +1015,7 @@ def main():
 
     # VPU
     os.environ['VPU_DISABLE'] = "0"
-    if options.vpu_enable:
+    if options.vpu_disable:
         defines.append('VPU_DISABLE')
         os.environ['VPU_DISABLE'] = "1"
         print_info('setenv VPU_DISABLE')
