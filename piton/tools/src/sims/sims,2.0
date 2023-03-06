@@ -178,6 +178,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'ariane' => 0,
         'pronoc' => 0,
         'sa_enable' => 0,
+        'VPU_DISABLE' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
         'multimc_indices' => "",
@@ -350,6 +351,7 @@ GetOptions (\%opt,
             'ariane!',
             'pronoc!',
             'sa_enable!',
+            'VPU_DISABLE!',
             'mgui_build!',
             'mgui_run!',
             'hbm_lat!',
@@ -409,6 +411,7 @@ push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     unless ($opt{VPU_DISABLE}) ;
 
 ################################################################################
 # define $result_dir
@@ -3122,6 +3125,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   $ENV{PITON_PRONOC}   = $opt{pronoc};
   $ENV{PITON_SA_ENABLE} = $opt{sa_enable};
+  $ENV{VPU_DISABLE} = $opt{VPU_DISABLE};
   $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
@@ -3135,6 +3139,7 @@ sub parse_args
   #push (@{$opt{config_rtl}}, "SA_ENABLE")      if ($opt{sa_enable});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
+  push (@{$opt{config_rtl}}, "PITON_VPU_ENABLE") unless ($opt{VPU_DISABLE});
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
   push (@{$opt{config_rtl}}, "PITON_HBM_LAT")  if ($opt{hbm_lat});
@@ -3633,7 +3638,10 @@ VERILOG COMPILATION RELATED
            this specifies that the ProNoC NoC shall be used instead of PitonNoC.           
     
     -sa_enable
-           this specifies that the systolic arrays (SA-HEVC, SA-NN) are enable. Only with lagarto config           
+           this specifies that the systolic arrays (SA-HEVC, SA-NN) are enable. Only with lagarto config          
+
+    -VPU_DISABLE
+           this specifies that the VPU are disable. Only with lagarto config 
 
     -lagarto
            this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.
