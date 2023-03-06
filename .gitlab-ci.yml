@@ -40,8 +40,8 @@ variables:
 .multi_target_test:
   parallel:
     matrix:
-      - EA: [acme_ea_16h, acme_ea_1h]
-    # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v, acme_ea_16h
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v]
+    # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
@@ -442,7 +442,7 @@ fpga-shell-trigger-test:
     ENV_WORK: "TEST"
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
-    branch: develop/cicd_improvements
+    branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
     strategy: depend
