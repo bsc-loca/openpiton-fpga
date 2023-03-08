@@ -1,3 +1,10 @@
+## TEMPORARY: Only simulates without VPU and without SA
+
+```
+sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -vpu_disable -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
+sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
+```
+
 # OpenPiton MEEP: ACME
 ## Description
 
