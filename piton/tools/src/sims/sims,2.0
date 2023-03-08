@@ -416,7 +416,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if ($opt{cov}) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     unless ($opt{vpu_disable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and (!$opt{vpu_disable})) ;
 
 ################################################################################
 # define $result_dir
