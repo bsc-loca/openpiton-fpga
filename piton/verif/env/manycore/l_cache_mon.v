@@ -55,8 +55,8 @@ module l_cache_mon(/*AUTOARG*/
    input [127:0] 	  w2;
    input [127:0] 	  w3;
 
-   // define dummy tag
-   reg [`IC_TAG_SZ:0] 	tag[512:0];
+   // define dummy tag_a
+   reg [`IC_TAG_SZ:0] 	tag_a[512:0];
    reg [512:0] 	vld;
 
 
@@ -94,8 +94,8 @@ module l_cache_mon(/*AUTOARG*/
 
       for(i = 0; i <= 512 ; i = i + 1) begin
 	 vld[i] = 1'b0;
-	//  tag[i] = 29'b0;
-	 tag[i] = {`IC_TAG_SZ{1'b0}};
+	//  tag_a[i] = 29'b0;
+	 tag_a[i] = {`IC_TAG_SZ{1'b0}};
       end
    end // initial begin
    //make delay version
@@ -107,21 +107,21 @@ module l_cache_mon(/*AUTOARG*/
       delay_ix <= w_index;
    end
 
-   // monitor tag
+   // monitor tag_a
    always @(negedge clk) begin
       if(rst_l)begin
 	 if(wrreq_f) begin
-	    t_tag[0] = tag[{index, 2'b00}];
-	    t_tag[1] = tag[{index, 2'b01}];
-	    t_tag[2] = tag[{index, 2'b10}];
-  	    t_tag[3] = tag[{index, 2'b11}];
+	    t_tag[0] = tag_a[{index, 2'b00}];
+	    t_tag[1] = tag_a[{index, 2'b01}];
+	    t_tag[2] = tag_a[{index, 2'b10}];
+  	    t_tag[3] = tag_a[{index, 2'b11}];
 
 	    vbit[0]   = vld[{index, 2'b00}];
 	    vbit[1]   = vld[{index, 2'b01}];
 	    vbit[2]   = vld[{index, 2'b10}];
 	    vbit[3]   = vld[{index, 2'b11}];
 
-	 // check: new tag is identical to valid tag but written to different way
+	 // check: new tag_a is identical to valid tag_a but written to different way
 	    for(i=0; i < 4; i=i+1) begin
 	       if((vbit[i] == 1'b1) && (wrtag_f == t_tag[i]) && (wrway_f != i)) begin
 		  $display("I_CACHE : Same tag written to different way(%x) index(%x) Tag(%x)", i, index, wrtag_f);
@@ -129,8 +129,8 @@ module l_cache_mon(/*AUTOARG*/
  		    `MONITOR_PATH.fail("I_CACHE : Same tag written to different");
 	       end
  	    end
-	    tag[{index, wrway_f}] = wrtag_f;
-	    $display("Info (%d): Tag updated, index = %x, way = %x, tag = %x", $time, index, wrway_f, wrtag_f);
+	    tag_a[{index, wrway_f}] = wrtag_f;
+	    $display("Info (%d): Tag updated, index = %x, way = %x, tag_a = %x", $time, index, wrway_f, wrtag_f);
 	 end // if (wrreq_f)
 	 if(delay_bf)begin
 	    if (wren_f[0])begin

@@ -377,6 +377,7 @@ GetOptions (\%opt,
             'simslog!',
             'simslog_name=s',
             'build_id=s',
+            'vlt_build!',
             'board=s',
             'eth!',
             'hbm!',
@@ -404,6 +405,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PICO")     if ($opt{pico} || $opt{pico_
 push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_LAGARTO")  if ($opt{lagarto}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
+push (@{$opt{config_cpp_args}}, "-DVERILATOR")      if ($opt{vlt_build}) ;
 # Other boards may be added here for simple MC/UART/Ethernet access simulation
 push (@{$opt{config_cpp_args}}, "-DALVEO280")       if (($opt{board}) and ($opt{board} eq "alveou280")) ;
 push (@{$opt{config_cpp_args}}, "-DUART_BOOT")      if ($opt{uart_dmw}) ;
@@ -1686,18 +1688,23 @@ sub generic_sim_build
       $build_cmd .= "$dv_root/tools/pli/iop/iob_main.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/iob.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/cpx.cc " ;
-      $build_cmd .= "$dv_root/tools/pli/iop/pcx.cc " ;
+      $build_cmd .= "$dv_root/toolsi/pli/iop/pcx.cc " ;
+      $build_cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture.cpp " ;
       $build_cmd .= "--top-module cmp_top " ;
-      $build_cmd .= "-Wno-fatal " ;
+      $build_cmd .= "-Wno-fatal --trace -Wno-lint -Wno-style -Wno-STMTDLY -Wno-TIMESCALEMOD " ;
+      $build_cmd .= "--exe --trace-structs --trace-underscore " ;
       $build_cmd .= "-Wno-BLKANDNBLK " ;
-      $build_cmd .= "-Wno-TIMESCALEMOD " ;
       $build_cmd .= "-DPITON_DPI " ;
       $build_cmd .= "--unroll-count 256 " ;
       $build_cmd .= "-CFLAGS -DVERILATOR " ;
       $build_cmd .= "-CFLAGS -DPITON_DPI " ;
+      $build_cmd .= "-CFLAGS -DVERILATOR_VCD " ;
+      $build_cmd .= "-DOPENPITON_LAGARTO_COMMIT_LOG " ;
       $build_cmd .= "-CFLAGS -lstdc++ " ;
       $build_cmd .= "-CFLAGS -I$dv_root/tools/pli/iop " ;
       $build_cmd .= "-CFLAGS -I$dv_root/tools/verilator " ;
+      $build_cmd .= "-CFLAGS -I$ENV{LAGARTO_ROOT}/torture/src/models/cxx " ;
+      $build_cmd .= "--savable " ;
     }
     if ($opt{other_sim_build}) {
       if (($opt{other_sim_build_cmd}) eq "") {
