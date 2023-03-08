@@ -135,6 +135,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'config_rtl' => [],
         'config_cpp_args' => [],
         'copyall' => 0,
+        'cov' => 0,
         'debug' => \$opt_debug,
         'diaglist' => "",
         'diaglist_cpp_args' => [],
@@ -340,6 +341,7 @@ if (($opt{injobq} == 1) or $opt{interactive}) {
 GetOptions (\%opt,
             'alias=s',
             'config_cpp_args=s@',
+            'cov!',
             'debug' => \$opt_debug,
             'diaglist=s',
             'diaglist_cpp_args=s@',
@@ -409,6 +411,7 @@ push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth}) ;
 push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 
 push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if ($opt{cov}) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     unless ($opt{vpu_disable}) ;
@@ -3129,6 +3132,7 @@ sub parse_args
   $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
+  $ENV{PITON_COVERAGE}  = $opt{cov};
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico});
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
@@ -3139,6 +3143,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
   push (@{$opt{config_rtl}}, "VPU_DISABLE")    if ($opt{vpu_disable});
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
+  push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov});
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
   push (@{$opt{config_rtl}}, "PITON_HBM_LAT")  if ($opt{hbm_lat});
   
