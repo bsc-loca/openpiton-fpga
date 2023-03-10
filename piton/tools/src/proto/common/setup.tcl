@@ -103,12 +103,15 @@ if  {$::env(VPU_DISABLE) == "0"} {
   puts "Add VPU include directories"
 }
 
+if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_DISABLE) == "0")} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${XBAR_INCLUDE_DIRS}]
+  puts "Add crossbar include directories"
+}
+
 if  {$::env(PITON_PRONOC) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
   puts "Add ProNoC include directories"
 }
-
-
 
 #
 #########################################################

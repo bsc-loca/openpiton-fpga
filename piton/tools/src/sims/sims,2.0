@@ -417,6 +417,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if ($opt{cov}) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and (!$opt{vpu_disable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or (!$opt{vpu_disable})) ;
 
 ################################################################################
 # define $result_dir
@@ -3149,6 +3150,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
   push (@{$opt{config_rtl}}, "VPU_DISABLE")    if ($opt{vpu_disable});
+  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || !($opt{vpu_disable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
   push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov});
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});

@@ -66,6 +66,12 @@ if {$::env(VPU_DISABLE) == "0" } {
     puts "Add VPU RTL files"    
 }
 
+if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_DISABLE) == "0")} {
+    source $LAGARTO_ROOT/parseFlistXbar.tcl
+    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${XBAR_RTL_FILES}]
+    puts "Add crossbar RTL files"
+}
+
 if {$::env(PITON_PRONOC) != "0" } {
 	source $PRONOC_ROOT/parseFileListProNoC.tcl
 	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${PRONOC_RTL_FILES}]
