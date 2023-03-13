@@ -60,7 +60,8 @@ module mc_top (
     input                           sys_clk_p,
     input                           sys_clk_n,
     `else
-    input mc_clk,    
+    input mc_clk,
+    input mc_rstn,
     `endif
     output                          ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]     ddr_bg,
@@ -1886,12 +1887,12 @@ mig_7series_axi4 u_mig_7series_axi4 (
 );
 
 `endif // PITONSYS_DDR4
-`else
+`else  //`ifndef PITONSYS_MEEP
 
-    assign ui_clk_sync_rst = ~sys_rst_n;
+    assign ui_clk_sync_rst = ~mc_rstn; //~sys_rst_n;
     assign ui_clk = mc_clk;
 
-`endif
+`endif //`ifndef PITONSYS_MEEP
 
 `endif // PITONSYS_AXI4_MEM
 

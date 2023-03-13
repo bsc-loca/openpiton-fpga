@@ -94,6 +94,7 @@ module chipset(
  `ifdef PITONSYS_MEEP
   input                                       chipset_clk,
   input                                       mc_clk,
+  input                                       mc_rstn,
  `else
 `ifdef PITON_CHIPSET_CLKS_GEN
     `ifdef PITON_CHIPSET_DIFF_CLK
@@ -1714,6 +1715,7 @@ chipset_impl_noc_power_test  chipset_impl (
             .mc_clk_n(mc_clk_n),
             `else
             .mc_clk(mc_clk),
+            .mc_rstn(mc_rstn),
             `endif
         `else  // PITONSYS_DDR4                               
             .mc_clk(mc_clk),

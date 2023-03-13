@@ -97,6 +97,7 @@ module chipset_impl(
     input                                       mc_clk_n,
   `else
     input mc_clk,
+    input mc_rstn,
   `endif
 `else  // PITONSYS_DDR4
     input                                       mc_clk,
@@ -1192,6 +1193,7 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_bg(ddr_bg),
            `else
             .mc_clk(mc_clk),
+            .mc_rstn(mc_rstn),
            `endif
         `ifdef PITONSYS_PCIE
             .pci_express_x16_rxn(pci_express_x16_rxn),
