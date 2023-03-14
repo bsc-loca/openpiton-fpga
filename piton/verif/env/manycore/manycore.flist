@@ -79,5 +79,3 @@ manycore_network_mon.v
 fake_pll.v
 manycore_top.v
 fake_uart.v
-spike_dpi_pkg.sv
-vpu_scoreboard_pkg.sv

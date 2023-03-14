@@ -135,6 +135,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'config_rtl' => [],
         'config_cpp_args' => [],
         'copyall' => 0,
+        'cosim' => 0,
         'cov' => 0,
         'debug' => \$opt_debug,
         'diaglist' => "",
@@ -341,6 +342,7 @@ if (($opt{injobq} == 1) or $opt{interactive}) {
 GetOptions (\%opt,
             'alias=s',
             'config_cpp_args=s@',
+            'cosim!',
             'cov!',
             'debug' => \$opt_debug,
             'diaglist=s',
@@ -413,7 +415,7 @@ push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth}) ;
 push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 
 push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if ($opt{cov}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and (!$opt{vpu_disable})) ;
@@ -2968,7 +2970,7 @@ sub parse_args
             'vlt_run!',
             'metro_mpi_build!',
             'metro_mpi_build_args=s@',
-	    'metro_mpi_run!',
+            'metro_mpi_run!',
             'num_tile=s',
             'x_tiles=s',
             'y_tiles=s',
@@ -3152,7 +3154,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "VPU_DISABLE")    if ($opt{vpu_disable});
   push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || !($opt{vpu_disable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
-  push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov});
+  push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov}) ;
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
   push (@{$opt{config_rtl}}, "PITON_HBM_LAT")  if ($opt{hbm_lat});
   
