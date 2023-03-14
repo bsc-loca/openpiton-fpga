@@ -274,7 +274,7 @@ set MEEP_RTL_FILES ""
 if { [info exists "::env(MEEP_SHELL)"] } {
 
 set MEEP_RTL_FILES [list \
-    "${DV_ROOT}/design/chipset/meep_shell/openpiton_wrapper.sv" \
+    "${DV_ROOT}/design/chipset/meep_shell/accelerator_mod.sv" \
     ]
 }
 
