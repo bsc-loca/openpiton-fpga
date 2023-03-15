@@ -91,6 +91,18 @@ ci_implementation:
 ci_bitstream:
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
+
+# Compile the riscv-test baremetal
+test_riscv_fpga:
+	${MAKE} -C /piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks fpga
+
+
+test_riscv_clean:
+	${MAKE} -C /piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks clean
+
+test_riscv_bin:
+	${MAKE} -C /piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks clean
+
 ### Cleaning calls ###
 
 clean: clean_project
