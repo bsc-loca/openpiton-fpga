@@ -1,5 +1,22 @@
+// Copyright 2023 Barcelona Supercomputing Center-Centro Nacional de Supercomputación
 
+// Licensed under the Solderpad Hardware License v 2.1 (the "License");
+// you may not use this file except in compliance with the License, or, at your option, the Apache License version 2.0.
+// You may obtain a copy of the License at
+//  
+//     http://www.solderpad.org/licenses/SHL-2.1
+// 
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
+// Authors: Daniel J.Mazure, Alex Kropotov BSC-CNS
+// Date: 15.03.2023
+// Description: 
+
+// Please put only whole line comments in this file
 
 module openpiton_wrapper(    
     input            chipset_clk,
@@ -69,7 +86,7 @@ module openpiton_wrapper(
  	    //Ethernet
     input                                eth_axi_aclk,
     input                                eth_axi_arstn,        
-    input    [1:0]                       eth_irq, //TODO: connect it downstream
+    input    [1:0]                       eth_irq,
     
   `ifdef ETHERNET_DMA
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   eth_axi_awaddr,
@@ -307,7 +324,7 @@ module openpiton_wrapper(
       input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser,
       input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid,
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
-    `endif //`ifdef PITON_EXTRA_MEMS
+    `endif
 
     // AXI UART
     output  [12:0]                       uart_axi_awaddr,
