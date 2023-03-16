@@ -18,7 +18,7 @@
 
 // Please put only whole line comments in this file
 
-module openpiton_wrapper(    
+module openpiton_wrapper(
     input            chipset_clk,
     input            mc_clk,
     input            vpu_clk,
