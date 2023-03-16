@@ -1,4 +1,5 @@
-
+#Here we define the accelerator_build.sh variables to use in differents targets
+include Makefile.in
 FPGA_TARGET ?= alveou280
 ROOT_DIR    =  $(PWD)
 PITON_BUILD_DIR = $(ROOT_DIR)/build
@@ -13,16 +14,19 @@ VIVADO_VER  := "2021.2"
 VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/
 VIVADO_XLNX := $(VIVADO_PATH)/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
-CORE        ?= lagarto
+
 # This needs to match the path set in <core>_setup.sh
 RISCV   ?= $(ROOT_DIR)/riscv
 SHELL := /bin/bash
+#Env variables to define the opentpiton+framework using the acceleretor_build.sh configuration
+CORE        ?= lagarto
 XTILES ?= 1
 YTILES ?= 1
 MULTIMC =
 MULTIMC_INDICES = 
-
-
+#EA and OPTIONS helps to definde the env. EA could be the available acme_ea combinations, OPTIONS here we can define the protosyn flags
+EA=
+OPTIONS=
 MC_OPTION = 
 
 ifdef MULTIMC
@@ -34,7 +38,7 @@ endif
 
 
  
-PROTO_OPTIONS ?= --vnpm --eth --hbm --pronoc
+PROTO_OPTIONS ?= vnpm eth hbm pronoc
 MORE_OPTIONS ?= ""
 
 #Don't rely on this to call the subprograms
@@ -46,7 +50,7 @@ all: initialize synthesis implementation bitstream
 
 
 test:
-	@echo "Your core is $(CORE)"
+	@echo "Your core is $(core)"
 	@echo "FPGA TARGET: $(FPGA_TARGET)"
 
 initialize: $(RISCV)
@@ -70,9 +74,11 @@ $(RISCV):
 # Protosyn rule is connected with the piton/design/chipset/meep_shell/accelerator_build.sh script. In order with the values we define there
 #Theses variables $CORE, $XTILES, $YTILES, and $PROTO_OPTIONS have the specific values to create the infrasctructure. We removed the vpu because it is 
 #already defined in the PROTO_OPTIONS variable
-protosyn: clean_project $(RISCV)
+acc_framework: clean_project
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
+
+
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -82,6 +88,17 @@ $(IMPL_DCP): $(SYNTH_DCP)
 	
 $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
+
+
+#TESTING: new way to generate the infrastructure:
+# First thing is to define which accelerator we want to work, we provide the name and the flags we want to use.
+#the final result we can define the environmet we want to use
+help_ea:
+	source piton/design/chipset/meep_shell/accelerator_build.sh -h
+
+acc_env:
+	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA) $(OPTIONS)
+	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh 
 
 ### Create targets to be used only in the CI/CD environment. They do not have requirements 
 
@@ -93,9 +110,8 @@ ci_bitstream:
 
 
 # Compile the riscv-test baremetal
-
 test_riscv_fpga:
-	$(MAKE) -C piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks  fpga
+	$(MAKE) -C piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks NUMTILES=-DPITON_NUMTILES=$(NTILES) fpga
 
 
 test_riscv_clean:
