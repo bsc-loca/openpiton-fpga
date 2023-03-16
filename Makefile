@@ -74,11 +74,13 @@ $(RISCV):
 # Protosyn rule is connected with the piton/design/chipset/meep_shell/accelerator_build.sh script. In order with the values we define there
 #Theses variables $CORE, $XTILES, $YTILES, and $PROTO_OPTIONS have the specific values to create the infrasctructure. We removed the vpu because it is 
 #already defined in the PROTO_OPTIONS variable
-acc_framework: clean_project
+protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
-
+acc_framework: clean_project
+	source piton/$(CORE)_setup.sh; \
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -95,6 +97,9 @@ $(BIT_FILE): $(IMPL_DCP)
 #the final result we can define the environmet we want to use
 help_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -h
+
+syntax_ea:
+	source piton/design/chipset/meep_shell/accelerator_build.sh -s
 
 acc_env:
 	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA) $(OPTIONS)
