@@ -113,7 +113,7 @@ else
     
     make isa        -j${NUM_JOBS} > /dev/null
     
-    #make benchmarks -j${NUM_JOBS} > /dev/null
+    make benchmarks -j${NUM_JOBS} > /dev/null
     
     make install
        
