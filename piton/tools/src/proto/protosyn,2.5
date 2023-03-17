@@ -1020,6 +1020,10 @@ def main():
         os.environ['VPU_DISABLE'] = "1"
         print_info('setenv VPU_DISABLE')
 
+    # Crossbar and LVRF
+    if options.sa_enable or options.vpu_disable:
+        defines.append('XBAR_LVRF_ENABLE')
+        print_info('setenv XBAR_LVRF_ENABLE')
 
     # ProNoC
     os.environ['PITON_PRONOC'] = "0"

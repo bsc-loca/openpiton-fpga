@@ -22,6 +22,7 @@ YTILES=1
 case "$EA_MOD" in
 acme)
     CORE=lagarto
+    PROTO_OPTIONS="--meep --eth --hbm --vpu --sa_enable"
     echo "Selected build configuration: Lagarto 1x1"
     ;;
 ariane)
