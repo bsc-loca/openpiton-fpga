@@ -60,7 +60,7 @@ else
 
   # parallel compilation
   export NUM_JOBS=4
-
+  export NUMTILES=1
   cd ${VAS_TILE_CORE_PATH}
 
   #########################################
