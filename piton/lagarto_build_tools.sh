@@ -87,17 +87,18 @@ else
     autoconf
     mkdir -p build
 
-    # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-    cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
+    #Neiel has apadted the OP env for riscv-test, we don't have to this
+    # # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
+    # cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
     
-    rm syscalls.c  
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
+    # rm syscalls.c  
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
     
-    rm util.h 
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
+    # rm util.h 
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
     
-    rm crt.S 
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
+    # rm crt.S 
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
  
     cd ${BUILD_TMP_PATH}/riscv-tests/build
 
