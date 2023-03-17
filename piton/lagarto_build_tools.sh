@@ -103,31 +103,20 @@ else
     
     # rm crt.S 
     # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
-    echo
-    echo "----------------------------------------------------------------------"
-    echo "debug_1"
-    echo "----------------------------------------------------------------------"
-    echo
-
+    
     cd ${BUILD_TMP_PATH}/riscv-tests/build
 
-    echo "----------------------------------------------------------------------"
-    echo "debug_2"
+    
     ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
-    echo "----------------------------------------------------------------------"
-    echo "debug_3"
+    
     make clean
-    echo "----------------------------------------------------------------------"
-    echo "debug_4"
+    
     make isa        -j${NUM_JOBS} > /dev/null
-    echo "----------------------------------------------------------------------"
-    echo "debug_5"
+    
     make benchmarks -j${NUM_JOBS} > /dev/null
-    echo "----------------------------------------------------------------------"
-    echo "debug_6"
+    
     make install
-        echo "----------------------------------------------------------------------"
-    echo "debug_7"
+    
     cd ${PITON_ROOT}
 
     echo
