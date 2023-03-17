@@ -86,7 +86,11 @@ else
 
     autoconf
     mkdir -p build
-
+    echo
+    echo "----------------------------------------------------------------------"
+    echo "Updated, don't update the env"
+    echo "----------------------------------------------------------------------"
+    echo
     #Neiel has apadted the OP env for riscv-test, we don't have to this
     # # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
     # cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
