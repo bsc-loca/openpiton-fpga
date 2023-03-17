@@ -25,7 +25,7 @@ YTILES ?= 1
 MULTIMC =
 MULTIMC_INDICES = 
 #EA and OPTIONS helps to definde the env. EA could be the available acme_ea combinations, OPTIONS here we can define the protosyn flags
-EA=
+EA_PARAM=
 OPTIONS=
 MC_OPTION = 
 
@@ -78,9 +78,9 @@ protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
-acc_framework: clean_project
+acc_framework: clean_project 
 	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --num_tiles $(NTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -102,7 +102,7 @@ syntax_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -s
 
 acc_env:
-	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA) $(OPTIONS)
+	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA_PARAM) $(OPTIONS)
 	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh 
 
 ### Create targets to be used only in the CI/CD environment. They do not have requirements 
@@ -116,7 +116,7 @@ ci_bitstream:
 
 # Compile the riscv-test baremetal
 test_riscv_fpga:
-	$(MAKE) -C piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks NUMTILES=-DPITON_NUMTILES=$(NTILES) fpga
+	$(MAKE) -C piton/design/chip/tile/vas_tile_core/modules/riscv-tests/benchmarks NUMTILES=$(NTILES) fpga
 
 
 test_riscv_clean:
