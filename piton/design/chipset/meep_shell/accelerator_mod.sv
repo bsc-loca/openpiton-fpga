@@ -349,6 +349,11 @@ module openpiton_wrapper(
 
   );
 
+  `ifdef PITON_EXTRA_MEMS
+     // reassignment of vectorized multiple AXI buses to/from name-indexed ones to be used in system_top of FPGA shell
+    `MCX_AXI(`PITON_EXTRA_MEMS)
+  `endif
+
   system ACME_OP ( .* );
 
 endmodule
