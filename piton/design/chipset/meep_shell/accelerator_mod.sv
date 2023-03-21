@@ -110,7 +110,7 @@ module openpiton_wrapper(
     input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   eth_axi_rresp,
     input                                   eth_axi_rvalid,
     output                                  eth_axi_rready,
-  
+
   `else
     // AXI interface
     output  [`AXI4_ID_WIDTH     -1:0]    eth_axi_awid,
@@ -163,7 +163,7 @@ module openpiton_wrapper(
     input                                 eth_axi_bvalid,
     output                                eth_axi_bready,
    `endif
-    
+
    `ifdef MEEP_SRAM
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
@@ -221,7 +221,7 @@ module openpiton_wrapper(
     `ifdef PITON_NONCACH_MEM
     //input                                ncmem_axi_aclk,
     //input                                ncmem_axi_arstn,
-    
+
     output  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output  [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output  [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
