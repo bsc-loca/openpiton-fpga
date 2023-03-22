@@ -178,10 +178,8 @@ if [ x$1 == x ]; then
 elif [[ ${map1["$ea_conf"]} ]]; then     
    ea_options $ea_conf   
 else
-    # echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
-    # exit 1
-    echo -e ${BY}"EA protosyn flag: "${BIR} "$1" ${BY}"is directly passed to protosyn" ${NC}
-    PROTO_OPTIONS+="$1 "
+    echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
+    exit 1
 fi
 }
 
@@ -200,7 +198,6 @@ do
             protosyn_flags $i
         else 
             ea_selected $1
-            protosyn_flags 
         fi
     fi
 
