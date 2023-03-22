@@ -180,7 +180,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'ariane' => 0,
         'pronoc' => 0,
         'sa_enable' => 0,
-        'vpu_disable' => 0,
+        'vpu_enable' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
         'multimc_indices' => "",
@@ -355,7 +355,7 @@ GetOptions (\%opt,
             'ariane!',
             'pronoc!',
             'sa_enable!',
-            'vpu_disable!',
+            'vpu_enable!',
             'mgui_build!',
             'mgui_run!',
             'hbm_lat!',
@@ -418,8 +418,8 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and (!$opt{vpu_disable})) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or (!$opt{vpu_disable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and ($opt{vpu_enable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or ($opt{vpu_enable})) ;
 
 ################################################################################
 # define $result_dir
@@ -3138,7 +3138,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   $ENV{PITON_PRONOC}   = $opt{pronoc};
   $ENV{PITON_SA_ENABLE} = $opt{sa_enable};
-  $ENV{VPU_DISABLE} = $opt{vpu_disable};
+  $ENV{VPU_ENABLE} = $opt{vpu_enable};
   $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
@@ -3151,8 +3151,8 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
-  push (@{$opt{config_rtl}}, "VPU_DISABLE")    if ($opt{vpu_disable});
-  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || !($opt{vpu_disable}));
+  push (@{$opt{config_rtl}}, "VPU_ENABLE")    if ($opt{vpu_enable});
+  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || ($opt{vpu_enable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
   push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov}) ;
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
@@ -3654,8 +3654,8 @@ VERILOG COMPILATION RELATED
     -sa_enable
            this specifies that the systolic arrays (SA-HEVC, SA-NN) are enable. Only with lagarto config          
 
-    -vpu_disable
-           this specifies that the VPU is disable. Only with lagarto config 
+    -vpu_enable
+           this specifies that the VPU is enabled. Only with lagarto config 
 
     -lagarto
            this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.

@@ -36,12 +36,13 @@ Compiling with torture (to generate signature file for spike):
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
-Compiling MEEP-VPU with different lanes. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=VPU_2_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=VPU_4_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=VPU_8_LANES
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=VPU_16_LANES
+Compilation with VPU is made with the `-vpu_enable ` key. User can select the number of lanes to build and run the test. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_2_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_4_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_8_LANES
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_16_LANES
 
 Compilation with Systolic Arrays is made with the `-sa_enable` key:
 
@@ -60,19 +61,23 @@ Compiling and running RISC-V Tests with Lagarto in OpenPiton
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
-    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_8.S -lagarto -precompiled
 
-Vector tests don't support cosimulation, yet.
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator. VPU has to be enabled.
 
-Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator
-
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -vpu_enable -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim
 
 Compiling and running RISC-V Tests with Lagarto in OpenPiton with coverage
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -cov
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cov
+
+Compiling and running RISC-V Tests with Lagarto in OpenPiton. Default number of lanes=2.
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -vpu_enable -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
+    sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_8.S -lagarto -precompiled
+
+Vector tests don't support cosimulation, yet.
 
 ARIANE core: Compiling and running requires to setup ariane's paths and variables:
 
