@@ -48,7 +48,8 @@ while getopts 'sh' OPTION; do
       echo -e  "  hbm: \t\tHigh Bandwidth Memory. Implement design with HBM memory going first"
       echo -e  "  meep: \tGenerate a file list and a define list to called by the MEEP Shell project flow"
       echo -e  "  eth: \t\tAdd Ethernet controller to implementation"
-      echo -e  "  ncmem: \tCreate an alias of the main memory bypassing the cache. Only available with meep option" ${NC}
+      echo -e  "  ncmem: \tCreate an alias of the main memory bypassing the cache. Only available with meep option" 
+      echo -e  "  multimc: \t Multi memory controller" ${NC}
       exit 0
       ;;
     ?)
