@@ -253,7 +253,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser;
  wire                               sram_axi_awvalid;
  wire                               sram_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb;
@@ -261,7 +261,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser;
  wire                               sram_axi_wvalid;
  wire                               sram_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen;
@@ -275,7 +275,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser;
  wire                               sram_axi_arvalid;
  wire                               sram_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
@@ -283,7 +283,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
  wire                               sram_axi_rvalid;
  wire                               sram_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
@@ -518,7 +518,7 @@ wire                                init_calib_complete_zero;
  wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser;
  wire                               m_axi_awvalid;
  wire                               m_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb;
@@ -526,7 +526,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser;
  wire                               m_axi_wvalid;
  wire                               m_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen;
@@ -540,7 +540,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser;
  wire                               m_axi_arvalid;
  wire                               m_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp;
@@ -548,7 +548,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser;
  wire                               m_axi_rvalid;
  wire                               m_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser;
@@ -619,7 +619,7 @@ wire                               core_axi_bready;
  wire [`AXI4_USER_WIDTH   -1:0]     zeroer_axi_awuser;
  wire                               zeroer_axi_awvalid;
  wire                               zeroer_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    zeroer_axi_wstrb;
@@ -627,7 +627,7 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_wuser;
  wire                               zeroer_axi_wvalid;
  wire                               zeroer_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    zeroer_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    zeroer_axi_arlen;
@@ -641,7 +641,7 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_aruser;
  wire                               zeroer_axi_arvalid;
  wire                               zeroer_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_rresp;
@@ -649,13 +649,13 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_ruser;
  wire                               zeroer_axi_rvalid;
  wire                               zeroer_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_buser;
  wire                               zeroer_axi_bvalid;
  wire                               zeroer_axi_bready;
- 
+
  wire                               init_calib_complete_zero;
 `endif
 
