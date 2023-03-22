@@ -155,6 +155,13 @@ function ea_options() {
         PROTO_OPTIONS+=" --ncmem " 
         echo -e ${BC}"    Main memory bypassing the cache " ${NC}
         ;;
+        multimc)
+        PROTO_OPTIONS+=" --multimc " 
+        echo -e ${BC}"    Multi memory controller " ${NC}
+        ;;
+        [0-9])
+        PROTO_OPTIONS+=$1
+        ;;
     esac
 
 }
@@ -177,14 +184,14 @@ shift
 ## Build configurations
 #Right flag names
 function protosyn_flags() {
- declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1)
+ declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1)
  ea_conf=$1
 
 if [ x$1 == x ]; then
     echo -e ${R}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
     PROTO_OPTIONS+="--meep --eth --ncmem --hbm "
-elif [[ ${map1["$ea_conf"]} ]]; then     
-   ea_options $ea_conf   
+elif [[ ${map1["$ea_conf"]} ]] || [[ $ea_conf =~ ^[0-9]+$ ]]; then     
+   ea_options $ea_conf
 else
     echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
