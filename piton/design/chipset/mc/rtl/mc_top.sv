@@ -155,55 +155,55 @@ module mc_top (
 
     `ifdef PITON_EXTRA_MEMS
       // vectorized multi-MC AXI bus
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid;
-      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr;
-      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen;
-      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_awsize;
-      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_awburst;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awlock;
-      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_awcache;
-      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_awprot;
-      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_awqos;
-      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_awregion;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_awuser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid,
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr,
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen,
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_awsize,
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_awburst,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awlock,
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_awcache,
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_awprot,
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_awqos,
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_awregion,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_awuser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awready,
 
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_wid;
-      output [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_wdata;
-      output [`PITON_EXTRA_MEMS * `AXI4_STRB_WIDTH   -1:0]   mcx_axi_wstrb;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wlast;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_wuser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_wid,
+      output [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_wdata,
+      output [`PITON_EXTRA_MEMS * `AXI4_STRB_WIDTH   -1:0]   mcx_axi_wstrb,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wlast,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_wuser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wready,
 
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_arid;
-      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_araddr;
-      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_arlen;
-      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_arsize;
-      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_arburst;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arlock;
-      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_arcache;
-      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_arprot;
-      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_arqos;
-      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_arregion;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_aruser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_arid,
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_araddr,
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_arlen,
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_arsize,
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_arburst,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arlock,
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_arcache,
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_arprot,
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_arqos,
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_arregion,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_aruser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arready,
 
-      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_rid;
-      input  [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_rdata;
-      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_rresp;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rlast;
-      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_ruser;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rvalid;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rready;
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_rid,
+      input  [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_rdata,
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_rresp,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rlast,
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_ruser,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rvalid,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rready,
 
-      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_bid;
-      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_bresp;
-      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready;
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_bid,
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_bresp,
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
   `else //`ifdef PITONSYS_MEEP
     output                          ddr_parity,
@@ -253,7 +253,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser;
  wire                               sram_axi_awvalid;
  wire                               sram_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb;
@@ -261,7 +261,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser;
  wire                               sram_axi_wvalid;
  wire                               sram_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen;
@@ -275,7 +275,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser;
  wire                               sram_axi_arvalid;
  wire                               sram_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp;
@@ -283,7 +283,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser;
  wire                               sram_axi_rvalid;
  wire                               sram_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser;
@@ -518,7 +518,7 @@ wire                                init_calib_complete_zero;
  wire [`AXI4_USER_WIDTH   -1:0]     m_axi_awuser;
  wire                               m_axi_awvalid;
  wire                               m_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    m_axi_wstrb;
@@ -526,7 +526,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_wuser;
  wire                               m_axi_wvalid;
  wire                               m_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    m_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    m_axi_arlen;
@@ -540,7 +540,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_aruser;
  wire                               m_axi_arvalid;
  wire                               m_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    m_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_rresp;
@@ -548,7 +548,7 @@ wire                                init_calib_complete_zero;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_ruser;
  wire                               m_axi_rvalid;
  wire                               m_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    m_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    m_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    m_axi_buser;
@@ -619,7 +619,7 @@ wire                               core_axi_bready;
  wire [`AXI4_USER_WIDTH   -1:0]     zeroer_axi_awuser;
  wire                               zeroer_axi_awvalid;
  wire                               zeroer_axi_awready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_wid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_wdata;
  wire  [`AXI4_STRB_WIDTH   -1:0]    zeroer_axi_wstrb;
@@ -627,7 +627,7 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_wuser;
  wire                               zeroer_axi_wvalid;
  wire                               zeroer_axi_wready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_arid;
  wire  [`AXI4_ADDR_WIDTH   -1:0]    zeroer_axi_araddr;
  wire  [`AXI4_LEN_WIDTH    -1:0]    zeroer_axi_arlen;
@@ -641,7 +641,7 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_aruser;
  wire                               zeroer_axi_arvalid;
  wire                               zeroer_axi_arready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_rid;
  wire  [`AXI4_DATA_WIDTH   -1:0]    zeroer_axi_rdata;
  wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_rresp;
@@ -649,13 +649,13 @@ wire                               core_axi_bready;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_ruser;
  wire                               zeroer_axi_rvalid;
  wire                               zeroer_axi_rready;
- 
+
  wire  [`AXI4_ID_WIDTH     -1:0]    zeroer_axi_bid;
  wire  [`AXI4_RESP_WIDTH   -1:0]    zeroer_axi_bresp;
  wire  [`AXI4_USER_WIDTH   -1:0]    zeroer_axi_buser;
  wire                               zeroer_axi_bvalid;
  wire                               zeroer_axi_bready;
- 
+
  wire                               init_calib_complete_zero;
 `endif
 
@@ -1217,108 +1217,6 @@ noc_axi4_bridge #(
     .m_axi_rready(core_axi_rready)
 
 );
-
-
-//Verilog macro metaprogramming: https://veripool.org/papers/Preproc_Good_Evil_SNUGBos10_paper.pdf
-// reassignment of multiple name-indexed AXI buses to/from vectorized ones
-`define MC_AXI(idx) \
-\
-wire [`AXI4_ID_WIDTH     -1:0]  m_axi``idx``_awid     =  mcx_axi_awid     [idx * `AXI4_ID_WIDTH     +: `AXI4_ID_WIDTH    ]; \
-wire [`AXI4_ADDR_WIDTH   -1:0]  m_axi``idx``_awaddr   =  mcx_axi_awaddr   [idx * `AXI4_ADDR_WIDTH   +: `AXI4_ADDR_WIDTH  ]; \
-wire [`AXI4_LEN_WIDTH    -1:0]  m_axi``idx``_awlen    =  mcx_axi_awlen    [idx * `AXI4_LEN_WIDTH    +: `AXI4_LEN_WIDTH   ]; \
-wire [`AXI4_SIZE_WIDTH   -1:0]  m_axi``idx``_awsize   =  mcx_axi_awsize   [idx * `AXI4_SIZE_WIDTH   +: `AXI4_SIZE_WIDTH  ]; \
-wire [`AXI4_BURST_WIDTH  -1:0]  m_axi``idx``_awburst  =  mcx_axi_awburst  [idx * `AXI4_BURST_WIDTH  +: `AXI4_BURST_WIDTH ]; \
-wire                            m_axi``idx``_awlock   =  mcx_axi_awlock   [idx                                           ]; \
-wire [`AXI4_CACHE_WIDTH  -1:0]  m_axi``idx``_awcache  =  mcx_axi_awcache  [idx * `AXI4_CACHE_WIDTH  +: `AXI4_CACHE_WIDTH ]; \
-wire [`AXI4_PROT_WIDTH   -1:0]  m_axi``idx``_awprot   =  mcx_axi_awprot   [idx * `AXI4_PROT_WIDTH   +: `AXI4_PROT_WIDTH  ]; \
-wire [`AXI4_QOS_WIDTH    -1:0]  m_axi``idx``_awqos    =  mcx_axi_awqos    [idx * `AXI4_QOS_WIDTH    +: `AXI4_QOS_WIDTH   ]; \
-wire [`AXI4_REGION_WIDTH -1:0]  m_axi``idx``_awregion =  mcx_axi_awregion [idx * `AXI4_REGION_WIDTH +: `AXI4_REGION_WIDTH]; \
-wire [`AXI4_USER_WIDTH   -1:0]  m_axi``idx``_awuser   =  mcx_axi_awuser   [idx * `AXI4_USER_WIDTH   +: `AXI4_USER_WIDTH  ]; \
-wire                            m_axi``idx``_awvalid  =  mcx_axi_awvalid  [idx                                           ]; \
-wire                            m_axi``idx``_awready; \
-assign mcx_axi_awready[idx] =   m_axi``idx``_awready; \
-\
-wire [`AXI4_ID_WIDTH     -1:0]  m_axi``idx``_wid      =  mcx_axi_wid      [idx * `AXI4_ID_WIDTH     +: `AXI4_ID_WIDTH  ]; \
-wire [`AXI4_DATA_WIDTH   -1:0]  m_axi``idx``_wdata    =  mcx_axi_wdata    [idx * `AXI4_DATA_WIDTH   +: `AXI4_DATA_WIDTH]; \
-wire [`AXI4_STRB_WIDTH   -1:0]  m_axi``idx``_wstrb    =  mcx_axi_wstrb    [idx * `AXI4_STRB_WIDTH   +: `AXI4_STRB_WIDTH]; \
-wire                            m_axi``idx``_wlast    =  mcx_axi_wlast    [idx                                         ]; \
-wire [`AXI4_USER_WIDTH   -1:0]  m_axi``idx``_wuser    =  mcx_axi_wuser    [idx * `AXI4_USER_WIDTH   +: `AXI4_USER_WIDTH]; \
-wire                            m_axi``idx``_wvalid   =  mcx_axi_wvalid   [idx                                         ]; \
-wire                            m_axi``idx``_wready; \
-assign mcx_axi_wready[idx] =    m_axi``idx``_wready; \
-\
-wire [`AXI4_ID_WIDTH     -1:0]  m_axi``idx``_arid     =  mcx_axi_arid     [idx * `AXI4_ID_WIDTH     +: `AXI4_ID_WIDTH    ]; \
-wire [`AXI4_ADDR_WIDTH   -1:0]  m_axi``idx``_araddr   =  mcx_axi_araddr   [idx * `AXI4_ADDR_WIDTH   +: `AXI4_ADDR_WIDTH  ]; \
-wire [`AXI4_LEN_WIDTH    -1:0]  m_axi``idx``_arlen    =  mcx_axi_arlen    [idx * `AXI4_LEN_WIDTH    +: `AXI4_LEN_WIDTH   ]; \
-wire [`AXI4_SIZE_WIDTH   -1:0]  m_axi``idx``_arsize   =  mcx_axi_arsize   [idx * `AXI4_SIZE_WIDTH   +: `AXI4_SIZE_WIDTH  ]; \
-wire [`AXI4_BURST_WIDTH  -1:0]  m_axi``idx``_arburst  =  mcx_axi_arburst  [idx * `AXI4_BURST_WIDTH  +: `AXI4_BURST_WIDTH ]; \
-wire                            m_axi``idx``_arlock   =  mcx_axi_arlock   [idx                                           ]; \
-wire [`AXI4_CACHE_WIDTH  -1:0]  m_axi``idx``_arcache  =  mcx_axi_arcache  [idx * `AXI4_CACHE_WIDTH  +: `AXI4_CACHE_WIDTH ]; \
-wire [`AXI4_PROT_WIDTH   -1:0]  m_axi``idx``_arprot   =  mcx_axi_arprot   [idx * `AXI4_PROT_WIDTH   +: `AXI4_PROT_WIDTH  ]; \
-wire [`AXI4_QOS_WIDTH    -1:0]  m_axi``idx``_arqos    =  mcx_axi_arqos    [idx * `AXI4_QOS_WIDTH    +: `AXI4_QOS_WIDTH   ]; \
-wire [`AXI4_REGION_WIDTH -1:0]  m_axi``idx``_arregion =  mcx_axi_arregion [idx * `AXI4_REGION_WIDTH +: `AXI4_REGION_WIDTH]; \
-wire [`AXI4_USER_WIDTH   -1:0]  m_axi``idx``_aruser   =  mcx_axi_aruser   [idx * `AXI4_USER_WIDTH   +: `AXI4_USER_WIDTH  ]; \
-wire                            m_axi``idx``_arvalid  =  mcx_axi_arvalid  [idx                                           ]; \
-wire                            m_axi``idx``_arready; \
-assign mcx_axi_arready[idx] =   m_axi``idx``_arready; \
-\
-wire [`AXI4_ID_WIDTH     -1:0]  m_axi``idx``_rid; \
-wire [`AXI4_DATA_WIDTH   -1:0]  m_axi``idx``_rdata; \
-wire [`AXI4_RESP_WIDTH   -1:0]  m_axi``idx``_rresp; \
-wire                            m_axi``idx``_rlast; \
-wire [`AXI4_USER_WIDTH   -1:0]  m_axi``idx``_ruser; \
-wire                            m_axi``idx``_rvalid; \
-wire                            m_axi``idx``_rready =  mcx_axi_rready[idx]; \
-assign mcx_axi_rid   [idx * `AXI4_ID_WIDTH     +: `AXI4_ID_WIDTH  ] = m_axi``idx``_rid; \
-assign mcx_axi_rdata [idx * `AXI4_DATA_WIDTH   +: `AXI4_DATA_WIDTH] = m_axi``idx``_rdata; \
-assign mcx_axi_rresp [idx * `AXI4_RESP_WIDTH   +: `AXI4_RESP_WIDTH] = m_axi``idx``_rresp; \
-assign mcx_axi_rlast [idx                                         ] = m_axi``idx``_rlast; \
-assign mcx_axi_ruser [idx * `AXI4_USER_WIDTH   +: `AXI4_USER_WIDTH] = m_axi``idx``_ruser; \
-assign mcx_axi_rvalid[idx                                         ] = m_axi``idx``_rvalid; \
-\
-wire [`AXI4_ID_WIDTH     -1:0]  m_axi``idx``_bid; \
-wire [`AXI4_RESP_WIDTH   -1:0]  m_axi``idx``_bresp; \
-wire [`AXI4_USER_WIDTH   -1:0]  m_axi``idx``_buser; \
-wire                            m_axi``idx``_bvalid; \
-wire                            m_axi``idx``_bready = mcx_axi_bready[idx]; \
-assign mcx_axi_bid   [idx * `AXI4_ID_WIDTH     +: `AXI4_ID_WIDTH  ] = m_axi``idx``_bid; \
-assign mcx_axi_bresp [idx * `AXI4_RESP_WIDTH   +: `AXI4_RESP_WIDTH] = m_axi``idx``_bresp; \
-assign mcx_axi_buser [idx * `AXI4_USER_WIDTH   +: `AXI4_USER_WIDTH] = m_axi``idx``_buser; \
-assign mcx_axi_bvalid[idx                                         ] = m_axi``idx``_bvalid;
-
-
-`define MCX_AXI(n) `MCX_AXI_``n
-`define MCX_AXI_0
-`define MCX_AXI_1  `MCX_AXI_0  `MC_AXI(0)
-`define MCX_AXI_2  `MCX_AXI_1  `MC_AXI(1)
-`define MCX_AXI_3  `MCX_AXI_2  `MC_AXI(2)
-`define MCX_AXI_4  `MCX_AXI_3  `MC_AXI(3)
-`define MCX_AXI_5  `MCX_AXI_4  `MC_AXI(4)
-`define MCX_AXI_6  `MCX_AXI_5  `MC_AXI(5)
-`define MCX_AXI_7  `MCX_AXI_6  `MC_AXI(6)
-`define MCX_AXI_8  `MCX_AXI_7  `MC_AXI(7)
-`define MCX_AXI_9  `MCX_AXI_8  `MC_AXI(8)
-`define MCX_AXI_10 `MCX_AXI_9  `MC_AXI(9)
-`define MCX_AXI_11 `MCX_AXI_10 `MC_AXI(10)
-`define MCX_AXI_12 `MCX_AXI_11 `MC_AXI(11)
-`define MCX_AXI_13 `MCX_AXI_12 `MC_AXI(12)
-`define MCX_AXI_14 `MCX_AXI_13 `MC_AXI(13)
-`define MCX_AXI_15 `MCX_AXI_14 `MC_AXI(14)
-`define MCX_AXI_16 `MCX_AXI_15 `MC_AXI(15)
-`define MCX_AXI_17 `MCX_AXI_16 `MC_AXI(16)
-`define MCX_AXI_18 `MCX_AXI_17 `MC_AXI(17)
-`define MCX_AXI_19 `MCX_AXI_18 `MC_AXI(18)
-`define MCX_AXI_20 `MCX_AXI_19 `MC_AXI(19)
-`define MCX_AXI_21 `MCX_AXI_20 `MC_AXI(20)
-`define MCX_AXI_22 `MCX_AXI_21 `MC_AXI(21)
-`define MCX_AXI_23 `MCX_AXI_22 `MC_AXI(22)
-`define MCX_AXI_24 `MCX_AXI_23 `MC_AXI(23)
-`define MCX_AXI_25 `MCX_AXI_24 `MC_AXI(24)
-`define MCX_AXI_26 `MCX_AXI_25 `MC_AXI(25)
-`define MCX_AXI_27 `MCX_AXI_26 `MC_AXI(26)
-`define MCX_AXI_28 `MCX_AXI_27 `MC_AXI(27)
-`define MCX_AXI_29 `MCX_AXI_28 `MC_AXI(28)
-`define MCX_AXI_30 `MCX_AXI_29 `MC_AXI(29)
 
 
 `ifdef PITON_EXTRA_MEMS
