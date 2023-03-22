@@ -13,11 +13,8 @@ cd ..
 source piton/lagarto_setup.sh
 source piton/lagarto_build_tools.sh
 
-echo "***** COMPILE OpenPIton with LAGARTO AS THE CORE *****"
-cd build
-sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB 
-
 echo "***** RUNNING all ISA Group Tests, Results in ${FOLDER_NAME}/${RESULT_LOG}"
+cd build
 mkdir $FOLDER_NAME
 cd $FOLDER_NAME
 
