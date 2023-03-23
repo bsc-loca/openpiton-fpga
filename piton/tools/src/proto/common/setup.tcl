@@ -146,6 +146,10 @@ if  {$::env(VPU_ENABLE) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " VPU_ENABLE"
 }
 
+if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
+  append ALL_DEFAULT_VERILOG_MACROS " XBAR_LVRF_ENABLE"
+}
+
 if  {$::env(PITON_PRONOC) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PRONOC"
 }

@@ -17,12 +17,12 @@ fi
 CORE=lagarto
 XTILES=1
 YTILES=1
-#PROTO_OPTIONS="--meep --eth --hbm --vpu"
+#PROTO_OPTIONS="--meep --eth --hbm --vpu_enable"
 
 case "$EA_MOD" in
 acme)
     CORE=lagarto
-    PROTO_OPTIONS="--meep --eth --hbm --vpu --sa_enable"
+    PROTO_OPTIONS="--meep --eth --hbm --vpu_enable --sa_enable"
     echo "Selected build configuration: Lagarto 1x1"
     ;;
 ariane)
@@ -40,7 +40,7 @@ pronoc)
     ;; 
 meep_dvino)
     CORE=lagarto
-    PROTO_OPTIONS=" --vpu"
+    PROTO_OPTIONS=" --vpu_enable"
     echo "Selected build configuration: MEEP DVINO"
     ;;
 acme_v2)
@@ -55,7 +55,7 @@ acme_vpu)
     YTILES=2
     VLANES=2
     # Add VPU
-    PROTO_OPTIONS=" --vpu --pronoc --vlanes $VLANES"
+    PROTO_OPTIONS=" --vpu_enable --pronoc --vlanes $VLANES"
     echo "Selected build configuration: Lagarto 2x2 plus VPU and pronoc"
     ;;
 esac

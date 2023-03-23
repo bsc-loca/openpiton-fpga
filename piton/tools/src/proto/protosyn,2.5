@@ -569,7 +569,6 @@ def setParserOptions(parser):
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
     parser.add_option("--multimc", dest="multimc", action="store", default=0)
     parser.add_option("--multimc_indices", dest="multimc_indices", action="store", default=None)
-    parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
     parser.add_option("--sa_enable", dest="sa_enable", action="store_true", default=False)
@@ -612,7 +611,7 @@ def makeDefList(options):
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
         defines.append("FPU_ZAGREB")
-        if options.vpu:
+        if options.vpu_enable:
             defines.append("VPU_ENABLE")
             if options.vlanes == "2":
                 defines.append("VPU_2_LANES")
@@ -1015,7 +1014,6 @@ def main():
     # VPU
     os.environ['VPU_ENABLE'] = "0"
     if options.vpu_enable:
-        defines.append('VPU_ENABLE')
         os.environ['VPU_ENABLE'] = "1"
         print_info('setenv VPU_ENABLE')
 
