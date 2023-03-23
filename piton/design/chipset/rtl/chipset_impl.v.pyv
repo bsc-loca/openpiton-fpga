@@ -97,6 +97,7 @@ module chipset_impl(
     input                                       mc_clk_n,
   `else
     input mc_clk,
+    input mc_rstn,
   `endif
 `else  // PITONSYS_DDR4
     input                                       mc_clk,
@@ -429,55 +430,55 @@ module chipset_impl(
 
     `ifdef PITON_EXTRA_MEMS
       // vectorized multi-MC AXI bus
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid;
-      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr;
-      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen;
-      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_awsize;
-      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_awburst;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awlock;
-      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_awcache;
-      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_awprot;
-      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_awqos;
-      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_awregion;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_awuser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_awid,
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_awaddr,
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_awlen,
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_awsize,
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_awburst,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awlock,
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_awcache,
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_awprot,
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_awqos,
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_awregion,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_awuser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_awready,
 
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_wid;
-      output [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_wdata;
-      output [`PITON_EXTRA_MEMS * `AXI4_STRB_WIDTH   -1:0]   mcx_axi_wstrb;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wlast;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_wuser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_wid,
+      output [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_wdata,
+      output [`PITON_EXTRA_MEMS * `AXI4_STRB_WIDTH   -1:0]   mcx_axi_wstrb,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wlast,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_wuser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_wready,
 
-      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_arid;
-      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_araddr;
-      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_arlen;
-      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_arsize;
-      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_arburst;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arlock;
-      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_arcache;
-      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_arprot;
-      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_arqos;
-      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_arregion;
-      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_aruser;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arvalid;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arready;
+      output [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_arid,
+      output [`PITON_EXTRA_MEMS * `AXI4_ADDR_WIDTH   -1:0]   mcx_axi_araddr,
+      output [`PITON_EXTRA_MEMS * `AXI4_LEN_WIDTH    -1:0]   mcx_axi_arlen,
+      output [`PITON_EXTRA_MEMS * `AXI4_SIZE_WIDTH   -1:0]   mcx_axi_arsize,
+      output [`PITON_EXTRA_MEMS * `AXI4_BURST_WIDTH  -1:0]   mcx_axi_arburst,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arlock,
+      output [`PITON_EXTRA_MEMS * `AXI4_CACHE_WIDTH  -1:0]   mcx_axi_arcache,
+      output [`PITON_EXTRA_MEMS * `AXI4_PROT_WIDTH   -1:0]   mcx_axi_arprot,
+      output [`PITON_EXTRA_MEMS * `AXI4_QOS_WIDTH    -1:0]   mcx_axi_arqos,
+      output [`PITON_EXTRA_MEMS * `AXI4_REGION_WIDTH -1:0]   mcx_axi_arregion,
+      output [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_aruser,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arvalid,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_arready,
 
-      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_rid;
-      input  [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_rdata;
-      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_rresp;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rlast;
-      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_ruser;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rvalid;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rready;
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_rid,
+      input  [`PITON_EXTRA_MEMS * `AXI4_DATA_WIDTH   -1:0]   mcx_axi_rdata,
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_rresp,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rlast,
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_ruser,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rvalid,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_rready,
 
-      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_bid;
-      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_bresp;
-      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser;
-      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid;
-      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready;
+      input  [`PITON_EXTRA_MEMS * `AXI4_ID_WIDTH     -1:0]   mcx_axi_bid,
+      input  [`PITON_EXTRA_MEMS * `AXI4_RESP_WIDTH   -1:0]   mcx_axi_bresp,
+      input  [`PITON_EXTRA_MEMS * `AXI4_USER_WIDTH   -1:0]   mcx_axi_buser,
+      input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid,
+      output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
 
 	// UART space
@@ -1192,6 +1193,7 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_bg(ddr_bg),
            `else
             .mc_clk(mc_clk),
+            .mc_rstn(mc_rstn),
            `endif
         `ifdef PITONSYS_PCIE
             .pci_express_x16_rxn(pci_express_x16_rxn),
