@@ -476,6 +476,19 @@ clean-on-failure:
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
 ##
 
+verif-sanity-check-trigger:
+  stage: push-shell
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push"
+  variables:
+    GIT_STRATEGY: clone
+    COMMIT_SHA: $NEW_BRANCH_SHA
+    COMMIT_REF: $NEW_BRANCH
+    COMMIT_MESG: $CI_COMMIT_MESSAGE
+  trigger:
+    project: meep/meep-design-verification/lagaro_modified/
+    branch: production
+
 .git_clean:
   before_script:
     - git config --local --unset http.proxy || true
