@@ -171,7 +171,6 @@ synthesis-matrix-production:
     # A matrix can be created here to synthesize all different options
     - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
     - . piton/design/chipset/meep_shell/accelerator_build.sh  vnpm hbm
-    - make acc_framework
     - !reference [.check_synth_dcp, script]
   after_script:
     - mkdir -p logs/${EA}
@@ -219,7 +218,6 @@ synthesis-matrix-test:
     # A matrix can be created here to synthesize all different options
     - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
     - . piton/design/chipset/meep_shell/accelerator_build.sh $EA vnpm hbm
-    - make acc_framework
     - !reference [.check_synth_dcp, script]
   after_script:
     - mkdir -p logs/${EA}
