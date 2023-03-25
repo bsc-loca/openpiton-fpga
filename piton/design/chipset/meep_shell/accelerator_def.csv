@@ -9,7 +9,7 @@ HBM,no,mcx_axi2,AXI3-256,CLK0,0x0,mem_calib_complete,06
 HBM,no,mcx_axi3,AXI3-256,CLK0,0x0,mem_calib_complete,07
 AURORA,no,raw,<name>
 UART,yes,uart_axi,,CLK0,0x0,normal,uart_irq
-ETHERNET,yes,eth_axi,AXI4LITE-64,CLK0,100Gb,eth_irq,qsfp1,hbm,29
+ETHERNET,yes,eth_axi,AXI4LITE-64,CLK0,10Gb,eth_irq,qsfp1,hbm,29
 BROM,no,sram_axi,,CLK0,0x0,initFile.mem
 BRAM,no,sram_axi,,CLK0,0x0,none
 CLK0,50000000,chipset_clk
