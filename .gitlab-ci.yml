@@ -125,12 +125,11 @@ simulation:
     ############################
     - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
     - echo "Running Regression tests with Questasim"
-    - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
-    - "cd $BUILD_PATH"
+    - cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh
     - echo "Running sanity cosimulation test with Questasim"
-    - "cd build && BUILD_PATH=$PWD && source test_all_configs.sh"
+    - cd $BUILD_PATH && source test_all_configs.sh
     - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable  > /dev/null
+    - cd $BUILD_PATH && rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable  > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
