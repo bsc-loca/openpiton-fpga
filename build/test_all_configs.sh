@@ -60,5 +60,7 @@ do
     done
 done
 
+cat result.log
+
 #echo '5. ariane core without support for cosim and cov'
 #sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
