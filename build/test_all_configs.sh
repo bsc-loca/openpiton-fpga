@@ -1,7 +1,7 @@
 echo 'Test to check that all configurations run successfully'
 
 SIMS='sims -sys=manycore -x_tiles=1 -y_tiles=1 -config_rtl=FPU_ZAGREB -config_rtl=BSC_RTL_SRAMS -config_rtl=MINIMAL_MONITORING'
-rm result.log status.log
+rm -f result.log status.log
 
 echo 'Available configs:'
 echo '0. lagarto '
