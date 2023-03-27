@@ -78,9 +78,7 @@ protosyn: clean_project $(RISCV)
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
-acc_framework: clean_project 
-	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --num_tiles $(NTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
+
 
 $(SYNTH_DCP): $(PROJECT_FILE)
 	$(VIVADO_XLNX $(VIVADO_OPT) $(TCL_DIR)/gen_synthesis.tcl -tclargs $(PROJECT_DIR)
@@ -92,18 +90,28 @@ $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
 
-#TESTING: new way to generate the infrastructure:
+#new way to generate the infrastructure:
 # First thing is to define which accelerator we want to work, we provide the name and the flags we want to use.
-#the final result we can define the environmet we want to use
+# Here, we can know how to use the accelerator_build.sh script, and define the ea_acelerator to use with the Openpiton framework
+
+# Using this target, we ca know how the acelerator_build.sh works. Detailed information.
 help_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -h
 
+#Here we can know the syntax of accelerator_build.sh 
 syntax_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -s
 
 acc_env:
-	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA_PARAM) $(OPTIONS)
-	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh 
+	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA_PARAM) $(OPTIONS) 
+
+# We use this target into the accelerator_build. sh script, because the fpga_shell flow has been made to be used with differents ea_accelerators,
+#maybe in the future we can call this rule from the FPGA_Shell MAkefile, but at the moment we are going to use it with the accelerator_build.sh script
+
+acc_framework: clean_project 
+	source piton/$(CORE)_setup.sh; \
+	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --num_tiles $(NTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
+
 
 ### Create targets to be used only in the CI/CD environment. They do not have requirements 
 
