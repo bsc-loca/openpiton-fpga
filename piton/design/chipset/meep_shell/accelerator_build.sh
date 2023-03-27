@@ -250,13 +250,13 @@ echo "export PROTO_OPTIONS=$PROTO_OPTIONS" >> $ENV_FILE
 
 #check the variables are not empty
 
-# if [ -z "$CORE" ] ; then
-#       echo "Can't execute protosyn command"
-# else
+if [ -z "$CORE" ] ; then
+      echo "Can't execute protosyn command"
+else
       
-#       echo "Execute protosyn command to build the infrastructure with OP"
-#       make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS"
-# fi
+      echo "Execute protosyn command to build the infrastructure with OP"
+      make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+fi
 
 
 
