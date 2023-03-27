@@ -425,7 +425,7 @@ fpga-shell-trigger-production:
     ENV_WORK: "PRODUCTION"
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
-    branch: develop/cicd_improvements
+    branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
     strategy: depend
@@ -442,7 +442,7 @@ fpga-shell-trigger-test:
     ENV_WORK: "TEST"
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
-    branch: develop/cicd_improvements
+    branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
     strategy: depend
