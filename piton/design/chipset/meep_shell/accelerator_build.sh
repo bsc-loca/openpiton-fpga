@@ -223,12 +223,30 @@ done
 echo -e ${BW}"Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES num_tiles=$NTILES , flags: $PROTO_OPTIONS" ${NC}
 
 #Export the accelerator main variables
+#Export the accelerator variables
+#create env file to export to Openpiton Framework
+echo "$( dirname $(readlink -f ${BASH_SOURCE[0]}) )"
+path=$( dirname $(readlink -f ${BASH_SOURCE[0]}) )
+ENV_FILE=$path/env_accelerator.sh
+if [ -f "$ENV_FILE" ]; then 
+    rm $ENV_FILE
+    touch $ENV_FILE
+else
+    touch $ENV_FILE
+fi
 
+echo "#Accelerator_build.sh environment" >> $ENV_FILE
 export CORE 
+echo "export CORE=$CORE" >> $ENV_FILE
 export XTILES 
-export YTILES
+echo "export XTILES=$XTILES" >> $ENV_FILE
+export YTILES 
+echo "export YTILES=$YTILES" >> $ENV_FILE
 export NTILES 
-export PROTO_OPTIONS
+echo "export NTILES=$NTILES">> $ENV_FILE
+export PROTO_OPTIONS 
+echo "export PROTO_OPTIONS=$PROTO_OPTIONS" >> $ENV_FILE
+
 
 #check the variables are not empty
 
@@ -239,5 +257,6 @@ export PROTO_OPTIONS
 #       echo "Execute protosyn command to build the infrastructure with OP"
 #       make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS"
 # fi
+
 
 
