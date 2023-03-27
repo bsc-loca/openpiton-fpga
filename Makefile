@@ -1,5 +1,4 @@
 #Here we define the accelerator_build.sh variables to use in differents targets
-include Makefile.in
 FPGA_TARGET ?= alveou280
 ROOT_DIR    =  $(PWD)
 PITON_BUILD_DIR = $(ROOT_DIR)/build
