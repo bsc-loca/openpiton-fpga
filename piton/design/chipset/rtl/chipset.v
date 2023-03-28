@@ -410,7 +410,7 @@ module chipset(
     
     input wire   [1:0]                        eth_irq, //TODO: connect it downstream
     
-    `ifdef MEEP_SRAM
+    `ifdef PITONSYS_MC_SRAM
     // AXI interface SRAM
     output wire [`AXI4_ID_WIDTH     -1:0]    sram_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_awaddr,
@@ -461,7 +461,7 @@ module chipset(
     input  wire  [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
     input  wire                               sram_axi_bvalid,
     output wire                               sram_axi_bready,
-    `endif // MEEP_SRAM
+    `endif // `ifdef PITONSYS_MC_SRAM
 	
     `ifdef DEBUG_ROM 
     output  wire                              debug_rom_req,
@@ -471,9 +471,6 @@ module chipset(
 
     `ifdef PITON_NONCACH_MEM 
     // AXI non-cacheable system memory
-    input wire                               ncmem_axi_aclk,
-    input wire                               ncmem_axi_arstn,
-    
     output wire [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output wire [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
@@ -1928,8 +1925,8 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .eth_axi_wvalid(eth_axi_wvalid),
 				   `endif
 				    // SRAM Pheripheral
-				     `ifdef MEEP_SRAM
-				   
+				    `ifdef PITONSYS_MC_SRAM
+
 				    .sram_axi_araddr(sram_axi_araddr),
 				    .sram_axi_arburst(sram_axi_arburst),
 				    .sram_axi_arcache(sram_axi_arcache),
@@ -1943,7 +1940,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_arsize(sram_axi_arsize),
 				    .sram_axi_aruser(sram_axi_aruser),
 				    .sram_axi_arvalid(sram_axi_arvalid),
-				   
+
 				    .sram_axi_awaddr(sram_axi_awaddr),
 				    .sram_axi_awburst(sram_axi_awburst),
 				    .sram_axi_awcache(sram_axi_awcache),
@@ -1957,7 +1954,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_awsize(sram_axi_awsize),
 				    .sram_axi_awuser(sram_axi_awuser),
 				    .sram_axi_awvalid(sram_axi_awvalid),
-				   
+
 				    .sram_axi_bid(sram_axi_bid),
 				    .sram_axi_bready(sram_axi_bready),
 				    .sram_axi_bresp(sram_axi_bresp),
@@ -1971,7 +1968,7 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_rresp(sram_axi_rresp),
 				    .sram_axi_ruser(sram_axi_ruser),
 				    .sram_axi_rvalid(sram_axi_rvalid),
-				   
+
 				    .sram_axi_wdata(sram_axi_wdata),
 				    .sram_axi_wid(sram_axi_wid),
 				    .sram_axi_wlast(sram_axi_wlast),
@@ -1979,8 +1976,8 @@ chipset_impl_noc_power_test  chipset_impl (
 				    .sram_axi_wstrb(sram_axi_wstrb),
 				    .sram_axi_wuser(sram_axi_wuser),
 				    .sram_axi_wvalid(sram_axi_wvalid),
-				    `endif
-				    
+				    `endif //`ifdef PITONSYS_MC_SRAM
+
 				    `ifdef DEBUG_ROM 
 				    .debug_rom_en(sw[1]), // pcie_gpio[4]
                     .debug_rom_req(debug_rom_req),
@@ -1989,9 +1986,6 @@ chipset_impl_noc_power_test  chipset_impl (
                     `endif
                                    
                     `ifdef PITON_NONCACH_MEM     
-                    .ncmem_axi_aclk(ncmem_axi_aclk),
-                    .ncmem_axi_arstn(ncmem_axi_arstn),
-                    
 				    .ncmem_axi_araddr(ncmem_axi_araddr),
 				    .ncmem_axi_arburst(ncmem_axi_arburst),
 				    .ncmem_axi_arcache(ncmem_axi_arcache),

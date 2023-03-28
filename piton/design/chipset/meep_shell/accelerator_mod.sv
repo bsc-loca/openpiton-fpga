@@ -164,7 +164,7 @@ module openpiton_wrapper(
     output                                eth_axi_bready,
    `endif
 
-   `ifdef MEEP_SRAM
+   `ifdef PITONSYS_MC_SRAM
     // AXI interface
     output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
     output [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr,
