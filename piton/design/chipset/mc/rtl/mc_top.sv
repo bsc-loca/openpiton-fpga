@@ -627,14 +627,15 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
   `elsif PITON_LAGARTO
     .SWAP_ENDIANESS (1),
   `endif
+	.NOC2AXI_DESER_ORDER (1),
   `ifdef PITON_FPGA_MC_HBM
     .AXI4_DAT_WIDTH_USED (HBM_WIDTH),
     .ADDR_SWAP_LBITS(HBM_MCS_LOG2),
     .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
     .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
   `endif
-    .ADDR_OFFSET(MEM_BASE_UNALIGN),
-    .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
+  .ADDR_OFFSET(MEM_BASE_UNALIGN),
+  .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
  ) noc_axi4_bridge_ncmem (
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 

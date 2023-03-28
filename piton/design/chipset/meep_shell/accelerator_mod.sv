@@ -219,9 +219,6 @@ module openpiton_wrapper(
 
     // AXI non-cacheable system memory
     `ifdef PITON_NONCACH_MEM
-    //input                                ncmem_axi_aclk,
-    //input                                ncmem_axi_arstn,
-
     output  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,
     output  [`AXI4_ADDR_WIDTH   -1:0]    ncmem_axi_awaddr,
     output  [`AXI4_LEN_WIDTH    -1:0]    ncmem_axi_awlen,
