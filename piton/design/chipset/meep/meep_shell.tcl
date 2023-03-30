@@ -237,6 +237,44 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   set_property CONFIG.MAX_BURST_LENGTH {16}   [get_bd_intf_ports m_axi]
 }
 
+  set ncmem_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 ncmem_axi ]
+  set_property -dict [ list \
+   CONFIG.ADDR_WIDTH {36} \
+   CONFIG.ARUSER_WIDTH {0} \
+   CONFIG.AWUSER_WIDTH {0} \
+   CONFIG.BUSER_WIDTH {0} \
+   CONFIG.DATA_WIDTH {512} \
+   CONFIG.HAS_BRESP {1} \
+   CONFIG.HAS_BURST {1} \
+   CONFIG.HAS_CACHE {0} \
+   CONFIG.HAS_LOCK {0} \
+   CONFIG.HAS_PROT {0} \
+   CONFIG.HAS_QOS {0} \
+   CONFIG.HAS_REGION {0} \
+   CONFIG.HAS_RRESP {1} \
+   CONFIG.HAS_WSTRB {1} \
+   CONFIG.ID_WIDTH {6} \
+   CONFIG.MAX_BURST_LENGTH {256} \
+   CONFIG.NUM_READ_OUTSTANDING {256} \
+   CONFIG.NUM_READ_THREADS {16} \
+   CONFIG.NUM_WRITE_OUTSTANDING {256} \
+   CONFIG.NUM_WRITE_THREADS {16} \
+   CONFIG.PROTOCOL {AXI4} \
+   CONFIG.READ_WRITE_MODE {READ_WRITE} \
+   CONFIG.RUSER_BITS_PER_BYTE {0} \
+   CONFIG.RUSER_WIDTH {0} \
+   CONFIG.SUPPORTS_NARROW_BURST {1} \
+   CONFIG.WUSER_BITS_PER_BYTE {0} \
+   CONFIG.WUSER_WIDTH {0} \
+   ] $ncmem_axi
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
+                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
+  set_property CONFIG.PROTOCOL         {AXI3} [get_bd_intf_ports ncmem_axi]
+  set_property CONFIG.DATA_WIDTH       {256}  [get_bd_intf_ports ncmem_axi]
+  set_property CONFIG.MAX_BURST_LENGTH {16}   [get_bd_intf_ports ncmem_axi]
+}
+
+
 set PITON_EXTRA_MEMS 0
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE" &&
@@ -370,7 +408,7 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.POLARITY {ACTIVE_LOW} \
  ] $pcie_perstn
 
-  set sysck_axi_ports "sram_axi"
+  set sysck_axi_ports "ncmem_axi:sram_axi"
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     append sysck_axi_ports ":mcx_axi" $idx
   }
@@ -548,6 +586,7 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   set_property CONFIG.USER_SAXI_16                                  {true} [get_bd_cells hbm_0]
+  set_property CONFIG.USER_SAXI_31                                  {true} [get_bd_cells hbm_0]
 }
 # A function distributing extra HBM channels evenly around center channel of the switch
 set distHBMchan {16 + ($idx%2 ? $idx/2+1 : -$idx/2-1)}
@@ -632,13 +671,14 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
   set_property -dict [ list \
-   CONFIG.NUM_CLKS {2} \
+   CONFIG.NUM_CLKS {3} \
    CONFIG.NUM_MI {3} \
-   CONFIG.NUM_SI {2} \
+   CONFIG.NUM_SI {3} \
  ] $smartconnect_0
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  set_property CONFIG.NUM_SI {1} [get_bd_cells smartconnect_0]
+  set_property CONFIG.NUM_CLKS {2} [get_bd_cells smartconnect_0]
+  set_property CONFIG.NUM_SI   {1} [get_bd_cells smartconnect_0]
 }
 
   # Create instance: sys_rst_inv, and set properties
@@ -700,11 +740,13 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins hbm_0/SAXI_16]
+  connect_bd_intf_net -intf_net ncmem_axi_net [get_bd_intf_ports ncmem_axi] [get_bd_intf_pins hbm_0/SAXI_31]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     connect_bd_intf_net -intf_net m_axi_net$idx [get_bd_intf_ports mcx_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr $distHBMchan]]]
   }
 } else {
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins smartconnect_0/S01_AXI]
+  connect_bd_intf_net -intf_net ncmem_axi_net [get_bd_intf_ports ncmem_axi] [get_bd_intf_pins smartconnect_0/S02_AXI]
 }
 
   # Create port connections
@@ -728,10 +770,10 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   connect_bd_net -net qdma_0_axi_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn]
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_16_WDATA_PARITY]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports mem_clk] [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_16_ACLK] [get_bd_pins mem_calib_sync/slowest_sync_clk]
+  connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_16_WDATA_PARITY] [get_bd_pins hbm_0/AXI_31_WDATA_PARITY]
+  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports mem_clk] [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_16_ACLK] [get_bd_pins hbm_0/AXI_31_ACLK] [get_bd_pins mem_calib_sync/slowest_sync_clk]
   connect_bd_net -net sys_rst_0_1 [get_bd_ports mem_rst] [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
-  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_16_ARESET_N] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins sys_rst_inv/Res]
+  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_16_ARESET_N] [get_bd_pins hbm_0/AXI_31_ARESET_N] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins sys_rst_inv/Res]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     set hbm_port [format {%02d} [expr $distHBMchan]]
     connect_bd_net -net gndx32_dout     [get_bd_pins hbm_0/AXI_${hbm_port}_WDATA_PARITY]
@@ -743,7 +785,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res]
 } else {
   connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK]
+  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins smartconnect_0/aclk2]
   connect_bd_net -net sys_rst_0_1 [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
   connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins sys_rst_inv/Res]
   connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_ports mem_clk] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins mem_calib_sync/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk1]
@@ -821,6 +863,38 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   assign_bd_address -offset 0x0001D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16/HBM_MEM29] -force
   assign_bd_address -offset 0x0001E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16/HBM_MEM30] -force
   assign_bd_address -offset 0x0001F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16/HBM_MEM31] -force
+  assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM00] -force
+  assign_bd_address -offset 0x10000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM01] -force
+  assign_bd_address -offset 0x20000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM02] -force
+  assign_bd_address -offset 0x30000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM03] -force
+  assign_bd_address -offset 0x40000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM04] -force
+  assign_bd_address -offset 0x50000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM05] -force
+  assign_bd_address -offset 0x60000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM06] -force
+  assign_bd_address -offset 0x70000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM07] -force
+  assign_bd_address -offset 0x80000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM08] -force
+  assign_bd_address -offset 0x90000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM09] -force
+  assign_bd_address -offset 0xA0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM10] -force
+  assign_bd_address -offset 0xB0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM11] -force
+  assign_bd_address -offset 0xC0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM12] -force
+  assign_bd_address -offset 0xD0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM13] -force
+  assign_bd_address -offset 0xE0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM14] -force
+  assign_bd_address -offset 0xF0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM15] -force
+  assign_bd_address -offset 0x000100000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM16] -force
+  assign_bd_address -offset 0x000110000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM17] -force
+  assign_bd_address -offset 0x000120000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM18] -force
+  assign_bd_address -offset 0x000130000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM19] -force
+  assign_bd_address -offset 0x000140000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM20] -force
+  assign_bd_address -offset 0x000150000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM21] -force
+  assign_bd_address -offset 0x000160000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM22] -force
+  assign_bd_address -offset 0x000170000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM23] -force
+  assign_bd_address -offset 0x000180000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM24] -force
+  assign_bd_address -offset 0x000190000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM25] -force
+  assign_bd_address -offset 0x0001A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM26] -force
+  assign_bd_address -offset 0x0001B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM27] -force
+  assign_bd_address -offset 0x0001C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM28] -force
+  assign_bd_address -offset 0x0001D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM29] -force
+  assign_bd_address -offset 0x0001E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM30] -force
+  assign_bd_address -offset 0x0001F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31/HBM_MEM31] -force
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   set hbm_port [format {%02d} [expr $distHBMchan]]
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port/HBM_MEM00] -force
@@ -861,6 +935,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
   assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
   assign_bd_address -offset 0x000200000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
   assign_bd_address -offset 0x000210000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM01] -force
   assign_bd_address -offset 0x000220000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM02] -force
@@ -894,7 +969,9 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   assign_bd_address -offset 0x0003E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM30] -force
   assign_bd_address -offset 0x0003F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM31] -force
   assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
+  assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
   assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
+  assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
 }
   assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
   assign_bd_address -offset 0x00000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces sram_axi] [get_bd_addr_segs ext_axi_sram_ctrl/S_AXI/Mem0] -force

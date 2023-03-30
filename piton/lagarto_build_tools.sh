@@ -60,7 +60,7 @@ else
 
   # parallel compilation
   export NUM_JOBS=4
-
+  export NUMTILES=1
   cd ${VAS_TILE_CORE_PATH}
 
   #########################################
@@ -86,28 +86,37 @@ else
 
     autoconf
     mkdir -p build
-
-    # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-    cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
+    echo
+    echo "----------------------------------------------------------------------"
+    echo "Updated, don't update the env"
+    echo "----------------------------------------------------------------------"
+    echo
+    #Neiel has apadted the OP env for riscv-test, we don't have to this
+    # # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
+    # cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
     
-    rm syscalls.c  
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
+    # rm syscalls.c  
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
     
-    rm util.h 
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
+    # rm util.h 
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
     
-    rm crt.S 
-    ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
- 
+    # rm crt.S 
+    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
+    
     cd ${BUILD_TMP_PATH}/riscv-tests/build
 
+    
     ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
-
+    
     make clean
-
+    
     make isa        -j${NUM_JOBS} > /dev/null
+    
     make benchmarks -j${NUM_JOBS} > /dev/null
+    
     make install
+       
     cd ${PITON_ROOT}
 
     echo

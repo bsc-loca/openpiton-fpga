@@ -40,13 +40,16 @@ while getopts 'sh' OPTION; do
       echo -e ${BW} "  acme_ea_4a: \t\tCORE=ariane \tx_tiles=2 \ty_tyles=2" 
       echo -e       "   acme_ea_1h16v: \tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=16" 
       echo -e       "   acme_ea_4h2v: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2"
+      echo -e       "   acme_ea_16h: \tCORE=lagarto \tx_tiles=4 \ty_tyles=4 "
+      echo -e       "   acme_ea_1h: \t\tCORE=lagarto \tx_tiles=1 \ty_tyles=1 "
       echo -e ${BC}"<protosyn_flag> available combinations :"
       echo -e  ${BW}"  pronoc: ProNoC routers"
       echo -e  "  vnpm: \tVivado non project mode" 
       echo -e  "  hbm: \t\tHigh Bandwidth Memory. Implement design with HBM memory going first"
       echo -e  "  meep: \tGenerate a file list and a define list to called by the MEEP Shell project flow"
       echo -e  "  eth: \t\tAdd Ethernet controller to implementation"
-      echo -e  "  ncmem: \tCreate an alias of the main memory bypassing the cache. Only available with meep option" ${NC}
+      echo -e  "  ncmem: \tCreate an alias of the main memory bypassing the cache. Only available with meep option" 
+      echo -e  "  multimc: \t Multi memory controller" ${NC}
       exit 0
       ;;
     ?)
@@ -79,6 +82,7 @@ function ea_flavours() {
             CORE=ariane
             XTILES=2
             YTILES=2
+            NTILES=$(($XTILES * $YTILES))
             echo -e ${BP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
             ;;
         acme_ea_1h16v)
@@ -86,6 +90,7 @@ function ea_flavours() {
             XTILES=1
             YTILES=1
             VLANES=16
+            NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
@@ -94,19 +99,22 @@ function ea_flavours() {
             XTILES=2
             YTILES=2
             VLANES=2
+            NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;;
         acme_ea_1h)
             CORE=lagarto
             XTILES=1
-            YTILES=1   
+            YTILES=1
+            NTILES=$(($XTILES * $YTILES))
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1  " ${NC}
             ;; 
         acme_ea_16h)
             CORE=lagarto
             XTILES=4
-            YTILES=4   
+            YTILES=4
+            NTILES=$(($XTILES * $YTILES))
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 4x4  " ${NC}
             ;;
         default)
@@ -117,7 +125,7 @@ function ea_flavours() {
             echo -e ${BP}"Selected build configuration: Lagarto 1x1 " ${NC}
             ;;
     esac
-    
+
     
 }
 
@@ -148,7 +156,15 @@ function ea_options() {
         PROTO_OPTIONS+=" --ncmem " 
         echo -e ${BC}"    Main memory bypassing the cache " ${NC}
         ;;
+        multimc)
+        PROTO_OPTIONS+=" --multimc " 
+        echo -e ${BC}"    Multi memory controller " ${NC}
+        ;;
+        [0-9])
+        PROTO_OPTIONS+=$1
+        ;;
     esac
+
 }
 
 # Check the input arguments
@@ -169,14 +185,14 @@ shift
 ## Build configurations
 #Right flag names
 function protosyn_flags() {
- declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1)
+ declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1)
  ea_conf=$1
 
 if [ x$1 == x ]; then
     echo -e ${R}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
     PROTO_OPTIONS+="--meep --eth --ncmem --hbm "
-elif [[ ${map1["$ea_conf"]} ]]; then     
-   ea_options $ea_conf   
+elif [[ ${map1["$ea_conf"]} ]] || [[ $ea_conf =~ ^[0-9]+$ ]]; then     
+   ea_options $ea_conf
 else
     echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
@@ -204,15 +220,43 @@ do
 done
 
 
-echo -e ${BW}"Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES  , flags: $PROTO_OPTIONS" ${NC}
+echo -e ${BW}"Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES num_tiles=$NTILES , flags: $PROTO_OPTIONS" ${NC}
+
+#Export the accelerator main variables
+#Export the accelerator variables
+#create env file to export to Openpiton Framework
+echo "$( dirname $(readlink -f ${BASH_SOURCE[0]}) )"
+path=$( dirname $(readlink -f ${BASH_SOURCE[0]}) )
+ENV_FILE=$path/env_accelerator.sh
+if [ -f "$ENV_FILE" ]; then 
+    rm $ENV_FILE
+    touch $ENV_FILE
+else
+    touch $ENV_FILE
+fi
+
+echo "#Accelerator_build.sh environment" >> $ENV_FILE
+export CORE 
+echo "export CORE=$CORE" >> $ENV_FILE
+export XTILES 
+echo "export XTILES=$XTILES" >> $ENV_FILE
+export YTILES 
+echo "export YTILES=$YTILES" >> $ENV_FILE
+export NTILES 
+echo "export NTILES=$NTILES">> $ENV_FILE
+export PROTO_OPTIONS 
+echo "export PROTO_OPTIONS=$PROTO_OPTIONS" >> $ENV_FILE
+
 
 #check the variables are not empty
 
-if [ -z "$CORE" ] || [ -z "$XTILES" ] || [ -z "$YTILES" ] || [ -z "$PROTO_OPTIONS" ]; then
+if [ -z "$CORE" ] ; then
       echo "Can't execute protosyn command"
 else
       
       echo "Execute protosyn command to build the infrastructure with OP"
-      make protosyn CORE=$CORE XTILES=$XTILES YTILES=$YTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+      make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS"
 fi
+
+
 
