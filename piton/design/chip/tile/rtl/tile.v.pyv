@@ -1282,15 +1282,25 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
 def clipAddress(addr, digits):
     return addr[max(0,len(addr)-digits):]
 
-cacheBase    = 0
-cacheLength  = 0
-dmBase       = 0
-dmLength     = 0
-romBase      = 0
-romLength    = 0
-romIsPresent = 0
-uartBase     = 0
-uartLength   = 0
+cacheBase      = 0
+cacheLength    = 0
+dmaPoolBase    = 0
+dmaPoolLength  = 0
+iobBase        = 0
+iobLength      = 0
+uartBase       = 0
+uartLength     = 0
+netBase        = 0
+netLength      = 0
+dmBase         = 0
+dmLength       = 0
+romBase        = 0
+romLength      = 0
+romIsPresent   = 0
+clintBase      = 0
+clintLength    = 0
+plicBase       = 0
+plicLength     = 0
 
 execBase   = "{"
 execLength = "{"
@@ -1318,6 +1328,46 @@ if PITON_LAGARTO:
             else:
               dataBase   += "64'h" + cacheBase
               dataLength += "64'h" + cacheLength
+        if devices[i]["name"] == "dma_pool":
+            dmaPoolBase      = "%X" % devices[i]["base"]
+            dmaPoolLength    = "%X" % devices[i]["length"]
+            numRegions    += 1
+            if dataBase != "{":
+              dataBase   += ", 64'h" + dmaPoolBase
+              dataLength += ", 64'h" + dmaPoolLength
+            else:
+              dataBase   += "64'h" + dmaPoolBase
+              dataLength += "64'h" + dmaPoolLength
+        if devices[i]["name"] == "iob":
+            iobBase      = "%X" % devices[i]["base"]
+            iobLength    = "%X" % devices[i]["length"]
+            numRegions    += 1
+            if dataBase != "{":
+              dataBase   += ", 64'h" + iobBase
+              dataLength += ", 64'h" + iobLength
+            else:
+              dataBase   += "64'h" + iobBase
+              dataLength += "64'h" + iobLength
+        if devices[i]["name"] == "uart":
+            uartBase      = "%X" % devices[i]["base"]
+            uartLength    = "%X" % devices[i]["length"]
+            numRegions    += 1
+            if dataBase != "{":
+              dataBase   += ", 64'h" + uartBase
+              dataLength += ", 64'h" + uartLength
+            else:
+              dataBase   += "64'h" + uartBase
+              dataLength += "64'h" + uartLength
+        if devices[i]["name"] == "net":
+            netBase      = "%X" % devices[i]["base"]
+            netLength    = "%X" % devices[i]["length"]
+            numRegions    += 1
+            if dataBase != "{":
+              dataBase   += ", 64'h" + netBase
+              dataLength += ", 64'h" + netLength
+            else:
+              dataBase   += "64'h" + netBase
+              dataLength += "64'h" + netLength
         if devices[i]["name"] == "lagarto_debug":
             dmBase       = "%X" % devices[i]["base"]
             dmLength     = "%X" % devices[i]["length"]
@@ -1353,16 +1403,26 @@ if PITON_LAGARTO:
             else:
               dataBase   += "64'h" + romBase
               dataLength += "64'h" + romLength
-        if devices[i]["name"] == "uart":
-            uartBase      = "%X" % devices[i]["base"]
-            uartLength    = "%X" % devices[i]["length"]
+        if devices[i]["name"] == "lagarto_clint":
+            clintBase      = "%X" % devices[i]["base"]
+            clintLength    = "%X" % devices[i]["length"]
             numRegions    += 1
             if dataBase != "{":
-              dataBase   += ", 64'h" + uartBase
-              dataLength += ", 64'h" + uartLength
+              dataBase   += ", 64'h" + clintBase
+              dataLength += ", 64'h" + clintLength
             else:
-              dataBase   += "64'h" + uartBase
-              dataLength += "64'h" + uartLength
+              dataBase   += "64'h" + clintBase
+              dataLength += "64'h" + clintLength
+        if devices[i]["name"] == "lagarto_plic":
+            plicBase      = "%X" % devices[i]["base"]
+            plicLength    = "%X" % devices[i]["length"]
+            numRegions    += 1
+            if dataBase != "{":
+              dataBase   += ", 64'h" + plicBase
+              dataLength += ", 64'h" + plicLength
+            else:
+              dataBase   += "64'h" + plicBase
+              dataLength += "64'h" + plicLength
 
 
 if dataBase == "{":
