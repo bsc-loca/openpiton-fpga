@@ -466,7 +466,11 @@ for core_id in range(PITON_NUM_TILES) :
                                              .csr_excep      (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
                                              .csr_cause      (`CORE_{coreid}.i_csr_regfile.csr_xcpt_cause),
                                              .control_intf   (`CORE_{coreid}.lagarto_m20.datapath_inst.control_int),
+`ifdef VPU_ENABLE
                                              .vpu_resp       (`CORE_{coreid}.lagarto_m20.datapath_inst.resp_vpu_cpu_i),
+`else
+                                             .vpu_resp       ('b0),
+`endif
                                              .hart_id        (`CORE_{coreid}.hart_id_i),
                                              .ref_hart_id    (64'd{coreid}),
                                              .csr_mip        (`CORE_{coreid}.i_csr_regfile.mip_q));
