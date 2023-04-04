@@ -89,7 +89,7 @@ Compiling and running RISC-V Tests with Lagarto in OpenPiton
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled
 
-Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator. VPU has to be enabled.
+Compiling and running RISC-V Tests with Lagarto in OpenPiton with cosimulation and signature generator.
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -vpu_enable -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim
     sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim

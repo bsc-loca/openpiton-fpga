@@ -439,8 +439,15 @@ system system(
 <%
 for core_id in range(PITON_NUM_TILES) :
     print("`define CORE_%d system.chip.tile%d.g_lagarto_m20_core.core" %(core_id, core_id))
+%>
+
+`ifdef VPU_ENABLE
+<%
+for core_id in range(PITON_NUM_TILES) :
     print("`define VPU_%d `CORE_%d.lagarto_m20.vpu_inst" %(core_id, core_id))
 %>
+`endif // endif VPU_ENABLE
+
 `ifdef MEEP_COSIM
 <%
 print("    spike_setup #(.NUM_CORES(%d)) spike_cosim_setup();" %(PITON_NUM_TILES))
