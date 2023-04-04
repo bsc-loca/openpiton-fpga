@@ -185,6 +185,7 @@ always @(posedge clk) begin
       $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d] DASM(0x%4h)", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid, instr);
       $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h] DASM(0x%4h)", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data, spike_log.ins);
 
+`ifdef VPU_ENABLE
       if (is_vector) begin
         // converting structure into a packed array
         foreach (spike_log.vector_operands.vd[elem]) begin
@@ -192,6 +193,7 @@ always @(posedge clk) begin
         end
         vrf_spike.put(vec_reg);
       end
+`endif // `endif VPU_ENABLE
 
       if (is_exception) begin
           if (exception_cause[63]) begin
