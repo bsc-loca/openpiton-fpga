@@ -593,6 +593,7 @@ fpga-shell-trigger-quick-test:
     COMMIT_REF: $NEW_BRANCH
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
+    EA: $EA
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: develop/cicd_improvements
