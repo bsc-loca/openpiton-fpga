@@ -1284,31 +1284,15 @@ def clipAddress(addr, digits):
 
 cacheBase      = 0
 cacheLength    = 0
-dmaPoolBase    = 0
-dmaPoolLength  = 0
-iobBase        = 0
-iobLength      = 0
-uartBase       = 0
-uartLength     = 0
-netBase        = 0
-netLength      = 0
 dmBase         = 0
 dmLength       = 0
 romBase        = 0
 romLength      = 0
 romIsPresent   = 0
-clintBase      = 0
-clintLength    = 0
-plicBase       = 0
-plicLength     = 0
 
 execBase   = "{"
 execLength = "{"
-dataBase   = "{"
-dataLength = "{"
-
 numRules   = 0
-numRegions = 0
 if PITON_LAGARTO:
     for i in range(len(devices)):
         if devices[i]["name"] == "mem":
@@ -1321,53 +1305,6 @@ if PITON_LAGARTO:
             else:
               execBase   += "64'h" + cacheBase
               execLength += "64'h" + cacheLength
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + cacheBase
-              dataLength += ", 64'h" + cacheLength
-            else:
-              dataBase   += "64'h" + cacheBase
-              dataLength += "64'h" + cacheLength
-        if devices[i]["name"] == "dma_pool":
-            dmaPoolBase      = "%X" % devices[i]["base"]
-            dmaPoolLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + dmaPoolBase
-              dataLength += ", 64'h" + dmaPoolLength
-            else:
-              dataBase   += "64'h" + dmaPoolBase
-              dataLength += "64'h" + dmaPoolLength
-        if devices[i]["name"] == "iob":
-            iobBase      = "%X" % devices[i]["base"]
-            iobLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + iobBase
-              dataLength += ", 64'h" + iobLength
-            else:
-              dataBase   += "64'h" + iobBase
-              dataLength += "64'h" + iobLength
-        if devices[i]["name"] == "uart":
-            uartBase      = "%X" % devices[i]["base"]
-            uartLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + uartBase
-              dataLength += ", 64'h" + uartLength
-            else:
-              dataBase   += "64'h" + uartBase
-              dataLength += "64'h" + uartLength
-        if devices[i]["name"] == "net":
-            netBase      = "%X" % devices[i]["base"]
-            netLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + netBase
-              dataLength += ", 64'h" + netLength
-            else:
-              dataBase   += "64'h" + netBase
-              dataLength += "64'h" + netLength
         if devices[i]["name"] == "lagarto_debug":
             dmBase       = "%X" % devices[i]["base"]
             dmLength     = "%X" % devices[i]["length"]
@@ -1378,13 +1315,6 @@ if PITON_LAGARTO:
             else:
               execBase   += "64'h" + dmBase
               execLength += "64'h" + dmLength
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + dmBase
-              dataLength += ", 64'h" + dmLength
-            else:
-              dataBase   += "64'h" + dmBase
-              dataLength += "64'h" + dmLength
         if devices[i]["name"] == "lagarto_bootrom":
             romBase      = "%X" % devices[i]["base"]
             romLength    = "%X" % devices[i]["length"]
@@ -1396,42 +1326,7 @@ if PITON_LAGARTO:
             else:
               execBase   += "64'h" + romBase
               execLength += "64'h" + romLength
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + romBase
-              dataLength += ", 64'h" + romLength
-            else:
-              dataBase   += "64'h" + romBase
-              dataLength += "64'h" + romLength
-        if devices[i]["name"] == "lagarto_clint":
-            clintBase      = "%X" % devices[i]["base"]
-            clintLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + clintBase
-              dataLength += ", 64'h" + clintLength
-            else:
-              dataBase   += "64'h" + clintBase
-              dataLength += "64'h" + clintLength
-        if devices[i]["name"] == "lagarto_plic":
-            plicBase      = "%X" % devices[i]["base"]
-            plicLength    = "%X" % devices[i]["length"]
-            numRegions    += 1
-            if dataBase != "{":
-              dataBase   += ", 64'h" + plicBase
-              dataLength += ", 64'h" + plicLength
-            else:
-              dataBase   += "64'h" + plicBase
-              dataLength += "64'h" + plicLength
 
-
-if dataBase == "{":
-    dataBase += "64'h0"
-    dataLength += "64'h0"
-
-
-dataBase   += "}"
-dataLength += "}"
 
 if execBase == "{":
     execBase += "64'h0"
@@ -1455,12 +1350,9 @@ str = '''
         .NrExecuteRegionRules   ( %d   ),
         .ExecuteRegionAddrBase  ( %s   ),
         .ExecuteRegionLength    ( %s   ),
-        .NrDataAccessRegionRules( %d   ),
-        .DataAccessRegionAddrBase(%s   ),
-        .DataAccessRegionLength ( %s   ),
         .NrCachedRegionRules    (  1   ),
         .CachedRegionAddrBase   ( {64'h%s} ),
-        .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, numRegions, dataBase, dataLength, cacheBase, cacheLength)
+        .CachedRegionLength     ( {64'h%s} )''' % (dmBase, numRules, execBase, execLength, cacheBase, cacheLength)
 print(str)
 %>
     ) core (
