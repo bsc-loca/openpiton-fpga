@@ -18,55 +18,55 @@ module mt_fake_axi_ram (
 );
 
 
-    logic      [`AXI_ID_WIDTH - 1:0]  axi_ar_id;
-    logic    [`AXI_ADDR_WIDTH - 1:0]  axi_ar_addr;
-    logic     [`AXI_LEN_WIDTH - 1:0]  axi_ar_len;
-    logic    [`AXI_SIZE_WIDTH - 1:0]  axi_ar_size;
-    logic  [`AXI4_BURST_WIDTH - 1:0]  axi_ar_burst;
-    logic                             axi_ar_lock;
-    logic  [`AXI4_CACHE_WIDTH - 1:0]  axi_ar_cache;
-    logic   [`AXI4_PROT_WIDTH - 1:0]  axi_ar_prot;
-    logic    [`AXI4_QOS_WIDTH - 1:0]  axi_ar_qos;    // none
-    logic [`AXI4_REGION_WIDTH - 1:0]  axi_ar_region; // none
-    logic  [`AXI4_USER_WIDTH  - 1:0]  axi_ar_user;   // none
-    logic                             axi_ar_valid;
-    logic                             axi_ar_ready;
+    logic      [`AXI4_ID_WIDTH - 1:0]  axi_ar_id;
+    logic    [`AXI4_ADDR_WIDTH - 1:0]  axi_ar_addr;
+    logic     [`AXI4_LEN_WIDTH - 1:0]  axi_ar_len;
+    logic    [`AXI4_SIZE_WIDTH - 1:0]  axi_ar_size;
+    logic   [`AXI4_BURST_WIDTH - 1:0]  axi_ar_burst;
+    logic                              axi_ar_lock;
+    logic   [`AXI4_CACHE_WIDTH - 1:0]  axi_ar_cache;
+    logic    [`AXI4_PROT_WIDTH - 1:0]  axi_ar_prot;
+    logic     [`AXI4_QOS_WIDTH - 1:0]  axi_ar_qos;    // none
+    logic  [`AXI4_REGION_WIDTH - 1:0]  axi_ar_region; // none
+    logic   [`AXI4_USER_WIDTH  - 1:0]  axi_ar_user;   // none
+    logic                              axi_ar_valid;
+    logic                              axi_ar_ready;
 
-    logic      [`AXI_ID_WIDTH - 1:0]  axi_aw_id;
-    logic    [`AXI_ADDR_WIDTH - 1:0]  axi_aw_addr;
-    logic     [`AXI_LEN_WIDTH - 1:0]  axi_aw_len;
-    logic    [`AXI_SIZE_WIDTH - 1:0]  axi_aw_size;
-    logic  [`AXI4_BURST_WIDTH - 1:0]  axi_aw_burst;
-    logic                             axi_aw_lock;
-    logic  [`AXI4_CACHE_WIDTH - 1:0]  axi_aw_cache;
-    logic   [`AXI4_PROT_WIDTH - 1:0]  axi_aw_prot;
-    logic    [`AXI4_QOS_WIDTH - 1:0]  axi_aw_qos;    // none
-    logic [`AXI4_REGION_WIDTH - 1:0]  axi_aw_region; // none
-    logic  [`AXI4_USER_WIDTH  - 1:0]  axi_aw_user;   // none
-    logic                             axi_aw_valid;
-    logic                             axi_aw_ready;
+    logic      [`AXI4_ID_WIDTH - 1:0]  axi_aw_id;
+    logic    [`AXI4_ADDR_WIDTH - 1:0]  axi_aw_addr;
+    logic     [`AXI4_LEN_WIDTH - 1:0]  axi_aw_len;
+    logic    [`AXI4_SIZE_WIDTH - 1:0]  axi_aw_size;
+    logic   [`AXI4_BURST_WIDTH - 1:0]  axi_aw_burst;
+    logic                              axi_aw_lock;
+    logic   [`AXI4_CACHE_WIDTH - 1:0]  axi_aw_cache;
+    logic    [`AXI4_PROT_WIDTH - 1:0]  axi_aw_prot;
+    logic     [`AXI4_QOS_WIDTH - 1:0]  axi_aw_qos;    // none
+    logic  [`AXI4_REGION_WIDTH - 1:0]  axi_aw_region; // none
+    logic   [`AXI4_USER_WIDTH  - 1:0]  axi_aw_user;   // none
+    logic                              axi_aw_valid;
+    logic                              axi_aw_ready;
 
-    logic      [`AXI_ID_WIDTH - 1:0]  axi_w_id;      // none
-    logic    [`AXI_DATA_WIDTH - 1:0]  axi_w_data;
-    logic   [`AXI4_STRB_WIDTH - 1:0]  axi_w_strb;
-    logic                             axi_w_last;
-    logic  [`AXI4_USER_WIDTH  - 1:0]  axi_w_user;    // none
-    logic                             axi_w_valid;
-    logic                             axi_w_ready;
+    logic      [`AXI4_ID_WIDTH - 1:0]  axi_w_id;      // none
+    logic    [`AXI4_DATA_WIDTH - 1:0]  axi_w_data;
+    logic    [`AXI4_STRB_WIDTH - 1:0]  axi_w_strb;
+    logic                              axi_w_last;
+    logic   [`AXI4_USER_WIDTH  - 1:0]  axi_w_user;    // none
+    logic                              axi_w_valid;
+    logic                              axi_w_ready;
 
-    logic      [`AXI_ID_WIDTH - 1:0]  axi_r_id;
-    logic    [`AXI_DATA_WIDTH - 1:0]  axi_r_data;
-    logic   [`AXI4_RESP_WIDTH - 1:0]  axi_r_resp;
-    logic                             axi_r_last;
-    logic  [`AXI4_USER_WIDTH  - 1:0]  axi_r_user;    // none
-    logic                             axi_r_valid;
-    logic                             axi_r_ready;
+    logic      [`AXI4_ID_WIDTH - 1:0]  axi_r_id;
+    logic    [`AXI4_DATA_WIDTH - 1:0]  axi_r_data;
+    logic    [`AXI4_RESP_WIDTH - 1:0]  axi_r_resp;
+    logic                              axi_r_last;
+    logic   [`AXI4_USER_WIDTH  - 1:0]  axi_r_user;    // none
+    logic                              axi_r_valid;
+    logic                              axi_r_ready;
 
-    logic      [`AXI_ID_WIDTH - 1:0]  axi_b_id;
-    logic   [`AXI4_RESP_WIDTH - 1:0]  axi_b_resp;
-    logic  [`AXI4_USER_WIDTH  - 1:0]  axi_b_user;    // none
-    logic                             axi_b_valid;
-    logic                             axi_b_ready;
+    logic      [`AXI4_ID_WIDTH - 1:0]  axi_b_id;
+    logic    [`AXI4_RESP_WIDTH - 1:0]  axi_b_resp;
+    logic   [`AXI4_USER_WIDTH  - 1:0]  axi_b_user;    // none
+    logic                              axi_b_valid;
+    logic                              axi_b_ready;
 
 
 
@@ -142,13 +142,13 @@ module mt_fake_axi_ram (
 
     axi_slave_ram #(
         // Width of address bus in bits
-        .C_AXI_ADDR_WIDTH   (`AXI_ADDR_WIDTH),
+        .C_AXI_ADDR_WIDTH   (`AXI4_ADDR_WIDTH),
         // Width of data bus in bits
-        .C_AXI_DATA_WIDTH   (`AXI_DATA_WIDTH),
+        .C_AXI_DATA_WIDTH   (`AXI4_DATA_WIDTH),
         // Width of wstrb (width of data bus in words)
         .STRB_WIDTH         (`AXI4_STRB_WIDTH),
         // Width of ID signal
-        .ID_WIDTH           (`AXI_ID_WIDTH),
+        .ID_WIDTH           (`AXI4_ID_WIDTH),
         // Extra pipeline register on output
         .PIPELINE_OUTPUT    (0)
     ) inst_axi_slave_ram (
