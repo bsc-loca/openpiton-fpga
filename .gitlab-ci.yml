@@ -27,8 +27,7 @@ variables:
   # There should be a scheduled task to regenerate it.
   CI_RISCV_DIR: /home/tools/openpiton/riscv_install
   UPDATE_SCRIPT: cicd/gitlab_script_op.sh
-  FPGA_BOARD:
-  EA_FLAVOUR: 
+
 
 # The Parallel Matrix allow you to create jobs at runtime based on specified variables.
 # Here we can specify the target EA.
@@ -46,6 +45,7 @@ variables:
       - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v]
     # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
+
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
 #                   schedule(Every moth).
@@ -595,6 +595,7 @@ fpga-shell-trigger-quick-test:
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
     EA: $EA
+    FPGA_BOARD:
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
