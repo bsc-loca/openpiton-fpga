@@ -1467,7 +1467,21 @@ credit_to_valrdy noc3_xbar_to_%s(
         );
     `endif // F1_BOARD
 
-`else
+`elsif PITON_MT_FAKE_AXI_RAM
+
+    // memTile + fake AXI4_mem
+    mt_fake_axi_ram inst_mt_fake_axi_ram (
+        .clk                ( chipset_clk        ),
+        .rst_n              ( chipset_rst_n      ),
+        .noc_valid_in       ( buf_mem_noc2_valid ),
+        .noc_data_in        ( buf_mem_noc2_data  ),
+        .noc_ready_in       ( mem_buf_noc2_ready ),
+        .noc_valid_out      ( mem_buf_noc3_valid ),
+        .noc_data_out       ( mem_buf_noc3_data  ),
+        .noc_ready_out      ( buf_mem_noc3_ready )
+    );
+
+`else // PITON_TEST_FAKE_AXI_RAM && PITON_FPGA_MC_DDR3
 
 `include "cross_module.tmp.h"
 
