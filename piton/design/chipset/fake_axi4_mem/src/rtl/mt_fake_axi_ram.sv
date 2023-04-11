@@ -112,7 +112,7 @@ module mt_fake_axi_ram (
 
         .m_axi_bid      ( axi_b_id      ),
         .m_axi_bresp    ( axi_b_resp    ),
-        .m_axi_buser    ( ),
+        .m_axi_buser    ( 'h0 ),            //zeros
         .m_axi_bvalid   ( axi_b_valid   ),
         .m_axi_bready   ( axi_b_ready   ),
 
@@ -134,7 +134,7 @@ module mt_fake_axi_ram (
         .m_axi_rdata    ( axi_r_data    ),
         .m_axi_rresp    ( axi_r_resp    ),
         .m_axi_rlast    ( axi_r_last    ),
-        .m_axi_ruser    ( ),
+        .m_axi_ruser    ( 'h0 ),            //zeros
         .m_axi_rvalid   ( axi_r_valid   ),
         .m_axi_rready   ( axi_r_ready   )
     );
