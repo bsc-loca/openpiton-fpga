@@ -181,6 +181,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'pronoc' => 0,
         'sa_enable' => 0,
         'vpu_enable' => 0,
+        'axi_fake_enable' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
         'multimc_indices' => "",
@@ -356,6 +357,7 @@ GetOptions (\%opt,
             'pronoc!',
             'sa_enable!',
             'vpu_enable!',
+            'axi_fake_enable',
             'mgui_build!',
             'mgui_run!',
             'hbm_lat!',
@@ -418,6 +420,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_AXI_FAKE")if ($opt{axi_fake_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and ($opt{vpu_enable})) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or ($opt{vpu_enable})) ;
 
@@ -3151,6 +3154,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
+  push (@{$opt{config_rtl}}, "PITON_MT_FAKE_AXI_RAM") if ($opt{axi_fake_enable});
   push (@{$opt{config_rtl}}, "VPU_ENABLE")    if ($opt{vpu_enable});
   push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || ($opt{vpu_enable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
@@ -3656,6 +3660,9 @@ VERILOG COMPILATION RELATED
 
     -vpu_enable
            this specifies that the VPU is enabled. Only with lagarto config 
+
+    -axi_fake_enable
+           this specifies that the AXI + fake memory is enabled. Only with lagarto config 
 
     -lagarto
            this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.
