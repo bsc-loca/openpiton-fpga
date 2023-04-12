@@ -1282,13 +1282,13 @@ if (TILE_TYPE == `LAGARTO_M20_TILE) begin : g_lagarto_m20_core
 def clipAddress(addr, digits):
     return addr[max(0,len(addr)-digits):]
 
-cacheBase    = 0
-cacheLength  = 0
-dmBase       = 0
-dmLength     = 0
-romBase      = 0
-romLength    = 0
-romIsPresent = 0
+cacheBase      = 0
+cacheLength    = 0
+dmBase         = 0
+dmLength       = 0
+romBase        = 0
+romLength      = 0
+romIsPresent   = 0
 
 execBase   = "{"
 execLength = "{"

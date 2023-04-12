@@ -12,7 +12,7 @@ BC='\033[1;36m'     #Bold Cyan
 G='\033[0;32m'      #Green
 BP='\033[1;35m'     #Bold Purple
 BW='\033[1;37m'     #Bold White
-NC='\033[0;0;0m'        #NO COLOR
+NC='\033[0;0;0m'    #NO COLOR
 
 #help fuction
 
@@ -91,7 +91,7 @@ function ea_flavours() {
             YTILES=1
             VLANES=16
             NTILES=$(($XTILES * $YTILES))
-            PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
+            PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
         acme_ea_4h2v)
@@ -100,7 +100,7 @@ function ea_flavours() {
             YTILES=2
             VLANES=2
             NTILES=$(($XTILES * $YTILES))
-            PROTO_OPTIONS+=" --vpu --vlanes $VLANES "
+            PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2 2 Vector Lanes " ${NC}
             ;;
         acme_ea_1h)
