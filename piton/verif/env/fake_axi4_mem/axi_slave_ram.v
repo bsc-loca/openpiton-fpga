@@ -33,9 +33,9 @@ module axi_slave_ram #
 (
 `ifdef FORMAL
     // Width of address bus in bits
-    parameter C_AXI_ADDR_WIDTH = 12,
+    parameter C_AXI_ADDR_WIDTH = 64,
     // Width of data bus in bits
-    parameter C_AXI_DATA_WIDTH = 8, // related to AxSIZE
+    parameter C_AXI_DATA_WIDTH = 512, // related to AxSIZE
 `else
     // Width of address bus in bits
     parameter C_AXI_ADDR_WIDTH = 12, // just for random test
@@ -48,7 +48,9 @@ module axi_slave_ram #
     // Width of ID signal
     parameter ID_WIDTH = 1,
     // Extra pipeline register on output
-    parameter PIPELINE_OUTPUT = 0
+    parameter PIPELINE_OUTPUT = 0,
+
+    parameter MEM_SIZE = 16 //(2**VALID_ADDR_WIDTH)
 )
 (
     input  wire                   clk,
@@ -94,6 +96,7 @@ module axi_slave_ram #
 parameter VALID_ADDR_WIDTH = C_AXI_ADDR_WIDTH - $clog2(STRB_WIDTH);
 parameter WORD_WIDTH = STRB_WIDTH;
 parameter WORD_SIZE = C_AXI_DATA_WIDTH/WORD_WIDTH;
+parameter RIGHT_NUM_BITS = $clog2(MEM_SIZE);
 
 // bus width assertions
 initial begin
@@ -150,7 +153,7 @@ reg s_axi_rlast_pipe_reg = 1'b0;
 reg s_axi_rvalid_pipe_reg = 1'b0;
 
 // (* RAM_STYLE="BLOCK" *)
-reg [C_AXI_DATA_WIDTH-1:0] mem[(2**VALID_ADDR_WIDTH)-1:0];
+reg [C_AXI_DATA_WIDTH-1:0] mem[MEM_SIZE-1:0];
 
 wire [VALID_ADDR_WIDTH-1:0] s_axi_awaddr_valid = s_axi_awaddr >> (C_AXI_ADDR_WIDTH - VALID_ADDR_WIDTH);
 wire [VALID_ADDR_WIDTH-1:0] s_axi_araddr_valid = s_axi_araddr >> (C_AXI_ADDR_WIDTH - VALID_ADDR_WIDTH);
@@ -190,10 +193,13 @@ integer i, j;
 initial begin
     // two nested loops for smaller number of iterations per loop
     // workaround for synthesizer complaints about large loop counts
-    for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
-        for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
-            mem[j] = 0;
-        end
+    // for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
+    //     for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
+    //         mem[j] = 0;
+    //     end
+    // end
+    for (i = 0; i < MEM_SIZE; i = i + 1) begin
+        mem[i] = 'h0;
     end
 end
 
@@ -296,7 +302,7 @@ always @(posedge clk) begin
 
     for (i = 0; i < WORD_WIDTH; i = i + 1) begin
         if (mem_wr_en & s_axi_wstrb[i]) begin
-            mem[write_addr_valid][WORD_SIZE*i +: WORD_SIZE] <= s_axi_wdata[WORD_SIZE*i +: WORD_SIZE];
+            mem[write_addr_valid[RIGHT_NUM_BITS-1:0]][WORD_SIZE*i +: WORD_SIZE] <= s_axi_wdata[WORD_SIZE*i +: WORD_SIZE];
         end
     end
 end
@@ -384,7 +390,7 @@ always @(posedge clk) begin
     s_axi_rlast_reg <= s_axi_rlast_next;
 
     if (mem_rd_en) begin
-        s_axi_rdata_reg <= mem[read_addr_valid];
+        s_axi_rdata_reg <= mem[read_addr_valid[RIGHT_NUM_BITS-1:0]];
     end
 
     if (!s_axi_rvalid_pipe_reg || s_axi_rready) begin

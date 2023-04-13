@@ -1481,7 +1481,7 @@ credit_to_valrdy noc3_xbar_to_%s(
         .noc_ready_out      ( buf_mem_noc3_ready )
     );
 
-`else // PITON_TEST_FAKE_AXI_RAM && PITON_FPGA_MC_DDR3
+`else // PITON_MT_FAKE_AXI_RAM && PITON_FPGA_MC_DDR3
 
 `include "cross_module.tmp.h"
 

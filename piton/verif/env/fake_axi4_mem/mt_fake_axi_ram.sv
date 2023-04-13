@@ -153,7 +153,7 @@ module mt_fake_axi_ram (
         .PIPELINE_OUTPUT    (0)
     ) inst_axi_slave_ram (
         .clk    (clk),
-        .rst    (rst_n),
+        .rst    (~rst_n),
 
         .s_axi_awid     ( axi_aw_id     ),
         .s_axi_awaddr   ( axi_aw_addr   ),
