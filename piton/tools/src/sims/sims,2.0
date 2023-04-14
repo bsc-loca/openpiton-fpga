@@ -179,7 +179,8 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'ost1' => 0,
         'ariane' => 0,
         'pronoc' => 0,
-        'sa_enable' => 0,
+        'sa_hevc_enable' => 0,
+        'sa_nn_enable' => 0,
         'vpu_enable' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
@@ -354,7 +355,8 @@ GetOptions (\%opt,
             'ost1!',
             'ariane!',
             'pronoc!',
-            'sa_enable!',
+            'sa_hevc_enable',
+            'sa_nn_enable',
             'vpu_enable!',
             'mgui_build!',
             'mgui_run!',
@@ -417,9 +419,11 @@ push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if (($opt{sa_nn_enable}) or ($opt{sa_hevc_enable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA_HEVC") if ($opt{sa_hevc_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA_NN")   if ($opt{sa_nn_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and ($opt{vpu_enable})) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or ($opt{vpu_enable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_hevc_enable}) or ($opt{sa_nn_enable}) or ($opt{vpu_enable})) ;
 
 ################################################################################
 # define $result_dir
@@ -3137,7 +3141,8 @@ sub parse_args
   $ENV{PITON_LAGARTO}  = $opt{lagarto};
   push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   $ENV{PITON_PRONOC}   = $opt{pronoc};
-  $ENV{PITON_SA_ENABLE} = $opt{sa_enable};
+  $ENV{SA_HEVC_ENABLE} = $opt{sa_hevc_enable};
+  $ENV{SA_NN_ENABLE}   = $opt{sa_nn_enable};
   $ENV{VPU_ENABLE} = $opt{vpu_enable};
   $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
@@ -3150,9 +3155,11 @@ sub parse_args
   push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{ariane});
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
-  push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
+  push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}));
+  push (@{$opt{config_rtl}}, "SA_HEVC_ENABLE") if ($opt{sa_hevc_enable});
+  push (@{$opt{config_rtl}}, "SA_NN_ENABLE")   if ($opt{sa_nn_enable});
   push (@{$opt{config_rtl}}, "VPU_ENABLE")    if ($opt{vpu_enable});
-  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || ($opt{vpu_enable}));
+  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}) || ($opt{vpu_enable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
   push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov}) ;
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
@@ -3651,8 +3658,11 @@ VERILOG COMPILATION RELATED
     -pronoc
            this specifies that the ProNoC NoC shall be used instead of PitonNoC.           
     
-    -sa_enable
-           this specifies that the systolic arrays (SA-HEVC, SA-NN) are enable. Only with lagarto config          
+    -sa_hevc_enable
+           this specifies that the systolic arrays (only SA-HEVC) are enable. Only with lagarto config
+
+    -sa_nn_enable
+           this specifies that the systolic arrays (only SA-NN) are enable. Only with lagarto config
 
     -vpu_enable
            this specifies that the VPU is enabled. Only with lagarto config 

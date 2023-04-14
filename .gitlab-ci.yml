@@ -108,7 +108,7 @@ stages:
 
 simulation:
   stage: simulation
-  timeout: 1h
+  timeout: 2h
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
@@ -137,7 +137,7 @@ simulation:
     - echo "Running sanity cosimulation test with Questasim"
     - cd $BUILD_PATH && source test_all_configs.sh
     - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
-    - cd $BUILD_PATH && rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable  > /dev/null
+    - cd $BUILD_PATH && rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -no_verbose > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
@@ -599,7 +599,6 @@ fpga-shell-trigger-quick-test:
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
     EA: $EA
-    FPGA_BOARD:
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production

@@ -1,17 +1,25 @@
 echo 'Test to check that all configurations run successfully'
 
-SIMS='sims -sys=manycore -x_tiles=1 -y_tiles=1 -config_rtl=FPU_ZAGREB -config_rtl=BSC_RTL_SRAMS -config_rtl=MINIMAL_MONITORING'
+SIMS='sims -sys=manycore -x_tiles=1 -y_tiles=1 -config_rtl=FPU_ZAGREB -config_rtl=BSC_RTL_SRAMS -no_verbose'
 rm -f result.log status.log
 
 echo 'Available configs:'
 echo '0. lagarto '
 CORE_CONFIG+=(" -lagarto ")
-echo '1. lagarto + sa'
-CORE_CONFIG+=(" -lagarto -sa_enable ")
-echo '2. lagarto + vpu '
+echo '1. lagarto + sa_hevc'
+CORE_CONFIG+=(" -lagarto -sa_hevc_enable ")
+echo '2. lagarto + sa_nn'
+CORE_CONFIG+=(" -lagarto -sa_nn_enable ")
+echo '3. lagarto + sa_nn + sa_hevc'
+CORE_CONFIG+=(" -lagarto -sa_nn_enable -sa_hevc_enable ")
+echo '4. lagarto + vpu'
 CORE_CONFIG+=(" -lagarto -vpu_enable ")
-echo '3. lagarto + vpu + sa'
-CORE_CONFIG+=(" -lagarto -vpu_enable -sa_enable ")
+echo '5. lagarto + vpu + sa_hevc'
+CORE_CONFIG+=(" -lagarto -vpu_enable -sa_hevc_enable ")
+echo '6. lagarto + vpu + sa_nn'
+CORE_CONFIG+=(" -lagarto -vpu_enable -sa_nn_enable ")
+echo '7. lagarto + vpu + sa_nn + sa_hevc'
+CORE_CONFIG+=(" -lagarto -vpu_enable -sa_nn_enable -sa_hevc_enable ")
 echo 'All of them support cov and cosim flag'
 
 FEATURES+=(" ")

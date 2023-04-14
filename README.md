@@ -71,9 +71,10 @@ Compilation with VPU is made with the `-vpu_enable ` key. User can select the nu
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_8_LANES
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_16_LANES
 
-Compilation with Systolic Arrays is made with the `-sa_enable` key:
+Compilation with Systolic Arrays is made with the `-sa_hevc_enable` or `-sa_nn_enable` key:
 
-    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_enable
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_hevc_enable
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_nn_enable
 
 ### Clean builds
 
