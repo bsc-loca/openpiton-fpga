@@ -50,7 +50,7 @@ module axi_slave_ram #
     // Extra pipeline register on output
     parameter PIPELINE_OUTPUT = 0,
 
-    parameter MEM_SIZE = 16 //(2**VALID_ADDR_WIDTH)
+    parameter MEM_SIZE = 128 //(2**VALID_ADDR_WIDTH)
 )
 (
     input  wire                   clk,
@@ -188,18 +188,33 @@ assign s_axi_rresp = 2'b00;
 assign s_axi_rlast = PIPELINE_OUTPUT ? s_axi_rlast_pipe_reg : s_axi_rlast_reg;
 assign s_axi_rvalid = PIPELINE_OUTPUT ? s_axi_rvalid_pipe_reg : s_axi_rvalid_reg;
 
-integer i, j;
+integer i, prog_file;
+reg [WORD_WIDTH-1:0] temp_reg;
+reg [C_AXI_DATA_WIDTH-1:0] long_reg;
 
 initial begin
-    // two nested loops for smaller number of iterations per loop
-    // workaround for synthesizer complaints about large loop counts
-    // for (i = 0; i < 2**VALID_ADDR_WIDTH; i = i + 2**(VALID_ADDR_WIDTH/2)) begin
-    //     for (j = i; j < i + 2**(VALID_ADDR_WIDTH/2); j = j + 1) begin
-    //         mem[j] = 0;
-    //     end
-    // end
-    for (i = 0; i < MEM_SIZE; i = i + 1) begin
-        mem[i] = 'h0;
+    prog_file = $fopen("mem.image", "r");
+    if (prog_file == 0) begin
+        $display("Can not open file mem.image");
+        $finish;
+    end
+
+    i = -6; // how many reads from the beginning of the file to skip
+    while (!$feof(prog_file) && (MEM_SIZE > i/8)) begin
+        if (i < 0) begin
+            $fscanf(prog_file, "%s", temp_reg);
+        end else begin
+            $fscanf(prog_file, "%h", temp_reg);
+            long_reg = {temp_reg[7:0], temp_reg[15:8], temp_reg[23:16], temp_reg[31:24], temp_reg[39:32], temp_reg[47:40], temp_reg[55:48], temp_reg[63:56], long_reg[511:64]};
+            if (i[2:0] == 7) begin
+                mem[i/8] = long_reg;
+            end
+        end
+        i = i + 1;
+    end
+    while (MEM_SIZE > i/8) begin
+        mem[i/8] = 0;
+        i = i + 8;
     end
 end
 
