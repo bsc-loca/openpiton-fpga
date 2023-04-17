@@ -885,7 +885,7 @@ module chipset(
     // PLIC
     output  [`PITON_NUM_TILES*2-1:0]                  irq_o,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    input   [25*(`PITON_NUM_TILES)-1:0]               pmu_sig_i,
+    input   [27*(`PITON_NUM_TILES)-1:0]               pmu_sig_i,
     input                                       pmu_clk,
     output                                      vpu_clk
 `endif

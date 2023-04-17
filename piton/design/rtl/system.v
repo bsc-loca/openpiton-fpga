@@ -925,7 +925,7 @@ wire  [`PITON_NUM_TILES-1:0]   ipi;         // software interrupt (a.k.a inter-p
 // PLIC
 wire  [`PITON_NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & sip (async)
 // PMU
-wire  [25*(`PITON_NUM_TILES)-1:0] pmu_sig;
+wire  [27*(`PITON_NUM_TILES)-1:0] pmu_sig;
 
 `endif
 
