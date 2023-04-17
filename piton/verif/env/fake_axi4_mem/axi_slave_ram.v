@@ -50,7 +50,7 @@ module axi_slave_ram #
     // Extra pipeline register on output
     parameter PIPELINE_OUTPUT = 0,
 
-    parameter MEM_SIZE = 128 //(2**VALID_ADDR_WIDTH)
+    parameter MEM_SIZE = 1024 //(2**VALID_ADDR_WIDTH)
 )
 (
     input  wire                   clk,
