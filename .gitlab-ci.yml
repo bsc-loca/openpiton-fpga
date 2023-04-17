@@ -595,7 +595,6 @@ fpga-shell-trigger-quick-test:
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
     EA: $EA
-    FPGA_BOARD:
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
