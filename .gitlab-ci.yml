@@ -16,6 +16,7 @@ workflow:
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
+    - !reference [.verif_rules, rules]
 
 variables:
   GIT_STRATEGY: none
@@ -88,6 +89,11 @@ variables:
     - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
       when: never
 
+
+.verif_rules:
+  rules:
+    if: $CI_PIPELINE_SOURCE =~ "push"
+
 stages:
   - simulation
   - synthesis
@@ -102,7 +108,7 @@ stages:
 
 simulation:
   stage: simulation
-  timeout: 1h
+  timeout: 2h
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
@@ -127,17 +133,15 @@ simulation:
     ############################
     - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
     - echo "Running Regression tests with Questasim"
-    - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
-    - "cd $BUILD_PATH"
+    - cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh
     - echo "Running sanity cosimulation test with Questasim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
+    - cd $BUILD_PATH && source test_all_configs.sh
     - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
+    - cd $BUILD_PATH && rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -no_verbose > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
 
 ###################################
@@ -635,6 +639,19 @@ clean-on-failure:
 
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
 ##
+
+verif-sanity-check-trigger:
+  stage: push-shell
+  rules:
+    - !reference [.verif_rules, rules]
+  variables:
+    GIT_STRATEGY: clone
+    COMMIT_SHA: $NEW_BRANCH_SHA
+    COMMIT_REF: $NEW_BRANCH
+    COMMIT_MESG: $CI_COMMIT_MESSAGE
+  trigger:
+    project: meep/meep-design-verification/lagaro_modified
+    branch: CI_HV_GC5
 
 .git_clean:
   before_script:

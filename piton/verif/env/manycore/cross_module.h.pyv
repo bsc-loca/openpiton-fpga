@@ -79,8 +79,13 @@
     `define SIM_TOP     metro_tile
     `define TOP_MOD_INST `TOP_MOD.tile0
 `else // ifdef METRO_TILE
-    `define TOP_MOD     cmp_top
-    `define SIM_TOP     cmp_top
+    `ifndef UVM_TB
+        `define TOP_MOD     cmp_top
+        `define SIM_TOP     cmp_top
+    `else
+        `define TOP_MOD     testbench
+        `define SIM_TOP     testbench
+    `endif
     `define TOP_MOD_INST `TOP_MOD.system
 `endif // ifdef METRO_TILE
 `endif // ifdef METRO_CHIPSET

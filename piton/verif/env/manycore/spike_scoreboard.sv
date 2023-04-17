@@ -79,6 +79,8 @@ assign system_instr = instr[6:0] == riscv_pkg::OP_SYSTEM;
 assign is_mip_read = xreg_wr_valid && system_instr && instr_csr_addr == riscv::CSR_MIP;
 
 
+`ifdef VPU_ENABLE
+
 vpu_sim_vreg_if vreg_if();
 
 `ifdef BSC_RTL_SRAMS
@@ -92,6 +94,8 @@ vpu_sim_vreg_if vreg_if();
     end
   endgenerate
 `endif
+
+`endif // endif VPU_ENABLE
 
 // Spike setup for cosimulation
 initial begin
@@ -115,6 +119,8 @@ end
 mailbox vrf_spike = new();
 logic [4:0] vdest_rtl;
 
+`ifdef VPU_ENABLE
+
 // Vector Scoreboard
 always @(posedge clk) begin
   automatic logic [vpu_scoreboard_pkg::MAX_VLEN-1:0] vec_reg_spike;
@@ -135,6 +141,7 @@ always @(posedge clk) begin
     if (vec_reg_rtl != vec_reg_spike) $fatal("[MEEP-COSIM] Core [%0d]: Vector Reg Mismatch between RTL[%h] and Spike[%h]!", hart_id, vec_reg_rtl, vec_reg_spike);
   end
 end
+`endif // endif VPU_ENABLE
 
 // Cosimulation - Scoreboard
 always @(posedge clk) begin
@@ -178,6 +185,7 @@ always @(posedge clk) begin
       $display("[MEEP-COSIM][RTL]   Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h][%d] DASM(0x%4h)", hart_id, pc_extended, instr, xreg_dest, commit_data, xreg_wr_valid, instr);
       $display("[MEEP-COSIM][Spike] Core [%0d]: PC[%16h] Instr[%8h] r[%0d]:[%16h] DASM(0x%4h)", hart_id, spike_log.pc, spike_log.ins, spike_commit_log.dst, spike_commit_log.data, spike_log.ins);
 
+`ifdef VPU_ENABLE
       if (is_vector) begin
         // converting structure into a packed array
         foreach (spike_log.vector_operands.vd[elem]) begin
@@ -185,6 +193,7 @@ always @(posedge clk) begin
         end
         vrf_spike.put(vec_reg);
       end
+`endif // `endif VPU_ENABLE
 
       if (is_exception) begin
           if (exception_cause[63]) begin
@@ -239,6 +248,8 @@ always @(posedge clk) begin
     end
   end
 end
+
+`ifdef VPU_ENABLE
 
 // From Unit Level VPU verification environment
     // Function: retrieve_vpu_result
@@ -369,6 +380,7 @@ end
         end
       return vec_el;
     endfunction : retrieve_vpu_result
+`endif // endif VPU_ENABLE
 
 endmodule
 

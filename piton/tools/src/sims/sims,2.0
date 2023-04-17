@@ -135,6 +135,8 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'config_rtl' => [],
         'config_cpp_args' => [],
         'copyall' => 0,
+        'cosim' => 0,
+        'cov' => 0,
         'debug' => \$opt_debug,
         'diaglist' => "",
         'diaglist_cpp_args' => [],
@@ -177,6 +179,9 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'ost1' => 0,
         'ariane' => 0,
         'pronoc' => 0,
+        'sa_hevc_enable' => 0,
+        'sa_nn_enable' => 0,
+        'vpu_enable' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
         'multimc_indices' => "",
@@ -338,6 +343,8 @@ if (($opt{injobq} == 1) or $opt{interactive}) {
 GetOptions (\%opt,
             'alias=s',
             'config_cpp_args=s@',
+            'cosim!',
+            'cov!',
             'debug' => \$opt_debug,
             'diaglist=s',
             'diaglist_cpp_args=s@',
@@ -348,6 +355,9 @@ GetOptions (\%opt,
             'ost1!',
             'ariane!',
             'pronoc!',
+            'sa_hevc_enable',
+            'sa_nn_enable',
+            'vpu_enable!',
             'mgui_build!',
             'mgui_run!',
             'hbm_lat!',
@@ -371,6 +381,7 @@ GetOptions (\%opt,
             'simslog!',
             'simslog_name=s',
             'build_id=s',
+            'vlt_build!',
             'board=s',
             'eth!',
             'hbm!',
@@ -398,6 +409,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PICO")     if ($opt{pico} || $opt{pico_
 push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_LAGARTO")  if ($opt{lagarto}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
+push (@{$opt{config_cpp_args}}, "-DVERILATOR")      if ($opt{vlt_build}) ;
 # Other boards may be added here for simple MC/UART/Ethernet access simulation
 push (@{$opt{config_cpp_args}}, "-DALVEO280")       if (($opt{board}) and ($opt{board} eq "alveou280")) ;
 push (@{$opt{config_cpp_args}}, "-DUART_BOOT")      if ($opt{uart_dmw}) ;
@@ -405,7 +417,13 @@ push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth}) ;
 push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;
 
 push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if (($opt{sa_nn_enable}) or ($opt{sa_hevc_enable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA_HEVC") if ($opt{sa_hevc_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_SA_NN")   if ($opt{sa_nn_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and ($opt{vpu_enable})) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_hevc_enable}) or ($opt{sa_nn_enable}) or ($opt{vpu_enable})) ;
 
 ################################################################################
 # define $result_dir
@@ -1677,18 +1695,23 @@ sub generic_sim_build
       $build_cmd .= "$dv_root/tools/pli/iop/iob_main.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/iob.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/cpx.cc " ;
-      $build_cmd .= "$dv_root/tools/pli/iop/pcx.cc " ;
+      $build_cmd .= "$dv_root/toolsi/pli/iop/pcx.cc " ;
+      $build_cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture.cpp " ;
       $build_cmd .= "--top-module cmp_top " ;
-      $build_cmd .= "-Wno-fatal " ;
+      $build_cmd .= "-Wno-fatal --trace -Wno-lint -Wno-style -Wno-STMTDLY -Wno-TIMESCALEMOD " ;
+      $build_cmd .= "--exe --trace-structs --trace-underscore " ;
       $build_cmd .= "-Wno-BLKANDNBLK " ;
-      $build_cmd .= "-Wno-TIMESCALEMOD " ;
       $build_cmd .= "-DPITON_DPI " ;
       $build_cmd .= "--unroll-count 256 " ;
       $build_cmd .= "-CFLAGS -DVERILATOR " ;
       $build_cmd .= "-CFLAGS -DPITON_DPI " ;
+      $build_cmd .= "-CFLAGS -DVERILATOR_VCD " ;
+      $build_cmd .= "-DOPENPITON_LAGARTO_COMMIT_LOG " ;
       $build_cmd .= "-CFLAGS -lstdc++ " ;
       $build_cmd .= "-CFLAGS -I$dv_root/tools/pli/iop " ;
       $build_cmd .= "-CFLAGS -I$dv_root/tools/verilator " ;
+      $build_cmd .= "-CFLAGS -I$ENV{LAGARTO_ROOT}/torture/src/models/cxx " ;
+      $build_cmd .= "--savable " ;
     }
     if ($opt{other_sim_build}) {
       if (($opt{other_sim_build_cmd}) eq "") {
@@ -2951,7 +2974,7 @@ sub parse_args
             'vlt_run!',
             'metro_mpi_build!',
             'metro_mpi_build_args=s@',
-	    'metro_mpi_run!',
+            'metro_mpi_run!',
             'num_tile=s',
             'x_tiles=s',
             'y_tiles=s',
@@ -3118,18 +3141,27 @@ sub parse_args
   $ENV{PITON_LAGARTO}  = $opt{lagarto};
   push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   $ENV{PITON_PRONOC}   = $opt{pronoc};
+  $ENV{SA_HEVC_ENABLE} = $opt{sa_hevc_enable};
+  $ENV{SA_NN_ENABLE}   = $opt{sa_nn_enable};
+  $ENV{VPU_ENABLE} = $opt{vpu_enable};
   $ENV{PITON_MANYGUI}  = $opt{mgui_build};
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
+  $ENV{PITON_COVERAGE}  = $opt{cov};
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico});
   push (@{$opt{config_rtl}}, "PITON_PICO")     if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_ARIANE")   if ($opt{ariane});
   push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{ariane});
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
-  #push (@{$opt{config_rtl}}, "WT_DCACHE")      if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
+  push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}));
+  push (@{$opt{config_rtl}}, "SA_HEVC_ENABLE") if ($opt{sa_hevc_enable});
+  push (@{$opt{config_rtl}}, "SA_NN_ENABLE")   if ($opt{sa_nn_enable});
+  push (@{$opt{config_rtl}}, "VPU_ENABLE")    if ($opt{vpu_enable});
+  push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}) || ($opt{vpu_enable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
+  push (@{$opt{config_rtl}}, "PITON_COVERAGE")  if ($opt{cov}) ;
   push (@{$opt{config_rtl}}, "PITON_MANYGUI")  if ($opt{mgui_build});
   push (@{$opt{config_rtl}}, "PITON_HBM_LAT")  if ($opt{hbm_lat});
   
@@ -3625,6 +3657,15 @@ VERILOG COMPILATION RELATED
     
     -pronoc
            this specifies that the ProNoC NoC shall be used instead of PitonNoC.           
+    
+    -sa_hevc_enable
+           this specifies that the systolic arrays (only SA-HEVC) are enable. Only with lagarto config
+
+    -sa_nn_enable
+           this specifies that the systolic arrays (only SA-NN) are enable. Only with lagarto config
+
+    -vpu_enable
+           this specifies that the VPU is enabled. Only with lagarto config 
 
     -lagarto
            this specifies that the Lagarto M20 RV64GC core shall be used instead of OpenSPARC.

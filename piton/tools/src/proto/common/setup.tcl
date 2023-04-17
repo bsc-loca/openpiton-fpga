@@ -93,13 +93,35 @@ if  {$::env(PITON_LAGARTO) != "0"} {
   puts "Add Lagarto include directories"
 }
 
+if  {$::env(SA_HEVC_ENABLE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_HEVC_INCLUDE_DIRS}]
+  puts "Add HEVC Systolic Arrays include directories"
+}
+
+if  {$::env(SA_NN_ENABLE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_NN_INCLUDE_DIRS}]
+  puts "Add NN Systolic Arrays include directories"
+}
+
+if  {$::env(PITON_SA_ENABLE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_INCLUDE_DIRS}]
+  puts "Add Systolic Arrays include directories"
+}
+
+if  {$::env(VPU_ENABLE) != "0"} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${VPU_INCLUDE_DIRS}]
+  puts "Add VPU include directories"
+}
+
+if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
+  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${XBAR_INCLUDE_DIRS}]
+  puts "Add crossbar include directories"
+}
 
 if  {$::env(PITON_PRONOC) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
   puts "Add ProNoC include directories"
 }
-
-
 
 #
 #########################################################
@@ -124,6 +146,26 @@ if  {$::env(PITON_ARIANE) != "0"} {
 if  {$::env(PITON_LAGARTO) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO WT_DCACHE"
 
+}
+
+if  {$::env(SA_HEVC_ENABLE) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " SA_HEVC_ENABLE"
+}
+
+if  {$::env(SA_NN_ENABLE) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " SA_NN_ENABLE"
+}
+
+if  {$::env(PITON_SA_ENABLE) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_SA_ENABLE"
+}
+
+if  {$::env(VPU_ENABLE) != "0"} {
+  append ALL_DEFAULT_VERILOG_MACROS " VPU_ENABLE"
+}
+
+if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
+  append ALL_DEFAULT_VERILOG_MACROS " XBAR_LVRF_ENABLE"
 }
 
 if  {$::env(PITON_PRONOC) != "0"} {
