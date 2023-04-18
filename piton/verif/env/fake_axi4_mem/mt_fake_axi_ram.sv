@@ -71,8 +71,7 @@ module mt_fake_axi_ram (
 
 
     noc_axi4_bridge #(
-        .SWAP_ENDIANESS     (1      ),
-        .NOC2AXI_DESER_ORDER(1      )
+        .SWAP_ENDIANESS     ( 1     )
     ) inst_noc_axi4_bridge_fake_mem     (
         .clk                ( clk   ),  
         .rst_n              ( rst_n ), 
