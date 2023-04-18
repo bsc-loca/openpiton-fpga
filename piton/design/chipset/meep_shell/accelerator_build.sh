@@ -119,6 +119,14 @@ function ea_flavours() {
             NTILES=$(($XTILES * $YTILES))
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1  " ${NC}
             ;; 
+        acme_ea_9h8m)
+            CORE=lagarto
+            XTILES=3
+            YTILES=3
+            NTILES=$(($XTILES * $YTILES))
+            PROTO_OPTIONS+=" --multimc $NTILES "
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 3x3 with 8 extra MC " ${NC}
+            ;;
         acme_ea_16h)
             CORE=lagarto
             XTILES=4
@@ -180,7 +188,7 @@ function ea_options() {
 # The first one must be the EA, second one will be PROTOSYN_FLAG 
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_16h]=1 [default]=1)
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_16h]=1 [default]=1)
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is" 
