@@ -181,7 +181,7 @@ Getopt::Long::Configure ('no_auto_abbrev') ;
         'pronoc' => 0,
         'sa_enable' => 0,
         'vpu_enable' => 0,
-        'axi_fake_enable' => 0,
+        'memtile_enable' => 0,
         'hbm_lat' => 0,
         'multimc' => 0,
         'multimc_indices' => "",
@@ -357,7 +357,7 @@ GetOptions (\%opt,
             'pronoc!',
             'sa_enable!',
             'vpu_enable!',
-            'axi_fake_enable',
+            'memtile_enable',
             'mgui_build!',
             'mgui_run!',
             'hbm_lat!',
@@ -420,7 +420,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_PRONOC")  if ($opt{pronoc}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_COVERAGE")  if (($opt{cov}) or ($opt{cosim})) ;
 push (@{$opt{config_cpp_args}}, "-DSIM_USE_DPI")   if ($opt{metro_mpi_build}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_SA")      if ($opt{sa_enable}) ;
-push (@{$opt{config_cpp_args}}, "-DFLIST_AXI_FAKE")if ($opt{axi_fake_enable}) ;
+push (@{$opt{config_cpp_args}}, "-DFLIST_AXI_FAKE")if ($opt{memtile_enable}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_VPU")     if (($opt{lagarto}) and ($opt{vpu_enable})) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_XBAR")    if (($opt{sa_enable}) or ($opt{vpu_enable})) ;
 
@@ -2812,6 +2812,15 @@ sub get_both_xy_edge_routers_ids{
 	return uniq(@edges);
 }
 
+sub get_first_y_edge_routers_ids{
+    my ($x, $y)=@_;
+    my @edges;
+    my $i;
+    my $j;
+    $i=0;
+    for ($j=$y-1; $j>=0; $j--){my $id= $j*$x+$i;push (@edges,$id);} #first column
+    return uniq(@edges);
+}
 
 sub distribute_mc_equal_space_on_all_edges {
 	my ($x,$y,$mc)=@_;
@@ -3154,7 +3163,7 @@ sub parse_args
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if ($opt{sa_enable});
-  push (@{$opt{config_rtl}}, "PITON_MT_FAKE_AXI_RAM") if ($opt{axi_fake_enable});
+  push (@{$opt{config_rtl}}, "PITON_MEMTILE_ENABLE") if ($opt{memtile_enable});
   push (@{$opt{config_rtl}}, "VPU_ENABLE")    if ($opt{vpu_enable});
   push (@{$opt{config_rtl}}, "XBAR_LVRF_ENABLE") if (($opt{sa_enable}) || ($opt{vpu_enable}));
   push (@{$opt{config_rtl}}, "PITON_METRO_MPI")   if ($opt{metro_mpi_build});
@@ -3164,6 +3173,14 @@ sub parse_args
   
   my @mc_map;
   
+  if ($opt{memtile_enable}){
+    my @ids = get_first_y_edge_routers_ids($opt{x_tiles}, $opt{y_tiles});
+    my $list=join(',',@ids);
+    $opt{multimc} = $opt{y_tiles};
+    $opt{multimc_indices}=$list;
+    print "**info: memory tile is selected. Distribute $opt{y_tiles} MTs on all edge routers loacted at first Mesh column. MT router ids: $list.\n";
+  }
+
   $ENV{PITON_EXTRA_MEMS} =0;
   if ($opt{multimc}>0){
   	my $piton_num_tiles=($opt{x_tiles} * $opt{y_tiles});
@@ -3661,7 +3678,7 @@ VERILOG COMPILATION RELATED
     -vpu_enable
            this specifies that the VPU is enabled. Only with lagarto config 
 
-    -axi_fake_enable
+    -memtile_enable
            this specifies that the AXI + fake memory is enabled. Only with lagarto config 
 
     -lagarto

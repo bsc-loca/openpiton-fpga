@@ -1467,21 +1467,50 @@ credit_to_valrdy noc3_xbar_to_%s(
         );
     `endif // F1_BOARD
 
-`elsif PITON_MT_FAKE_AXI_RAM
 
-    // memTile + fake AXI4_mem
-    mt_fake_axi_ram inst_mt_fake_axi_ram (
-        .clk                ( chipset_clk        ),
-        .rst_n              ( chipset_rst_n      ),
-        .noc_valid_in       ( buf_mem_noc2_valid ),
-        .noc_data_in        ( buf_mem_noc2_data  ),
-        .noc_ready_in       ( mem_buf_noc2_ready ),
-        .noc_valid_out      ( mem_buf_noc3_valid ),
-        .noc_data_out       ( mem_buf_noc3_data  ),
-        .noc_ready_out      ( buf_mem_noc3_ready )
-    );
 
-`else // PITON_MT_FAKE_AXI_RAM && PITON_FPGA_MC_DDR3
+
+`elsif PITON_MEMTILE_ENABLE
+
+// Keep always one for TRAPs
+// Fake Memory Controller
+fake_mem_ctrl fake_mem_ctrl(
+    .clk                ( chipset_clk        ),
+    .rst_n              ( chipset_rst_n      ),
+    .noc_valid_in       ( buf_mem_noc2_valid ),
+    .noc_data_in        ( buf_mem_noc2_data  ),
+    .noc_ready_in       ( mem_buf_noc2_ready ),
+    .noc_valid_out      ( mem_buf_noc3_valid ),
+    .noc_data_out       ( mem_buf_noc3_data  ),
+    .noc_ready_out      ( buf_mem_noc3_ready )
+);
+
+genvar i;
+generate
+for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MC_
+// replace by instance memtile
+   fake_mem_ctrl #(
+    .HMB_CHAN_NUM(i)
+   ) fake_mc ( 
+    .clk                ( chipset_clk        ), 
+    .rst_n              ( chipset_rst_n      ), 
+    .noc_valid_in       ( intf_mcx_val_noc2 [i] ), 
+    .noc_data_in        ( intf_mcx_data_noc2[i * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]  ), 
+    .noc_ready_in       ( intf_mcx_rdy_noc2 [i] ), 
+    .noc_valid_out      ( mcx_intf_val_noc3 [i] ), 
+    .noc_data_out       ( mcx_intf_data_noc3[i * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH]  ), 
+    .noc_ready_out      ( mcx_intf_rdy_noc3 [i] ) 
+	); 
+
+end
+endgenerate
+
+// AXI4 crorssbar?
+
+// instance AXI4 fake mem
+
+
+`else // PITON_MEMTILE_ENABLE && PITON_FPGA_MC_DDR3
 
 `include "cross_module.tmp.h"
 
@@ -1501,10 +1530,10 @@ fake_mem_ctrl fake_mem_ctrl(
 `ifdef PITON_EXTRA_MEMS
 genvar i;
 generate
-for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MC_
+for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MT_
    fake_mem_ctrl #(
     .HMB_CHAN_NUM(i)
-   ) fake_mc ( 
+   ) fake_mt ( 
     .clk                ( chipset_clk        ), 
     .rst_n              ( chipset_rst_n      ), 
     .noc_valid_in       ( intf_mcx_val_noc2 [i] ), 
