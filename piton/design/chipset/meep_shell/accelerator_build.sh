@@ -264,7 +264,7 @@ if [ -z "$CORE" ] ; then
 else
       
       echo "Execute protosyn command to build the infrastructure with OP"
-      make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS"
+      make acc_framework CORE=$CORE XTILES=$XTILES YTILES=$YTILES NTILES=$NTILES PROTO_OPTIONS="$PROTO_OPTIONS" || (echo -e ${BR}"make Accelerator with OpenPiton Framework failed $$?"${NC}; exit 1)
 fi
 
 
