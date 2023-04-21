@@ -179,3 +179,4 @@ vsim.dbg
 #/meep_shell
 #!/meep_shell/
 *.xci
+piton/design/chipset/meep_shell/env_accelerator.sh

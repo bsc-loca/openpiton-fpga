@@ -25,7 +25,7 @@ YTILES ?= 1
 MULTIMC =
 MULTIMC_INDICES = 
 #EA and OPTIONS helps to definde the env. EA could be the available acme_ea combinations, OPTIONS here we can define the protosyn flags
-EA_PARAM=
+EA=
 OPTIONS=
 MC_OPTION = 
 
@@ -49,10 +49,6 @@ export PATH := $(VIVADO_PATH):$(PATH)
 all: initialize synthesis implementation bitstream
 
 
-test:
-	@echo "Your core is $(core)"
-	@echo "FPGA TARGET: $(FPGA_TARGET)"
-
 initialize: $(RISCV)
 
 synthesis: $(SYNTH_DCP)
@@ -74,9 +70,6 @@ $(RISCV):
 # Protosyn rule is connected with the piton/design/chipset/meep_shell/accelerator_build.sh script. In order with the values we define there
 #Theses variables $CORE, $XTILES, $YTILES, and $PROTO_OPTIONS have the specific values to create the infrasctructure. We removed the vpu because it is 
 #already defined in the PROTO_OPTIONS variable
-protosyn: clean_project $(RISCV)
-	source piton/$(CORE)_setup.sh; \
-	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
 acc_framework: clean_project 
 	source piton/$(CORE)_setup.sh; \
@@ -104,8 +97,10 @@ help_ea:
 syntax_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -s
 
+#This is helpful when we are working in meep_openpiton repo
+
 acc_env:
-	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA_PARAM) $(OPTIONS)
+	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA) $(OPTIONS)
 	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh  
 
 # We use this target into the accelerator_build. sh script, because the fpga_shell flow has been made to be used with differents ea_accelerators,
