@@ -54,7 +54,7 @@ module axi_slave_ram #
 )
 (
     input  wire                   clk,
-    input  wire                   rst,
+    input  wire                   rst_n,
 
     input  wire [ID_WIDTH-1:0]    s_axi_awid,
     input  wire [C_AXI_ADDR_WIDTH-1:0]  s_axi_awaddr,
@@ -295,7 +295,7 @@ always @* begin
 end
 
 always @(posedge clk) begin
-    if (rst) begin
+    if (~rst_n) begin
         write_state_reg <= WRITE_STATE_IDLE;
         s_axi_awready_reg <= 1'b0;
         s_axi_wready_reg <= 1'b0;
@@ -380,7 +380,7 @@ always @* begin
 end
 
 always @(posedge clk) begin
-    if (rst) begin
+    if (~rst_n) begin
         read_state_reg <= READ_STATE_IDLE;
         s_axi_arready_reg <= 1'b0;
         s_axi_rvalid_reg <= 1'b0;

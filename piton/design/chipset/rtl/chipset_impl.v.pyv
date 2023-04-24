@@ -1631,7 +1631,7 @@ credit_to_valrdy noc3_xbar_to_%s(
         .PIPELINE_OUTPUT  ( 0                )
     ) axi_slave_ram_inst (
         .clk           ( chipset_clk         ),
-        .rst           ( chipset_rst_n       ),
+        .rst_n         ( chipset_rst_n       ),
 
         .s_axi_awid    ( mt_mem_axi_aw_id    ),
         .s_axi_awaddr  ( mt_mem_axi_aw_addr  ),
