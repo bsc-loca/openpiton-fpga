@@ -12,9 +12,11 @@ workflow:
     - if: $CI_COMMIT_TAG != null
     - if: $CI_COMMIT_BRANCH == "main" && $CI_PIPELINE_SOURCE == "push"
       when: never # Pushing to main doesn't create pipelines unless there is a tag
+    - !reference [.quick_test_rules, rules]
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
+    - !reference [.verif_rules, rules]
 
 variables:
   GIT_STRATEGY: none
@@ -26,6 +28,7 @@ variables:
   # There should be a scheduled task to regenerate it.
   CI_RISCV_DIR: /home/tools/openpiton/riscv_install
   UPDATE_SCRIPT: cicd/gitlab_script_op.sh
+
 
 # The Parallel Matrix allow you to create jobs at runtime based on specified variables.
 # Here we can specify the target EA.
@@ -43,6 +46,7 @@ variables:
       - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v]
     # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
+
 # Rules:
 # Production Rules: We want that some jobs run when we have this rules. Merge request even to production branch
 #                   schedule(Every moth).
@@ -65,6 +69,10 @@ variables:
     #   when: never
     if: $CI_COMMIT_MESSAGE =~ /#TestCICD/
 
+.quick_test_rules:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+
 .sim_rules:
   rules:
     if: $CI_COMMIT_MESSAGE =~ /#TestSim/
@@ -81,6 +89,11 @@ variables:
     - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
       when: never
 
+
+.verif_rules:
+  rules:
+    if: $CI_PIPELINE_SOURCE =~ "push"
+
 stages:
   - simulation
   - synthesis
@@ -95,11 +108,12 @@ stages:
 
 simulation:
   stage: simulation
-  timeout: 1h
+  timeout: 2h
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
   rules:
+    - !reference [.quick_test_rules, rules]
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
@@ -119,17 +133,15 @@ simulation:
     ############################
     - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
     - echo "Running Regression tests with Questasim"
-    - "cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh"
-    - "cd $BUILD_PATH"
+    - cd build && BUILD_PATH=$PWD && source run_all_isa_groups.sh
     - echo "Running sanity cosimulation test with Questasim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG -cosim > /dev/null
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -lagarto -precompiled -cosim | grep "HIT GOOD TRAP" && echo "Sanity cosim with Questa passed" || (echo "Sanity Cosimulation with Questasim FAILED"  && exit 1)
+    - cd $BUILD_PATH && source test_all_configs.sh
     - echo "Running vector sanity test with Questasim. This version doesn't support cosim"
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG  > /dev/null
+    - cd $BUILD_PATH && rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -no_verbose > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 vadd_16.S -lagarto -precompiled | grep "HIT GOOD TRAP" && echo "Sanity vector simulation with Questa passed" || (echo "Sanity vector simulation with Questasim FAILED"  && exit 1)
     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
-    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane
+    - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
 
 ###################################
@@ -230,6 +242,51 @@ synthesis-matrix-test:
       - logs
       - dcp
 
+synthesis-quick-test:
+  stage: synthesis
+  tags:
+    - MEEP_FPGA
+  rules:
+    - !reference [.quick_test_rules, rules]
+  interruptible: true
+  retry: 1
+  variables:
+    GIT_STRATEGY: clone
+    GIT_SUBMODULE_STRATEGY: recursive
+    GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$EA
+  timeout: 6h
+  before_script:
+    - !reference [.git_clean, before_script]
+    - export PITON_ROOT=`pwd`
+    - mkdir -p lagarto
+  script:
+    ############################
+    ## First, update the submodule if the pipeline source is a trigger
+    ############################
+    - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
+    ### Setup OpenPiton
+    - echo "ROOT= $PITON_ROOT"
+    - source piton/lagarto_setup.sh
+    # Clone RISCV toolchain, if the RISCV variable doesn't exists
+    # Protosyn target in the Makefile will skip the toolchain configuration
+    - export RISCV=$CI_RISCV_DIR
+    - echo "RISCV = $RISCV"
+    - echo "VIVADO = $VIVADO_BIN"
+    # A matrix can be created here to synthesize all different options
+    - echo "Here, we are using the protosyn flags for Openpiton synthesis, using Vivado Non Project mode and the HBM"
+    - . piton/design/chipset/meep_shell/accelerator_build.sh $EA vnpm hbm
+    - !reference [.check_synth_dcp, script]
+  after_script:
+    - mkdir -p logs/${EA}
+    - mkdir -p dcp/${EA}
+    - cp -rf build/alveou280/system/protosyn_logs logs/${EA}
+    - mv dcp/synthesis.dcp dcp/${EA}/synthesis_${EA}.dcp
+  artifacts:
+    when: always
+    paths:
+      - logs
+      - dcp
+
 validation-matrix-production:
   stage: validation
   variables:
@@ -256,6 +313,20 @@ validation-matrix-test:
     - !reference [.test_rules, rules]
   dependencies:
     - synthesis-matrix-test
+  script:
+    - . cicd/synth_check.sh . logs/${EA}
+  allow_failure: true # pass with errors ...
+
+validation-quick-test:
+  stage: validation
+  variables:
+    GIT_STRATEGY: clone  
+  tags:
+    - MEEP_FPGA
+  rules:
+    - !reference [.quick_test_rules, rules]
+  dependencies:
+    - synthesis-quick-test
   script:
     - . cicd/synth_check.sh . logs/${EA}
   allow_failure: true # pass with errors ...
@@ -288,6 +359,25 @@ deploy-lagarto-test:
   dependencies:
     - synthesis-matrix-test
     - validation-matrix-test
+  before_script:
+    - ls; ls dcp;
+    - export TODAY=$(date +"%y%m%d")
+    - export OPDIRNAME=${TODAY}_${CI_PIPELINE_ID}
+    - export ABSDIR=$DEPLOY_DIR/$OPDIRNAME
+    - mkdir -p $ABSDIR
+  script:
+    - cp -rf logs $ABSDIR/
+    - cp -rf dcp $ABSDIR/
+
+deploy-lagarto-test:
+  stage: deploy-openpiton
+  tags:
+    - MEEP_FPGA
+  rules:
+    - !reference [.quick_test_rules, rules]
+  dependencies:
+    - synthesis-quick-test
+    - validation-quick-test
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -360,6 +450,37 @@ push-lagarto-test:
     reports:
       dotenv: branch_info.env
 
+push-lagarto-quick-test:
+  stage: deploy-openpiton
+  tags:
+    - MEEP_FPGA
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "pipeline"
+  needs:
+    - validation-quick-test
+  variables:
+    GIT_STRATEGY: clone
+    GIT_SUBMODULES_STRATEGY: normal
+  before_script:
+    - git config --global user.name  meep-ci-runner
+    - git config --global user.email meep-ci@bsc.es
+  script:
+    # Update the submodule, again, as we are in a different job
+    - . $UPDATE_SCRIPT $COMMIT_SHA $CI_PIPELINE_SOURCE
+    - git checkout -b acme_ci/$COMMIT_REF
+    - git add piton/design/chip/tile/vas_tile_core
+    - git commit -m "CICD triggered by VAS update - $COMMIT_MESG"
+    - git remote set-url --push origin "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY"
+    - git push --set-upstream "https://gitlab-ci-token:$CI_ACC_TOKEN@gitlab.bsc.es/$REPOSITORY" acme_ci/$COMMIT_REF
+    #### Get the new SHA, and store it so it can be passed to the FPGA trigger job ###
+    - NEW_BRANCH=$(git branch --show-current)
+    - echo NEW_BRANCH=$NEW_BRANCH >> branch_info.env
+    - echo NEW_BRANCH_SHA=$(git rev-parse $NEW_BRANCH) >> branch_info.env
+  artifacts:
+    when: always
+    reports:
+      dotenv: branch_info.env
+
 # This job is generated when the push-lagarto is not. It is needed
 # to create the variables that the fpga-shell-trigger job consumes.
 # Those variables need to be created when the pipeline trigger
@@ -393,6 +514,26 @@ shell-prelaunch-test:
     GIT_STRATEGY: clone
   rules:
     - !reference [.test_rules, rules]
+    - !reference [.sim_rules, rules]
+  dependencies:
+    - validation-matrix-test
+  script:
+    - NEW_BRANCH=$CI_COMMIT_REF_NAME
+    - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
+    - echo "NEW_BRANCH_SHA=$CI_COMMIT_SHA" >> branch_info.env
+  artifacts:
+    when: always
+    reports:
+      dotenv: branch_info.env
+
+shell-prelaunch-quick-test:
+  stage: deploy-openpiton
+  tags:
+    - MEEP_FPGA
+  variables:
+    GIT_STRATEGY: clone
+  rules:
+    - !reference [.quick_test_rules, rules]
     - !reference [.sim_rules, rules]
   dependencies:
     - validation-matrix-test
@@ -447,6 +588,25 @@ fpga-shell-trigger-test:
     # production should be almost a mirror of master
     strategy: depend
 
+fpga-shell-trigger-quick-test:
+  stage: push-shell
+  rules:
+    - !reference [.quick_test_rules, rules]
+  variables:
+    GIT_STRATEGY: clone
+    COMMIT_SHA: $NEW_BRANCH_SHA
+    COMMIT_REF: $NEW_BRANCH
+    COMMIT_MESG: $CI_COMMIT_MESSAGE
+    ENV_WORK: "QUICKTEST"
+    EA: $EA
+  trigger:
+    project: meep/FPGA_implementations/AlveoU280/fpga_shell
+    branch: production
+    # master is a protected branch, which causes permission issues with triggered pipelines
+    # production should be almost a mirror of master
+    strategy: depend
+
+
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo
 # the release candidates.
@@ -458,6 +618,7 @@ clean-on-failure:
   rules:
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
+    - !reference [.quick_test_rules, rules]
     - if: $CI_PIPELINE_SOURCE != "pipeline"
       when: never
   when: on_failure
@@ -465,6 +626,8 @@ clean-on-failure:
     - job: push-lagarto-production
       optional: true
     - job: push-lagarto-test
+      optional: true
+    - job: push-lagarto-quick-test
       optional: true
   script:
     # If the shell pipeline fails, remove the release commit from OpenPiton repo
@@ -476,6 +639,19 @@ clean-on-failure:
 
 #TODO: Maybe a clean job to delete the OpenPiton commit when the shell fails?
 ##
+
+verif-sanity-check-trigger:
+  stage: push-shell
+  rules:
+    - !reference [.verif_rules, rules]
+  variables:
+    GIT_STRATEGY: clone
+    COMMIT_SHA: $NEW_BRANCH_SHA
+    COMMIT_REF: $NEW_BRANCH
+    COMMIT_MESG: $CI_COMMIT_MESSAGE
+  trigger:
+    project: meep/meep-design-verification/lagaro_modified
+    branch: CI_HV_GC5
 
 .git_clean:
   before_script:

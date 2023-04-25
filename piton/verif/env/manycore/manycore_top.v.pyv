@@ -439,8 +439,15 @@ system system(
 <%
 for core_id in range(PITON_NUM_TILES) :
     print("`define CORE_%d system.chip.tile%d.g_lagarto_m20_core.core" %(core_id, core_id))
+%>
+
+`ifdef VPU_ENABLE
+<%
+for core_id in range(PITON_NUM_TILES) :
     print("`define VPU_%d `CORE_%d.lagarto_m20.vpu_inst" %(core_id, core_id))
 %>
+`endif // endif VPU_ENABLE
+
 `ifdef MEEP_COSIM
 <%
 print("    spike_setup #(.NUM_CORES(%d)) spike_cosim_setup();" %(PITON_NUM_TILES))
@@ -459,7 +466,11 @@ for core_id in range(PITON_NUM_TILES) :
                                              .csr_excep      (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
                                              .csr_cause      (`CORE_{coreid}.i_csr_regfile.csr_xcpt_cause),
                                              .control_intf   (`CORE_{coreid}.lagarto_m20.datapath_inst.control_int),
+`ifdef VPU_ENABLE
                                              .vpu_resp       (`CORE_{coreid}.lagarto_m20.datapath_inst.resp_vpu_cpu_i),
+`else
+                                             .vpu_resp       ('b0),
+`endif
                                              .hart_id        (`CORE_{coreid}.hart_id_i),
                                              .ref_hart_id    (64'd{coreid}),
                                              .csr_mip        (`CORE_{coreid}.i_csr_regfile.mip_q));
@@ -468,7 +479,7 @@ for core_id in range(PITON_NUM_TILES) :
 `endif
 
 // Lagarto coverage instance for ISA coverage
-`ifdef PITON_LAGARTO
+`ifdef PITON_COVERAGE
 // `ifndef PITON_LAGARTO_TILE
 <%
 for core_id in range(PITON_NUM_TILES) :
@@ -506,7 +517,7 @@ cov_priv_isa cov_priv_isa_inst{coreid}(.i_clk             (core_ref_clk),
                             .i_instr_type       (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.instr_type));
   """.format(coreid = core_id))
 %>
-`endif // endif PITON_LAGARTO
+`endif // endif PITON_COVERAGE
 
 `ifndef DISABLE_ALL_MONITORS
 

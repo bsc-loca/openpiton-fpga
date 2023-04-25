@@ -58,7 +58,7 @@ FLOW_STEP_OPTIONS = ["project", "impl"]
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--pronoc] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_nn_enable] [--sa_hevc_enable] [--vpu_enable] [--pronoc] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -169,6 +169,12 @@ def usage():
     print("\n            Wait for slurm jobs to finish", file=sys.stderr)
     print("\n       -j, --jobs", file=sys.stderr)
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
+    print("         --sa_nn_enable", file.sys.stderr)
+    print("              Implement design with NN Systolic Arrays", file=sys.stderr) 
+    print("         --sa_hevc_enable", file.sys.stderr)
+    print("              Implement design with HEVC Systolic Arrays", file=sys.stderr) 
+    print("         --vpu_enable", file.sys.stderr)
+    print("              Implement design with VPU", file=sys.stderr)
     print("\n       --pronoc", file=sys.stderr)
     print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr) 
     print("\n       --vlanes", file=sys.stderr)
@@ -567,9 +573,11 @@ def setParserOptions(parser):
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
     parser.add_option("--multimc", dest="multimc", action="store", default=0)
     parser.add_option("--multimc_indices", dest="multimc_indices", action="store", default=None)
-    parser.add_option("--vpu", dest="vpu", action="store_true", default=False)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
+    parser.add_option("--sa_nn_enable", dest="sa_nn_enable", action="store_true", default=False)
+    parser.add_option("--sa_hevc_enable", dest="sa_hevc_enable", action="store_true", default=False)
+    parser.add_option("--vpu_enable", dest="vpu_enable", action="store_true", default=False)
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
@@ -609,7 +617,7 @@ def makeDefList(options):
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
         defines.append("FPU_ZAGREB")
-        if options.vpu:
+        if options.vpu_enable:
             defines.append("VPU_ENABLE")
             if options.vlanes == "2":
                 defines.append("VPU_2_LANES")
@@ -621,8 +629,6 @@ def makeDefList(options):
                 defines.append("VPU_16_LANES")
             else:
                 defines.append("VPU_4_LANES")
-        else:
-            defines.append("VPU_DISABLE")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
     if (options.meep_mode == True):
@@ -1006,6 +1012,39 @@ def main():
         options.multimc_indices=distribute_mc_equal_space_on_all_edges(int(options.x_tiles),int(options.y_tiles),int(os.environ['PITON_EXTRA_MEMS']))
         print_info ("No memory controller (MC) indices are given as input. Distribute MCs with equal space on all edges:" + options.multimc_indices)
         os.environ['PITON_MC_INDICES']=options.multimc_indices
+
+
+    # Syslolic Arrays
+    os.environ['PITON_SA_ENABLE'] = "0"
+    if options.sa_nn_enable or options.sa_hevc_enable:
+        defines.append('PITON_SA_ENABLE')
+        os.environ['PITON_SA_ENABLE']  = "1"
+        print_info('setenv PITON_SA_ENABLE')
+
+    # Systolic Array NN
+    os.environ['SA_NN_ENABLE'] = "0"
+    if options.sa_nn_enable:
+        defines.append('SA_NN_ENABLE')
+        os.environ['SA_NN_ENABLE'] = "1"
+        print_info('setenv SA_NN_ENABLE')
+
+    # Systolic Array HEVC
+    os.environ['SA_HEVC_ENABLE'] = "0"
+    if options.sa_hevc_enable:
+        defines.append('SA_HEVC_ENABLE')
+        os.environ['SA_HEVC_ENABLE'] = "1"
+        print_info('setenv SA_HEVC_ENABLE')
+
+    # VPU
+    os.environ['VPU_ENABLE'] = "0"
+    if options.vpu_enable:
+        os.environ['VPU_ENABLE'] = "1"
+        print_info('setenv VPU_ENABLE')
+
+    # Crossbar and LVRF
+    if options.sa_nn_enable or options.sa_hevc_enable or options.vpu_enable:
+        defines.append('XBAR_LVRF_ENABLE')
+        print_info('setenv XBAR_LVRF_ENABLE')
 
     # ProNoC
     os.environ['PITON_PRONOC'] = "0"

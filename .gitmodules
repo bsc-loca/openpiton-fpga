@@ -8,3 +8,6 @@
 [submodule "piton/design/chip/tile/vas_tile_core"]
 	path = piton/design/chip/tile/vas_tile_core
 	url = ../../../rtl_designs/vas_tile_core.git
+[submodule "piton/design/chipset/meep-memtile"]
+	path = piton/design/chipset/meep-memtile
+	url = ../../../rtl_designs/acme_components/meep-memtile
