@@ -6,8 +6,8 @@ PITON_BUILD_DIR = $(ROOT_DIR)/build
 PROJECT_SUBDIR =  $(PITON_BUILD_DIR)/$(FPGA_TARGET)/system/
 PROJECT_DIR = $(PROJECT_SUBDIR)/$(FPGA_TARGET)_system/$(FPGA_TARGET)_system.xpr
 DATE        =  `date +'%a %b %e %H:%M:$S %Z %Y'`
-SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp 
-IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp 
+SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp
+IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp
 BIT_FILE    =  $(ROOT_DIR)/bitstream/system.bit
 TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
 VIVADO_VER  := "2021.2"
@@ -23,11 +23,11 @@ CORE        ?= lagarto
 XTILES ?= 1
 YTILES ?= 1
 MULTIMC =
-MULTIMC_INDICES = 
+MULTIMC_INDICES =
 #EA and OPTIONS helps to definde the env. EA could be the available acme_ea combinations, OPTIONS here we can define the protosyn flags
 EA=
 OPTIONS=
-MC_OPTION = 
+MC_OPTION =
 
 ifdef MULTIMC
 	MC_OPTION = --multimc $(MULTIMC)
@@ -71,7 +71,7 @@ $(RISCV):
 #Theses variables $CORE, $XTILES, $YTILES, and $PROTO_OPTIONS have the specific values to create the infrasctructure. We removed the vpu because it is 
 #already defined in the PROTO_OPTIONS variable
 
-acc_framework: clean_project 
+acc_framework: clean_project
 	source piton/$(CORE)_setup.sh; \
 	protosyn --board $(FPGA_TARGET) --design system --core $(CORE) --x_tiles $(XTILES) --y_tiles $(YTILES) --num_tiles $(NTILES)  --zeroer_off $(PROTO_OPTIONS) $(MC_OPTION) $(MORE_OPTIONS)
 
@@ -80,7 +80,7 @@ $(SYNTH_DCP): $(PROJECT_FILE)
 
 $(IMPL_DCP): $(SYNTH_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
-	
+
 $(BIT_FILE): $(IMPL_DCP)
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_bitstream.tcl -tclargs $(ROOT_DIR)
 
@@ -93,7 +93,7 @@ $(BIT_FILE): $(IMPL_DCP)
 help_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -h
 
-#Here we can know the syntax of accelerator_build.sh 
+#Here we can know the syntax of accelerator_build.sh
 syntax_ea:
 	source piton/design/chipset/meep_shell/accelerator_build.sh -s
 
@@ -101,14 +101,14 @@ syntax_ea:
 
 acc_env:
 	source piton/design/chipset/meep_shell/accelerator_build.sh $(EA) $(OPTIONS)
-	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh  
+	source piton/configure piton/design/chipset/meep_shell/env_accelerator.sh
 
 # We use this target into the accelerator_build. sh script, because the fpga_shell flow has been made to be used with differents ea_accelerators,
 #maybe in the future we can call this rule from the FPGA_Shell MAkefile, but at the moment we are going to use it with the accelerator_build.sh script
 
 
 
-### Create targets to be used only in the CI/CD environment. They do not have requirements 
+### Create targets to be used only in the CI/CD environment. They do not have requirements
 
 ci_implementation:
 	$(VIVADO_XLNX) $(VIVADO_OPT) $(TCL_DIR)/gen_implementation.tcl -tclargs $(ROOT_DIR)
@@ -128,12 +128,17 @@ test_riscv_clean:
 
 ### Cleaning calls ###
 
+# Clean the both tiles of untracket files
+clean_tiles:
+	cd piton/design/chip/tile/vas_tile_core; git clean -fdx; cd
+	cd piton/design/chip/tile/ariane; git clean -fdx; cd
+
 clean: clean_project
-	
+
 clean_all: clean_project
 	rm -rf $(PITON_BUILD_DIR)/alveo*
-	
-clean_synthesis:	
+
+clean_synthesis:
 	rm -rf dcp/*
 
 clean_implementation:
