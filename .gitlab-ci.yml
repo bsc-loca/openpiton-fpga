@@ -36,14 +36,14 @@ variables:
 .multi_target_production:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h,acme_ea_1h2g]
     #acme_ea_1h16v: the synthesis is "heavy"
 #For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
 
 .multi_target_test:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v, acme_ea_16h]
     # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
 
@@ -320,7 +320,7 @@ validation-matrix-test:
 validation-quick-test:
   stage: validation
   variables:
-    GIT_STRATEGY: clone  
+    GIT_STRATEGY: clone
   tags:
     - MEEP_FPGA
   rules:
@@ -661,7 +661,7 @@ verif-sanity-check-trigger:
 .check_synth_dcp:
   script:
     - |
-      if [ ! -f dcp/synthesis.dcp ]; then 
+      if [ ! -f dcp/synthesis.dcp ]; then
         echo "dcp file has not been created"
-        exit 23; 
+        exit 23;
       fi;
