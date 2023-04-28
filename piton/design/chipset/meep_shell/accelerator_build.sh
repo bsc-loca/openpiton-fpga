@@ -42,6 +42,9 @@ while getopts 'sh' OPTION; do
       echo -e       "   acme_ea_4h2v: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2"
       echo -e       "   acme_ea_16h: \tCORE=lagarto \tx_tiles=4 \ty_tyles=4 "
       echo -e       "   acme_ea_1h: \t\tCORE=lagarto \tx_tiles=1 \ty_tyles=1 "
+      echo -e       "   acme_ea_1h2g: \t\tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=2 \tSA-HEVC+SA-NN "
+      echo -e       "   acme_ea_9h8m: \t\tCORE=lagarto \tx_tiles=3 \ty_tyles=3 \tmemory_tile=8 "
+      echo -e       "   acme_ea_4h2v2m: \t\tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2 \tmemory_tile=2 "
       echo -e ${BC}"<protosyn_flag> available combinations :"
       echo -e  ${BW}"  pronoc: ProNoC routers"
       echo -e  "  vnpm: \tVivado non project mode"
@@ -125,7 +128,7 @@ function ea_flavours() {
             YTILES=3
             NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --multimc $NTILES "
-            echo -e ${BP}"    Selected build configuration: Lagarto Hun 3x3, 8 extra MC (corresponding HBM channels should be enabled in accelerator_def.csv) " ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 3x3, 8 extra MC (corresponding HBM channels should be enabled in shell2acc_def.csv) " ${NC}
             ;;
         acme_ea_4h2v2m)
             CORE=lagarto
@@ -134,7 +137,7 @@ function ea_flavours() {
             VLANES=2
             NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES --multimc 2 --multimc_indices 1,2 "
-            echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2, 2 Vector Lanes, 2 extra MC (corresponding HBM channels should be enabled in accelerator_def.csv)" ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2, 2 Vector Lanes, 2 extra MC (corresponding HBM channels should be enabled in shell2acc_def.csv)" ${NC}
             ;;
         acme_ea_16h)
             CORE=lagarto
