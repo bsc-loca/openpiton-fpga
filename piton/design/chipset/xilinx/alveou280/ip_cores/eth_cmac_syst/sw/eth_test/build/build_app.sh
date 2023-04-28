@@ -13,7 +13,7 @@ cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_13/src/x
 sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g' ./xaxidma_g.c
 
 echo "----- Checking if hw is implemented under MEEP_SHELL:"
-if grep "ETHERNET.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+if grep "ETHERNET.*hbm" ../../../../../../../../../../meep_shell/shell2acc_def.csv
 then
   echo "----- Eth DMA memory is HBM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM="-DDMA_MEM_HBM -DSG_MEM_CACHED -DTXRX_MEM_CACHED"
