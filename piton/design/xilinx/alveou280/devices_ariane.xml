@@ -27,7 +27,7 @@ Description: Peripheral address map for OpenPiton+Ariane configurations.
     </port>
 	<port>    
         <name>dma_pool</name>
-        <base>0x40000000</base>
+        <base>0x8040000000</base>
         <!-- 1GB non-cacheable -->
         <length>0x40000000</length>
         <fragment>0x10000000</fragment>
