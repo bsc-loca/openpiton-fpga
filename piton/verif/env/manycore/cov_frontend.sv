@@ -6,49 +6,54 @@
                 : for frontend of the core (fetch, decode, read register stages)
 * ------------------------------------------------------------*/
 
-import drac_pkg::*;
-import riscv_pkg::*;
-import ariane_pkg::*;
-import wt_cache_pkg::*;
-
+import cov_core_defs::*;
 module cov_frontend (
-    input logic                             clk_i,
-    input logic                             rsn_i,
-    input logic                             en_translation_i,       // translation is enabled if SATP.MODE = Sv39 && current_priv_mode != MACHINE
-    input logic                             iaccess_err,            // insufficient privilege to access this instruction page (U flag violation)
-    input riscv::priv_lvl_t                 priv_lvl_i,
-    input icache_areq_i_t                   icache_areq_o,
-    input icache_areq_o_t                   icache_areq_i,
-    input logic                             match_any_execute_region,
-    input logic                             pte_lookup,
-    input logic                             data_rvalid_q,          // PTE data read from dcache/memory is valid on this cycle
-    input riscv::pte_t                      pte,
-    input logic                             walking_instr,          // PTW is walking because of an ITLB miss
-    input logic                             ptw_lvl_1, ptw_lvl_2, ptw_lvl_3,
+    input logic                                 clk_i,
+    input logic                                 rsn_i,
+    input logic                                 en_translation_i,       // translation is enabled if SATP.MODE = Sv39 && current_priv_mode != MACHINE
+    input logic                                 en_ld_st_translation_i, // if ((VM mode is Sv39 in SATP AND current priv mode != Machine) OR (mprv == 1 && mpp != Machine && stap.mode == Sv39))
+    input logic                                 iaccess_err,            // insufficient privilege to access this instruction page (U flag violation)
+    input riscv::priv_lvl_t                     priv_lvl_i,
+    input icache_areq_i_t                       icache_areq_o,
+    input icache_areq_o_t                       icache_areq_i,
+    input logic                                 match_any_execute_region,
+    input logic                                 pte_lookup,
+    input logic                                 data_rvalid_q,          // PTE data read from dcache/memory is valid on this cycle
+    input riscv::pte_t                          pte,
+    input logic                                 walking_instr,          // PTW is walking because of an ITLB miss
+    input logic                                 ptw_lvl_1, ptw_lvl_2, ptw_lvl_3,
     // icache events
-    input logic [ICACHE_SET_ASSOC-1:0]      cl_hit,
-    input logic                             icache_miss,
-    input logic                             icache_flush,
-    input logic                             icache_fill_return,
+    input logic [ICACHE_SET_ASSOC-1:0]          cl_hit,
+    input logic                                 icache_miss,
+    input logic                                 icache_flush,
+    input logic                                 icache_fill_return,
     // itlb events
-    input logic                             itlb_hit,
-    input logic                             itlb_miss,
-    input logic                             itlb_flush,
-    input logic                             itlb_fill_return,
+    input logic                                 itlb_hit,
+    input logic                                 dtlb_hit,
+    input logic                                 itlb_miss,
+    input logic                                 itlb_flush,
+    input logic                                 itlb_fill_return,
     // flushes
-    input exe_cu_t                          exe_cu_i,
-    input pipeline_ctrl_t                   pipeline_ctrl_int,
-    input logic                             correct_branch_pred_i,
-    input id_cu_t                           id_cu_i,
+    input exe_cu_t                              exe_cu_i,
+    input pipeline_ctrl_t                       pipeline_ctrl_int,
+    input logic                                 correct_branch_pred_i,
+    input id_cu_t                               id_cu_i,
     
-    input bus64_t                           csr_cause,
-    input logic                             csr_excpt_intrpt,
-    input logic                             interrupt_pending,
-    input logic                             ifu_dispatch_valid,
+    input bus64_t                               csr_cause,
+    input logic                                 csr_excpt_intrpt,
+    input logic                                 interrupt_pending,
+    input logic                                 ifu_dispatch_valid,
+    input tlb_tags_q_t                          itlb_tags_q,
+    input logic [TLB_ENTRIES-1:0]               itlb_lu_hit,
+    input logic                                 itlb_access_i,
+    input logic                                 dtlb_access_i,
 
-    input logic                             itlb_full
+    // branch prediction
+    input logic [NUM_IS_BRANCH_ENTRIES-1 : 0]   is_branch_table_valid,
+    input logic                                 branch_at_exu,
+    input addrPC_t                              pc_execution_i
 
-    // itlb multihit? branch errors? btb bank conflicts?
+    // branch errors? btb bank conflicts?
     // miss under misss?
     );
 
@@ -72,24 +77,53 @@ module cov_frontend (
     logic branch_flush;
     logic exception_flush;          // exception is taken
     logic interrupt_flush;          // interrupt is taken
+    logic [TLB_ENTRIES-1: 0] itlb_entry_valid;
+    logic itlb_full;
+    logic itlb_full_with_4kb_pages;
+    logic itlb_full_with_2mb_pages;
+    logic itlb_full_with_mix_page_sizes;
+    logic itlb_has_all_page_size;
+    logic [TLB_ENTRIES-1: 0] entry_has_4kb_page;
+    logic [TLB_ENTRIES-1: 0] entry_has_2mb_page;
+    logic [TLB_ENTRIES-1: 0] entry_has_1gb_page;
+    logic ptw_req_for_itlb_miss;
+    logic ptw_req_for_dtlb_miss;
+    logic [MOST_SIGNIFICATIVE_INDEX_BIT_BP : LEAST_SIGNIFICATIVE_INDEX_BIT_BP] btb_index_from_pc;
 
 
-    assign canonical_violation      = (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:IMPLEMENTED_VA_SIZE-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:IMPLEMENTED_VA_SIZE-1]) == 1'b0));
-    assign fe_exception_cause       = icache_areq_o.fetch_exception.cause;
-    assign fe_exception_valid       = icache_areq_o.fetch_exception.valid;
-    assign smode                    = (priv_lvl_i == riscv::PRIV_LVL_S)? 1'b1 : 1'b0;
-    assign umode                    = (priv_lvl_i == riscv::PRIV_LVL_U)? 1'b1 : 1'b0;
-    assign instr_page_fault         = (fe_exception_valid && fe_exception_cause == riscv::INSTR_PAGE_FAULT)? 1'b1 : 1'b0;
-    assign instr_access_fault       = (fe_exception_valid && fe_exception_cause == riscv::INSTR_ACCESS_FAULT)? 1'b1 : 1'b0;
-    assign too_big_pa               = icache_areq_o.fetch_paddr > ({IMPLEMENTED_PA_SIZE{1'b1}} - 1);
-    assign pte_is_invalid           = !pte.v || (!pte.r && pte.w);
-    assign valid_pte_rd_for_pc      = pte_lookup && data_rvalid_q && walking_instr;
-    assign valid_leaf_pte           = valid_pte_rd_for_pc && !pte_is_invalid && (pte.r || pte.x);
-    assign valid_non_leaf_pte       = valid_pte_rd_for_pc && !pte_is_invalid && !(pte.r || pte.x);
-    assign icache_hit               = |cl_hit;
-    assign branch_flush             = (exe_cu_i.valid && ~correct_branch_pred_i && !pipeline_ctrl_int.stall_exe) || id_cu_i.valid_jal; // coditional branch mispredicted at EXE || unpredicted jal at id stage
-    assign exception_flush          = csr_excpt_intrpt && !csr_cause[XLEN-1];
-    assign interrupt_flush          = csr_excpt_intrpt && csr_cause[XLEN-1]; 
+    assign canonical_violation              = (icache_areq_i.fetch_req && !((&icache_areq_i.fetch_vaddr[riscv::VLEN-1:IMPLEMENTED_VA_SIZE-1]) == 1'b1 || (|icache_areq_i.fetch_vaddr[riscv::VLEN-1:IMPLEMENTED_VA_SIZE-1]) == 1'b0));
+    assign fe_exception_cause               = icache_areq_o.fetch_exception.cause;
+    assign fe_exception_valid               = icache_areq_o.fetch_exception.valid;
+    assign smode                            = (priv_lvl_i == riscv::PRIV_LVL_S)? 1'b1 : 1'b0;
+    assign umode                            = (priv_lvl_i == riscv::PRIV_LVL_U)? 1'b1 : 1'b0;
+    assign instr_page_fault                 = (fe_exception_valid && fe_exception_cause == riscv::INSTR_PAGE_FAULT)? 1'b1 : 1'b0;
+    assign instr_access_fault               = (fe_exception_valid && fe_exception_cause == riscv::INSTR_ACCESS_FAULT)? 1'b1 : 1'b0;
+    assign too_big_pa                       = icache_areq_o.fetch_paddr > ({IMPLEMENTED_PA_SIZE{1'b1}} - 1);
+    assign pte_is_invalid                   = !pte.v || (!pte.r && pte.w);
+    assign valid_pte_rd_for_pc              = pte_lookup && data_rvalid_q && walking_instr;
+    assign valid_leaf_pte                   = valid_pte_rd_for_pc && !pte_is_invalid && (pte.r || pte.x);
+    assign valid_non_leaf_pte               = valid_pte_rd_for_pc && !pte_is_invalid && !(pte.r || pte.x);
+    assign icache_hit                       = |cl_hit;
+    assign branch_flush                     = (exe_cu_i.valid && ~correct_branch_pred_i && !pipeline_ctrl_int.stall_exe) || id_cu_i.valid_jal; // coditional branch mispredicted at EXE || unpredicted jal at id stage
+    assign exception_flush                  = csr_excpt_intrpt && !csr_cause[XLEN-1];
+    assign interrupt_flush                  = csr_excpt_intrpt && csr_cause[XLEN-1];
+    assign itlb_full                        = &itlb_entry_valid;
+    assign itlb_full_with_4kb_pages         = &entry_has_4kb_page;
+    assign itlb_full_with_2mb_pages         = &entry_has_2mb_page;
+    assign itlb_has_all_page_size           = (|entry_has_4kb_page && |entry_has_2mb_page  && |entry_has_1gb_page);
+    assign itlb_full_with_mix_page_sizes    = itlb_has_all_page_size & itlb_full;
+    assign ptw_req_for_itlb_miss            = en_translation_i &  itlb_access_i & ~itlb_hit;
+    assign ptw_req_for_dtlb_miss            = en_ld_st_translation_i & dtlb_access_i & ~dtlb_hit;
+    assign btb_index_from_pc                = branch_at_exu ?   pc_execution_i[MOST_SIGNIFICATIVE_INDEX_BIT_BP : LEAST_SIGNIFICATIVE_INDEX_BIT_BP]  :   'bx;
+    
+    always_comb begin
+        for (int entry=0; entry<TLB_ENTRIES; entry++) begin
+            itlb_entry_valid[entry]     = itlb_tags_q[entry].valid;
+            entry_has_4kb_page[entry]   = !itlb_tags_q[entry].is_2M && !itlb_tags_q[entry].is_1G && itlb_tags_q[entry].valid;
+            entry_has_2mb_page[entry]   = itlb_tags_q[entry].is_2M && itlb_tags_q[entry].valid;
+            entry_has_1gb_page[entry]   = itlb_tags_q[entry].is_1G && itlb_tags_q[entry].valid;
+        end
+    end
 
     /* ----- Declare coverage MACROS here -----*/ 
 
@@ -108,6 +142,22 @@ module cov_frontend (
         ``sig1`` |=> ((!$rose(``sig1``)) throughout (##[0:``window``] ``sig2``)); \
     endproperty \
     cover property(``sig2``_follows_``sig1``_``window``_p);
+
+    // macro to track BTB aliasing: BTB aliasimg means, two different PCs having branch instructions are indexing into the same BTB entry, corrupting each others' history. 
+    // Two branch instructions 128 bytes apart from each other will alias in the BTB as BTB is indexed by PC[6:1].
+    // Save BTB index and PC of the first branch and check after any number of clock cycles later, branch instruction from a DIFFERENT PC is indexing into the SAME BTB entry
+    `define track_btb_aliasing \
+    sequence btb_alias_seq; \
+        logic [MOST_SIGNIFICATIVE_INDEX_BIT_BP : LEAST_SIGNIFICATIVE_INDEX_BIT_BP] btb_index_first_branch; \
+        addrPC_t pc_first_branch; \
+        (branch_at_exu, btb_index_first_branch = btb_index_from_pc, pc_first_branch = pc_execution_i) ##[1:$] (branch_at_exu && (btb_index_from_pc == btb_index_first_branch) && (pc_execution_i != pc_first_branch)); \
+    endsequence \
+    property track_btb_aliasing_p; \
+        @(negedge clk_i) disable iff (~rsn_i)\
+        btb_alias_seq \
+    endproperty \
+    cover property(track_btb_aliasing_p);
+
     
     /* ----- Declare cover properties here -----*/ 
     generate
@@ -404,7 +454,13 @@ module cov_frontend (
                 begin: itlb_hit_followed_by_icache_miss
                     `event2_follows_event1(itlb_hit, icache_miss, 5)
                 end
-            end
+            end: ifu_events_following_each_other
+
+            begin: frontend_general_cover_props
+                begin: btb_aliasing
+                    `track_btb_aliasing
+                end
+            end: frontend_general_cover_props
 
         end: ifu_cover_properties
     endgenerate
@@ -439,16 +495,34 @@ module cov_frontend (
     ifu_events_colliding_cg ifu_events_colliding_cg_inst;
 
     covergroup frontend_structures_stressed_cg;
-        itlb_full: coverpoint(itlb_full) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        // MMU
+        itlb_is_full: coverpoint(itlb_full) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        itlb_is_full_with_4KiB_pages: coverpoint(itlb_full_with_4kb_pages) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        itlb_is_full_with_2MiB_pages: coverpoint(itlb_full_with_2mb_pages) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        itlb_is_full_with_mix_page_sizes: coverpoint(itlb_full_with_mix_page_sizes) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};} // Need atleast 1GiB + 2MiB + 14*4KiB total executable space + minimum 1GiB continuous executable space to hit this coverpoint.
+        itlb_flush_comes_when_itlb_was_full: coverpoint(itlb_full && itlb_flush) iff (rsn_i) {ignore_bins ignore = {0};}
+        ptw_req_for_itlb_dtlb_collide: coverpoint(ptw_req_for_itlb_miss && ptw_req_for_dtlb_miss) iff (rsn_i) {ignore_bins ignore = {0};} //itlb and dtlb miss at the same cycle trying to trigger simultaneous page table walk. RTL gives priority to DTLB miss!
+        // branch prediction
+        is_branch_prediction_table_full: coverpoint(&is_branch_table_valid) iff (rsn_i) {ignore_bins ignore = {0};} // One way to fill this table is to have 64 branch instructions on consecutive PCs (PC[6:1] bits are used to index into branch prediction structures (is_branch table, btb, pht))
     endgroup: frontend_structures_stressed_cg
     frontend_structures_stressed_cg frontend_structures_stressed_cg_inst;
+
+    covergroup frontend_general_cg;
+        ifu_4KiB_page_allocation: coverpoint(|entry_has_4kb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        ifu_2MiB_page_allocation: coverpoint(|entry_has_2mb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        ifu_1GiB_page_allocation: coverpoint(|entry_has_1gb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        itlb_has_all_page_sizes: coverpoint(itlb_has_all_page_size) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
+        //itlb_multi_hit: coverpoint($countones(itlb_lu_hit) > 1) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};} // We can hit if there is a base page lying inside a super-page, both pages are in different ITLB entries, and we try to access shared region. Software bug, RTL should be able to handle it???
+    endgroup
+    frontend_general_cg frontend_general_cg_inst;
 
     /* ----- Instantiate cover groups here -----*/
     initial
     begin
         frontend_exceptions_cg_inst             =   new();
         ifu_events_colliding_cg_inst            =   new();
-        frontend_structures_stressed_cg_inst    =   new(); 
+        frontend_structures_stressed_cg_inst    =   new();
+        frontend_general_cg_inst                =   new();
     end
 
     /* ----- Sample cover groups here -----*/
@@ -457,6 +531,7 @@ module cov_frontend (
         frontend_exceptions_cg_inst.sample();
         ifu_events_colliding_cg_inst.sample();
         frontend_structures_stressed_cg_inst.sample();
+        frontend_general_cg_inst.sample();
     end
 
 endmodule
