@@ -128,7 +128,7 @@ function ea_flavours() {
             YTILES=3
             NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --multimc $NTILES "
-            echo -e ${BP}"    Selected build configuration: Lagarto Hun 3x3, 8 extra MC (corresponding HBM channels should be enabled in shell2acc_def.csv) " ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 3x3, 8 extra MC (corresponding HBM channels should be enabled in accelerator_def.csv) " ${NC}
             ;;
         acme_ea_4h2m)
             CORE=lagarto
@@ -145,7 +145,7 @@ function ea_flavours() {
             VLANES=2
             NTILES=$(($XTILES * $YTILES))
             PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES --multimc 2 --multimc_indices 1,2 "
-            echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2, 2 Vector Lanes, 2 extra MC (corresponding HBM channels should be enabled in shell2acc_def.csv)" ${NC}
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 2x2, 2 Vector Lanes, 2 extra MC (corresponding HBM channels should be enabled in accelerator_def.csv)" ${NC}
             ;;
         acme_ea_16h)
             CORE=lagarto

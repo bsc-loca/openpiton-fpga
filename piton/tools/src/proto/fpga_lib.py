@@ -188,7 +188,7 @@ def find_design_block(design_block, meep_mode=False):
                         print("Defined %s clock frequency for %s board" % (design_block, board_string_split[0]), end="")
                         if meep_mode:
                           print(" under MEEP shell", end="")
-                          facc = open(os.path.join(MEEP_DIR, "shell2acc_def.csv"), 'r')
+                          facc = open(os.path.join(MEEP_DIR, "accelerator_def.csv"), 'r')
                           for acc_line in facc:
                             acc_feature = re.split(',|\n', acc_line)
                             if len(acc_feature) > 2:
