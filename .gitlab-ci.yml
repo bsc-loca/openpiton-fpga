@@ -93,7 +93,7 @@ variables:
 
 .verif_rules:
   rules:
-    if: $CI_PIPELINE_SOURCE =~ "push"
+    if: $CI_PIPELINE_SOURCE == "push"
 
 stages:
   - simulation
