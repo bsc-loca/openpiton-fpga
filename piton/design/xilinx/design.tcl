@@ -54,6 +54,18 @@ if {$::env(PITON_LAGARTO) != "0" } {
     puts "Including Lagarto RTL files"
 }
 
+if {$::env(SA_HEVC_ENABLE) != "0" } {
+    source $SA_ROOT/parseFileListSA_HEVC.tcl
+    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_HEVC_RTL_FILES}]
+    puts "Add HEVC Systolic Arrays RTL files"    
+}
+
+if {$::env(SA_NN_ENABLE) != "0" } {
+    source $SA_ROOT/parseFileListSA_NN.tcl
+    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_NN_RTL_FILES}]
+    puts "Add NN Systolic Arrays RTL files"    
+}
+
 if {$::env(PITON_SA_ENABLE) != "0" } {
 	source $SA_ROOT/parseFileListSA.tcl
 	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_RTL_FILES}]

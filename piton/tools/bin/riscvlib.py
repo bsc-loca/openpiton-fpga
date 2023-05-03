@@ -216,22 +216,26 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             # Small hack to be able to access the whole space defined in the devices.xml file
-            # but still using just a fragment (256M) for this dma pool. The remaining space is 
-            # reserved for the Ethernet Over PCIe driver
-            # TODO: The Eth-PCIe driver should be able to use a(nother) reserved-memory node
+            # but still using just a fragment (256M) for particular dma pool.
             addrFrag  = devices[i]["fragment"]
+            addrOnic  = addrBase + addrLen - addrFrag
             tmpStr += '''
     reserved-memory {
         #address-cells = <2>;
         #size-cells = <2>;
         ranges;
         
-        eth_pool: dma_pool@%08x {
+        eth_pool: eth_pool_node {
+            reg = <%s>;
+            compatible = "shared-dma-pool";
+        }; 
+        onic_pool: onic_pool_node {
             reg = <%s>;
             compatible = "shared-dma-pool";
         }; 
     };
-            ''' % (addrBase, _reg_fmt(addrBase, addrFrag, 2, 2))
+            ''' % (_reg_fmt(addrBase, addrFrag, 2, 2),
+                   _reg_fmt(addrOnic, addrFrag, 2, 2))
             #''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
     tmpStr += '''
     eth0_clk: eth0_clk {
