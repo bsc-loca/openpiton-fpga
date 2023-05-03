@@ -15,7 +15,7 @@ BW='\033[1;37m'     #Bold White
 NC='\033[0;0;0m'    #NO COLOR
 
 #help fuction
-
+#    PROTO_OPTIONS=""
 
 function help(){
 
@@ -160,7 +160,7 @@ function ea_flavours() {
 }
 
 function ea_options() {
-    PROTO_OPTIONS=""
+
     case "$1" in
         pronoc)
         PROTO_OPTIONS+=" --pronoc"
