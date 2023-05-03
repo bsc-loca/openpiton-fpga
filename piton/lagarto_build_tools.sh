@@ -57,6 +57,7 @@ else
   BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
 
   git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
+  git submodule update --init --recursive piton/design/chipset/meep-memtile
 
   # parallel compilation
   export NUM_JOBS=4

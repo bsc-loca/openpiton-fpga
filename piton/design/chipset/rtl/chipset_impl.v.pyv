@@ -29,6 +29,8 @@
 `include "mc_define.h"
 `ifdef PITONSYS_AXI4_MEM
 `include "noc_axi4_bridge_define.vh"
+`elsif PITON_MEMTILE_ENABLE
+`include "noc_axi4_bridge_define.vh"
 `endif
 `include "uart16550_define.vh"
 `include "chipset_define.vh"
@@ -1467,7 +1469,212 @@ credit_to_valrdy noc3_xbar_to_%s(
         );
     `endif // F1_BOARD
 
-`else
+
+`elsif PITON_MEMTILE_ENABLE
+
+    // Keep always one for TRAPs
+    // Fake Memory Controller
+    fake_mem_ctrl fake_mem_ctrl(
+        .clk                ( chipset_clk        ),
+        .rst_n              ( chipset_rst_n      ),
+        .noc_valid_in       ( buf_mem_noc2_valid ),
+        .noc_data_in        ( buf_mem_noc2_data  ),
+        .noc_ready_in       ( mem_buf_noc2_ready ),
+        .noc_valid_out      ( mem_buf_noc3_valid ),
+        .noc_data_out       ( mem_buf_noc3_data  ),
+        .noc_ready_out      ( buf_mem_noc3_ready )
+    );
+
+    //////////////////////////////////////////////////////////////
+    // Declaration of wires for axi4 between MT and fake memory //
+    //////////////////////////////////////////////////////////////
+    wire      [`AXI4_ID_WIDTH - 1:0]  mt_mem_axi_ar_id;
+    wire    [`AXI4_ADDR_WIDTH - 1:0]  mt_mem_axi_ar_addr;
+    wire     [`AXI4_LEN_WIDTH - 1:0]  mt_mem_axi_ar_len;
+    wire    [`AXI4_SIZE_WIDTH - 1:0]  mt_mem_axi_ar_size;
+    wire   [`AXI4_BURST_WIDTH - 1:0]  mt_mem_axi_ar_burst;
+    wire                              mt_mem_axi_ar_lock;
+    wire   [`AXI4_CACHE_WIDTH - 1:0]  mt_mem_axi_ar_cache;
+    wire    [`AXI4_PROT_WIDTH - 1:0]  mt_mem_axi_ar_prot;
+    wire     [`AXI4_QOS_WIDTH - 1:0]  mt_mem_axi_ar_qos;    // none
+    wire  [`AXI4_REGION_WIDTH - 1:0]  mt_mem_axi_ar_region; // none
+    wire   [`AXI4_USER_WIDTH  - 1:0]  mt_mem_axi_ar_user;   // none
+    wire                              mt_mem_axi_ar_valid;
+    wire                              mt_mem_axi_ar_ready;
+
+    wire      [`AXI4_ID_WIDTH - 1:0]  mt_mem_axi_aw_id;
+    wire    [`AXI4_ADDR_WIDTH - 1:0]  mt_mem_axi_aw_addr;
+    wire     [`AXI4_LEN_WIDTH - 1:0]  mt_mem_axi_aw_len;
+    wire    [`AXI4_SIZE_WIDTH - 1:0]  mt_mem_axi_aw_size;
+    wire   [`AXI4_BURST_WIDTH - 1:0]  mt_mem_axi_aw_burst;
+    wire                              mt_mem_axi_aw_lock;
+    wire   [`AXI4_CACHE_WIDTH - 1:0]  mt_mem_axi_aw_cache;
+    wire    [`AXI4_PROT_WIDTH - 1:0]  mt_mem_axi_aw_prot;
+    wire     [`AXI4_QOS_WIDTH - 1:0]  mt_mem_axi_aw_qos;    // none
+    wire  [`AXI4_REGION_WIDTH - 1:0]  mt_mem_axi_aw_region; // none
+    wire   [`AXI4_USER_WIDTH  - 1:0]  mt_mem_axi_aw_user;   // none
+    wire                              mt_mem_axi_aw_valid;
+    wire                              mt_mem_axi_aw_ready;
+
+    wire      [`AXI4_ID_WIDTH - 1:0]  mt_mem_axi_w_id;      // none
+    wire    [`AXI4_DATA_WIDTH - 1:0]  mt_mem_axi_w_data;
+    wire    [`AXI4_STRB_WIDTH - 1:0]  mt_mem_axi_w_strb;
+    wire                              mt_mem_axi_w_last;
+    wire   [`AXI4_USER_WIDTH  - 1:0]  mt_mem_axi_w_user;    // none
+    wire                              mt_mem_axi_w_valid;
+    wire                              mt_mem_axi_w_ready;
+
+    wire      [`AXI4_ID_WIDTH - 1:0]  mt_mem_axi_r_id;
+    wire    [`AXI4_DATA_WIDTH - 1:0]  mt_mem_axi_r_data;
+    wire    [`AXI4_RESP_WIDTH - 1:0]  mt_mem_axi_r_resp;
+    wire                              mt_mem_axi_r_last;
+    wire   [`AXI4_USER_WIDTH  - 1:0]  mt_mem_axi_r_user;    // none
+    wire                              mt_mem_axi_r_valid;
+    wire                              mt_mem_axi_r_ready;
+
+    wire      [`AXI4_ID_WIDTH - 1:0]  mt_mem_axi_b_id;
+    wire    [`AXI4_RESP_WIDTH - 1:0]  mt_mem_axi_b_resp;
+    wire   [`AXI4_USER_WIDTH  - 1:0]  mt_mem_axi_b_user;    // none
+    wire                              mt_mem_axi_b_valid;
+    wire                              mt_mem_axi_b_ready;
+
+    genvar i;
+    generate
+    for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MT_TOP
+        memtile_top memtile_top_inst (
+            .clk_i                ( chipset_clk     ),
+            .resetn_i             ( chipset_rst_n   ),
+            // memory crossbar master interface -- AXI4 standard
+            .xbar_mem_aclk_i      ( chipset_clk     ),
+            .xbar_mem_aresetn_i   ( chipset_rst_n   ),
+
+            .xbar_mem_arid_o      ( mt_mem_axi_ar_id     ),
+            .xbar_mem_araddr_o    ( mt_mem_axi_ar_addr   ),
+            .xbar_mem_arlen_o     ( mt_mem_axi_ar_len    ),
+            .xbar_mem_arsize_o    ( mt_mem_axi_ar_size   ),
+            .xbar_mem_arburst_o   ( mt_mem_axi_ar_burst  ),
+            .xbar_mem_arlock_o    ( mt_mem_axi_ar_lock   ),
+            .xbar_mem_arcache_o   ( mt_mem_axi_ar_cache  ),
+            .xbar_mem_arprot_o    ( mt_mem_axi_ar_prot   ),
+            .xbar_mem_arqos_o     ( ),
+            .xbar_mem_arregion_o  ( ),
+            .xbar_mem_aruser_o    ( ),
+            .xbar_mem_arvalid_o   ( mt_mem_axi_ar_valid  ),
+            .xbar_mem_arready_i   ( mt_mem_axi_ar_ready  ),
+
+            .xbar_mem_awid_o      ( mt_mem_axi_aw_id     ),
+            .xbar_mem_awaddr_o    ( mt_mem_axi_aw_addr   ),
+            .xbar_mem_awlen_o     ( mt_mem_axi_aw_len    ),
+            .xbar_mem_awsize_o    ( mt_mem_axi_aw_size   ),
+            .xbar_mem_awburst_o   ( mt_mem_axi_aw_burst  ),
+            .xbar_mem_awlock_o    ( mt_mem_axi_aw_lock   ),
+            .xbar_mem_awcache_o   ( mt_mem_axi_aw_cache  ),
+            .xbar_mem_awprot_o    ( mt_mem_axi_aw_prot   ),
+            .xbar_mem_awqos_o     ( ),
+            .xbar_mem_awregion_o  ( ),
+            .xbar_mem_awuser_o    ( ),
+            .xbar_mem_awvalid_o   ( mt_mem_axi_aw_valid  ),
+            .xbar_mem_awready_i   ( mt_mem_axi_aw_ready  ),
+
+            .xbar_mem_wid_o       ( ),
+            .xbar_mem_wdata_o     ( mt_mem_axi_w_data    ),
+            .xbar_mem_wstrb_o     ( mt_mem_axi_w_strb    ),
+            .xbar_mem_wlast_o     ( mt_mem_axi_w_last    ),
+            .xbar_mem_wuser_o     ( ),
+            .xbar_mem_wvalid_o    ( mt_mem_axi_w_valid   ),
+            .xbar_mem_wready_i    ( mt_mem_axi_w_ready   ),
+
+            .xbar_mem_rid_i       ( mt_mem_axi_r_id      ),
+            .xbar_mem_rdata_i     ( mt_mem_axi_r_data    ),
+            .xbar_mem_rresp_i     ( mt_mem_axi_r_resp    ),
+            .xbar_mem_rlast_i     ( mt_mem_axi_r_last    ),
+            .xbar_mem_ruser_i     ( 'h0                  ), // zeros
+            .xbar_mem_rvalid_i    ( mt_mem_axi_r_valid   ),
+            .xbar_mem_rready_o    ( mt_mem_axi_r_ready   ),
+
+            .xbar_mem_bid_i       ( mt_mem_axi_b_id      ),
+            .xbar_mem_bresp_i     ( mt_mem_axi_b_resp    ),
+            .xbar_mem_buser_i     ( 'h0                  ), // zeros
+            .xbar_mem_bvalid_i    ( mt_mem_axi_b_valid   ),
+            .xbar_mem_bready_o    ( mt_mem_axi_b_ready   ),
+
+            // cNoC (compute NoC) interface -- OpenPiton NoC interface
+            .cnoc_req_val_i       ( intf_mcx_val_noc2 [i] ),
+            .cnoc_req_dat_i       ( intf_mcx_data_noc2[i * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH] ),
+            .cnoc_req_rdy_o       ( intf_mcx_rdy_noc2 [i] ),
+            .cnoc_rsp_val_o       ( mcx_intf_val_noc3 [i] ),
+            .cnoc_rsp_dat_o       ( mcx_intf_data_noc3[i * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH] ),
+            .cnoc_rsp_rdy_i       ( mcx_intf_rdy_noc3 [i] ),
+
+            // vNoC (vector data NoC) interface -- ProNoC interface
+            .vnoc_req_val_o       ( ),
+            .vnoc_req_dat_o       ( ),
+            .vnoc_req_hdr_o       ( ),
+            .vnoc_req_sgl_flt_o   ( ),
+            .vnoc_req_rdy_i       ( 'h0 ), // zeros
+            .vnoc_rsp_val_i       ( 'h0 ), // zeros
+            .vnoc_rsp_dat_i       ( 'h0 ), // zeros
+            .vnoc_rsp_hdr_i       ( 'h0 ), // zeros
+            .vnoc_rsp_rdy_o       ( )
+        );
+    end
+    endgenerate
+
+    // AXI4 crorssbar?
+
+    axi_slave_ram #(    // fake memory
+        .C_AXI_ADDR_WIDTH ( `AXI4_ADDR_WIDTH ),
+        .C_AXI_DATA_WIDTH ( `AXI4_DATA_WIDTH ),
+        .STRB_WIDTH       ( `AXI4_STRB_WIDTH ),
+        .ID_WIDTH         ( `AXI4_ID_WIDTH   ),
+        // Extra pipeline register on output
+        .PIPELINE_OUTPUT  ( 0                )
+    ) axi_slave_ram_inst (
+        .clk           ( chipset_clk         ),
+        .rst_n         ( chipset_rst_n       ),
+
+        .s_axi_awid    ( mt_mem_axi_aw_id    ),
+        .s_axi_awaddr  ( mt_mem_axi_aw_addr  ),
+        .s_axi_awlen   ( mt_mem_axi_aw_len   ),
+        .s_axi_awsize  ( mt_mem_axi_aw_size  ),
+        .s_axi_awburst ( mt_mem_axi_aw_burst ),
+        .s_axi_awlock  ( mt_mem_axi_aw_lock  ),
+        .s_axi_awcache ( mt_mem_axi_aw_cache ),
+        .s_axi_awprot  ( mt_mem_axi_aw_prot  ),
+        .s_axi_awvalid ( mt_mem_axi_aw_valid ),
+        .s_axi_awready ( mt_mem_axi_aw_ready ),
+
+        .s_axi_wdata   ( mt_mem_axi_w_data   ),
+        .s_axi_wstrb   ( mt_mem_axi_w_strb   ),
+        .s_axi_wlast   ( mt_mem_axi_w_last   ),
+        .s_axi_wvalid  ( mt_mem_axi_w_valid  ),
+        .s_axi_wready  ( mt_mem_axi_w_ready  ),
+
+        .s_axi_bid     ( mt_mem_axi_b_id     ),
+        .s_axi_bresp   ( mt_mem_axi_b_resp   ),
+        .s_axi_bvalid  ( mt_mem_axi_b_valid  ),
+        .s_axi_bready  ( mt_mem_axi_b_ready  ),
+
+        .s_axi_arid    ( mt_mem_axi_ar_id    ),
+        .s_axi_araddr  ( mt_mem_axi_ar_addr  ),
+        .s_axi_arlen   ( mt_mem_axi_ar_len   ),
+        .s_axi_arsize  ( mt_mem_axi_ar_size  ),
+        .s_axi_arburst ( mt_mem_axi_ar_burst ),
+        .s_axi_arlock  ( mt_mem_axi_ar_lock  ),
+        .s_axi_arcache ( mt_mem_axi_ar_cache ),
+        .s_axi_arprot  ( mt_mem_axi_ar_prot  ),
+        .s_axi_arvalid ( mt_mem_axi_ar_valid ),
+        .s_axi_arready ( mt_mem_axi_ar_ready ),
+
+        .s_axi_rid     ( mt_mem_axi_r_id     ),
+        .s_axi_rdata   ( mt_mem_axi_r_data   ),
+        .s_axi_rresp   ( mt_mem_axi_r_resp   ),
+        .s_axi_rlast   ( mt_mem_axi_r_last   ),
+        .s_axi_rvalid  ( mt_mem_axi_r_valid  ),
+        .s_axi_rready  ( mt_mem_axi_r_ready  )
+    );
+
+`else // PITON_MEMTILE_ENABLE && PITON_FPGA_MC_DDR3
 
 `include "cross_module.tmp.h"
 
@@ -1487,10 +1694,10 @@ fake_mem_ctrl fake_mem_ctrl(
 `ifdef PITON_EXTRA_MEMS
 genvar i;
 generate
-for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MC_
+for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MT_
    fake_mem_ctrl #(
     .HMB_CHAN_NUM(i)
-   ) fake_mc ( 
+   ) fake_mt ( 
     .clk                ( chipset_clk        ), 
     .rst_n              ( chipset_rst_n      ), 
     .noc_valid_in       ( intf_mcx_val_noc2 [i] ), 
