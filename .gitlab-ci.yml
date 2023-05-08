@@ -17,7 +17,6 @@ workflow:
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
-    - !reference [.verif_rules, rules]
 
 variables:
   GIT_STRATEGY: none
@@ -30,14 +29,13 @@ variables:
   CI_RISCV_DIR: /home/tools/openpiton/riscv_install
   UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
-
 # The Parallel Matrix allow you to create jobs at runtime based on specified variables.
 # Here we can specify the target EA.
 #For production we have the following:
 .multi_target_production:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h,acme_ea_1h2g]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h, acme_ea_1h2g]
     #acme_ea_1h16v: the synthesis is "heavy"
 #For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
 
@@ -89,7 +87,6 @@ variables:
     - !reference [.default_rules, rules]
     - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
       when: never
-
 
 stages:
   - simulation
@@ -331,7 +328,7 @@ deploy-lagarto-production:
     - MEEP_FPGA
   rules:
     - !reference [.production_rules, rules]
-  needs: [synthesis-matrix-production,validation-matrix-production]
+  needs: [synthesis-matrix-production, validation-matrix-production]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -348,7 +345,7 @@ deploy-lagarto-test:
     - MEEP_FPGA
   rules:
     - !reference [.test_rules, rules]
-  needs: [synthesis-matrix-test,validation-matrix-test]
+  needs: [synthesis-matrix-test, validation-matrix-test]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -365,7 +362,7 @@ deploy-lagarto-quick-test:
     - MEEP_FPGA
   rules:
     - !reference [.quick_test_rules, rules]
-  needs: [synthesis-quick-test,validation-quick-test]
+  needs: [synthesis-quick-test, validation-quick-test]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -546,7 +543,15 @@ fpga-shell-trigger-production:
     COMMIT_REF: $NEW_BRANCH
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "PRODUCTION"
-  needs: [simulation, synthesis-matrix-production, validation-matrix-production, deploy-lagarto-production, push-lagarto-production, shell-prelaunch-production]
+  needs:
+    [
+      simulation,
+      synthesis-matrix-production,
+      validation-matrix-production,
+      deploy-lagarto-production,
+      push-lagarto-production,
+      shell-prelaunch-production,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
@@ -564,7 +569,15 @@ fpga-shell-trigger-test:
     COMMIT_REF: $NEW_BRANCH
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "TEST"
-   needs: [simulation, synthesis-matrix-test, validation-matrix-test, deploy-lagarto-test, push-lagarto-test, shell-prelaunch-test]
+  needs:
+    [
+      simulation,
+      synthesis-matrix-test,
+      validation-matrix-test,
+      deploy-lagarto-test,
+      push-lagarto-test,
+      shell-prelaunch-test,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
@@ -583,14 +596,21 @@ fpga-shell-trigger-quick-test:
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
     EA: $EA
-  needs: [simulation, synthesis-quick-test, validation-quick-test, deploy-lagarto-quick-test, push-lagarto-quick-test, shell-prelaunch-quick-test]
+  needs:
+    [
+      simulation,
+      synthesis-quick-test,
+      validation-quick-test,
+      deploy-lagarto-quick-test,
+      push-lagarto-quick-test,
+      shell-prelaunch-quick-test,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
     strategy: depend
-
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo
