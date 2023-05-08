@@ -600,7 +600,6 @@ fpga-shell-trigger-quick-test:
       synthesis-quick-test,
       validation-quick-test,
       deploy-lagarto-quick-test,
-      push-lagarto-quick-test,
       shell-prelaunch-quick-test,
     ]
   trigger:
