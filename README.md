@@ -76,6 +76,12 @@ Compilation with Systolic Arrays is made with the `-sa_hevc_enable` or `-sa_nn_e
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_hevc_enable
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_nn_enable
 
+To compile with choice of Memtile implementation, use `-memtile_enable=PARAM` key, where `PARAM` can take values `MOCK` (to use fake memtile) or `BEHAV` (to use behavioral model). Along with `-memtile_enable=PARAM`, the `-hbm` key is required:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=MOCK
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=BEHAV
+
+
 ### Clean builds
 
 You can clean-up the environment and meta data among compilations by doing:
