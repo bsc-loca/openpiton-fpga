@@ -515,7 +515,7 @@ shell-prelaunch-quick-test:
   rules:
     - !reference [.quick_test_rules, rules]
     - !reference [.sim_rules, rules]
-  needs: [validation-matrix-test]
+  needs: [validation-quick-test]
   script:
     - NEW_BRANCH=$CI_COMMIT_REF_NAME
     - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
