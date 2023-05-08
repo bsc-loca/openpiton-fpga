@@ -549,7 +549,6 @@ fpga-shell-trigger-production:
       synthesis-matrix-production,
       validation-matrix-production,
       deploy-lagarto-production,
-      push-lagarto-production,
       shell-prelaunch-production,
     ]
   trigger:
@@ -575,7 +574,6 @@ fpga-shell-trigger-test:
       synthesis-matrix-test,
       validation-matrix-test,
       deploy-lagarto-test,
-      push-lagarto-test,
       shell-prelaunch-test,
     ]
   trigger:
