@@ -102,7 +102,7 @@ stages:
 
 simulation:
   stage: simulation
-  timeout: 2h
+  timeout: 4h
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
