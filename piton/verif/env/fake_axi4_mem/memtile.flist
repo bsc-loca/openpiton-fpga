@@ -1,0 +1,42 @@
+// Flist for fake axi4 memory 
++incdir+../../../design/chipset/noc_axi4_bridge/rtl/
+
+
+// for MOCK
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_buffer.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_ser.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_deser.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_read.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_write.sv
+
+
+// for BEHAV
+//../../../design/chipset/meep-memtile/src/include/mt_riscv_pkg.sv
+//../../../design/chip/tile/vas_tile_core/src/package/riscv_pkg.sv
+../../../design/chipset/meep-memtile/src/include/memtile_pkg.sv
+../../../design/chipset/meep-memtile/src/include/mt_noc_pkg.sv
+../../../design/chipset/meep-memtile/src/include/mt_axi_pkg.sv
+
+
+// for RTL
+// ../../../design/chipset/meep-memtile/src/rtl/mt_vfs.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_fifo.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_mem_requestor.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_prefetcher.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_axi4_master.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_fp_arbiter.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_mem_resp_handler.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_cnoc_pkt_proc.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_vnoc_pkt_proc.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_scoreboard.sv
+// ../../../design/chipset/meep-memtile/src/rtl/mt_vnoc_req_arb.sv
+
+
+// fake memory and top module
+axi_slave_ram.v
+//mt_fake_axi_ram.sv
+../../../design/chipset/meep-memtile/src/behav/memtile_behav_top.sv
+../../../design/chipset/meep-memtile/src/rtl/memtile_mock_top.sv
+//../../../design/chipset/meep-memtile/src/rtl/memtile_rtl_top.sv
+../../../design/chipset/meep-memtile/src/rtl/memtile_top.sv
