@@ -28,7 +28,6 @@ variables:
   # There should be a scheduled task to regenerate it.
   CI_RISCV_DIR: /home/tools/openpiton/riscv_install
   UPDATE_SCRIPT: cicd/gitlab_script_op.sh
-  EA: acme_ea_1h
 
 # The Parallel Matrix allow you to create jobs at runtime based on specified variables.
 # Here we can specify the target EA.
