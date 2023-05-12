@@ -17,7 +17,6 @@ workflow:
     - !reference [.test_rules, rules]
     - !reference [.production_rules, rules]
     - !reference [.sim_rules, rules]
-    - !reference [.verif_rules, rules]
 
 variables:
   GIT_STRATEGY: none
@@ -30,14 +29,13 @@ variables:
   CI_RISCV_DIR: /home/tools/openpiton/riscv_install
   UPDATE_SCRIPT: cicd/gitlab_script_op.sh
 
-
 # The Parallel Matrix allow you to create jobs at runtime based on specified variables.
 # Here we can specify the target EA.
 #For production we have the following:
 .multi_target_production:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h,acme_ea_1h2g]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h, acme_ea_1h2g]
     #acme_ea_1h16v: the synthesis is "heavy"
 #For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
 
@@ -89,11 +87,6 @@ variables:
     - !reference [.default_rules, rules]
     - if: $CI_COMMIT_MESSAGE =~ /#TestSim/
       when: never
-
-
-.verif_rules:
-  rules:
-    if: $CI_PIPELINE_SOURCE == "push"
 
 stages:
   - simulation
@@ -160,7 +153,6 @@ synthesis-matrix-production:
   retry: 1
   parallel: !reference [.multi_target_production, parallel]
   variables:
-    #GIT_SUBMODULE_PATHS: ':(exclude)piton/design/chip/tile/ariane'
     GIT_STRATEGY: clone
     GIT_SUBMODULE_STRATEGY: recursive
     GIT_CLONE_PATH: $CI_BUILDS_DIR/$CI_CONCURRENT_ID/openpiton/$EA
@@ -298,8 +290,7 @@ validation-matrix-production:
     - MEEP_FPGA
   rules:
     - !reference [.production_rules, rules]
-  dependencies:
-    - synthesis-matrix-production
+  needs: [synthesis-matrix-production]
   script:
     - . cicd/synth_check.sh . logs/${EA}
   allow_failure: true # pass with errors ...
@@ -313,8 +304,7 @@ validation-matrix-test:
     - MEEP_FPGA
   rules:
     - !reference [.test_rules, rules]
-  dependencies:
-    - synthesis-matrix-test
+  needs: [synthesis-matrix-test]
   script:
     - . cicd/synth_check.sh . logs/${EA}
   allow_failure: true # pass with errors ...
@@ -327,8 +317,7 @@ validation-quick-test:
     - MEEP_FPGA
   rules:
     - !reference [.quick_test_rules, rules]
-  dependencies:
-    - synthesis-quick-test
+  needs: [synthesis-quick-test]
   script:
     - . cicd/synth_check.sh . logs/${EA}
   allow_failure: true # pass with errors ...
@@ -339,9 +328,7 @@ deploy-lagarto-production:
     - MEEP_FPGA
   rules:
     - !reference [.production_rules, rules]
-  dependencies:
-    - synthesis-matrix-production
-    - validation-matrix-production
+  needs: [synthesis-matrix-production, validation-matrix-production]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -358,9 +345,7 @@ deploy-lagarto-test:
     - MEEP_FPGA
   rules:
     - !reference [.test_rules, rules]
-  dependencies:
-    - synthesis-matrix-test
-    - validation-matrix-test
+  needs: [synthesis-matrix-test, validation-matrix-test]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -371,15 +356,13 @@ deploy-lagarto-test:
     - cp -rf logs $ABSDIR/
     - cp -rf dcp $ABSDIR/
 
-deploy-lagarto-test:
+deploy-lagarto-quick-test:
   stage: deploy-openpiton
   tags:
     - MEEP_FPGA
   rules:
     - !reference [.quick_test_rules, rules]
-  dependencies:
-    - synthesis-quick-test
-    - validation-quick-test
+  needs: [synthesis-quick-test, validation-quick-test]
   before_script:
     - ls; ls dcp;
     - export TODAY=$(date +"%y%m%d")
@@ -396,8 +379,7 @@ push-lagarto-production:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-  needs:
-    - validation-matrix-production
+  needs: [validation-matrix-production]
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULES_STRATEGY: normal
@@ -427,8 +409,7 @@ push-lagarto-test:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-  needs:
-    - validation-matrix-test
+  needs: [validation-matrix-test]
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULES_STRATEGY: normal
@@ -458,8 +439,7 @@ push-lagarto-quick-test:
     - MEEP_FPGA
   rules:
     - if: $CI_PIPELINE_SOURCE == "pipeline"
-  needs:
-    - validation-quick-test
+  needs: [validation-quick-test]
   variables:
     GIT_STRATEGY: clone
     GIT_SUBMODULES_STRATEGY: normal
@@ -497,8 +477,7 @@ shell-prelaunch-production:
     GIT_STRATEGY: clone
   rules:
     - !reference [.production_rules, rules]
-  dependencies:
-    - validation-matrix-production
+  needs: [validation-matrix-production]
   script:
     - NEW_BRANCH=$CI_COMMIT_REF_NAME
     - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
@@ -517,8 +496,7 @@ shell-prelaunch-test:
   rules:
     - !reference [.test_rules, rules]
     - !reference [.sim_rules, rules]
-  dependencies:
-    - validation-matrix-test
+  needs: [validation-matrix-test]
   script:
     - NEW_BRANCH=$CI_COMMIT_REF_NAME
     - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
@@ -537,8 +515,7 @@ shell-prelaunch-quick-test:
   rules:
     - !reference [.quick_test_rules, rules]
     - !reference [.sim_rules, rules]
-  dependencies:
-    - validation-matrix-test
+  needs: [validation-quick-test]
   script:
     - NEW_BRANCH=$CI_COMMIT_REF_NAME
     - echo "NEW_BRANCH=$NEW_BRANCH" >> branch_info.env
@@ -566,6 +543,14 @@ fpga-shell-trigger-production:
     COMMIT_REF: $NEW_BRANCH
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "PRODUCTION"
+  needs:
+    [
+      simulation,
+      synthesis-matrix-production,
+      validation-matrix-production,
+      deploy-lagarto-production,
+      shell-prelaunch-production,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
@@ -583,6 +568,14 @@ fpga-shell-trigger-test:
     COMMIT_REF: $NEW_BRANCH
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "TEST"
+  needs:
+    [
+      simulation,
+      synthesis-matrix-test,
+      validation-matrix-test,
+      deploy-lagarto-test,
+      shell-prelaunch-test,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
@@ -601,13 +594,20 @@ fpga-shell-trigger-quick-test:
     COMMIT_MESG: $CI_COMMIT_MESSAGE
     ENV_WORK: "QUICKTEST"
     EA: $EA
+  needs:
+    [
+      simulation,
+      synthesis-quick-test,
+      validation-quick-test,
+      deploy-lagarto-quick-test,
+      shell-prelaunch-quick-test,
+    ]
   trigger:
     project: meep/FPGA_implementations/AlveoU280/fpga_shell
     branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
     strategy: depend
-
 
 # TODO: on_failure will not get the trigger dependency, doesn't work.
 # We need to decide if it is necessary remove from OpenPiton's repo
@@ -645,12 +645,9 @@ clean-on-failure:
 verif-sanity-check-trigger:
   stage: push-shell
   rules:
-    - !reference [.verif_rules, rules]
+    - if: $CI_PIPELINE_SOURCE == "push"
   variables:
     GIT_STRATEGY: clone
-    COMMIT_SHA: $NEW_BRANCH_SHA
-    COMMIT_REF: $NEW_BRANCH
-    COMMIT_MESG: $CI_COMMIT_MESSAGE
   trigger:
     project: meep/meep-design-verification/lagaro_modified
     branch: CI_HV_GC5
