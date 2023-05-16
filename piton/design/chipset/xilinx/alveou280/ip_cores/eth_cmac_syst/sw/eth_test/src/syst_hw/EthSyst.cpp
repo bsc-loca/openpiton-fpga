@@ -307,6 +307,21 @@ void EthSyst::ethCoreBringup(bool gtLoopback) {
 }
 
 
+//***************** Bring-up of Aurora Core *****************
+void EthSyst::aurCoreBringup(bool gtLoopback) {
+  printf("------- Aurora Core bring-up -------\n");
+  printf("GT_POWER_PINS: %0X \n", gtCtrl[GT_CTRL]);
+  if (gtLoopback) {
+    printf("Enabling Near-End PMA Loopback\n");
+    gtCtrl[GT_CTRL] = 0x2; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
+  } else {
+    printf("Enabling GT normal operation with no loopback\n");
+    gtCtrl[GT_CTRL] = 0; // via GPIO
+  }
+  printf("\n");
+}
+
+
 //***************** Enabling Ethernet core Tx/Rx *****************
 void EthSyst::ethTxRxEnable() {
   printf("Enabling Ethernet TX/RX:\n");

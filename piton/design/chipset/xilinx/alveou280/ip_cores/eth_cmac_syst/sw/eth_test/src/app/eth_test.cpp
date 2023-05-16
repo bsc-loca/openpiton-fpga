@@ -557,11 +557,12 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
-        ethSyst.ethCoreInit();
-        ethSyst.ethCoreBringup(true);  // loopback mode
+        // ethSyst.ethCoreInit();
+        // ethSyst.ethCoreBringup(true);  // loopback mode
+        ethSyst.aurCoreBringup(true);  // loopback mode
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        // ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
         sleep(1); // in seconds
 
         printf("------- Running DMA Near-end loopback test -------\n");

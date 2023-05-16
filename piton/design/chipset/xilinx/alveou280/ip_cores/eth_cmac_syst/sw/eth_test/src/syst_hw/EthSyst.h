@@ -302,6 +302,7 @@ class EthSyst {
   void ethCoreBringup(bool);
   void ethTxRxEnable();
   void ethTxRxDisable();
+  void aurCoreBringup(bool);
 
   void axiDmaInit();
   XAxiDma_Bd* dmaBDAlloc   (bool, size_t, size_t, size_t, size_t);
