@@ -49,17 +49,14 @@ module cov_frontend (
     input logic                                 dtlb_access_i,
 
     // branch prediction
-    input logic [NUM_IS_BRANCH_ENTRIES-1 : 0]   is_branch_table_valid,
+    //input logic [NUM_IS_BRANCH_ENTRIES-1 : 0]   is_branch_table_valid,
     input logic                                 branch_at_exu,
-    input addrPC_t                              pc_execution_i
+    input addrPC_t                              pc_execution_i,
+    input logic                                 paddr_is_nc,
+    input logic                                 cache_en_q
 
-    // branch errors? btb bank conflicts?
     // miss under misss?
     );
-
-    localparam WINDOW_SIZE  = 5;
-    localparam IMPLEMENTED_VA_SIZE = 39;
-    localparam IMPLEMENTED_PA_SIZE = 32;
 
     /* ----- Declare internal signals & develop internal logic for coverage here -----*/ 
     logic canonical_violation;
@@ -503,7 +500,7 @@ module cov_frontend (
         itlb_flush_comes_when_itlb_was_full: coverpoint(itlb_full && itlb_flush) iff (rsn_i) {ignore_bins ignore = {0};}
         ptw_req_for_itlb_dtlb_collide: coverpoint(ptw_req_for_itlb_miss && ptw_req_for_dtlb_miss) iff (rsn_i) {ignore_bins ignore = {0};} //itlb and dtlb miss at the same cycle trying to trigger simultaneous page table walk. RTL gives priority to DTLB miss!
         // branch prediction
-        is_branch_prediction_table_full: coverpoint(&is_branch_table_valid) iff (rsn_i) {ignore_bins ignore = {0};} // One way to fill this table is to have 64 branch instructions on consecutive PCs (PC[6:1] bits are used to index into branch prediction structures (is_branch table, btb, pht))
+        //is_branch_prediction_table_full: coverpoint(&is_branch_table_valid) iff (rsn_i) {ignore_bins ignore = {0};} // One way to fill this table is to have 64 branch instructions on consecutive PCs (PC[6:1] bits are used to index into branch prediction structures (is_branch table, btb, pht))
     endgroup: frontend_structures_stressed_cg
     frontend_structures_stressed_cg frontend_structures_stressed_cg_inst;
 
@@ -512,7 +509,9 @@ module cov_frontend (
         ifu_2MiB_page_allocation: coverpoint(|entry_has_2mb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
         ifu_1GiB_page_allocation: coverpoint(|entry_has_1gb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
         itlb_has_all_page_sizes: coverpoint(itlb_has_all_page_size) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
-        //itlb_multi_hit: coverpoint($countones(itlb_lu_hit) > 1) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};} // We can hit if there is a base page lying inside a super-page, both pages are in different ITLB entries, and we try to access shared region. Software bug, RTL should be able to handle it???
+        itlb_multi_hit: coverpoint($countones(itlb_lu_hit) > 1) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};} // We can hit if there is a base page lying inside a super-page, both pages are in different ITLB entries, and we try to access shared region. Software bug, RTL should be able to handle it???
+        fetch_nc_addr_ic_disable: coverpoint(paddr_is_nc && ~cache_en_q) iff (rsn_i) {ignore_bins ignore = {0};} // fetch from non cacheable addr due to icache being disabled from a custom CSR
+        fetch_nc_addr_pma: coverpoint(paddr_is_nc && cache_en_q) iff (rsn_i) {ignore_bins ignore = {0};} // fetch from non cacheable addr : region has non cacheable physical memory attribute (PMA). icache is enabled though!
     endgroup
     frontend_general_cg frontend_general_cg_inst;
 
