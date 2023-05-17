@@ -56,7 +56,15 @@ module cov_backend (
     input logic [Dcache_Ports-1:0]      dcache_rd_req,
     input logic                         mem_rtrn_vld_i,
     input logic                         dtlb_miss,
-    input logic                         dtlb_fill_return
+    input logic                         dtlb_fill_return,
+    input to_PMU_t                      pmu_flags_o,
+    input logic                         stall_mul,
+    input logic                         stall_div,
+    input logic                         stall_mem,
+    input logic                         stall_fpu,
+    input logic                         stall_o,
+    input wb_exe_instr_t                from_wb_i,
+    input pipeline_flush_t              pipeline_flush_o
     );
 
 
@@ -97,6 +105,21 @@ module cov_backend (
     logic ptw_req_for_dtlb_miss, ptw_req_for_itlb_miss;
     logic branch_flush, exception_flush, interrupt_flush;
     logic dcache_hit, dcache_miss, dcache_fill_return;
+    logic [PIPELINE_STAGES-1:0] stall_pipeline_stages;
+    logic [BRANCH_PMU_EVENTS-1:0] branch_pmu_events;
+    logic rs1_bypass, rs2_bypass, rs3_bypass; // rs3 only for FPU op
+    logic [PIPELINE_STAGES-1:0] pipeline_stages_flush;
+    generate
+        if (drac_pkg::FP_PRESENT) begin
+            logic [3:0] exu_stalling_ops;
+            logic [2:0] forwarded_regs;
+            `define FPU_IS_PRESENT
+        end
+        else begin
+            logic [2:0] exu_stalling_ops;
+            logic [1:0] forwarded_regs;
+        end
+    endgenerate
     
 
     assign canonical_violation              =   en_ld_st_translation_i && !((&resp_dcache_cpu_i.addr[63:riscv::VLEN-1]) == 1'b1 || (|resp_dcache_cpu_i.addr[63:riscv::VLEN-1]) == 1'b0) && from_rr_i.instr.unit == UNIT_MEM;
@@ -143,7 +166,20 @@ module cov_backend (
     assign dcache_miss                      =   |miss_req;
     assign dcache_hit                       =   |rd_hit_oh && dcache_en_i;
     assign dcache_fill_return               =   mem_rtrn_vld_i;
+    assign stall_pipeline_stages            =   {pmu_flags_o.stall_wb, pmu_flags_o.stall_exe, pmu_flags_o.stall_rr, pmu_flags_o.stall_id, pmu_flags_o.stall_if};
+    assign branch_pmu_events                =   {pmu_flags_o.branch_not_taken_hit, pmu_flags_o.branch_taken_addr_miss, pmu_flags_o.branch_taken_b_not_detected,
+                                                 pmu_flags_o.branch_taken_hit, pmu_flags_o.branch_taken, pmu_flags_o.is_branch_false_positive,
+                                                 pmu_flags_o.is_branch_hit, pmu_flags_o.branch_miss, pmu_flags_o.is_branch
+                                                };
 
+    assign exu_stalling_ops                 =   drac_pkg::FP_PRESENT?   {stall_fpu&stall_o, stall_mem&stall_o, stall_div&stall_o, stall_mul&stall_o}  :   {stall_mem&stall_o, stall_div&stall_o, stall_mul&stall_o};
+    assign rs1_bypass                       =   (((from_rr_i.instr.rs1 != 0) & (from_rr_i.instr.rs1 == from_wb_i.rd)  & from_wb_i.valid & !from_rr_i.instr.use_fs1 & !from_wb_i.fregfile_we) |
+                                                ((from_rr_i.instr.rs1 == from_wb_i.frd) & from_wb_i.valid &  from_rr_i.instr.use_fs1 &  from_wb_i.fregfile_we));
+    assign rs2_bypass                       =   (((from_rr_i.instr.rs2 != 0) & (from_rr_i.instr.rs2 == from_wb_i.rd)  & from_wb_i.valid & !from_rr_i.instr.use_fs2 & !from_wb_i.fregfile_we) |
+                                                ((from_rr_i.instr.rs2 == from_wb_i.frd) & from_wb_i.valid &  from_rr_i.instr.use_fs2 &  from_wb_i.fregfile_we));
+    assign rs3_bypass                       =   ((from_rr_i.instr.rs3 == from_wb_i.frd) & from_rr_i.instr.use_fs3 & from_wb_i.valid & from_wb_i.fregfile_we); // only some FP instructions have rs3 field
+    assign forwarded_regs                   =   drac_pkg::FP_PRESENT?   {rs3_bypass, rs2_bypass, rs1_bypass}    :   {rs2_bypass, rs1_bypass};
+    assign pipeline_stages_flush            =   {pipeline_flush_o.flush_wb, pipeline_flush_o.flush_exe, pipeline_flush_o.flush_rr, pipeline_flush_o.flush_id, pipeline_flush_o.flush_if};
     
     always_comb begin
         for (int entry=0; entry<TLB_ENTRIES; entry++) begin
@@ -503,8 +539,6 @@ module cov_backend (
 
     covergroup backend_general_cg;
         interrupt_blocked_memop_inflight: coverpoint(interrupt_blocked) iff (rsn_i) {ignore_bins ignore = {0};} // block the pending interrupt from getting valid/taken if there is pending memory operation
-
-
         lsu_4KiB_page_allocation: coverpoint(|entry_has_4kb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
         lsu_2MiB_page_allocation: coverpoint(|entry_has_2mb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
         lsu_1GiB_page_allocation: coverpoint(|entry_has_1gb_page) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};}
@@ -512,8 +546,52 @@ module cov_backend (
         dtlb_multi_hit: coverpoint($countones(dtlb_lu_hit) > 1) iff (rsn_i && en_translation_i) {ignore_bins ignore = {0};} // We can hit if there is a base page lying inside a super-page, both pages are in different DTLB entries, and we try to access shared region. Software bug, RTL should be able to handle it???
         access_nc_addr_dc_disable: coverpoint((|paddr_is_nc) && ~dcache_en_i) iff (rsn_i) {ignore_bins ignore = {0};} // fetch from non cacheable addr due to dcache being disabled from a custom CSR
         access_nc_addr_pma: coverpoint((|paddr_is_nc) && dcache_en_i) iff (rsn_i) {ignore_bins ignore = {0};} // fetch from non cacheable addr : region has non cacheable physical memory attribute (PMA). dcache is enabled though!
+        // PMU : pipeline stages stall
+        pipeline_stages_stall: coverpoint(stall_pipeline_stages) iff (rsn_i) {wildcard bins ifu_stall = {5'b????1};
+                                                                              wildcard bins decode_stall = {5'b???1?};
+                                                                              wildcard bins read_register_stall = {5'b??1??};
+                                                                              wildcard bins exu_stall = {5'b?1???};
+                                                                              wildcard bins write_back_stall = {5'b1????};
+                                                                              wildcard bins stall_combinations[] = {[5'b00001 : 5'b00011], [5'b00100 : 5'b00111], [5'b01000 : 5'b01011], [5'b10000 : 5'b10011]};   // 15 separate bins should be created, upper 3 bits can be onehot only
+                                                                              ignore_bins ignore = {5'b00000};
+                                                                             }
+        
+        // PMU : pipeline stages flush
+        pipeline_stages_flush: coverpoint(pipeline_stages_flush) iff (rsn_i) {wildcard bins ifu_flush = {5'b????1};
+                                                                              wildcard bins decode_flush = {5'b???1?};
+                                                                              wildcard bins read_register_flush = {5'b??1??};
+                                                                              wildcard bins exu_flush = {5'b?1???};
+                                                                              //wildcard bins write_back_flush = {5'b1????}; not possible
+                                                                              bins flush_possible_combinations[] = {5'b01111, 5'b01000, 5'b01110, 5'b00111, 5'b00001}; 
+                                                                              ignore_bins ignore = {5'b00000};
+                                                                             }
+         
+        // PMU : Exu stall due to different ops
+        `ifdef FPU_IS_PRESENT
+            exu_stall: coverpoint(exu_stalling_ops) iff (rsn_i) {wildcard bins mul_stall = {4'b???1};
+                                                                 wildcard bins div_stall = {4'b??1?};
+                                                                 wildcard bins mem_stall = {4'b?1??};
+                                                                 wildcard bins fpu_stall = {4'b1???};
+                                                                 ignore_bins ignore = {0};
+                                                                }
+        `else
+            exu_stall: coverpoint(exu_stalling_ops) iff (rsn_i) {wildcard bins mul_stall = {3'b??1};
+                                                                 wildcard bins div_stall = {3'b?1?};
+                                                                 wildcard bins mem_stall = {3'b1??};
+                                                                 ignore_bins ignore = {0};
+                                                                }                                                
+        `endif
+
+        // EXU operand/register forwarding/bypassing
+        exu_bypass: coverpoint(forwarded_regs) iff (rsn_i) {bins bypass_reg_combinations[] = {[1 : $]};} // All possible combinations of source registers forwarding/bypasing
+
     endgroup: backend_general_cg
     backend_general_cg backend_general_cg_inst;
+
+    covergroup pmu_events_cg with function sample(bit [BRANCH_PMU_EVENTS-1:0] sig, int position);
+        branch_PMU_events: coverpoint (position) iff (sig[position]==1) {bins pmu_branch_events[] = {[0:BRANCH_PMU_EVENTS-1]};}
+    endgroup: pmu_events_cg
+    pmu_events_cg pmu_events_cg_inst;
 
     /* ----- Instantiate cover groups here -----*/
     initial
@@ -521,6 +599,7 @@ module cov_backend (
         backend_exceptions_cg_inst          =   new();
         backend_structures_stressed_cg_inst =   new();
         backend_general_cg_inst             =   new();
+        pmu_events_cg_inst                  =   new();
     end
 
     /* ----- Sample cover groups here -----*/
@@ -529,6 +608,10 @@ module cov_backend (
         backend_exceptions_cg_inst.sample();
         backend_structures_stressed_cg_inst.sample();
         backend_general_cg_inst.sample();
+
+        for(int i=0; i<BRANCH_PMU_EVENTS; i++) begin
+            pmu_events_cg_inst.sample(branch_pmu_events, i);
+        end
     end
 
 endmodule
