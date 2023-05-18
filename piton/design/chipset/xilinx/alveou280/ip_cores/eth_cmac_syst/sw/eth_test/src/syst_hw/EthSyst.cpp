@@ -310,14 +310,44 @@ void EthSyst::ethCoreBringup(bool gtLoopback) {
 //***************** Bring-up of Aurora Core *****************
 void EthSyst::aurCoreBringup(bool gtLoopback) {
   printf("------- Aurora Core bring-up -------\n");
-  printf("GT_POWER_PINS: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  uint8_t lbMode;
+
   if (gtLoopback) {
     printf("Enabling Near-End PMA Loopback\n");
-    gtCtrl[GT_CTRL] = 0x2; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
+    lbMode = 0x2; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
   } else {
     printf("Enabling GT normal operation with no loopback\n");
-    gtCtrl[GT_CTRL] = 0; // via GPIO
+    lbMode = 0;
   }
+
+  printf("Applying Aurora reset\n");
+  gtCtrl[GT_CTRL] = lbMode + 0x20;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Applying GT reset\n");
+  gtCtrl[GT_CTRL] = lbMode + 0x60;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(3); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Releasing GT reset\n");
+  gtCtrl[GT_CTRL] = lbMode + 0x20;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Releasing Aurora reset\n");
+  gtCtrl[GT_CTRL] = lbMode;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+
   printf("\n");
 }
 
