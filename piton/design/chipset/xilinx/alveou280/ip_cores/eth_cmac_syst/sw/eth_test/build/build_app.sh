@@ -20,7 +20,7 @@ then
 elif grep "AURORA,yes.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Aurora DMA memory is HBM-based in hw design, setting its addresses accordingly"
-  DEF_DMA_MEM_HBM="-DDMA_MEM_HBM"
+  DEF_DMA_MEM_HBM="-DAURORA -DDMA_MEM_HBM"
 else
   echo "----- Eth/Aurora DMA memory is SRAM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM=""

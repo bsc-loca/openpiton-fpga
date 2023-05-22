@@ -46,8 +46,14 @@ int main(int argc, char *argv[])
         DMA_AXI_BURST = ETH_WORD_SIZE * std::max(XPAR_AXI_DMA_0_MM2S_BURST_SIZE, // the parameter set in Vivado AXI_DMA IP
                                                  XPAR_AXI_DMA_0_S2MM_BURST_SIZE),
         DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
+      #ifdef AURORA
+        AUR_WORD_SIZE    = ETH_WORD_SIZE/2,
+        ETH_PACKET_LEN   = AUR_WORD_SIZE*220, // the parameter to play with: for Aurora that is the figured out non-failing maximum frame length, should be aligned to AUR_WORD_SIZE
+      #else
         ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
                                                                  // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
+      #endif
+
       #ifdef DMA_MEM_HBM
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN
       #else
@@ -557,12 +563,17 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
-        // ethSyst.ethCoreInit();
-        // ethSyst.ethCoreBringup(true);  // loopback mode
+        #ifdef AURORA
         ethSyst.aurCoreBringup(true);  // loopback mode
+        #else
+        ethSyst.ethCoreInit();
+        ethSyst.ethCoreBringup(true);  // loopback mode
+        #endif
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
-        // ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #ifndef AURORA
+        ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #endif
         sleep(1); // in seconds
 
         printf("------- Running DMA Near-end loopback test -------\n");
@@ -652,7 +663,9 @@ int main(int argc, char *argv[])
           }
         }
 
+        #ifndef AURORA
         ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
+        #endif
         printf("------- DMA Near-end loopback test PASSED -------\n\n");
 
       }
