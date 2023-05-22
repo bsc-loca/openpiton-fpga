@@ -321,31 +321,18 @@ void EthSyst::aurCoreBringup(bool gtLoopback) {
     lbMode = 0;
   }
 
-  printf("Applying Aurora reset\n");
-  gtCtrl[GT_CTRL] = lbMode + 0x20;
-  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
-  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  printf("Applying GT reset\n");
+  printf("Applying Aurora and GT resets\n");
   gtCtrl[GT_CTRL] = lbMode + 0x60;
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(3); // in seconds, user wait process
+  sleep(1); // in seconds, user wait process
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
   printf("Releasing GT reset\n");
   gtCtrl[GT_CTRL] = lbMode + 0x20;
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
   printf("Releasing Aurora reset\n");
   gtCtrl[GT_CTRL] = lbMode;
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
-  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
-  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
-  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
-  sleep(1); // in seconds, user wait process
   printf("Status: %0X \n", gtCtrl[GT_CTRL]);
 
   printf("\n");
