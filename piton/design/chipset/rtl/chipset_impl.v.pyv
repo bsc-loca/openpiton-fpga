@@ -1694,10 +1694,10 @@ fake_mem_ctrl fake_mem_ctrl(
 `ifdef PITON_EXTRA_MEMS
 genvar i;
 generate
-for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MT_
+for(i=0;i<`PITON_EXTRA_MEMS;i=i+1) begin: MC_
    fake_mem_ctrl #(
     .HMB_CHAN_NUM(i)
-   ) fake_mt ( 
+   ) fake_mc ( 
     .clk                ( chipset_clk        ), 
     .rst_n              ( chipset_rst_n      ), 
     .noc_valid_in       ( intf_mcx_val_noc2 [i] ), 
