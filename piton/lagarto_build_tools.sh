@@ -57,6 +57,7 @@ else
   BUILD_TMP_PATH=${VAS_TILE_CORE_PATH}/tmp
 
   git submodule update --init --recursive piton/design/chip/tile/vas_tile_core
+  git submodule update --init --recursive piton/design/chipset/meep-memtile
 
   # parallel compilation
   export NUM_JOBS=4
@@ -68,12 +69,12 @@ else
   #########################################
 
   scripts/build-riscv-gcc.sh   # Build the RISCV toolchain
-  
+
   #########################################
   # build the RISCV tests  and benchmarks #
   #########################################
- 
-  if [ ! -d ${BUILD_TMP_PATH} ] 
+
+  if [ ! -d ${BUILD_TMP_PATH} ]
   then
     scripts/make-tmp.sh          # Make the tmp area
     cd ${BUILD_TMP_PATH}
@@ -91,32 +92,20 @@ else
     echo "Updated, don't update the env"
     echo "----------------------------------------------------------------------"
     echo
-    #Neiel has apadted the OP env for riscv-test, we don't have to this
-    # # link in adapted syscalls.c such that the benchmarks can be used in the OpenPiton TB
-    # cd ${BUILD_TMP_PATH}/riscv-tests/benchmarks/common/
-    
-    # rm syscalls.c  
-    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/syscalls.c
-    
-    # rm util.h 
-    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/util.h
-    
-    # rm crt.S 
-    # ln -s ${PITON_ROOT}/piton/verif/diag/assembly/include/riscv/lagarto/crt.S
-    
+
     cd ${BUILD_TMP_PATH}/riscv-tests/build
 
-    
+
     ../configure --prefix=${BUILD_TMP_PATH}/tmp/riscv-tests/build
-    
+
     make clean
-    
+
     make isa        -j${NUM_JOBS} > /dev/null
-    
+
     make benchmarks -j${NUM_JOBS} > /dev/null
-    
+
     make install
-       
+
     cd ${PITON_ROOT}
 
     echo
@@ -124,7 +113,7 @@ else
     echo "build complete"
     echo "----------------------------------------------------------------------"
     echo
-    
+
   else
 
     cd ${PITON_ROOT}

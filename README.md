@@ -1,4 +1,5 @@
 # OpenPiton MEEP: ACME
+
 ## Description
 
 This repository is a fork from OpenPiton: https://github.com/PrincetonUniversity/openpiton
@@ -23,6 +24,12 @@ All new bug will be investigated and resolved using bug branch. like bug/1232
     cd meep_openpiton
     source piton/lagarto_setup.sh
     source piton/lagarto_build_tools.sh
+
+### How to use the CI
+
+The meep-openpiton repo is linked with the FPGA_Shell using the ci flow. If you are interested to use the three environments to run a pipeline.
+
+Use the environment section of this [readme](https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/fpga_shell/-/blob/production/README.md)
 
 ## Using Makefile
 
@@ -63,7 +70,6 @@ Compiling with torture (to generate signature file for spike):
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -config_rtl=OPENPITON_LAGARTO_COMMIT_LOG
 
-
 Compilation with VPU is made with the `-vpu_enable ` key. User can select the number of lanes to build and run the test. Currently MEEP-VPU supports 2, 4, 8 and 16 lanes. By default 16 lanes are selected, but can be modified by passing a parameter:
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -vpu_enable -config_rtl=VPU_2_LANES
@@ -75,6 +81,12 @@ Compilation with Systolic Arrays is made with the `-sa_hevc_enable` or `-sa_nn_e
 
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_hevc_enable
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -sa_nn_enable
+
+To compile with choice of Memtile implementation, use `-memtile_enable=PARAM` key, where `PARAM` can take values `MOCK` (to use fake memtile) or `BEHAV` (to use behavioral model). Along with `-memtile_enable=PARAM`, the `-hbm` key is required:
+
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=MOCK
+    sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=BEHAV
+
 
 ### Clean builds
 
