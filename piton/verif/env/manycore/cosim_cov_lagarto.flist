@@ -5,6 +5,3 @@ spike_scoreboard.sv
 cov_isa_defs.sv
 cov_isa.sv
 cov_priv_isa.sv
-cov_core_defs.sv
-cov_frontend.sv
-cov_backend.sv
