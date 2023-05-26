@@ -97,6 +97,15 @@ function ea_flavours() {
             PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1 16 Vector Lanes" ${NC}
             ;;
+        acme_ea_1h2v)
+            CORE=lagarto
+            XTILES=1
+            YTILES=1
+            VLANES=2
+            NTILES=$(($XTILES * $YTILES))
+            PROTO_OPTIONS+=" --vpu_enable --vlanes $VLANES "
+            echo -e ${BP}"    Selected build configuration: Lagarto Hun 1x1 2 Vector Lanes " ${NC}
+            ;;
         acme_ea_4h2v)
             CORE=lagarto
             XTILES=2
@@ -201,7 +210,7 @@ function ea_options() {
 # The first one must be the EA, second one will be PROTOSYN_FLAG
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_4h2m]=1 [acme_ea_4h2v2m]=1 [acme_ea_16h]=1 )
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_4h2m]=1 [acme_ea_4h2v2m]=1 [acme_ea_16h]=1 )
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is"
