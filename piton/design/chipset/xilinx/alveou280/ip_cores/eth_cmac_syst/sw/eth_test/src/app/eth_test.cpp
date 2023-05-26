@@ -495,6 +495,10 @@ int main(int argc, char *argv[])
         printf("------- System SRAM memcpy() bandwidth measurement PASSED -------\n\n");
 
 
+        #ifdef AURORA
+        // running Aurora reset here in order to bring-up GT clocks powering the DMA
+        ethSyst.aurCoreBringup(true);  // loopback mode
+        #endif
         ethSyst.axiDmaInit();
         ethSyst.switch_LB_DMA_Eth(true,  true); // Tx switch: DMA->LB, LB->Eth
         ethSyst.switch_LB_DMA_Eth(false, true); // Rx switch: LB->DMA, Eth->LB
@@ -567,9 +571,7 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
-        #ifdef AURORA
-        ethSyst.aurCoreBringup(true);  // loopback mode
-        #else
+        #ifndef AURORA
         ethSyst.ethCoreInit();
         ethSyst.ethCoreBringup(true);  // loopback mode
         #endif
