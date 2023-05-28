@@ -307,6 +307,53 @@ void EthSyst::ethCoreBringup(bool gtLoopback) {
 }
 
 
+//***************** Bring-up of Aurora Core *****************
+void EthSyst::aurCoreBringup(bool gtLoopback) {
+  printf("------- Aurora Core bring-up -------\n");
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+
+  if (gtLoopback) {
+    printf("Enabling Near-End PMA Loopback\n");
+    aurLbMode = 0x2; // via GPIO: http://www.xilinx.com/support/documentation/user_guides/ug578-ultrascale-gty-transceivers.pdf#page=88
+  } else {
+    printf("Enabling GT normal operation with no loopback\n");
+    aurLbMode = 0;
+  }
+
+  printf("Applying Aurora and GT resets\n");
+  gtCtrl[GT_CTRL] = aurLbMode + 0x60;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  sleep(1); // in seconds, user wait process
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Releasing GT reset\n");
+  gtCtrl[GT_CTRL] = aurLbMode + 0x20;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  printf("Releasing Aurora reset\n");
+  gtCtrl[GT_CTRL] = aurLbMode;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+
+  printf("\n");
+
+  physConnOrder = PHYS_CONN_WAIT_INI;
+
+  enum {AUR_UP_STATE = 0x1F5F};                                                 
+  printf("Waiting for Power, Clocks, Lanes and Channel are up: %0X ...\n", AUR_UP_STATE);
+  // https://docs.xilinx.com/r/en-US/pg074-aurora-64b66b/Status-Control-and-Transceiver-Ports
+  // [3:0]-gt_powergood[3:0], [4]-gt_pll_lock, [6]-gt_qplllock_quad1_out, [11:8]-lane_up[3:0], [9]-channel_up
+  while(gtCtrl[GT_CTRL] != AUR_UP_STATE) {
+    printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+    if (physConnOrder) physConnOrder--;
+    sleep(1); // in seconds, user wait process
+  }
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+
+  printf("This Aurora instance is physically connected in order (zero means 1st, non-zero means 2nd): %d \n", physConnOrder);
+  printf("------- Physical connection is established -------\n");
+  printf("\n");
+}
+
+
 //***************** Enabling Ethernet core Tx/Rx *****************
 void EthSyst::ethTxRxEnable() {
   printf("Enabling Ethernet TX/RX:\n");
@@ -332,6 +379,15 @@ void EthSyst::ethTxRxDisable() {
   ethCore[CONFIGURATION_RX_REG1] = CONFIGURATION_RX_REG1_CTL_RX_ENABLE_DEFAULT;
   printf("CONFIGURATION_TX/RX_REG1: %0X/%0X \n", ethCore[CONFIGURATION_TX_REG1],
                                                  ethCore[CONFIGURATION_RX_REG1]);
+}
+
+
+//***************** Disabling Aurora core *****************
+void EthSyst::aurDisable() {
+  printf("Disabling Aurora:\n");
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
+  gtCtrl[GT_CTRL] = aurLbMode + 0x10;
+  printf("Status: %0X \n", gtCtrl[GT_CTRL]);
 }
 
 

@@ -46,8 +46,14 @@ int main(int argc, char *argv[])
         DMA_AXI_BURST = ETH_WORD_SIZE * std::max(XPAR_AXI_DMA_0_MM2S_BURST_SIZE, // the parameter set in Vivado AXI_DMA IP
                                                  XPAR_AXI_DMA_0_S2MM_BURST_SIZE),
         DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
+      #ifdef AURORA
+        AUR_WORD_SIZE    = ETH_WORD_SIZE/2,
+        ETH_PACKET_LEN   = AUR_WORD_SIZE*220, // the parameter to play with: for Aurora that is the figured out non-failing maximum frame length, should be aligned to AUR_WORD_SIZE
+      #else
         ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
                                                                  // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
+      #endif
+
       #ifdef DMA_MEM_HBM
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN
       #else
@@ -70,7 +76,11 @@ int main(int argc, char *argv[])
   while (true) {
 
     printf("\n");
-    printf("------ Ethernet Test App ------\n");
+    #ifdef AURORA
+      printf("------ Aurora Test App ------\n");
+    #else
+      printf("------ Ethernet Test App ------\n");
+    #endif
     printf("Please enter test mode:\n");
     printf("  Single board self-diag/loopback tests: l\n");
     printf("  Two boards diag communication tests:   c\n");
@@ -485,6 +495,10 @@ int main(int argc, char *argv[])
         printf("------- System SRAM memcpy() bandwidth measurement PASSED -------\n\n");
 
 
+        #ifdef AURORA
+        // running Aurora reset here in order to bring-up GT clocks powering the DMA
+        ethSyst.aurCoreBringup(true);  // loopback mode
+        #endif
         ethSyst.axiDmaInit();
         ethSyst.switch_LB_DMA_Eth(true,  true); // Tx switch: DMA->LB, LB->Eth
         ethSyst.switch_LB_DMA_Eth(false, true); // Rx switch: LB->DMA, Eth->LB
@@ -557,11 +571,15 @@ int main(int argc, char *argv[])
         }
         printf("------- DMA Short Loopback test PASSED -------\n\n");
 
+        #ifndef AURORA
         ethSyst.ethCoreInit();
         ethSyst.ethCoreBringup(true);  // loopback mode
+        #endif
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        #ifndef AURORA
         ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #endif
         sleep(1); // in seconds
 
         printf("------- Running DMA Near-end loopback test -------\n");
@@ -651,7 +669,9 @@ int main(int argc, char *argv[])
           }
         }
 
+        #ifndef AURORA
         ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
+        #endif
         printf("------- DMA Near-end loopback test PASSED -------\n\n");
 
       }
@@ -661,18 +681,27 @@ int main(int argc, char *argv[])
       case 'c': {
         printf("------- Running 2-boards communication test -------\n");
         printf("Please make sure that the same mode is running on the other side and confirm with 'y'...\n");
+        #ifdef AURORA
+        ethSyst.aurDisable(); //Disabling Aurora
+        #endif
         char confirm;
         scanf("%s", &confirm);
         printf("%c\n", confirm);
         if (confirm != 'y') break;
 
         ethSyst.timerCntInit(); // initializing Timer
+        #ifdef AURORA
+        ethSyst.aurCoreBringup(false);  // loopback mode
+        #else
         ethSyst.ethCoreInit();
         ethSyst.ethCoreBringup(false); // non-loopback mode
+        #endif
         ethSyst.axiDmaInit();
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        #ifndef AURORA
         ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #endif
         sleep(1); // in seconds
 
         printf("------- Async DMA 2-boards communication test -------\n");
@@ -690,7 +719,7 @@ int main(int argc, char *argv[])
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
                              ethSyst.rxBdCount));
-      #ifdef DMA_MEM_HBM
+      #if defined(DMA_MEM_HBM) && !defined(AURORA)
         size_t txBunch = packets;
       #else
         size_t txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
@@ -781,7 +810,7 @@ int main(int argc, char *argv[])
           packets = std::min(packets,
                     std::min(ethSyst.txBdCount,
                              ethSyst.rxBdCount));
-      #ifdef DMA_MEM_HBM
+      #if defined(DMA_MEM_HBM) && !defined(AURORA)
         txBunch = packets;
       #else
         txBunch = ETH_PACKET_LEN > ETH_WORD_SIZE*4 ? 1 : packets; // whole bunch Tx kick-off for small packets
@@ -866,13 +895,19 @@ int main(int argc, char *argv[])
           }
         }
 
+        #ifndef AURORA
         ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
+        #endif
         printf("------- Round-trip DMA 2-boards communication test PASSED -------\n\n");
       }
       break;
 
 
       case 'i': {
+        #ifdef AURORA
+          printf("------- IP-based tests are not applicable for Aurora -------\n");
+          break;
+        #endif
         printf("------- Running 2-boards IP-based tests -------\n");
         printf("Please make sure that the same mode is running on the other side and confirm with 'y'...\n");
         char confirm;
@@ -984,6 +1019,10 @@ int main(int argc, char *argv[])
       break;
 
       case 's': {
+        #ifdef AURORA
+          printf("------- Ethernet link setup is not applicable for Aurora -------\n");
+          break;
+        #endif
         printf("------- Ethernet link setup -------\n");
         ethSyst.ethCoreInit();
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
