@@ -219,7 +219,8 @@ class EthSyst {
     GT_LOOPBACK_REG       = GT_LOOPBACK_REG_OFFSET       / sizeof(uint32_t)
   };
   uint32_t volatile* rxtxCtrl; // Ethernet core control via pins
-  uint32_t volatile* gtCtrl;   // GT control via pins 
+  uint32_t volatile* gtCtrl;   // GT control via pins
+  uint8_t aurLbMode = 0; // storage of loopback mode for Aurora
   enum {
     TX_CTRL = XGPIO_DATA_OFFSET  / sizeof(uint32_t),
     RX_CTRL = XGPIO_DATA2_OFFSET / sizeof(uint32_t),
@@ -302,6 +303,8 @@ class EthSyst {
   void ethCoreBringup(bool);
   void ethTxRxEnable();
   void ethTxRxDisable();
+  void aurCoreBringup(bool);
+  void aurDisable();
 
   void axiDmaInit();
   XAxiDma_Bd* dmaBDAlloc   (bool, size_t, size_t, size_t, size_t);
