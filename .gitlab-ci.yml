@@ -114,8 +114,8 @@ simulation:
     - !reference [.sim_rules, rules]
   before_script:
     - !reference [.git_clean, before_script]
-    - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
-    - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
+    - . /apps/Siemens/2022-23/scripts/QUESTA-CORE-PRIME_2022.4_RHELx86.sh
+    - export QUESTA_HOME=/apps/Siemens/2022-23/RHELx86/QUESTA-CORE-PRIME_2022.4
     # eda env mentor licence
     - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
     - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
@@ -137,7 +137,7 @@ simulation:
     # Run tests generated in vas_tile_core with source piton/lagarto_build_tools.sh inside run_all_isa_groups.sh script
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
     - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane > /dev/null
-    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
+    - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim passed" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
 
 ###################################
 # Synthesis

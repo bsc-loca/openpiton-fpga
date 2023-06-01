@@ -12,7 +12,11 @@ module cov_priv_isa(
     input [63:0]                            i_mideleg,
     input [63:0]                            i_medeleg,
     input [11:0]                            i_csr_addr,
+`ifdef PITON_LAGARTO
+    input csr_cmd_t                         i_csr_cmd,
+`else
     input [2:0]                             i_csr_cmd,
+`endif
     input [1:0]                             i_priv_lvl,
     input var drac_pkg::exception_t         i_pipeline_exc,
     input var drac_pkg::exception_t         i_csr_exc,
