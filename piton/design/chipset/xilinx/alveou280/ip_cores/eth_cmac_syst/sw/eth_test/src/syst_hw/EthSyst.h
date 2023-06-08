@@ -239,8 +239,14 @@ class EthSyst {
   // DMA Scatter-Gather memory Rx/Tx distribution
   float const TIMER_TICK = 10.; //ns
   enum {
+    #ifndef AURORA
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
     ETH_MAX_PACK_SIZE = 9600,
+    #else
+    // Limitations for Aurora caused by no ability to support non-aligned to 32 bytes (Aurora stream width) packets.
+    ETH_MIN_PACK_SIZE = 32*3, // min packet should be big enough to support exchange with non-aligned packets (for ping max=74)
+    ETH_MAX_PACK_SIZE = 32*220,
+    #endif
     UNCACHE_MEM_ADDR = DRAM_UNCACHE_BASEADDR,
     CACHE_MEM_ADDR   = DRAM_BASEADDR + DRAM_ADRRANGE - ETH_SYST_ADRRANGE,
     // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48

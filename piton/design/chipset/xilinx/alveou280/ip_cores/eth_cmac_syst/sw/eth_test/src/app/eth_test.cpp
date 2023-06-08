@@ -904,24 +904,29 @@ int main(int argc, char *argv[])
 
 
       case 'i': {
-        #ifdef AURORA
-          printf("------- IP-based tests are not applicable for Aurora -------\n");
-          break;
-        #endif
         printf("------- Running 2-boards IP-based tests -------\n");
         printf("Please make sure that the same mode is running on the other side and confirm with 'y'...\n");
+        #ifdef AURORA
+        ethSyst.aurDisable(); //Disabling Aurora
+        #endif
         char confirm;
         scanf("%s", &confirm);
         printf("%c\n", confirm);
         if (confirm != 'y') break;
 
         ethSyst.timerCntInit(); // initializing Timer
+        #ifdef AURORA
+        ethSyst.aurCoreBringup(false);  // loopback mode
+        #else
         ethSyst.ethCoreInit();
         ethSyst.ethCoreBringup(false); // non-loopback mode
+        #endif
         ethSyst.axiDmaInit();
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        #ifndef AURORA
         ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #endif
 
         while (true) {
           printf("\n------- Please choose particular IP-based test:\n");
@@ -1014,20 +1019,22 @@ int main(int argc, char *argv[])
           if (choice == 'e') break;
         }
 
-        ethSyst.ethTxRxDisable();
+        #ifndef AURORA
+        ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
+        #endif
       }
       break;
 
       case 's': {
-        #ifdef AURORA
-          printf("------- Ethernet link setup is not applicable for Aurora -------\n");
-          break;
-        #endif
         printf("------- Ethernet link setup -------\n");
+        #ifndef AURORA
         ethSyst.ethCoreInit();
+        #endif
         ethSyst.switch_LB_DMA_Eth(true,  false); // Tx switch: DMA->Eth, Eth LB->DMA LB
         ethSyst.switch_LB_DMA_Eth(false, false); // Rx switch: Eth->DMA, DMA LB->Eth LB
+        #ifndef AURORA
         ethSyst.ethTxRxEnable(); // Enabling Ethernet TX/RX
+        #endif
       }
       break;
 
