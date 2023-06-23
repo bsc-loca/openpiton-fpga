@@ -1945,10 +1945,6 @@ sub generic_sim_run
       }
       # remove suppressible error for meep_vpu
       $cmd .= " -suppress 13174 " ;
-      # remove suppressible error for initialize struct: '{default: 0} with Questasim 2022
-      if ($opt{ariane}) {
-        $cmd .= " -suppress 8386 " ;
-      }
       if ($opt{log_all}) {
       	# this logs everything such that the sim can be inspected later on
       	print("$prg: dumping all waves to save.wlf - this file can get very large so make sure you run this on a fast disk with enough space.\n");
@@ -1956,7 +1952,7 @@ sub generic_sim_run
       }
       # add path for dpi only for lagarto
       if ($opt{lagarto}) {
-        $cmd .= "-sv_lib ";
+      $cmd .= "-sv_lib ";
         $cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture ";
       }
       if ($opt{cosim}) {

@@ -35,6 +35,7 @@
 
 // fake memory and top module
 axi_slave_ram.v
+//mt_fake_axi_ram.sv
 ../../../design/chipset/meep-memtile/src/behav/memtile_behav_top.sv
 ../../../design/chipset/meep-memtile/src/rtl/memtile_mock_top.sv
 //../../../design/chipset/meep-memtile/src/rtl/memtile_rtl_top.sv
