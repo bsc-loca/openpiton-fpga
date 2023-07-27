@@ -42,17 +42,18 @@ int main(int argc, char *argv[])
   size_t const rxMemWords = rxMemSize / sizeof(uint32_t);
   size_t const sgMemWords = sgMemSize / sizeof(uint32_t);
 
-  enum {ETH_WORD_SIZE = ETH_DMA_AXIS_WIDTH / 8,
+  enum {
+      #ifdef AURORA
+        ETH_WORD_SIZE  = ETH_DMA_AXIS_WIDTH / 16,
+        ETH_PACKET_LEN = ETH_WORD_SIZE*220, // the parameter to play with: for Aurora that is the figured out non-failing maximum frame length, should be aligned to AUR_WORD_SIZE
+      #else
+        ETH_WORD_SIZE  = ETH_DMA_AXIS_WIDTH / 8,
+        ETH_PACKET_LEN = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
+                                                                 // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
+      #endif
         DMA_AXI_BURST = ETH_WORD_SIZE * std::max(XPAR_AXI_DMA_0_MM2S_BURST_SIZE, // the parameter set in Vivado AXI_DMA IP
                                                  XPAR_AXI_DMA_0_S2MM_BURST_SIZE),
         DMA_PACKET_LEN   = txrxMemSize/3     - sizeof(uint32_t), // the parameter to play with (no issies met for any values and granularities)
-      #ifdef AURORA
-        AUR_WORD_SIZE    = ETH_WORD_SIZE/2,
-        ETH_PACKET_LEN   = AUR_WORD_SIZE*220, // the parameter to play with: for Aurora that is the figured out non-failing maximum frame length, should be aligned to AUR_WORD_SIZE
-      #else
-        ETH_PACKET_LEN   = ETH_WORD_SIZE*150 - sizeof(uint32_t), // the parameter to play with (no issues met for granularity=sizeof(uint32_t) and range=[(1...~150)*ETH_WORD_SIZE]
-                                                                 // (defaults in Eth100Gb IP as min/max packet length=64...9600(but only upto 9596 works)))
-      #endif
 
       #ifdef DMA_MEM_HBM
         ETH_MEMPACK_SIZE = ETH_PACKET_LEN
@@ -669,6 +670,30 @@ int main(int argc, char *argv[])
           }
         }
 
+        // measuring latecy while transferring minimal word packet
+        packets = 1;
+        printf("\n Measuring latecy, DMA: Transferring %ld packet with length %d bytes between memories \n",
+                    packets, ETH_WORD_SIZE);
+        dmaTxMemPtr = size_t(ethSyst.TX_MEM_ADDR);
+        dmaRxMemPtr = size_t(ethSyst.RX_MEM_ADDR);
+        if (XAxiDma_HasSg(&ethSyst.axiDma)) {
+          XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaRxMemPtr); // Rx
+          XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaTxMemPtr); // Tx
+          ethSyst.dmaBDTransfer                   (true,  packets, packets,        rxBdPtr); // Rx
+          ethSyst.dmaBDTransfer                   (false, packets, packets,        txBdPtr); // Tx, each packet kick-off for big packets
+          txBdPtr             = ethSyst.dmaBDPoll (false, packets); // Tx
+          rxBdPtr             = ethSyst.dmaBDPoll (true,  packets); // Rx
+          ethSyst.dmaBDFree                       (false, packets, ETH_WORD_SIZE, txBdPtr); // Tx
+          ethSyst.dmaBDFree                       (true,  packets, ETH_WORD_SIZE, rxBdPtr); // Rx
+
+          uint32_t transDat = packets * ETH_WORD_SIZE;
+          float txTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
+          float rxTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
+          printf("Transfer: %d Bytes \n", transDat);
+          printf("Tx time: %f ns \n", txTime);
+          printf("Rx time: %f ns \n", rxTime);
+        }
+
         #ifndef AURORA
         ethSyst.ethTxRxDisable(); //Disabling Ethernet TX/RX
         #endif
@@ -793,6 +818,32 @@ int main(int argc, char *argv[])
               exit(1);
           }
         }
+
+        // measuring latecy while transferring minimal word packet
+        packets = 1;
+        printf("\n Measuring latecy, DMA: Transferring %ld packet with length %d bytes between memories \n",
+                    packets, ETH_WORD_SIZE);
+        dmaTxMemPtr = size_t(ethSyst.TX_MEM_ADDR);
+        dmaRxMemPtr = size_t(ethSyst.RX_MEM_ADDR);
+        if (XAxiDma_HasSg(&ethSyst.axiDma)) {
+          XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaRxMemPtr); // Rx
+          XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaTxMemPtr); // Tx
+          ethSyst.dmaBDTransfer                   (true,  packets, packets,        rxBdPtr); // Rx
+          sleep(3); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
+          ethSyst.dmaBDTransfer                   (false, packets, packets,        txBdPtr); // Tx, each packet kick-off for big packets
+          txBdPtr             = ethSyst.dmaBDPoll (false, packets); // Tx
+          rxBdPtr             = ethSyst.dmaBDPoll (true,  packets); // Rx
+          ethSyst.dmaBDFree                       (false, packets, ETH_WORD_SIZE, txBdPtr); // Tx
+          ethSyst.dmaBDFree                       (true,  packets, ETH_WORD_SIZE, rxBdPtr); // Rx
+
+          uint32_t transDat = packets * ETH_WORD_SIZE;
+          float txTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
+          float rxTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
+          printf("Transfer: %d Bytes \n", transDat);
+          printf("Tx time: %f ns \n", txTime);
+          if (0) printf("Rx time: %f ns \n", rxTime); // meaningless here
+        }
+
         printf("------- Async DMA 2-boards communication test PASSED -------\n\n");
 
 
@@ -893,6 +944,38 @@ int main(int argc, char *argv[])
                           word, packet, addr, ethSyst.rxMem[addr]);
               exit(1);
           }
+        }
+
+        // measuring latecy while transferring minimal word packet
+        packets = 1;
+        printf("\n Measuring latecy, DMA: Transferring %ld packet with length %d bytes between memories \n",
+                    packets, ETH_WORD_SIZE);
+        dmaTxMemPtr = size_t(ethSyst.TX_MEM_ADDR);
+        dmaRxMemPtr = size_t(ethSyst.RX_MEM_ADDR);
+        if (XAxiDma_HasSg(&ethSyst.axiDma)) {
+          XAxiDma_Bd* rxBdPtr = ethSyst.dmaBDAlloc(true,  packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaRxMemPtr); // Rx
+          XAxiDma_Bd* txBdPtr = ethSyst.dmaBDAlloc(false, packets, ETH_WORD_SIZE, ETH_WORD_SIZE, dmaTxMemPtr); // Tx
+          ethSyst.dmaBDTransfer                   (true,  packets, packets,        rxBdPtr); // Rx
+          if (ethSyst.physConnOrder) { // depending on board instance play "initiator" role
+            printf("Initiator side: starting the transfer and receiving it back \n");
+            sleep(3); // in seconds, timeout before Tx transfer to make sure opposite side also has set Rx transfer
+            ethSyst.dmaBDTransfer                 (false, packets, packets,        txBdPtr); // Tx, each packet kick-off for big packets
+            txBdPtr           = ethSyst.dmaBDPoll (false, packets); // Tx
+            rxBdPtr           = ethSyst.dmaBDPoll (true,  packets); // Rx
+          } else { // depending on board instance play "responder" role
+            printf("Responder side: accepting the transfer and sending it back \n");
+            rxBdPtr           = ethSyst.dmaBDPoll (true,  packets); // Rx
+            ethSyst.dmaBDTransfer                 (false, packets, packets,        txBdPtr); // Tx, each packet kick-off for big packets
+            txBdPtr           = ethSyst.dmaBDPoll (false, packets); // Tx
+          }
+          ethSyst.dmaBDFree                       (false, packets, ETH_WORD_SIZE, txBdPtr); // Tx
+          ethSyst.dmaBDFree                       (true,  packets, ETH_WORD_SIZE, rxBdPtr); // Rx
+          uint32_t transDat = packets * ETH_WORD_SIZE;
+          float txTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 0) * ethSyst.TIMER_TICK;
+          float rxTime = XTmrCtr_GetValue(&ethSyst.timerCnt, 1) * ethSyst.TIMER_TICK;
+          printf("Transfer: %d Bytes \n", transDat);
+          printf("Tx time: %f ns \n", txTime);
+          if (ethSyst.physConnOrder) printf("Rx time: %f ns \n", rxTime);
         }
 
         #ifndef AURORA

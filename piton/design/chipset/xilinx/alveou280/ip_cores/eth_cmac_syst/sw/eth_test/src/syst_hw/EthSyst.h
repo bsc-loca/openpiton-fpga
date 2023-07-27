@@ -237,7 +237,7 @@ class EthSyst {
   XTmrCtr timerCnt; // Instance of Timer counter
   XAxiDma axiDma;   // AXI DMA instance definitions
   // DMA Scatter-Gather memory Rx/Tx distribution
-  float const TIMER_TICK = 10.; //ns
+  float const TIMER_TICK = 20.; //ns
   enum {
     #ifndef AURORA
     ETH_MIN_PACK_SIZE = 64, // Limitations in 100Gb Ethernet IP (set in Vivado)
