@@ -161,9 +161,9 @@ begin
                   msg_src_fbits,
                   msg_sdid,
                   msg_lsid,
-                  msg_ini_x[`MSG_SRC_X_WIDTH/2-1:0],
-                  msg_ini_y[`MSG_SRC_Y_WIDTH/2-1:0],
-                  6'd0,
+                  msg_ini_x[`MSG_INI_X_WIDTH-1:0],
+                  msg_ini_y[`MSG_INI_Y_WIDTH-1:0],
+                  {(`NOC_DATA_WIDTH-`NOC_NODEID_WIDTH-`MSG_SDID_WIDTH-`MSG_LSID_WIDTH-`MSG_INI_X_WIDTH-`MSG_INI_Y_WIDTH){1'b0}},
 
                   8'd0,
                   msg_addr,

@@ -108,6 +108,9 @@ network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(2)
                                       .data_val1(data_internal), // same as data_val, done for buffering
                                       .data_avail(valid_out_internal));
 
+wire [2:0] final_bits;
+assign final_bits = data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-1] ? 3'b0 : data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-2:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4];
+
 dynamic_input_control control(.thanks_all_temp_out(thanks_all_temp),
                               .route_req_n_out(route_req_n_out), 
                               .route_req_e_out(route_req_e_out), 
@@ -130,7 +133,7 @@ dynamic_input_control control(.thanks_all_temp_out(thanks_all_temp),
 `ifdef EDGE_ROUTE_ENABLE                             
                               .abs_addr(data_internal[`MSG_ADDR]),
 `endif
-                              .final_bits(data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-2:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4]),
+                              .final_bits(final_bits),
                               .valid_in(valid_out_internal),
                               .thanks_n(thanks_n), .thanks_e(thanks_e), .thanks_s(thanks_s), .thanks_w(thanks_w), .thanks_p(thanks_p),
                               .length(data_internal[`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-5:`DATA_WIDTH-`CHIP_ID_WIDTH-2*`XY_WIDTH-4-`PAYLOAD_LEN]));
