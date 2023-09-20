@@ -67,6 +67,7 @@ PITON_ARIANE   = int(os.environ.get('PITON_ARIANE', '0'))
 PITON_LAGARTO  = int(os.environ.get('PITON_LAGARTO', '0'))
 PITON_PICO     = int(os.environ.get('PITON_PICO', '0'))
 PITON_PICO_HET = int(os.environ.get('PITON_PICO_HET', '0'))
+PITON_RV64_PLATFORM   = int(os.environ.get('PITON_RV64_PLATFORM', '0'))
 
 if PITON_ARIANE or PITON_PICO or PITON_LAGARTO:
     NUM_THREADS = PITON_NUM_TILES

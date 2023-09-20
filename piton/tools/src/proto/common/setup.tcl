@@ -33,6 +33,8 @@ set MODEL_DIR $::env(MODEL_DIR)
 set DESIGN_DIR $::env(PROTOSYN_RUNTIME_DESIGN_PATH)
 set BOARD $::env(PROTOSYN_RUNTIME_BOARD)
 set BOARD_DIR "${DESIGN_DIR}/$BOARD"
+
+set VIVADO_VERSION [ string range [ version -short ] 0 3 ]
 source $DV_ROOT/tools/src/proto/common/rtl_setup.tcl
 source $DESIGN_DIR/design.tcl
 source $DV_ROOT/tools/src/proto/${BOARD}/board.tcl
@@ -139,8 +141,8 @@ if  {$::env(PITON_PICO_HET) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PICO PITON_PICO_HET"
 }
 
-if  {$::env(PITON_ARIANE) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE WT_DCACHE"
+if {[info exists ::env(PITON_ARIANE)]} {
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE PITON_RV64_PLATFORM PITON_RV64_DEBUGUNIT PITON_RV64_CLINT PITON_RV64_PLIC WT_DCACHE"
 }
 
 if  {$::env(PITON_LAGARTO) != "0"} {
@@ -207,6 +209,15 @@ set ALL_INCLUDE_FILES [pyhp_preprocess ${ALL_INCLUDE_FILES}]
 
 if  {$::env(PITON_ARIANE) != "0"} {
   puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
+  
+  
+  # credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50 
+  # and https://www.xilinx.com/support/answers/72570.html
+  # set tmp_PYTHONPATH $::env(PYTHONPATH)
+  # set tmp_PYTHONHOME $::env(PYTHONHOME)
+  # unset ::env(PYTHONPATH)
+  # unset ::env(PYTHONHOME)
+  
   set TMP [pwd]
   cd $::env(ARIANE_ROOT)/openpiton/bootrom/baremetal
   # Note: dd dumps info to stderr that we do not want to interpret
@@ -260,8 +271,8 @@ if  { $::env(PITON_LAGARTO) != "0"} {
   puts "INFO: done"
 }
 
-set ::env(PYTHONPATH) $tmp_PYTHONPATH
-set ::env(PYTHONHOME) $tmp_PYTHONHOME
+  # set ::env(PYTHONPATH) $tmp_PYTHONPATH
+  # set ::env(PYTHONHOME) $tmp_PYTHONHOME
 
 if { [info exists ::env(BROM_ONLY) ]} {
 	puts "Boot ROM created. Finishing protosyn..."

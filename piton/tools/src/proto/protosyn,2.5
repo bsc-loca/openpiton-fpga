@@ -169,6 +169,8 @@ def usage():
     print("\n            Wait for slurm jobs to finish", file=sys.stderr)
     print("\n       -j, --jobs", file=sys.stderr)
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
+    print("\n       --postroutephysopt", file=sys.stderr)
+    print("              Use post-route physical optimisation in Vivado implementation flow (can improve timing, not recommended by default)", file=sys.stderr)
     print("         --sa_nn_enable", file.sys.stderr)
     print("              Implement design with NN Systolic Arrays", file=sys.stderr) 
     print("         --sa_hevc_enable", file.sys.stderr)
@@ -601,6 +603,7 @@ def setParserOptions(parser):
     parser.add_option("--swait", dest="swait", action="store_true", default=False)
     parser.add_option("--axi4_mem", dest="axi4_mem", action="store_true", default=False)
     parser.add_option("--zeroer_off", dest="zeroer_off", action="store_true", default=False)
+    parser.add_option("--postroutephysopt", dest="postroutephysopt", action="store_true", default=False)
 
     return parser
 
@@ -1096,6 +1099,7 @@ def main():
 
     elif options.core == 'ariane':
         os.environ['PITON_ARIANE'] = "1"
+        os.environ['PITON_RV64_PLATFORM'] = "1"
         os.environ['WT_DCACHE']    = "1"
 
         for i in range(int(options.num_tiles)):
@@ -1150,6 +1154,11 @@ def main():
 
     # this is needed to generate the device tree
     os.environ['CONFIG_SYS_FREQ']          = str(int(float(design_data["BOARDS"][options.board]["FREQ"]) * 1e6))
+
+    if (options.postroutephysopt):
+        os.environ["VIVADO_POSTROUTEPHYSOPT"] = "1"
+    else:
+        os.environ["VIVADO_POSTROUTEPHYSOPT"] = "0"
 
     print_info("---- Additional RTL Defines ----")
 
@@ -1328,7 +1337,7 @@ def main():
             # check implementation only if project build was successfull
             if (exit_code == 0) and (not options.vivado_mode):
                 print_info("Checking Project Implementation results")
-                if not implFlowSuccess(rc_dir.log, rc_dir.run):
+                if not implFlowSuccess(rc_dir.log, rc_dir.run, options.postroutephysopt):
                     exit_code = 1
 
         now_time = dt.datetime.now()

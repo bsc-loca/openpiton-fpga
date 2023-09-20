@@ -1,4 +1,4 @@
-#!/bin/python
+#!/usr/bin/env python3
 # Modified by Barcelona Supercomputing Center on March 3rd, 2022
 # Copyright 2019 ETH Zurich and University of Bologna.
 # Copyright and related rights are licensed under the Solderpad Hardware
@@ -22,6 +22,7 @@ import pyhplib
 import os
 import subprocess
 from pyhplib import *
+import time
 
 # this prints some system information, to be printed by the bootrom at power-on
 # dts path needs to be chosen in the caller process
@@ -162,11 +163,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     #size-cells = <2>;
     compatible = "%s,%s-bare-dev";
     model = "%s,%s-bare";
-    // TODO: interrupt-based UART is currently very slow
-    // with this configuration. this needs to be fixed.
     chosen {
-         //stdout-path = "/soc/uart@%08x:115200";
-         //bootargs = "console=ttyS0,115200";
+        stdout-path = "/soc/uart@%08x:115200";
     };
     cpus {
         #address-cells = <1>;
@@ -307,11 +305,6 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             riscv,ndev = <%d>;
         };
             ''' % (_reg_fmt(addrBase, addrLen, 2, 2), numIrqs)
-        # DTM
-        if devices[i]["name"] == "ariane_debug" or devices[i]["name"] == "lagarto_debug":
-            addrBase = devices[i]["base"]
-            addrLen  = devices[i]["length"]
-
         # UART
         if devices[i]["name"] == "uart":
             addrBase = devices[i]["base"]
@@ -397,4 +390,17 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     with open(dtsPath + '/' + dts_core + '.dts','w') as file:
         file.write(tmpStr)
 
+def main():
+    devices = pyhplib.ReadDevicesXMLFile()
 
+    # just use a default frequency for device tree generation if not defined
+    sysFreq = 50000000
+    if 'CONFIG_SYS_FREQ' in os.environ:
+        sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
+
+    timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
+    gen_riscv_dts(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
+    get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
+
+if __name__ == "__main__":
+    main()

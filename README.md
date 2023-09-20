@@ -791,13 +791,3 @@ You should be able to see Linux booting on the other terminal.
 
 8. You are ready to play tetris.
 
-#### Planned Improvements
-
-The following items are currently under development and will be released soon.
-
-- Thorough validation of cache coherence.
-- RISC-V FESVR support in simulation.
-- Synthesis flow for large FPGAs.
-- Performance enhancements (cache re-parameterization, write-buffer throughput).
-
-Stay tuned!!

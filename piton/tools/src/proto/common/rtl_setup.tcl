@@ -29,8 +29,7 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include
-        ${DV_ROOT}/design/chipset/include"
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
