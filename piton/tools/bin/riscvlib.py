@@ -164,7 +164,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     compatible = "%s,%s-bare-dev";
     model = "%s,%s-bare";
     chosen {
-        stdout-path = "/soc/uart@%08x:115200";
+    //     stdout-path = "/soc/uart@%08x:115200";
     };
     cpus {
         #address-cells = <1>;

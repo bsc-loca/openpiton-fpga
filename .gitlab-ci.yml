@@ -42,7 +42,7 @@ variables:
 .multi_target_test:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v, acme_ea_16h]
+      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h, acme_ea_1h2g]
     # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
 
