@@ -1649,10 +1649,6 @@ sub generic_sim_build
       # lib_path needs to be before vcs_build_args
       $build_cmd .= $lib_path;
 
-      # the ariane files do not contain the timescale
-      if ($opt{ariane} | $opt{lagarto}) {
-        $build_cmd .= " -timescale=1ps/1ps ";
-      }
       if ($opt{metro_mpi_build}) {
         $build_cmd .= "-CFLAGS -DX_TILES=$opt{x_tiles} " ;
         $build_cmd .= "-CFLAGS -DY_TILES=$opt{y_tiles} " ;
