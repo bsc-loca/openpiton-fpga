@@ -3178,6 +3178,7 @@ sub parse_args
   $ENV{PITON_HBM_LAT}  = $opt{hbm_lat};
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
   $ENV{PITON_COVERAGE}  = $opt{cov};
+  push (@{$opt{config_rtl}}, "PITON_OST1")     if ($opt{ost1});
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
   push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
