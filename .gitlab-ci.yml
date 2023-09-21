@@ -138,7 +138,6 @@ simulation:
     - cd $BUILD_PATH/.. && source piton/ariane_setup.sh && cd $BUILD_PATH
     - rm -rf manycore/ && sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane > /dev/null
     - sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled | grep "HIT GOOD TRAP" && echo "Sanity ariane build and run isa test with Questasim" || (echo "Sanity ariane build and run isa test with Questasim FAILED" && exit 1)
-  allow_failure: true # pass with errors ...
 
 ###################################
 # Synthesis

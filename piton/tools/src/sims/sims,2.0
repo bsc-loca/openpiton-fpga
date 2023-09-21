@@ -3097,6 +3097,12 @@ sub parse_args
     else { die ("\nDIE. Unprocessed argument: $x") ; }
   }
 
+  # Set ISA to choose compilation flow based on ISA
+  if ($opt{ariane} | $opt{lagarto}) {
+    $opt{rv64} = 1 ;
+    print "$prg: Building/running for rv64\n" ;
+  }
+
   # in case a precompiled riscv binary is directly specified
   if ($opt{precompiled} and ($opt{rv32} | $opt{rv64})) {
     if (!($opt{asm_diag_name} =~ /\.riscv/)) {
