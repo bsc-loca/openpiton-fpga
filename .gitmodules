@@ -1,7 +1,9 @@
 [submodule "piton/design/chip/tile/ariane"]
 	path = piton/design/chip/tile/ariane
 	url = ../meep_ariane.git
-
+[submodule "aws"]
+	path = piton/design/aws
+	url = https://github.com/PrincetonUniversity/openpiton-aws.git
 [submodule "piton/design/chip/tile/noc/pronoc"]
 	path = piton/design/chip/tile/noc/pronoc
 	url = ../meep-pronoc.git

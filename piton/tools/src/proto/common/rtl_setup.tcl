@@ -45,7 +45,6 @@ set GLOBAL_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/chipset_define.vh" \
 ]
 
-
 set GLOBAL_DEFAULT_VERILOG_MACROS "NO_SCAN FPGA_SYN PITON_FPGA_SYNTH PITON_PROTO"
 
 # RTL implementation files
@@ -566,25 +565,11 @@ set CHIPSET_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/common/uart/rtl/UART.v" \
     "${DV_ROOT}/design/common/uart/rtl/UAReceiver.v" \
     "${DV_ROOT}/design/common/uart/rtl/UATransmitter.v" \
-    ]
-
+]
 
 set F1_FILES [list \
     "${DV_ROOT}/design/chipset/mc/rtl/f1_mc_top.v" \
-    ]
-
-
-set OLED_FILES [list \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_delay.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_transform.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/oled_wrapper.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_ctrl.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_init.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_spi.v" \
-    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
-
-    ]
-
+]
 
 set SD_BRIDGE_FILES [list \
     "${DV_ROOT}/design/chipset/axi_sd_bridge/rtl/axi_sd_bridge.v" \
@@ -631,8 +616,17 @@ set SD_BRIDGE_FILES [list \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sd_fifo_filler.v" \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sd_wb_sel_ctrl.v" \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/rtl/sdc_controller.v" \	
-    ]
+]
 
+set OLED_FILES [list \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_delay.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_transform.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/oled_wrapper.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_ctrl.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_init.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_spi.v" \
+    "${DV_ROOT}/design/chipset/oled/rtl/ssd1306_top.v" \
+]
 
 set CHIPSET_INCLUDE_FILES [list \
     "${DV_ROOT}/design/chipset/include/mc_define.h" \
@@ -665,7 +659,6 @@ set CHIPSET_IP_FILE_PREFIXES [list \
     "${DV_ROOT}/design/chipset/noc_sd_bridge/xilinx/${BOARD}/ip_cores/sd_cache_bram/sd_cache_bram" \
     "${DV_ROOT}/design/common/fpga_bridge/common/xilinx/${BOARD}/ip_cores/afifo_w64/afifo_w64" \
     "${DV_ROOT}/design/common/fpga_bridge/fpga_rcv/xilinx/${BOARD}/ip_cores/afifo_w3/afifo_w3" \
-
 ]
 
 set CHIPSET_COE_IP_FILES [list \
@@ -680,10 +673,7 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
-
-
 set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
-
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
 # the tcl parser in the core is called from "piton/design/xilinx/design.tcl"

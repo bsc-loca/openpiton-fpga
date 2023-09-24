@@ -30,7 +30,7 @@ module axi4_zeroer (
     input   clk,
     input   rst_n,
 
-    input      init_calib_complete_in,
+    input   init_calib_complete_in,
     output reg init_calib_complete_out,
 
     // AXI interface in

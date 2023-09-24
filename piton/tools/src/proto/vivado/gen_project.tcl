@@ -58,7 +58,6 @@ puts "MEEP Shell protosyn flow completed"
 exit
 } 
 
-
 # Create project
 create_project -force ${PROJECT_NAME} ${PROJECT_DIR}
 
@@ -246,7 +245,6 @@ if { $env(ALVEO_ETH) eq "1"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
 }
 
-
 # Set 'constrs_1' fileset properties
 set_property "name" "constrs_1" $fileset_obj
 set_property "target_constrs_file" "$constraints_file" $fileset_obj
@@ -419,7 +417,6 @@ set_property -name {steps.write_bitstream.args.more options} -value {} -objects 
 
 # set the current impl run
 current_run -implementation $fileset_obj
-
 
 puts "INFO: Project created:${PROJECT_NAME}"
 

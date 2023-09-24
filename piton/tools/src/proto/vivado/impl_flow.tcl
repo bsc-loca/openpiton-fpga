@@ -28,6 +28,7 @@
 # This script kicks of an implementation
 # flow for the project
 #
+
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 set g_number_of_jobs $::env(NUM_VIVADO_JOBS)
@@ -41,7 +42,6 @@ puts "INFO: Using the following Verilog defines: ${ALL_VERILOG_MACROS}"
 
 # Open the project
 open_project ${VIVADO_PROJECT_FILE}
-
 
 # Update Verilog MACROs property
 set_property verilog_define ${ALL_VERILOG_MACROS} [get_fileset sources_1]
@@ -64,8 +64,6 @@ set_property -dict [list CONFIG.C_S_AXI_ACLK_FREQ_HZ_d "$UART_FREQ" CONFIG.C_S_A
 # Extra open/close to make Vivado use defines for a project,
 # not only for synthesis
 close_project
-
-
 open_project ${VIVADO_PROJECT_FILE}
 auto_detect_xpm
 proc synthesis { g_root_dir g_number_of_jobs } {

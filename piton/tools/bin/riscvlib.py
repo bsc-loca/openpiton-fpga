@@ -379,6 +379,15 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
 
+        # eth: lowrisc-eth@%08x {
+        #     compatible = "lowrisc-eth";
+        #     device_type = "network";
+        #     interrupt-parent = <&PLIC0>;
+        #     interrupts = <3 0>;
+        #     local-mac-address = [ee e1 e2 e3 e4 e5];
+        #     reg = <%s>;
+        # };
+
     tmpStr += '''
     };
 };

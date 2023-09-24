@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# Modified by Barcelona Supercomputing Center on March 3rd, 2022
 # Copyright (c) 2019 Princeton University
 # All rights reserved.
 #
@@ -269,13 +268,7 @@ def makeDefList(options):
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo only
         if options.board == "genesys2" or options.board == "nexysVideo":
-            defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
-        # Ethernet controller is also supported on Alveo-U280
-        elif options.board == "alveou280":
-          if options.eth:
-            defines.append("PITON_FPGA_ETH")
-            defines.append("PITON_FPGA_ETH_CMAC")
         else:
             print_info("--eth option is ignored for %s" % options.board)
 
@@ -485,17 +478,6 @@ def main():
         for i in range(int(args.num_tiles)):
             args.config_rtl.append('RTL_ARIANE' + str(i))
             print_info('defining RTL_ARIANE' + str(i))
-
-    #elif args.core == 'lagarto':
-    #    args.config_rtl.append('PITON_LAGARTO')
-
-    #    ## Temporary until we create a solution for SystemVerilog code
-    #    print_error('Due to lack of support for "pickling" of SystemVerilog code, the Lagarto core configuration option is not supported')
-    #    sys.exit(1)
-
-    #    for i in range(int(args.num_tiles)):
-    #        args.config_rtl.append('RTL_LAGARTO' + str(i))
-    #        print_info('defining RTL_LAGARTO' + str(i))
 
     elif args.core == 'sparc':
         # this is the default

@@ -36,7 +36,6 @@ int main(int argc, char** argv) {
     volatile unsigned long long trap;
     trap = *((unsigned long long *) PITON_TEST_GOOD_END);
   }
-  
 
   return 0;
 }

@@ -40,6 +40,7 @@
 //==================================================================================================
 
 `include "define.tmp.h"
+// These defines are already present in piton/design/include/define.h.pyv
 // `define C_M_AXI_LITE_DATA_WIDTH  `NOC_DATA_WIDTH
 // `define C_M_AXI_LITE_ADDR_WIDTH  `NOC_DATA_WIDTH
 // `define C_M_AXI_LITE_RESP_WIDTH  2
@@ -433,6 +434,7 @@ localparam STORE_ACK = 1'd1;
         m_axi_bready = (w_resp_buf_status == BUF_STATUS_WAITRESP);
     end
 
+   // A set of wires for debug purposes
    wire [`MSG_SRC_CHIPID_WIDTH-1:0] r_req_src_chipid = r_req_buf_header2_f[`MSG_SRC_CHIPID_];
    wire [`MSG_SRC_X_WIDTH     -1:0] r_req_src_x      = r_req_buf_header2_f[`MSG_SRC_X_];
    wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_src_y      = r_req_buf_header2_f[`MSG_SRC_Y_];
