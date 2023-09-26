@@ -43,17 +43,17 @@ module noc_axi4_bridge_ser #(
   output in_rdy, 
 
   output [`NOC_DATA_WIDTH-1:0] flit_out, 
-  output flit_out_val, 
+  output  flit_out_val, 
   input flit_out_rdy 
 );
 
 // states
 reg [1:0] state;
-localparam ACCEPT      = 2'd0;
+localparam ACCEPT = 2'd0;
 localparam SEND_HEADER = 2'd1;
-localparam SEND_DATA   = 2'd2;
+localparam SEND_DATA = 2'd2;
 
-reg [`AXI4_DATA_WIDTH     -1:0] data_in_f;
+reg [`AXI4_DATA_WIDTH-1:0] data_in_f;
 reg [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log_f;
 reg [`NOC_DATA_WIDTH      -1:0] data_swapped;
 

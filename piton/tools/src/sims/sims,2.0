@@ -1170,8 +1170,6 @@ sub gen_config
 	if ( -f "${param_path}/noc_localparam.v") {
 		rename ("${param_path}/noc_localparam.v","${param_path}/noc_localparam.v.tmp");
 	}
-  
- 
 }
 
 ################################################################################
@@ -1358,27 +1356,6 @@ sub pre_build
     print "generating PLIC for rv64 platform with $num_targets targets and $num_sources sources...\n";
     !system("cd $ENV{ARIANE_ROOT}/src/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
       die (" Error generating PLIC for rv64 platform.");
-    print "done\n";
-  }
-
-  if($opt{lagarto}) {
-    print "compiling DTS and bootroms for Lagarto..\n";
-    !system("cd $ENV{LAGARTO_ROOT}/openpiton/bootrom/baremetal && make clean && make all && cd - > /dev/null") or
-      die (" Error compiling DTS (baremetal) for Lagarto.");
-    !system("cd $ENV{LAGARTO_ROOT}/openpiton/bootrom/linux && make clean && make all MAX_HARTS=$ENV{PITON_NUM_TILES} && cd - > /dev/null") or
-      die (" Error compiling DTS (Linux) for Lagarto.");
-    print "done\n";
-    # currently we have two sources (hardcoded in chipset_impl): UART and Ethernet
-    my $num_sources = 2;
-    # 2 targets per core (M/S mode)
-    my $num_targets = 2 * $ENV{PITON_NUM_TILES};
-    print "generating PLIC for Lagarto with $num_targets targets and $num_sources sources...\n";
-    !system("cd $ENV{LAGARTO_ROOT}/src/rv_plic/rtl && ./gen_plic_addrmap.py -t $num_targets -s $num_sources > plic_regmap.sv") or
-      die (" Error generating PLIC for Lagarto.");
-    print "done\n";
-    print "generating signature generator for Lagarto...\n";
-    !system("cd $ENV{LAGARTO_ROOT}/torture/src/models/cxx && ./build.sh ") or
-      die (" Error generating signature generator for Lagarto.");
     print "done\n";
   }
 
@@ -1610,8 +1587,6 @@ sub generic_sim_build
           push (@{$opt{sim_build_args}}, $x);
       }
     }
-    
-    
 
     if ($opt{ncv_build}) {
       $ld_lib_path .= "$ENV{DV_ROOT}/tools/";
@@ -1693,8 +1668,6 @@ sub generic_sim_build
       }    
 	}
 
-
-	
     if ($opt{vlt_build}) {
       $build_cmd = "verilator -cc " ;
       $build_cmd .= "-exe $dv_root/tools/verilator/my_top.cpp " ;
@@ -1703,7 +1676,7 @@ sub generic_sim_build
       $build_cmd .= "$dv_root/tools/pli/iop/iob_main.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/iob.cc " ;
       $build_cmd .= "$dv_root/tools/pli/iop/cpx.cc " ;
-      $build_cmd .= "$dv_root/toolsi/pli/iop/pcx.cc " ;
+      $build_cmd .= "$dv_root/tools/pli/iop/pcx.cc " ;
       $build_cmd .= "$ENV{LAGARTO_ROOT}/torture/src/models/cxx/dpi_torture.cpp " ;
       $build_cmd .= "--top-module cmp_top " ;
       $build_cmd .= "-Wno-fatal --trace -Wno-lint -Wno-style -Wno-STMTDLY -Wno-TIMESCALEMOD " ;
@@ -1803,7 +1776,6 @@ sub generic_sim_run
     die ("DIE. obj_dir/ not found in $model_path") if ($opt{vlt_run} and ! -d "$model_path/obj_dir") ;
     die ("DIE. obj_dir/ not found in $model_path") if ($opt{metro_mpi_run} and ! -d "$model_path/obj_dir") ;
 
-
     # pass the good trap and bad trap addresses to the testbench
     my $good_trap = "";
     my $bad_trap = "";
@@ -1853,6 +1825,7 @@ sub generic_sim_run
     push (@{$opt{sim_run_args}}, "+finish_mask=$opt{finish_mask}") if ($opt{finish_mask} ne "") ;
     push (@{$opt{sim_run_args}}, "+TIMEOUT=$opt{rtl_timeout}") if ($opt{rtl_timeout}) ;
     push (@{$opt{sim_run_args}}, "+max_cycle=$opt{max_cycle}") if ($opt{max_cycle}) ;
+
     push (@{$opt{sim_run_args}}, "+disable_l2_mon") if ($opt{no_verbose}) ;
     push (@{$opt{sim_run_args}}, "+disable_l15_mon") if ($opt{no_verbose}) ;
     push (@{$opt{sim_run_args}}, "+tso_mon=0") if ($opt{no_verbose}) ;
@@ -2416,9 +2389,6 @@ sub assemble_diag
       push @{$opt{asm_diag_root}}, "$ENV{LAGARTO_ROOT}/tmp/riscv-torture/artifacts/torture";
     }
 
-
-
-
     # find diagnostic
     my $diag_full_path = &find_diag_path ($opt{asm_diag_name}, $opt{asm_diag_path}, $opt{asm_diag_root}) ;
 
@@ -2521,7 +2491,7 @@ sub assemble_diag
         $ENV{RV64_MARCH} = $opt{rv64_march} ;
       }
       if (!$opt{rv64_mabi}) {
-        if ($opt{ariane} ) {
+        if ($opt{ariane}) {
           $ENV{RV64_MABI} = "lp64d" ;
         }
         if ($opt{lagarto}) {
@@ -3037,7 +3007,7 @@ sub parse_args
     elsif ($x =~ /\.s\.gz/) { $opt{asm_diag_name}   = $x ; }
     elsif ($x =~ /\.image/) { $opt{image_diag_name} = $x ; }
     elsif ($x =~ /\.c/)     { $opt{asm_diag_name}   = $x ; }
-    else { die ("\nDIE. Unprocessed argument: $x") ; }
+    else { die ("DIE. Unprocessed argument: $x") ; }
   }
 
   # Set ISA to choose compilation flow based on ISA

@@ -107,5 +107,4 @@ if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
 } else {
     puts "INFO: Implementation passed!"
 }
-
 }

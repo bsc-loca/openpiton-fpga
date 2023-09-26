@@ -511,9 +511,6 @@ end
 
 `ifdef PITON_PRONOC
 
-
-
-
      assign dataOut1  = buffer_router_data_noc1;
      assign validOut1 = buffer_router_valid_noc1;
      assign yummyOut1 = buffer_router_yummy_noc1;
@@ -537,9 +534,6 @@ end
      assign router_buffer_data_noc3 = dataIn3;
      assign router_buffer_data_val_noc3 = validIn3;
      assign router_buffer_consumed_noc3 = yummyIn3;
-
-
-
 
 `else
 
@@ -1048,11 +1042,11 @@ end
 endgenerate
 generate
 if (TILE_TYPE == `ARIANE_RV64_TILE) begin : g_ariane_core
-`ifdef PITON_ARIANE
     //////////////////////
     // Ariane RV64 Core //
     //////////////////////
 
+`ifdef PITON_ARIANE
 
     // TODO: add debug module and CLINT
 

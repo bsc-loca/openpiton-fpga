@@ -109,9 +109,9 @@ assign m_axi_arvalid = (req_state == GOT_REQ);
 
 always @(posedge clk)
     if(~rst_n) begin
-        req_state <= IDLE;
         req_addr_f <= 0;
-        req_id_f   <= 0;
+        req_id_f <= 0;
+        req_state <= IDLE;
     end else
         case (req_state)
             IDLE: if (req_go) begin
@@ -123,9 +123,9 @@ always @(posedge clk)
                 req_state <= IDLE;
             default : begin
                 // should never end up here
-                req_state <= IDLE;
                 req_addr_f <= 0;
-                req_id_f   <= 0;
+                req_id_f <= 0;
+                req_state <= IDLE;
             end
         endcase
 
@@ -149,8 +149,8 @@ assign m_axi_rready = (resp_state == IDLE);
 reg [clip2zer($clog2(BURST_LEN)-1) :0] burst_count;
 always @(posedge clk)
     if(~rst_n) begin
-        resp_state  <= IDLE;
-        resp_id_f   <= 0;
+        resp_id_f <= 0;
+        resp_state <= IDLE;
         resp_data   <= 0;
         burst_count <= 0;
     end else
@@ -167,8 +167,8 @@ always @(posedge clk)
                 resp_state <= IDLE;
             default : begin
                 // should never end up here
+                resp_id_f <= 0;
                 resp_state <= IDLE;
-                resp_id_f  <= 0;
                 resp_data  <= 0;
             end
         endcase

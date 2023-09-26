@@ -47,7 +47,7 @@ module eth_top #(
 
     input                                   rst_n,
 
-    output      [NUM_INTR-1:0]               net_interrupt,
+    output      [NUM_INTR-1:0]              net_interrupt,
 
     input                                   noc_in_val,
     input       [`NOC_DATA_WIDTH-1:0]       noc_in_data,
@@ -55,7 +55,7 @@ module eth_top #(
 
     output                                  noc_out_val,
     output      [`NOC_DATA_WIDTH-1:0]       noc_out_data,
-    input                                   noc_out_rdy		
+    input                                   noc_out_rdy
 
 `ifdef PITON_FPGA_ETHERNETLITE
                                             ,
@@ -323,8 +323,8 @@ noc_axilite_bridge #(
     .SLAVE_RESP_BYTEWIDTH   (4),
     .SWAP_ENDIANESS         (SWAP_ENDIANESS)
 ) noc_ethernet_bridge (
-    .clk                    (net_axi_clk           ),
-    .rst                    (~net_axi_arstn        ),      // TODO: rewrite to positive ?
+    .clk                    (net_axi_clk        ),
+    .rst                    (~net_axi_arstn     ),      // TODO: rewrite to positive ?
 
     .splitter_bridge_val    (afifo_netbridge_val   ),
     .splitter_bridge_data   (afifo_netbridge_data  ),
@@ -488,9 +488,9 @@ noc_axi4_bridge #(
 	assign net_axi_arstn = rst_n;
 
 mac_eth_axi_lite mac_eth_axi_lite (
-  .s_axi_aclk       (net_axi_clk     ),       // input wire s_axi_aclk
-  .s_axi_aresetn    (net_axi_arstn   ),    // input wire s_axi_aresetn
-  .ip2intc_irpt     (net_axi_intr    ),     // output wire ip2intc_irpt
+  .s_axi_aclk       (net_axi_clk),       // input wire s_axi_aclk
+  .s_axi_aresetn    (net_axi_arstn),     // input wire s_axi_aresetn
+  .ip2intc_irpt     (net_axi_intr ),     // output wire ip2intc_irpt
   .s_axi_awaddr     (net_s_axi_awaddr),     // input wire [12 : 0] s_axi_awaddr
   .s_axi_awvalid    (net_s_axi_awvalid),    // input wire s_axi_awvalid
   .s_axi_awready    (net_s_axi_awready),    // output wire s_axi_awready

@@ -80,12 +80,6 @@ module l2_encoder(
 );
 
 
-
-
-
-
-
-
 `ifdef PITON_EXTRA_MEMS
    
     localparam EXTRA_MEMS = `PITON_EXTRA_MEMS;
@@ -128,29 +122,21 @@ module l2_encoder(
            off_chip=1'b0; //TODO should be asserted it if the mc is in another chip
 	   end  
    end
-  
 
-   
-                     
-    assign msg_dst_chipid_tmp = {off_chip,msg_dst_chipid[`CHIP_ID_WIDTH-2:0]}; 
+   assign msg_dst_chipid_tmp = {off_chip,msg_dst_chipid[`CHIP_ID_WIDTH-2:0]}; 
 
 
-                
 `else 
    wire [`MSG_SRC_CHIPID_WIDTH-1:0] msg_dst_chipid_tmp;
-   wire [`MSG_SRC_X_WIDTH-1:0] msg_dst_x_tmp;
-   wire [`MSG_SRC_Y_WIDTH-1:0] msg_dst_y_tmp;
-   wire [`MSG_SRC_FBITS_WIDTH-1:0] msg_dst_fbits_tmp;
-   
-   assign  msg_dst_fbits_tmp=msg_dst_fbits;
+   wire [`MSG_SRC_X_WIDTH     -1:0] msg_dst_x_tmp;
+   wire [`MSG_SRC_Y_WIDTH     -1:0] msg_dst_y_tmp;
+   wire [`MSG_SRC_FBITS_WIDTH -1:0] msg_dst_fbits_tmp;
+
+   assign  msg_dst_fbits_tmp  = msg_dst_fbits;
    assign  msg_dst_chipid_tmp = msg_dst_chipid;
-   assign  msg_dst_x_tmp = msg_dst_x;
-   assign  msg_dst_y_tmp = msg_dst_y;
-
-
+   assign  msg_dst_x_tmp      = msg_dst_x;
+   assign  msg_dst_y_tmp      = msg_dst_y;
 `endif
-
-
 
 
 always @ *

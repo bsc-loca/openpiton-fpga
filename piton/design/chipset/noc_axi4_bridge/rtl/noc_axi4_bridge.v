@@ -160,7 +160,7 @@ noc_axi4_bridge_buffer #(
     .SRCXY_AS_AXIID   (SRCXY_AS_AXIID  )
 ) noc_axi4_bridge_buffer (
     .clk(clk),
-    .rst_n(rst_n),
+    .rst_n(rst_n), 
     .uart_boot_en(uart_boot_en),
     .axi_id_deadlock(axi_id_deadlock),
 

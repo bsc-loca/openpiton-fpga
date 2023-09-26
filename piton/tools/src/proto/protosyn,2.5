@@ -228,7 +228,6 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     # Variables passed to TCL scripts
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
-   
 
     if(os.environ.get('BROM_ONLY')) == "1":
         print_info("Generating the bootrom binary")
@@ -452,8 +451,6 @@ def makeMEEPflow(board, design_data, work_dir, log_dir, slurm, dep_list, def_lis
     return jid
 
 
-
-
 def find_board_tool(board):
     fp = open(BOARD_TOOL_LIST, 'r')
     for line in fp:
@@ -616,6 +613,7 @@ def makeDefList(options):
     # disable CSM in this case
     if options.core == 'ariane':
         defines.append("NO_RTL_CSM")
+
     if options.core == 'lagarto':
         defines.append("NO_RTL_CSM")
         defines.append("BSC_RTL_SRAMS")
@@ -733,7 +731,7 @@ def makeDefList(options):
     # Define for  UART16550 required (so for all except Piton Board)
     if options.board != "piton_board":
         defines.append("PITON_UART16550")
-     
+
     # --eth CL options is default for chipset
     os.environ['ALVEO_ETH'] = "0"
 
@@ -865,7 +863,6 @@ def distribute_mc_equal_space_on_all_edges (x_tiles, y_tiles, multimc):
       else :
          mmc= mmc + "," + str(mc_id) 	
     return mmc
-
 
 
 def main():
@@ -1084,7 +1081,7 @@ def main():
             print_info('defining RTL_PICO' + str(i))
 
     elif options.core == 'pico_het':
- 
+
         os.environ['PITON_PICO']     = "1"
         os.environ['PITON_PICO_HET'] = "1"
 
@@ -1164,7 +1161,6 @@ def main():
 
     for d in defines:
         print_info(d)
-
 
     print_info("--------------------------------")
 
@@ -1343,7 +1339,6 @@ def main():
         now_time = dt.datetime.now()
         timeStampStr = now_time.strftime("%d-%b-%Y %H:%M")
         print_info("Check performed at %s" % timeStampStr)
-
 
     os.chdir(prev_dir)
 

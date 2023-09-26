@@ -1465,7 +1465,7 @@ module chip(
 
             # print "`ifdef RTL_SPARC%d" % flatid
             print(currenttile)
-            # print "`endif"            
+            # print "`endif"
     print ("`ifdef PITON_PRONOC");
     print(assign + edge_assign)
     print("`endif")    

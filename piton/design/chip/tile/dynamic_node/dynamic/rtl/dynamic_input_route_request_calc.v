@@ -65,6 +65,7 @@ input [`CHIP_ID_WIDTH-1:0] my_chip_id_in;
 input [`XY_WIDTH-1:0] abs_x;
 input [`XY_WIDTH-1:0] abs_y;
 input [`CHIP_ID_WIDTH-1:0] abs_chip_id;
+
 `ifdef EDGE_ROUTE_ENABLE
 input [`PHY_ADDR_WIDTH-1:0] abs_addr;
 `endif
@@ -75,11 +76,11 @@ input header_in;
 // end port declarations
    
 //fbit declarations
-`define FINAL_NONE  3'b000
-`define FINAL_WEST  3'b010
-`define FINAL_SOUTH 3'b011
-`define FINAL_EAST  3'b100
-`define FINAL_NORTH 3'b101
+`define FINAL_NONE	3'b000
+`define FINAL_WEST	3'b010
+`define FINAL_SOUTH	3'b011
+`define FINAL_EAST	3'b100
+`define FINAL_NORTH	3'b101
 
 //This is the state
 //NONE
@@ -170,7 +171,6 @@ assign north = north_calc | ((final_bits_ext == `FINAL_NORTH) & done);
 assign south = south_calc | ((final_bits_ext == `FINAL_SOUTH) & done);
 assign east  = more_x     | ((final_bits_ext == `FINAL_EAST)  & done);
 assign west  = less_x     | ((final_bits_ext == `FINAL_WEST)  & done);
-
 
 
 `else 

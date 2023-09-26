@@ -89,12 +89,10 @@ wire valid_out_internal;
 `endif
 
 
-
 //wire regs
 
 //assigns
 assign valid_out = valid_out_internal;
-
 
 //instantiations
 network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(4)

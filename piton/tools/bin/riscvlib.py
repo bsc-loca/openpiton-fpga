@@ -13,9 +13,6 @@
 # Author: Michael Schaffner <schaffner@iis.ee.ethz.ch>, ETH Zurich
 # Date: 04.02.2019
 # Description: Device tree generation script for OpenPiton+Ariane.
-# Modification:
-# Date: 01/09/2021
-# Accept Lagarto as CPU
 
 
 import pyhplib

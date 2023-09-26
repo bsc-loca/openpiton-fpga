@@ -28,8 +28,8 @@
 # This script performs general actions
 # for creating a Vivado project
 #
-# Boiler plate startup
 
+# Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
 set MEEP_ROOT $::env(MEEP_DIR)
 
@@ -135,7 +135,7 @@ foreach inc_file $ALL_INCLUDE_FILES {
 foreach impl_file $ALL_RTL_IMPL_FILES {
     if {[file exists $impl_file]} {
         set file_obj [get_files -of_objects $fileset_obj [list "$impl_file"]]
-        if { [file extension $impl_file] == ".sv"} {
+        if {[file extension $impl_file] == ".sv"} {
           set_property "file_type" "SystemVerilog" $file_obj
         } else {
           set_property "file_type" "Verilog" $file_obj

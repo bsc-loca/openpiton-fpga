@@ -51,46 +51,46 @@ module noc_axi4_bridge_buffer #(
     parameter NUM_REQ_XTHREADS = 1, // low  component of number of "Outstanding requests" threads
     parameter SRCXY_AS_AXIID   = 0 // defines NOC tile x/y field to use for forming AXI ID (INI_X/Y by default)
 ) (
-  input clk,
-  input rst_n,
+  input clk, 
+  input rst_n, 
   input uart_boot_en, 
   output reg axi_id_deadlock,
 
   // from deserializer
-  input [`MSG_HEADER_WIDTH-1:0] deser_header,
-  input [`AXI4_DATA_WIDTH -1:0] deser_data,
-  input  deser_val,
-  output deser_rdy,
+  input [`MSG_HEADER_WIDTH-1:0] deser_header, 
+  input [`AXI4_DATA_WIDTH-1:0] deser_data, 
+  input deser_val, 
+  output  deser_rdy,
 
   // read request out
   output [`AXI4_ADDR_WIDTH-1:0] read_req_addr,
   output [`AXI4_ID_WIDTH  -1:0] read_req_id,
-  output read_req_val,
+  output read_req_val, 
   input  read_req_rdy,
 
   // read response in
-  input [`AXI4_DATA_WIDTH-1:0] read_resp_data,
+  input [`AXI4_DATA_WIDTH-1:0] read_resp_data, 
   input [`AXI4_ID_WIDTH  -1:0] read_resp_id,
-  input  read_resp_val,
-  output read_resp_rdy,
+  input read_resp_val, 
+  output  read_resp_rdy,
 
   // write request out
   output [`AXI4_ADDR_WIDTH-1:0] write_req_addr,
   output [`AXI4_ID_WIDTH  -1:0] write_req_id,
-  output [`AXI4_DATA_WIDTH-1:0] write_req_data,
+  output [`AXI4_DATA_WIDTH-1:0] write_req_data, 
   output [`AXI4_STRB_WIDTH-1:0] write_req_strb,
-  output write_req_val,
+  output write_req_val, 
   input  write_req_rdy,
 
   // write response in
   input [`AXI4_ID_WIDTH-1:0] write_resp_id,
-  input  write_resp_val,
-  output write_resp_rdy,
+  input write_resp_val, 
+  output  write_resp_rdy,
 
   // in serializer
-  output [`MSG_HEADER_WIDTH-1:0] ser_header,
-  output [`AXI4_DATA_WIDTH -1:0] ser_data,
-  output ser_val,
+  output [`MSG_HEADER_WIDTH-1:0] ser_header, 
+  output [`AXI4_DATA_WIDTH-1:0] ser_data, 
+  output ser_val, 
   input  ser_rdy
 );
 

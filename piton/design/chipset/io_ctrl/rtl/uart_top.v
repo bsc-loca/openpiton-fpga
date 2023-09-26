@@ -33,7 +33,6 @@
 module uart_top (
     input                                   axi_clk,
     input                                   rst_n,
-
     output                  uart_interrupt,
 
     input                                   uart_lb_sw,
@@ -137,7 +136,6 @@ wire  uart16550_rx;
   wire              reader_axi_rready;
 `endif
 
-
 // UART mux <-> UART
 wire  [12:0]      s_axi_awaddr;
 wire              s_axi_awvalid;
@@ -240,7 +238,7 @@ noc_axilite_bridge #(
 // control of loopback
 `ifndef PITONSYS_MEEP
 assign uart_tx        = uart_lb_sw ? uart_rx  : uart16550_tx;
-assign uart16550_rx   = uart_rx;
+assign uart16550_rx   = uart_rx; 
 `endif 
 
 `ifdef PITON_BOARD
@@ -538,7 +536,6 @@ uart_mux   uart_mux (
       assign uart_axi_rready = s_axi_rready;
       
     `else
-
       uart_16550   uart_16550 (
         .s_axi_aclk       (axi_clk          ),  // input wire s_axi_aclk
         .s_axi_aresetn    (rst_n            ),  // input wire s_axi_aresetn

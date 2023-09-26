@@ -203,7 +203,7 @@ If you would like to get an overview of the exit status of a regression batch, s
 
 ![OpenPiton Logo](/docs/openpiton_logo_black.png?raw=true)
 
-# OpenPiton Research Platform [![Build Status](https://jenkins.princeton.edu/buildStatus/icon?job=cloud/piton_git_push_master)](https://jenkins.princeton.edu/job/cloud/job/piton_git_push_master/)
+# OpenPiton Research Platform   [![Build Status](https://jenkins.princeton.edu/buildStatus/icon?job=cloud/piton_git_push_master)](https://jenkins.princeton.edu/job/cloud/job/piton_git_push_master/)
 
 OpenPiton is the world's first open source, general purpose, multithreaded manycore processor. It is a tiled manycore framework scalable from one to 1/2 billion cores. It is a 64-bit architecture using SPARC v9 ISA with a distributed directory-based cache coherence protocol across on-chip networks. It is highly configurable in both core and uncore components. OpenPiton has been verified in both ASIC and multiple Xilinx FPGA prototypes running full-stack Debian linux. We have released both the Verilog RTL code as well as synthesis and back-end flow. We believe OpenPiton is a great framework for researchers in computer architecture, OS, compilers, EDA, security and more.
 
@@ -233,29 +233,27 @@ We also host GitHub repositories for other parts of the project, including:
 - [Piton Hypervisor](https://github.com/PrincetonUniversity/piton-sw)
 
 #### Environment Setup
+- The ```PITON_ROOT``` environment variable should point to the root of the OpenPiton repository
+- The Synopsys environment for simulation should be setup separately by the user.  Besides adding correct paths to your ```PATH``` and ```LD_LIBRARY_PATH``` (usually accomplished by a script provided by Synopsys), the OpenPiton tools specifically reference the ```VCS_HOME``` environment variable which should   point to the root of the Synopsys VCS installation.
 
-- The `PITON_ROOT` environment variable should point to the root of the OpenPiton repository
-- The Synopsys environment for simulation should be setup separately by the user. Besides adding correct paths to your `PATH` and `LD_LIBRARY_PATH` (usually accomplished by a script provided by Synopsys), the OpenPiton tools specifically reference the `VCS_HOME` environment variable which should point to the root of the Synopsys VCS installation.
-
-- Run `source $PITON_ROOT/piton/piton_settings.bash` to setup the environment
-
-  - A CShell version of this script is provided, but OpenPiton has not been tested for and currently does not support CShell
+- Run ```source $PITON_ROOT/piton/piton_settings.bash``` to setup the environment
+    - A CShell version of this script is provided, but OpenPiton has not been tested for and currently does not support CShell
 
 - Top level directory structure:
-  - piton/
-    - All OpenPiton design and verification files
-  - docs/
-    - OpenPiton documentation
-  - build/
-    - Working directory for simulation and simulation models
+    - piton/
+        - All OpenPiton design and verification files
+    - docs/
+        - OpenPiton documentation
+    - build/
+        - Working directory for simulation and simulation models
 
 ##### Notes on Environment and Dependencies
 
-- Depending on your system setup, Synopsys tools may require the `-full64` flag. This can easily be accomplished by adding a bash function as shown in the following example for VCS (also required for URG):
+- Depending on your system setup, Synopsys tools may require the ```-full64``` flag.  This can easily be accomplished by adding a bash function as shown in the following example for VCS (also required for URG):
 
-  ```bash
-  function vcs() { command vcs -full64 "$@"; }; export -f vcs
-  ```
+    ```bash
+    function vcs() { command vcs -full64 "$@"; }; export -f vcs
+    ```
 
 - On many systems, an error with `goldfinger`, or other errors not described below, may indicate that you should run the `mktools` command once to rebuild a number of the tools before continuing. If you see issues later with building or running simulations, try running `mktools` if you have not already.
 - In some cases, you may need to recompile the PLI libraries we provide. This is done using `mkplilib` with the argument for the simulator you want to rebuild for. You may need to run `mkplilib clean` first, then depending on which simulator, you can build with: `mkplilib vcs`, `mkplilib ncverilog`, `mkplilib icarus`, or `mkplilib modelsim`.
@@ -267,43 +265,39 @@ We also host GitHub repositories for other parts of the project, including:
 ==========================
 
 #### Building a simulation model
-
-1. `cd $PITON_ROOT/build`
-2. `sims -sys=manycore -x_tiles=1 -y_tiles=1 -vcs_build` builds a single tile OpenPiton simulation model.
-3. A directory for the simulation model will be created in `$PITON_ROOT/build` and the simulation model can now be used to run tests. For more details on building simulation models, please refer to the OpenPiton documentation.
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sys=manycore -x_tiles=1 -y_tiles=1 -vcs_build``` builds a single tile OpenPiton simulation model.
+3. A directory for the simulation model will be created in ```$PITON_ROOT/build``` and the simulation model can now be used to run tests.  For more details on building simulation models, please refer to the OpenPiton documentation.
 
 > Note: if you would like to decrease the testbench monitor output to a minimum, append `-config_rtl=MINIMAL_MONITORING` to your build command in step 2. above.
 
 ==========================
 
 #### Running a simulation
-
-1. `cd $PITON_ROOT/build`
-2. `sims -sys=manycore -x_tiles=1 -y_tiles=1 -vcs_run princeton-test-test.s` runs a simple array summation test given the simulation model is already built.
-3. The simulation will run and generate many log files and simulation output to stdout. For more details on running a simulation, provided tests/simulations in the test suite, and understanding the simulation log files and output, please refer to the OpenPiton documentation.
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sys=manycore -x_tiles=1 -y_tiles=1 -vcs_run princeton-test-test.s``` runs a simple array summation test given the simulation model is already built.
+3. The simulation will run and generate many log files and simulation output to stdout.  For more details on running a simulation, provided tests/simulations in the test suite, and understanding the simulation log files and output, please refer to the OpenPiton documentation.
 
 ==========================
 
 #### Running a regression
-
 A regression is a set of simulations/tests which run on the same simulation model.
 
-1. `cd $PITON_ROOT/build`
-2. `sims -sim_type=vcs -group=tile1_mini` runs the simulations in the tile1_mini regression group.
-3. The simuation model will be built and all simulations will be run sequentially. In addition to the simulation model directory, a directory will be created in the form `<date>_<id>` which contains the simulation results.
-4. `cd <date>_<id>`
-5. `regreport $PWD > report.log` will process the results from each of the regressions and place the aggregated results in the file `report.log`. For more details on running a regression, the available regression groups, understanding the regression output, and specifying a new regression group, please refer to the OpenPiton documentation.
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sim_type=vcs -group=tile1_mini``` runs the simulations in the tile1_mini regression group.
+3. The simuation model will be built and all simulations will be run sequentially.  In addition to the simulation model directory, a directory will be created in the form ```<date>_<id>``` which contains the simulation results.
+4. ```cd <date>_<id>```
+5. ```regreport $PWD > report.log``` will process the results from each of the regressions and place the aggregated results in the file ```report.log```.  For more details on running a regression, the available regression groups, understanding the regression output, and specifying a new regression group, please refer to the OpenPiton documentation.
 
 ==========================
 
 #### Running a continuous integration bundle
+Continuous integration bundles are sets of simulations, regression groups, and/or unit tests.  The simulations within a bundle are not required to have the same simulation model.  The continuous integration tool requires a job queue manager (e.g. SLURM, PBS, etc.) to be present on the system in order parallelize simulations.
 
-Continuous integration bundles are sets of simulations, regression groups, and/or unit tests. The simulations within a bundle are not required to have the same simulation model. The continuous integration tool requires a job queue manager (e.g. SLURM, PBS, etc.) to be present on the system in order parallelize simulations.
-
-1. `cd $PITON_ROOT/build`
-2. `contint --bundle=git_push` runs the git_push continuous integration bundle which we ran on every commit when developing Piton. It contains a regression group, some assembly tests, and some unit tests.
+1. ```cd $PITON_ROOT/build```
+2. ```contint --bundle=git_push``` runs the git_push continuous integration bundle which we ran on every commit when developing Piton.  It contains a regression group, some assembly tests, and some unit tests.
 3. The simulation models will be built and all simulation jobs will be submitted
-4. After all simulation jobs complete, the results will be aggregated and printed to the screen. The individual simulation results will be saved in a new directory in the form `contint_<bundle name>_<date>_<id>` and can be reprocessed later to view the aggregated results again.
+4. After all simulation jobs complete, the results will be aggregated and printed to the screen.  The individual simulation results will be saved in a new directory in the form ```contint_<bundle name>_<date>_<id>``` and can be reprocessed later to view the aggregated results again.
 5. The exit code of the command in Step 2 indicates whether all tests passed (zero exit code) or at least one failed (non-zero exit code).
 6. For more details on running continuous integration bundles, the available bundles, understanding the output, reprocessing completed bundles, and creating new bundles, please refer to the OpenPiton documentation.
 
@@ -323,10 +317,9 @@ Check out the sections below to see how to run the RISC-V tests or simple bare-m
 #### Environment Setup
 
 In addition to the OpenPiton setup described above, you have to adapt the paths in the `ariane_setup.sh` script to match with your installation (we support Questasim, VCS and Verilator at the moment). Source this script from the OpenPiton root folder and build the RISC-V tools with `ariane_build_tools.sh` if you are running this for the first time:
-
-1. `cd $PITON_ROOT/`
-2. `source piton/ariane_setup.sh`
-3. `piton/ariane_build_tools.sh`
+1. ```cd $PITON_ROOT/```
+2. ```source piton/ariane_setup.sh```
+3. ```piton/ariane_build_tools.sh```
 
 Step 3. will then download and compile the RISC-V toolchain, the assembly tests and Verilator.
 
@@ -335,48 +328,51 @@ Step 3. will then download and compile the RISC-V toolchain, the assembly tests 
 > Also note that we use a slightly adapted version of `syscalls.c`. Instead of using the RISC-V FESVR, we use the OpenPiton testbench monitors to observe whether a test has passed or not. Hence we added the corresponding pass/fail traps to the exit function in `syscalls.c`.
 
 > For simulation Questasim 10.6b, VCS 2017.03 or Verilator 4.014 is needed
-> (older versions may work, but are untested).
+ (older versions may work, but are untested).
 
 > You will need Vivado 2018.2 or newer to build an FPGA bitstream with Ariane.
+
 
 #### Running RISC-V Tests and Benchmarks
 
 The RISC-V benchmarks are precompiled in the tool setup step mentioned above. You can run individual benchmarks by first building the simulation model with
 
-1. `cd $PITON_ROOT/build`
-2. `sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane`
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane```
 
 Then, invoke a specific riscv test with the `-precompiled` switch as follows
 
-`sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled`
+```sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 rv64ui-p-addi.S -ariane -precompiled```
 
 This will look for the precompiled ISA test binary named `rv64ui-p-addi` in the RISC-V tests folder `$ARIANE_ROOT/tmp/riscv-tests/build/isa` and run it.
 
 In order to run a RISC-V benchmark, do
 
-`sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 dhrystone.riscv -ariane -precompiled`
+```sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 dhrystone.riscv -ariane -precompiled```
 
 The printf output will be directed to `fake_uart.log` in this case (in the build folder).
 
 > Note: if you see the `Warning: [l15_adapter] return type 004 is not (yet) supported by l15 adapter.` warning in the simulation output, do not worry. This is only generated since Ariane does currently not support OpenPiton's packet-based interrupt packets arriving over the memory interface.
 
+
 #### Running Custom Programs
 
 You can also run test programs written in C. The following example program just prints 32 times "hello_world" to the fake UART (see `fake_uart.log` file).
 
-1. `cd $PITON_ROOT/build`
-2. `sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane`
-3. `sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 hello_world.c -ariane -rtl_timeout 10000000`
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -ariane```
+3. ```sims -sys=manycore -msm_run -x_tiles=1 -y_tiles=1 hello_world.c -ariane -rtl_timeout 10000000```
 
 And a simple hello world program running on multiple tiles can run as follows:
 
-1. `cd $PITON_ROOT/build`
-2. `sims -sys=manycore -x_tiles=4 -y_tiles=4 -msm_build -ariane`
-3. `sims -sys=manycore -msm_run -x_tiles=4 -y_tiles=4  hello_world_many.c -ariane -finish_mask 0x1111111111111111 -rtl_timeout 1000000`
+1. ```cd $PITON_ROOT/build```
+2. ```sims -sys=manycore -x_tiles=4 -y_tiles=4 -msm_build -ariane```
+3. ```sims -sys=manycore -msm_run -x_tiles=4 -y_tiles=4  hello_world_many.c -ariane -finish_mask 0x1111111111111111 -rtl_timeout 1000000```
 
 In the example above, we have a 4x4 Ariane tile configuration, where each core just prints its own hart ID (hardware thread ID) to the fake UART. Synchronization among the harts is achieved using an atomic ADD operation.
 
 > Note that we have to adjust the finish mask in this case, since we expect all 16 cores to hit the pass/fail trap.
+
 
 #### Regressions
 
@@ -384,45 +380,47 @@ The RISC-V ISA tests, benchmarks and some additonal simple example programs have
 
 - RISC-V ISA tests are grouped into the following four batches, where the last two are the regressions for atomic memory operations (AMOs):
 
-`sims -group=ariane_tile1_asm_tests_p -sim_type=msm`
+```sims -group=ariane_tile1_asm_tests_p -sim_type=msm```
 
-`sims -group=ariane_tile1_asm_tests_v -sim_type=msm`
+```sims -group=ariane_tile1_asm_tests_v -sim_type=msm```
 
-`sims -group=ariane_tile1_amo_tests_p -sim_type=msm`
+```sims -group=ariane_tile1_amo_tests_p -sim_type=msm```
 
-`sims -group=ariane_tile1_amo_tests_v -sim_type=msm`
+```sims -group=ariane_tile1_amo_tests_v -sim_type=msm```
 
 - RISC-V benchmarks can be run with:
 
-`sims -group=ariane_tile1_benchmarks -sim_type=msm`
+```sims -group=ariane_tile1_benchmarks -sim_type=msm```
 
 - Simple hello world programs and AMO tests for 1 tile can be invoked with
 
-`sims -group=ariane_tile1_simple -sim_type=msm`
+```sims -group=ariane_tile1_simple -sim_type=msm```
 
 - And a multicore "hello world" example running on 16 tiles can be run with
 
-`sims -group=ariane_tile16_simple -sim_type=msm`
+```sims -group=ariane_tile16_simple -sim_type=msm```
+
 
 If you would like to get an overview of the exit status of a regression batch, step into the regression subfolder and call `regreport . -summary`.
+
 
 #### FPGA Mapping on Genesys2 Board
 
 The bitfile for a 1x1 tile Ariane configuration for the Genesys2 board can be built using the follong command:
 
-`protosyn -b genesys2 -d system --core=ariane --uart-dmw ddr`
+```protosyn -b genesys2 -d system --core=ariane --uart-dmw ddr```
 
 > It is recommended to use Vivado 2018.2 or later since earlier versions might not produce a working bitstream.
 
 Once you have loaded the bitstream onto the FPGA using the Vivado Hardware Manager or a USB drive plugged into the Genesys2, you first need to connect the UART/USB port of the Genesys2 board to your computer and flip switch 7 on the board as described in the [OpenPiton FPGA Prototype Manual](http://parallel.princeton.edu/openpiton/docs/fpga_man.pdf). Then you can use pitonstream to run a list of tests on the FPGA:
 
-`pitonstream -b genesys2 -d system -f ./tests.txt --core=ariane`
+```pitonstream -b genesys2 -d system -f ./tests.txt --core=ariane```
 
 The tests that you would like to run need to be specified in the `test.txt` file, one test per line (e.g. `hello_world.c`).
 
 You can also run the precompiled RISCV benchmarks by using the following command
 
-`pitonstream -b genesys2 -d system -f ./piton/design/chip/tile/ariane/ci/riscv-benchmarks.list --core=ariane --precompiled`
+```pitonstream -b genesys2 -d system -f ./piton/design/chip/tile/ariane/ci/riscv-benchmarks.list --core=ariane --precompiled```
 
 > Note the `-precompiled` switch here, which has the same effect as when used with the `sims` command.
 
@@ -432,20 +430,17 @@ OpenPiton+Ariane supports the [RISC-V External Debug Draft Spec](https://github.
 
 To get started, connect the micro-USB port that is labeled with JTAG to your machine. This port is attached to the FTDI 2232 USB-to-serial chip on the Genesys 2 board, and is usually used to access the native JTAG interface of the Kintex-7 FPGA (e.g. to program the device using Vivado). However, the FTDI chip also exposes a second serial link that is routed to GPIO pins on the FPGA, and we leverage this to wire up the JTAG from the RISC-V debug module.
 
-> If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/99-ftdi.rules`
->
-> ```
+>If you are on an Ubuntu based system you need to add the following udev rule to `/etc/udev/rules.d/99-ftdi.rules`
+>```
 > SUBSYSTEM=="usb", ACTION=="add", ATTRS{idProduct}=="6010", ATTRS{idVendor}=="0403", MODE="664", GROUP="plugdev"
-> ```
+>```
 
 Once attached to your system, the FTDI chip should be listed when you type `lsusb`
-
 ```
 Bus 005 Device 019: ID 0403:6010 Future Technology Devices International, Ltd FT2232C/D/H Dual UART/FIFO IC
 ```
 
 If this is the case, you can go on and start openocd with the `fpga/ariane.cfg` configuration file below.
-
 ```
 $ openocd -f fpga/ariane.cfg
 Open On-Chip Debugger 0.10.0+dev-00195-g933cb87 (2018-09-14-19:32)
@@ -465,11 +460,9 @@ Info : Listening on port 6666 for tcl connections
 Info : Listening on port 4444 for telnet connections
 Info : accepting 'gdb' connection on tcp/3333
 ```
-
 Note that this simple OpenOCD script currently only supports one hart to be debugged at a time. Select the hart to debug by changing the core id (look for the `-coreid` switch in the `ariane.cfg` file). If you would like to debug multiple harts at once, you can use `ariane-multi-hart.cfg`.
 
 Then you will be able to either connect through `telnet` or with `gdb`:
-
 ```
 $ riscv64-unknown-elf-gdb /path/to/elf
 (gdb) target remote localhost:3333
@@ -490,7 +483,6 @@ $1 = 0xfffffffffffdb5ee
 ```
 
 You can read or write device memory by using:
-
 ```
 (gdb) x/i 0x1000
     0x1000: lui t0,0x4
@@ -500,7 +492,7 @@ You can read or write device memory by using:
 
 In order to compile programs that you can load with GDB, use the following command:
 
-`sims -sys=manycore -novcs_build -midas_only hello_world.c -ariane -x_tiles=1 -y_tiles=1 -gcc_args="-g"`
+```sims -sys=manycore -novcs_build -midas_only hello_world.c -ariane -x_tiles=1 -y_tiles=1 -gcc_args="-g"```
 
 Note that the tile configuration needs to correspond to your actual platform configuration if your program is a multi-hart program. Otherwise you can omit these switches (the additional cores will not execute the program in that case).
 
@@ -519,7 +511,6 @@ To prepare the SD card with a Linux image you need to format it with
 [`sgdisk`](https://wiki.archlinux.org/index.php/GPT_fdisk)
 then write the image with
 [`dd`](https://wiki.archlinux.org/index.php/Dd).
-
 1. Download the Ariane Linux OS image from either
    the ariane-sdk [release](https://github.com/pulp-platform/ariane-sdk/releases/tag/v0.3.0-op)
    or
@@ -528,22 +519,23 @@ then write the image with
    If you want to build your own Linux image please see
    [ariane-sdk](https://github.com/pulp-platform/ariane-sdk).
 2. `$ sudo fdisk -l`
-   Search _carefully_ for the corresponding disk label of the SD card,
-   e.g. `/dev/sdb`
+    Search *carefully* for the corresponding disk label of the SD card,
+    e.g. `/dev/sdb`
 3. `$ sudo sgdisk --clear --new=1:2048:67583 --new=2 --typecode=1:3000 --typecode=2:8300 /dev/sdb`
-   Create a new [GPT](https://en.wikipedia.org/wiki/GUID_Partition_Table)
-   partition table and two partitions:
-   1st partition 32MB (ONIE boot),
-   2nd partition rest (Linux root).
+    Create a new [GPT](https://en.wikipedia.org/wiki/GUID_Partition_Table)
+    partition table and two partitions:
+    1st partition 32MB (ONIE boot),
+    2nd partition rest (Linux root).
 4. `$ sudo dd if=bbl.bin of=/dev/sdb1 oflag=sync bs=1M`
-   Write the `bbl.bin` file to the first partition.
-   E.g. where your disk label is `/dev/sdb` use `/dev/sdb1` (append a `1`).
+    Write the `bbl.bin` file to the first partition.
+    E.g. where your disk label is `/dev/sdb` use `/dev/sdb1` (append a `1`).
 5. Insert the SD card into the FPGA development board.
    You can leave it there until you want to build your own Linux OS image.
 
+
 > Note that the board specific settings are encoded in the device tree that is
-> automatically generated and compiled into the FPGA bitfile, so no specific
-> configuration of the Linux kernel is needed.
+  automatically generated and compiled into the FPGA bitfile, so no specific
+  configuration of the Linux kernel is needed.
 
 Next up is generating the bitfile which assumes you've setup your PATH by
 sourcing `/opt/xilinx/Vivado/2018.2/settings64.sh` and `piton/ariane_setup.sh`.
@@ -558,8 +550,8 @@ commands representing the maximum configurations:
   (81% LUT utilization)
 
 > Vivado version 2017.3 and previous are known to fail for various reasons but
-> may generate an unusable bitfile.
-> Please use Vivado 2018.2.
+  may generate an unusable bitfile.
+  Please use Vivado 2018.2.
 
 This command will take a while (1-2 hours is typical for the first run before IP has been generated) to generate a
 bitfile at
@@ -599,25 +591,25 @@ Now you can test things by running standard unix commands (`# cat /proc/cpuinfo`
 or playing tetris (`# /tetris`).
 
 > There is also preliminary support for the VCU118, but not all features work
-> yet on that board.
-> For the VCU118 board you need the
-> [PMOD SD adapter](https://store.digilentinc.com/pmod-sd-full-sized-sd-card-slot/)
-> from Digilent to be able to use an SD card (the slot on the VCU118 board is not
-> directly connected to the FPGA).
-> As the PMOD0 port has open-drain level-shifters, you also have to replace the
-> R1-R4 and R7-8 resistors with 470 Ohm 0201 SMD resistors on the Digilent PMOD
-> SD adapter to make sure that signal rise times are short enough.
+  yet on that board.
+  For the VCU118 board you need the
+  [PMOD SD adapter](https://store.digilentinc.com/pmod-sd-full-sized-sd-card-slot/)
+  from Digilent to be able to use an SD card (the slot on the VCU118 board is not
+  directly connected to the FPGA).
+  As the PMOD0 port has open-drain level-shifters, you also have to replace the
+  R1-R4 and R7-8 resistors with 470 Ohm 0201 SMD resistors on the Digilent PMOD
+  SD adapter to make sure that signal rise times are short enough.
+
 
 #### Running OpenPiton simulations on F1 instances in AWS: step guide
 
-Here is the generic flow to run OpenPiton on F1 instance. We created a public image (agfi-0d87a634f93fe7c83), which you can use to try OpenPiton on F1 without synthesizing it.
+Here is the generic flow to run OpenPiton on F1 instance. We created a public image (agfi-0d87a634f93fe7c83), which you can use to try OpenPiton on F1 without synthesizing it. 
 
-1. We assume that you already have F1 instance up and running. If not - steps 1,2,4,5 from this (https://github.com/vegaluisjose/aws-fpga-notes) guide will help you.
+1. We assume that you already have F1 instance up and running. If not - steps 1,2,4,5 from this (https://github.com/vegaluisjose/aws-fpga-notes) guide will help you. 
 
-2. ssh into your instance, clone OpenPiton repo (https://github.com/PrincetonUniversity/openpiton).
+2. ssh into your instance, clone OpenPiton repo (https://github.com/PrincetonUniversity/openpiton). 
 
 3. cd into repo, run these bash commands:
-
 ```
     export PITON_ROOT=`pwd`
     export AWS_FPGA_REPO_DIR="$PITON_ROOT/piton/design/aws"
@@ -627,74 +619,60 @@ Here is the generic flow to run OpenPiton on F1 instance. We created a public im
 ```
 
 4. Load the fpga image into board:
-
+``` 
+    fpga-load-local-image -S 0 -I agfi-0d87a634f93fe7c83 
 ```
-    fpga-load-local-image -S 0 -I agfi-0d87a634f93fe7c83
-```
+After this step the fpga is programmed, but the reset signal is high, so the system is still not working. 
 
-After this step the fpga is programmed, but the reset signal is high, so the system is still not working.
-
-5. Compile software
-
-```
-    cd $CL_DIR/software/src
+5. Compile software 
+``` 
+    cd $CL_DIR/software/src 
     make
 ```
-
 This will compile programs "uart" and "dma_os". You should have xdma driver preinstalled (https://github.com/Xilinx/dma_ip_drivers/tree/master/XDMA/linux-kernel).
 
 6. Run "uart" program
-
+``` 
+    ./uart & 
 ```
-    ./uart &
-```
-
 This will create a pseudo-terminal and tell you the location of the corresponding file (e.g. /dev/pts/3)
 
-7. Write OS image in memory:
-
+7. Write OS image in memory: 
+``` 
+    ./dma_os $FILE_LOCATION 
 ```
-    ./dma_os $FILE_LOCATION
-```
-
-This will put the os image from FILE_LOCATION in the appropriate place in memory. Note, before writing the image you should revert each 8 bytes of it (consequences of strange behavior of xdma driver). You can do this with
-
-```
-    objcopy -I binary -O binary --reverse-bytes=8 $FILE_LOCATION
+This will put the os image from FILE_LOCATION in the appropriate place in memory. Note, before writing the image you should revert each 8 bytes of it (consequences of strange behavior of xdma driver). You can do this with 
+``` 
+    objcopy -I binary -O binary --reverse-bytes=8 $FILE_LOCATION 
 ```
 
 8. Reset fpga:
-
+``` 
+    ./fpga-reset 
 ```
-    ./fpga-reset
-```
-
-After this the processor will start working and printing UART data in your pseudo-terminal. You can connect to the terminal using your favourite terminal program (e.g. screen, tio).
+After this the processor will start working and printing UART data in your pseudo-terminal. You can connect to the terminal using your favourite terminal program (e.g. screen, tio). 
 
 9. Managing the fpga:
-   In the software directory we provide you with some useful programs:
-
-- uart : starts pseudo-terminal, connected to the OpenPiton's uart
-- dma_os : copies file from argument into the SD part of the memory
-- fpga-reset : resets the fpga
-- fpga-poweroff : sets the reset in the fpga to high, basically powering off OpenPiton so that you could write the data into memory without memory corruptions.
+In the software directory we provide you with some useful programs: 
+ - uart : starts pseudo-terminal, connected to the OpenPiton's uart
+ - dma_os : copies file from argument into the SD part of the memory
+ - fpga-reset : resets the fpga
+ - fpga-poweroff : sets the reset in the fpga to high, basically powering off OpenPiton so that you could write the data into memory without memory corruptions. 
 
 Besides, you might find useful some utilities, provided by AWS themselves:
-
-- fpga-clear-local-image : clears the image from FPGA
-- fpga-set-virtual-dip-switch : sets the value of 16 virtual dip switches. Note that the last switch (15th) is connected to OpenPiton's reset
-- fpga-get-virtual-led : reads the value of 16 virtual leds
+ - fpga-clear-local-image : clears the image from FPGA
+ - fpga-set-virtual-dip-switch : sets the value of 16 virtual dip switches. Note that the last switch (15th) is connected to OpenPiton's reset
+ - fpga-get-virtual-led : reads the value of 16 virtual leds
 
 #### Synthesizing OpenPiton image for F1
-
 The flow is very simillar to synthesizing image for any other FPGA we support, but has own nuances. Good news: you can run the flow on your own machine if you have Vivado 2018.2 or higher.
 
-1. Create the S3 credentials and configure your S3 bucket. You can find step guides here (https://github.com/vegaluisjose/aws-fpga-notes).
 
-2. Clone OpenPiton repo (https://github.com/PrincetonUniversity/openpiton).
+1. Create the S3 credentials and configure your S3 bucket. You can find step guides here (https://github.com/vegaluisjose/aws-fpga-notes). 
+
+2. Clone OpenPiton repo (https://github.com/PrincetonUniversity/openpiton). 
 
 3. cd into repo, run these bash commands:
-
 ```
     export PITON_ROOT=`pwd`
     export AWS_FPGA_REPO_DIR="$PITON_ROOT/piton/design/aws"
@@ -703,37 +681,29 @@ The flow is very simillar to synthesizing image for any other FPGA we support, b
     source piton/ariane_setup.sh
     source "$AWS_FPGA_REPO_DIR/hdk_setup.sh"
 ```
-
-The last command will try to ask for root password to apply patch for Vivado, but you don't have to do it - the flow still works even without patch.
+The last command will try to ask for root password to apply patch for Vivado, but you don't have to do it - the flow still works even without patch. 
 
 4. Run the synthesis:
-
+``` 
+    protosyn -b f1 -c ariane ... 
 ```
-    protosyn -b f1 -c ariane ...
-```
-
 This will create the custom logic tar archive, which we'll later upload on AWS servers. The synthesis itself is run in nohup, but protosyn will tell you the location of the log files, so that you can follow the progress.
 
 5. After the synthesis is complete (takes about 2-3 hours on fast PC), go to results folder:
-
+``` 
+    cd $PITON_ROOT/build/f1/piton_aws/build/checkpoints/to_aws 
 ```
-    cd $PITON_ROOT/build/f1/piton_aws/build/checkpoints/to_aws
-```
-
-This is the folder, where all the result tars are located.
+This is the folder, where all the result tars are located. 
 
 6. Copy the resulting tar archive in the S3 bucket you created before
 
-7. Send the command for final synthesis:
-
+7. Send the command for final synthesis: 
+``` 
+    aws ec2 create-fpga-image --name NAME_OF_IMAGE --input-storage-location Bucket=YOUR_S3_BUCKET,Key=NAME_OF_YOUR_TAR_ARCHIVE 
 ```
-    aws ec2 create-fpga-image --name NAME_OF_IMAGE --input-storage-location Bucket=YOUR_S3_BUCKET,Key=NAME_OF_YOUR_TAR_ARCHIVE
-```
-
 The command will tell print the afi and agfi of your image. You can track the synthesis progress with
-
-```
-    aws ec2 describe-fpga-images --fpga-image-ids AFI_OF_YOUR_IMAGE
+``` 
+    aws ec2 describe-fpga-images --fpga-image-ids AFI_OF_YOUR_IMAGE 
 ```
 
 8. After the synthesis is done - you can go load it in your F1 instance!

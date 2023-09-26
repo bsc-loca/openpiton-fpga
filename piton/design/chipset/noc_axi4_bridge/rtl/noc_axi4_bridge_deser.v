@@ -56,11 +56,11 @@ localparam ACCEPT_W3   = 3'd2;
 localparam ACCEPT_DATA = 3'd3;
 localparam SEND        = 3'd4;
 
-reg [`NOC_DATA_WIDTH  -1:0] pkt_w1;
-reg [`NOC_DATA_WIDTH  -1:0] pkt_w2;
-reg [`NOC_DATA_WIDTH  -1:0] pkt_w3;
-reg [`NOC_DATA_WIDTH  -1:0] in_data_buf[`PAYLOAD_LEN-1:0]; //buffer for incomming packets
-reg [`MSG_LENGTH_WIDTH-1:0] remaining_flits; //flits remaining in current packet
+reg [`NOC_DATA_WIDTH-1:0]           pkt_w1;
+reg [`NOC_DATA_WIDTH-1:0]           pkt_w2;
+reg [`NOC_DATA_WIDTH-1:0]           pkt_w3; 
+reg [`NOC_DATA_WIDTH-1:0]           in_data_buf[`PAYLOAD_LEN-1:0]; //buffer for incomming packets
+reg [`MSG_LENGTH_WIDTH-1:0]         remaining_flits; //flits remaining in current packet
 
 assign flit_in_rdy = (state != SEND) & phy_init_done;
 wire flit_in_go = flit_in_val & flit_in_rdy;

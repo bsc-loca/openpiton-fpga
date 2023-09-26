@@ -42,7 +42,7 @@ module noc_axi4_bridge_write #(
     input  wire                                          req_val,
     input  wire [`AXI4_ADDR_WIDTH -1:0]                  req_addr,
     input  wire [`AXI4_ID_WIDTH   -1:0]                  req_id,
-    input  wire [`AXI4_DATA_WIDTH -1:0]                  req_data,
+    input  wire [`AXI4_DATA_WIDTH-1:0]                   req_data,
     input  wire [`AXI4_STRB_WIDTH -1:0]                  req_strb,
     output wire                                          req_rdy,
 
@@ -115,20 +115,18 @@ wire req_go = req_val & req_rdy;
 reg [1:0] req_state;
 reg [`AXI4_ADDR_WIDTH -1:0] req_addr_f;
 reg [`AXI4_ID_WIDTH   -1:0] req_id_f;
-reg [`AXI4_DATA_WIDTH -1:0] req_data_f;
+reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
 reg [`AXI4_STRB_WIDTH -1:0] req_strb_f;
-
 
 assign req_rdy = (req_state == IDLE);
 assign m_axi_awvalid = (req_state == GOT_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
 
-
 always @(posedge clk)
     if(~rst_n) begin
-        req_state  <= IDLE;
         req_addr_f <= 0;
-        req_id_f   <= 0;
+        req_id_f <= 0;
+        req_state <= IDLE;
     end else
         case (req_state)
             IDLE: if (req_go) begin
@@ -173,8 +171,7 @@ always @(posedge clk)
       req_strb_f <= {req_strb_f[`AXI4_STRB_WIDTH -1 : `AXI4_STRB_WIDTH - BURST_SIZE],
                      req_strb_f[`AXI4_STRB_WIDTH -1 :   (BURST_LEN > 1 ? BURST_SIZE          : 0)]};
     end
-  end
-
+end
 
 // Process information here
 assign m_axi_awid   = req_id_f;
@@ -196,8 +193,8 @@ assign m_axi_bready = (resp_state == IDLE);
 
 always @(posedge clk)
     if(~rst_n) begin
+        resp_id_f <= 0;
         resp_state <= IDLE;
-        resp_id_f  <= 0;
     end else
         case (resp_state)
             IDLE: if (m_axi_bgo) begin
@@ -208,7 +205,7 @@ always @(posedge clk)
                 resp_state <= IDLE;
             default : begin
                 resp_state <= IDLE;
-                resp_id_f  <= 0;
+                resp_id_f <= 0;
             end
         endcase
 

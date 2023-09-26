@@ -108,7 +108,7 @@ module chipset(
     `ifdef PITONSYS_DDR4
         input                                       mc_clk_p,
         input                                       mc_clk_n,
-     `endif // PITONSYS_DDR4
+    `endif // PITONSYS_DDR4
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     input                                       chipset_clk,
@@ -270,7 +270,6 @@ module chipset(
     input  pcie_perstn,
     input  pcie_refclk_n,
     input  pcie_refclk_p,
-    //
 `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
@@ -1096,7 +1095,7 @@ end
     `ifndef PITONSYS_INC_PASSTHRU
     `ifndef PITON_NO_CHIP_BRIDGE
         assign io_clk_loopback = io_clk;
-    `endif // endif PITON_NO_CHIP_BRIDGE
+    `endif
     `endif // endif PITONSYS_INC_PASSTHRU
 
     `ifdef PITON_CLKS_CHIPSET
@@ -1280,10 +1279,8 @@ end
             .reset(1'b0),
             .locked(clk_locked),
 
-         // Main chipset clock
-           // `ifndef PYTONSYS_LAGARTO
+            // Main chipset clock
             .chipset_clk(chipset_clk)
-            //`endif
 
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
@@ -1292,11 +1289,12 @@ end
                 , .mc_sys_clk()
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
+
             `ifndef ALVEOU280_BOARD
-             `ifdef PITONSYS_SPI
+            `ifdef PITONSYS_SPI
                 // SPI system clock
-                , . (sd_sys_clk)
-             `endif // endif PITONSYS_SPI
+                , .sd_sys_clk(sd_sys_clk)
+            `endif // endif PITONSYS_SPI
             `else
                 // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
                , .vpu_clk(vpu_clk)
@@ -1328,10 +1326,6 @@ end
         assign chipset_clk = sys_clk;
     `endif //ifndef F1_BOARD
 `endif // PITON_BOARD
-
-//`ifdef PYTONSYS_LAGARTO
-//        assign chipset_clk = vpu_clk;
-//`endif
 
 // If we are using a passthru, we need to convert
 // differential signals to single ended
@@ -1760,7 +1754,7 @@ chipset_impl_noc_power_test  chipset_impl (
 
     // DRAM and I/O interfaces
     `ifndef PITONSYS_NO_MC
-        `ifdef PITON_FPGA_MC_DDR3             
+        `ifdef PITON_FPGA_MC_DDR3 
             .init_calib_complete(init_calib_complete),
             `ifndef F1_BOARD
                 `ifdef PITONSYS_DDR4
@@ -1773,7 +1767,6 @@ chipset_impl_noc_power_test  chipset_impl (
                      .pcie_perstn(pcie_perstn),
                      .pcie_refclk_n(pcie_refclk_n),
                      .pcie_refclk_p(pcie_refclk_p),
-                     
                      `endif
                     .ddr_act_n(ddr_act_n),                    
                     .ddr_bg(ddr_bg), 
@@ -2191,18 +2184,17 @@ chipset_impl_noc_power_test  chipset_impl (
            `else            
             .uart_tx(uart_tx),
             .uart_rx(uart_rx),
-            `ifdef PITONSYS_UART_BOOT                
+            `ifdef PITONSYS_UART_BOOT
                 .uart_boot_en(uart_boot_en),
                 .uart_timeout_en(uart_timeout_en),
                 `ifdef ALVEOU280_BOARD                           
                 .bootrom_linux_en(uart_bootrom_linux_en),
                 `endif
-
             `endif // endif PITONSYS_UART_BOOT
-            `endif //// PITONSYS_MEEP
+            `endif // PITONSYS_MEEP
         `endif // endif PITONSYS_UART
 
-        `ifdef PITONSYS_SPI            
+        `ifdef PITONSYS_SPI
             .sd_clk(sd_sys_clk),
             `ifndef VC707_BOARD
             .sd_cd(sd_cd),
@@ -2216,7 +2208,6 @@ chipset_impl_noc_power_test  chipset_impl (
             .sd_dat(sd_dat),
         `endif // endif PITONSYS_SPI
             `ifdef PITON_FPGA_ETHERNETLITE      
-                
                 .net_axi_clk        (net_axi_clk            ),
                 .net_phy_rst_n      (net_phy_rst_n          ),
 
@@ -2231,9 +2222,7 @@ chipset_impl_noc_power_test  chipset_impl (
 
                 .net_phy_mdio_io    (net_phy_mdio_io        ),
                 .net_phy_mdc        (net_phy_mdc            ),
-
             `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
-                
                 .net_axi_clk         (net_axi_clk           ),
                 .qsfp_ref_clk_n      (qsfp_ref_clk_n),
                 .qsfp_ref_clk_p      (qsfp_ref_clk_p),

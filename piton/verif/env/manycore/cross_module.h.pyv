@@ -80,8 +80,8 @@
     `define TOP_MOD_INST `TOP_MOD.tile0
 `else // ifdef METRO_TILE
     `ifndef UVM_TB
-        `define TOP_MOD     cmp_top
-        `define SIM_TOP     cmp_top
+    `define TOP_MOD     cmp_top
+    `define SIM_TOP     cmp_top
     `else
         `define TOP_MOD     testbench
         `define SIM_TOP     testbench
@@ -91,7 +91,7 @@
 `endif // ifdef METRO_CHIPSET
 // TODO: Alexey: use PITON_PROTO define ?
 //`define TOP_MOD      fpga_top.cmp_top
-`endif // ifdef JTAG_TB_XMODULE
+`endif
 
 //`define SIM_TOP fpga_top.cmp_top
 
@@ -227,8 +227,6 @@ for i in range(PITON_NUM_TILES):
 `endif
     `define CFG_ASI_PATH%d    `SPARC_CORE%d.sparc0.cfg_asi
 
-
-
 `ifdef METRO_CHIPSET
     `define PITON_CORE%d_INST_DONE  1'b0
     `define PITON_CORE%d_PC_W%d     40'b0
@@ -240,9 +238,6 @@ for i in range(PITON_NUM_TILES):
     	`define PITON_CORE%d_INST_DONE  1'b0
     `endif
     
-    
-    
-    
 `ifdef RTL_SPARC%d
     `define PITON_CORE%d_PC_W%d     `PCPATH%d.fdp.pc_w
 `else
@@ -251,10 +246,7 @@ for i in range(PITON_NUM_TILES):
     `define PITON_CORE%d_PC_W%d     `TOP_MOD.monitor.pc_cmp.spc%d_phy_pc_w
     `else 
     	 `define PITON_CORE%d_PC_W%d     40'b0
-`endif
-
-
-    
+    `endif
 `endif
 `endif // ifdef METRO_CHIPSET
 
