@@ -194,13 +194,6 @@ for {set k 0} {$k < $::env(PITON_LAGARTO)} {incr k} {
 
 puts "INFO: Using Defines: ${ALL_DEFAULT_VERILOG_MACROS}"
 
-# credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50
-# and https://www.xilinx.com/support/answers/72570.html
-set tmp_PYTHONPATH $env(PYTHONPATH)
-set tmp_PYTHONHOME $env(PYTHONHOME)
-unset ::env(PYTHONPATH)
-unset ::env(PYTHONHOME)
-
 # Pre-process PyHP files
 source $DV_ROOT/tools/src/proto/common/pyhp_preprocess.tcl
 set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
@@ -213,10 +206,10 @@ if  {$::env(PITON_ARIANE) != "0"} {
   
   # credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50 
   # and https://www.xilinx.com/support/answers/72570.html
-  # set tmp_PYTHONPATH $::env(PYTHONPATH)
-  # set tmp_PYTHONHOME $::env(PYTHONHOME)
-  # unset ::env(PYTHONPATH)
-  # unset ::env(PYTHONHOME)
+  set tmp_PYTHONPATH $::env(PYTHONPATH)
+  set tmp_PYTHONHOME $::env(PYTHONHOME)
+  unset ::env(PYTHONPATH)
+  unset ::env(PYTHONHOME)
   
   set TMP [pwd]
   cd $::env(ARIANE_ROOT)/openpiton/bootrom/baremetal
@@ -241,11 +234,19 @@ if  {$::env(PITON_ARIANE) != "0"} {
 
   cd $TMP
   puts "INFO: done"
+  set ::env(PYTHONPATH) $tmp_PYTHONPATH
+  set ::env(PYTHONHOME) $tmp_PYTHONHOME
 }
 
 
 if  { $::env(PITON_LAGARTO) != "0"} {
   puts "INFO: compiling DTS and bootroms for Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
+
+  set tmp_PYTHONPATH $::env(PYTHONPATH)
+  set tmp_PYTHONHOME $::env(PYTHONHOME)
+  unset ::env(PYTHONPATH)
+  unset ::env(PYTHONHOME)
+
   set TMP [pwd]
   cd $::env(LAGARTO_ROOT)/openpiton/bootrom/baremetal
   # Note: dd dumps info to stderr that we do not want to interpret
@@ -269,10 +270,9 @@ if  { $::env(PITON_LAGARTO) != "0"} {
 
   cd $TMP
   puts "INFO: done"
+  set ::env(PYTHONPATH) $tmp_PYTHONPATH
+  set ::env(PYTHONHOME) $tmp_PYTHONHOME
 }
-
-  # set ::env(PYTHONPATH) $tmp_PYTHONPATH
-  # set ::env(PYTHONHOME) $tmp_PYTHONHOME
 
 if { [info exists ::env(BROM_ONLY) ]} {
 	puts "Boot ROM created. Finishing protosyn..."

@@ -200,6 +200,8 @@ wire [`NOC_DATA_WIDTH*3-1:0] msg_send_header;
 
 reg [`PHY_ADDR_WIDTH-1:0] msg_addr_o,msg_addr_o_next;
 
+
+
 l2_decoder decoder(
     .msg_header         (mem_header_in),
     .msg_type           (msg_type),
@@ -693,7 +695,7 @@ begin
         buf_out_mem_next[6] = msg_send_data[5];
         buf_out_mem_next[7] = msg_send_data[6];
         buf_out_mem_next[8] = msg_send_data[7];
-	msg_addr_o_next= msg_addr;
+        msg_addr_o_next= msg_addr;
     end
     else
     begin
@@ -775,11 +777,6 @@ end
 
 
 //apply RD delay estimations
-
-
-
-
-
 `ifdef PITON_HBM_LAT
 
 hbm_delay #(

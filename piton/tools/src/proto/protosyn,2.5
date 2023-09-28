@@ -168,7 +168,7 @@ def usage():
     print("\n       --swait", file=sys.stderr)
     print("\n            Wait for slurm jobs to finish", file=sys.stderr)
     print("\n       -j, --jobs", file=sys.stderr)
-    print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)   
+    print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)
     print("\n       --postroutephysopt", file=sys.stderr)
     print("              Use post-route physical optimisation in Vivado implementation flow (can improve timing, not recommended by default)", file=sys.stderr)
     print("         --sa_nn_enable", file.sys.stderr)
@@ -229,13 +229,6 @@ def run_vivado(log, script, design_dir, board, slurm, tpn, mem_mb, time_str, jna
     os.environ['PROTOSYN_RUNTIME_DESIGN_PATH'] = design_dir
     os.environ['PROTOSYN_RUNTIME_BOARD'] = board
 
-    if(os.environ.get('BROM_ONLY')) == "1":
-        print_info("Generating the bootrom binary")
-    elif(os.environ.get('VIVADO_NON_PROJECT_MODE')) == "0":
-        print_info("Running FPGA implementation down to bitstream generation")
-    else:
-        print_info("Running FPGA synthesis")
-        print_info("A synthesis design check point will be generated in $PITON_ROOT/dcp")
 
     # use custom vivado version if provided
     if(os.environ.get('VIVADO_BIN')) is not None:
@@ -384,15 +377,18 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
 
     #dname = board + "_piton"
     #os.chdir(dname)
+    print_info("Running FPGA implementation down to bitstream generation")
 
     if (vivado_mode == False):
         os.environ["VIVADO_NON_PROJECT_MODE"] = "0"
+        print_info("Running Vivdo in project mode")
     else:
         os.environ["VIVADO_NON_PROJECT_MODE"] = "1"
+        print_info("Running Vivado in non-project mode with creation of DCP in $PITON_ROOT/dcp")
 
     now_time = dt.datetime.now()
     timeStampStr = now_time.strftime("%d-%b-%Y %H:%M")
-    print_info("Project building started at %s" % timeStampStr)
+    print_info("Starting FPGA implementation at %s" % timeStampStr)
 
     design_board_dir = os.path.join(design_data["PATH"], board)
     impl_log = os.path.join(log_dir, PROJECT_IMPL_LOG)
@@ -1056,6 +1052,7 @@ def main():
     if options.brom_only:
         os.environ['BROM_ONLY'] = "1"
         pid = os.getpid()
+        print_info("Generating the bootrom binary")
         print_info('Protosyn PID = %s' % str(pid))
         os.environ['PROTOPID'] = str(pid)
 		
@@ -1323,7 +1320,7 @@ def main():
         if run_make_project:
             print_info("Checking Project Build results")
             if options.brom_only:
-                print_info("Bootrom binary creted")
+                print_info("Bootrom binary created")
                 exit_code = 0
  
             elif not buildProjectSuccess(rc_dir.log):

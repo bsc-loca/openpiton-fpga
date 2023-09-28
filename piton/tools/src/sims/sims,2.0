@@ -1919,9 +1919,9 @@ sub generic_sim_run
       $cmd .= "-lib ";
       $cmd .= "$model_path/work ";
       if ($opt{cov}) {
-        $cmd .= "-do \"coverage save -onexit $opt{asm_diag_name}.ucdb; run -all\" ";
+      $cmd .= "-do \"coverage save -onexit $opt{asm_diag_name}.ucdb; run -all\" ";
       } else {
-        $cmd .= "-do \"run -all\" ";
+      $cmd .= "-do \"run -all\" ";
       }
 
       foreach my $top_n (@{$opt{toplevel}}) {
@@ -2990,13 +2990,14 @@ sub parse_args
 
   # Considering board specific defines, needed when sims is run from protosyn, not to confuse it with their incorrect values
   if ($opt{board}) {
-    $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
-    $ENV{PROTOSYN_RUNTIME_BOARD} = $opt{board};
+  $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
+  $ENV{PROTOSYN_RUNTIME_BOARD} = $opt{board};
   }
   else {
-    $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/verif/env/manycore";
-    $ENV{PROTOSYN_RUNTIME_BOARD} = "";
+  $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/verif/env/manycore";
+  $ENV{PROTOSYN_RUNTIME_BOARD} = "";
   }
+
 
   # these arguments may not have any options associated with them
   foreach my $x (@ARGV) {

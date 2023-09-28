@@ -1785,10 +1785,8 @@ endgenerate
 localparam integer NUM_INTR_UART  = 1;
 localparam integer NUM_INTR_RISCV = NUM_INTR_ETH + NUM_INTR_UART;
 
-
-wire                    uart_interrupt;
 wire [NUM_INTR_ETH-1:0] net_interrupt;
-
+wire uart_interrupt;
 
 `ifdef PITONSYS_IOCTRL
 
@@ -1853,8 +1851,8 @@ uart_top        uart_top (
       .uart_axi_rvalid(uart_axi_rvalid),
       .uart_axi_rready(uart_axi_rready),
     `else
-    .uart_tx                    ( uart_tx                               ),
     .uart_rx                    ( uart_rx                               ),
+    .uart_tx                    ( uart_tx                               ),
     .uart_interrupt             ( uart_interrupt                        ),
     `endif
 
@@ -1949,7 +1947,6 @@ uart_top        uart_top (
 
 
 `ifdef PITON_FPGA_ETH
-
 
     eth_top #(
     `ifdef PITON_RV64_PLATFORM

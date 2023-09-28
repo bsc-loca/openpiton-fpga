@@ -389,10 +389,3 @@ def get_mc_mapping(piton_X,piton_Y,indices,mc_num,net_conf):
                 else: 
                     sys.stderr.write("Fatal: %s is not an edge router\n" % flatid)    
     return mc_map
-    
-    
-     
-                
-    
-    
-    

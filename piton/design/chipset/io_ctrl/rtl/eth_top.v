@@ -74,7 +74,6 @@ module eth_top #(
     output                                  net_phy_mdc
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
-
     `ifndef PITONSYS_MEEP
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
@@ -218,6 +217,7 @@ wire                            net_phy_mdio_t;
 wire net_phy_crs = 1'b0;
 wire net_phy_col = 1'b0;
 
+(* dont_touch = "true" *) wire unsync_net_int;
 
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
  `ifndef PITONSYS_MEEP
@@ -479,7 +479,6 @@ noc_axi4_bridge #(
     .m_axi_rready(core_axi_rready)
 );
 `endif
-
 
 
 `ifdef PITON_FPGA_ETHERNETLITE

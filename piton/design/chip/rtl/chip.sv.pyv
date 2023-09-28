@@ -465,8 +465,6 @@ module chip(
 %>
 
 
-
-
  `ifdef PITON_PRONOC 
  	import pronoc_pkg::*; 
  	localparam CHIP_SET_ID = T1*T2*T3+2*T1; // endp connected  of west port of router 0-0
@@ -577,12 +575,6 @@ module chip(
                 .clk(clk_muxed)
         
         );
-  
-  
-  
-  
-  
-  
  
 `else 
   localparam 
@@ -1241,8 +1233,7 @@ module chip(
         // ucb from jtag to tiles
         .jtag_tiles_ucb_val  ( jtag_tiles_ucb_val      ),
         .jtag_tiles_ucb_data ( jtag_tiles_ucb_data     ),
-     `ifdef PITON_PRONOC 
-             
+    `ifdef PITON_PRONOC 
         .dataIn1         (dataIn1[_FLAT_ID_] ),
         .validIn1        (validIn1[_FLAT_ID_]),
         .yummyIn1        (yummyIn1[_FLAT_ID_]),
@@ -1266,8 +1257,6 @@ module chip(
         .dataOut3        (dataOut3[_FLAT_ID_]),
         .validOut3       (validOut3[_FLAT_ID_]),
         .yummyOut3       (yummyOut3[_FLAT_ID_])     
-     
-       
     `else
     '''
 

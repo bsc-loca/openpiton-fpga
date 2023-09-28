@@ -317,7 +317,6 @@ def compileASMTest(tname, uart_div_latch, st_brd, flog, midas_args=None, coreTyp
         print_error("Can't use existent storage_addr_trans.tmp.v for %s" % tname)
         return 1
 
-
     # Use available functions in make_mem_map.py to generate sections
     # and map them to contiguos memory
     print_info("Extracting test sections") #NOTE: can be optimized and extracted from mem.image

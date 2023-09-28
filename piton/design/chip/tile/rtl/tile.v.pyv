@@ -92,9 +92,6 @@ s = '''
 
 
 `ifdef PITON_PRONOC
-	
-	
-	
 	input [`DATA_WIDTH-1:0] dataIn1,
 	input validIn1,
 	input yummyIn1,
@@ -205,7 +202,6 @@ s = '''
     output                              dyn2_yummyOut_E,
     output                              dyn2_yummyOut_W,
     output                              dyn2_yummyOut_S
-    
  `endif   
     
     //output [4:0]                        ec_dyn2\

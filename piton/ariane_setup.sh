@@ -56,7 +56,6 @@ then
   # Commentted out, as it is not really an issue and it may fail when running the CICD
   echo "not in bash ($0)"
   #return
-
 fi
 
 SCRIPTNAME=ariane_setup.sh
@@ -83,7 +82,6 @@ export CXX=g++ CC=gcc
 if [ x$RISCV == x ]; then
   export RISCV=/home/tools/openpiton/riscv_install
 fi
-
 export VERILATOR_ROOT=$ARIANE_ROOT/tmp/verilator-4.014/
 
 # setup paths

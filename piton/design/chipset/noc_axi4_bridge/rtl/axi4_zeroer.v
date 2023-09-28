@@ -158,10 +158,10 @@ wire init_calib_complete_out_i;
 wire init_calib_complete_out_r;
 
 assign zeroer_awval = init_calib_complete_in 
-					  & ~init_calib_complete_out_i
-					  & (req_sent < REQUESTS_NEEDED) 
-					  & (outstanding != MAX_OUTSTANDING-1)
-					  & rst_n;
+                      & ~init_calib_complete_out_i
+                      & (req_sent < REQUESTS_NEEDED) 
+                      & (outstanding != MAX_OUTSTANDING-1) 
+                      & rst_n;
 
 assign zeroer_awrdy    = m_axi_awready;
 assign zeroer_wrdy     = m_axi_wready;

@@ -185,8 +185,6 @@ module l2_pipe1(
     input wire [`NOC_Y_WIDTH-1:0] coreid_y,
 `endif
 
-
-
     output wire reg_rd_en,
     output wire reg_wr_en,
     output wire [`L2_ADDR_TYPE_WIDTH-1:0] reg_rd_addr_type,
