@@ -145,8 +145,6 @@ wire zeroer_awval;
 wire zeroer_awrdy;
 wire zeroer_wval;
 wire zeroer_wrdy;
-//wire req_go;
-//wire resp_go;
 reg req_go;
 reg resp_go;
 reg [`AXI4_ADDR_WIDTH-1:0] req_sent;
@@ -178,9 +176,6 @@ always @(posedge clk) begin
         resp_go <= zeroer_wval & zeroer_wrdy;
     end
 end
-        
-//assign req_go = zeroer_awval & zeroer_awrdy;
-//assign resp_go = zeroer_wval & zeroer_wrdy;
 
 
 always @(posedge clk) begin
@@ -201,7 +196,7 @@ always @(posedge clk) begin
 end
 
 assign init_calib_complete_out_i = (req_sent == REQUESTS_NEEDED) & 
-                                   (resp_got == REQUESTS_NEEDED);
+                                 (resp_got == REQUESTS_NEEDED);
 
 assign zeroer_addr = req_sent * `AXI4_STRB_WIDTH;
 

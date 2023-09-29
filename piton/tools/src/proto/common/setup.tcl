@@ -85,7 +85,7 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
 ################# CORE SPECIFIC SECTION #################
 #
 
-if  {$::env(PITON_ARIANE) != "0"} {
+if {[info exists ::env(PITON_ARIANE)]} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${ARIANE_INCLUDE_DIRS}]
   puts "Add Ariane include directories"
 }
@@ -129,19 +129,19 @@ if  {$::env(PITON_PRONOC) != "0"} {
 #########################################################
 
 
-if  {$::env(PITON_OST1) != "0"} {
+if {[info exists ::env(PITON_OST1)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_OST1"
 }
 
-if  {$::env(PITON_PICO) != "0"} {
+if {[info exists ::env(PITON_PICO)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PICO"
 }
 
-if  {$::env(PITON_PICO_HET) != "0"} {
+if {[info exists ::env(PITON_PICO_HET)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PICO PITON_PICO_HET"
 }
 
-if  {$::env(PITON_ARIANE) != "0"} {
+if {[info exists ::env(PITON_ARIANE)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE PITON_RV64_PLATFORM PITON_RV64_DEBUGUNIT PITON_RV64_CLINT PITON_RV64_PLIC WT_DCACHE"
 }
 
@@ -174,7 +174,7 @@ if  {$::env(PITON_PRONOC) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_PRONOC"
 }
 
-for {set k 0} {$k < $::env(PITON_LAGARTO)} {incr k} {
+for {set k 0} {$k < $::env(PITON_NUM_TILES)} {incr k} {
   if {[info exists "::env(RTL_LAGARTO$k)"]} {
     append ALL_DEFAULT_VERILOG_MACROS " RTL_LAGARTO$k"
   }
@@ -200,7 +200,7 @@ set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
 set ALL_INCLUDE_FILES [pyhp_preprocess ${ALL_INCLUDE_FILES}]
 
 
-if  {$::env(PITON_ARIANE) != "0"} {
+if  {[info exists ::env(PITON_ARIANE)]} {
   puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   
   

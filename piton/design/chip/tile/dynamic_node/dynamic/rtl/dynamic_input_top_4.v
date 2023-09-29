@@ -80,10 +80,10 @@ input thanks_p;
 
 //wires
 wire thanks_all_temp;
-`ifdef EDGE_ROUTE_ENABLE
-     wire [`DATA_WIDTH*2-1:0] data_internal;
+`ifndef EDGE_ROUTE_ENABLE
+wire [`DATA_WIDTH-1:0] data_internal;
 `else
-     wire [`DATA_WIDTH-1:0] data_internal;
+wire [`DATA_WIDTH*2-1:0] data_internal;
 `endif
 
 wire valid_out_internal;

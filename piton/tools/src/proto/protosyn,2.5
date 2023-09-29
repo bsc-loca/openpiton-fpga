@@ -1055,13 +1055,9 @@ def main():
         print_info("Generating the bootrom binary")
         print_info('Protosyn PID = %s' % str(pid))
         os.environ['PROTOPID'] = str(pid)
-		
-    # Supported cores, initialize env variables.
-    os.environ['PITON_PICO']     = "0"
-    os.environ['PITON_ARIANE']   = "0"
+
+    # Lagarto
     os.environ['PITON_LAGARTO']  = "0"
-    os.environ['PITON_OST1']     = "0"
-    os.environ['PITON_PICO_HET'] = "0"
 
     # core variant
     print_info("core      = " + str(options.core))

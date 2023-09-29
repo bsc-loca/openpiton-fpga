@@ -582,9 +582,9 @@ module chipset_impl(
 `ifdef PITONSYS_UART_BOOT
     input                                       uart_boot_en,
     input                                       uart_timeout_en,
-    `ifdef ALVEOU280_BOARD
-          input bootrom_linux_en,
-    `endif // ALVEO
+  `ifdef ALVEOU280_BOARD
+    input                                       bootrom_linux_en,
+  `endif // ALVEO
 `endif // endif PITONSYS_UART_BOOT
 `endif // endif PITONSYS_UART
 
@@ -612,7 +612,6 @@ module chipset_impl(
     inout                                       net_phy_mdio_io,
     output                                      net_phy_mdc,
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE    
-    input          net_axi_clk,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -1971,11 +1970,10 @@ uart_top        uart_top (
         .noc_out_val     ( net_buf_noc3_valid ),
         .noc_out_data    ( net_buf_noc3_data  ),
         .noc_out_rdy     ( buf_net_noc3_ready )
-		
-		// Common inputs for all cases 	
 
     `ifdef PITON_FPGA_ETHERNETLITE
         ,
+        .net_axi_clk     ( net_axi_clk        ),
         .net_phy_rst_n   ( net_phy_rst_n      ),
 
         .net_phy_tx_clk  ( net_phy_tx_clk     ),

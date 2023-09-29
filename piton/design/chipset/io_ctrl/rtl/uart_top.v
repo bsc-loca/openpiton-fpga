@@ -33,6 +33,11 @@
 module uart_top (
     input                                   axi_clk,
     input                                   rst_n,
+   
+    `ifndef PITONSYS_MEEP
+    output                                  uart_tx,
+    input                                   uart_rx,
+    `endif
     output                  uart_interrupt,
 
     input                                   uart_lb_sw,
@@ -65,9 +70,9 @@ module uart_top (
 
     input                                   xbar_uart_noc3_valid,
     input [`NOC_DATA_WIDTH-1:0]             xbar_uart_noc3_data,     
-    output                                  uart_xbar_noc3_ready,
+    output                                  uart_xbar_noc3_ready
     `ifdef PITONSYS_MEEP
-    
+                                            ,
     output  [12:0]                          uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
@@ -85,10 +90,6 @@ module uart_top (
     input  [1:0]                            uart_axi_rresp,
     input                                   uart_axi_rvalid,
     output                                  uart_axi_rready
-    `else           
-    output                                  uart_tx,
-    input                                   uart_rx 
-    
     `endif
 );
 

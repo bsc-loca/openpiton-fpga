@@ -78,21 +78,20 @@ input thanks_p;
 //wires
 wire thanks_all_temp;
 wire valid_out_internal;
-
-`ifdef EDGE_ROUTE_ENABLE
-        wire [`DATA_WIDTH*2-1:0] data_out_internal;
+`ifndef EDGE_ROUTE_ENABLE
+wire [`DATA_WIDTH-1:0] data_out_internal;
+wire [`DATA_WIDTH-1:0] data_out_internal_pre;
 `else 
-        wire [`DATA_WIDTH-1:0] data_out_internal;
-        wire [`DATA_WIDTH-1:0] data_out_internal_pre;
-        assign data_out = data_out_internal;
-        assign data_out_internal = data_out_internal_pre;
+wire [`DATA_WIDTH*2-1:0] data_out_internal;
 `endif
-
 
 //wire regs
 
 //assigns
 assign valid_out = valid_out_internal;
+`ifndef EDGE_ROUTE_ENABLE
+assign data_out = data_out_internal;
+`endif
 
 //instantiations
 network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(4)
@@ -109,6 +108,9 @@ network_input_blk_multi_out #(.LOG2_NUMBER_FIFO_ELEMENTS(4)
 
 // need buffering for this one
 // rBuffer #(`DATA_WIDTH, 1) NIB_buf(.A(data_out_internal_pre), .Z(data_out_internal));   
+`ifndef EDGE_ROUTE_ENABLE
+assign data_out_internal = data_out_internal_pre;
+`endif
 
 // Change fbits position in order to be compatible   
 wire [2:0] final_bits;

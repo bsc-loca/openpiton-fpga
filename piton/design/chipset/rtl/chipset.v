@@ -1285,8 +1285,8 @@ end
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
                 // Memory controller clock
-                //, .mc_sys_clk(mc_clk)
-                , .mc_sys_clk()
+                , .mc_sys_clk(//mc_clk
+                             )
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
 
@@ -1312,15 +1312,11 @@ end
                 .net_phy_clk    (net_phy_clk_inter  ),
                 .net_axi_clk    (net_axi_clk        )
             `endif
-            `ifdef PITON_FPGA_ETH_CMAC
-                ,
-                .net_axi_clk    (net_axi_clk        )
-            `endif
         );
         `endif // endif PITON_CHIPSET_CLKS_GEN
-       `else 
+       `else // `ifndef PITONSYS_MEEP
           assign clk_locked = 1'b1;
-       `endif // not def PITONSYS_MEEP
+       `endif
     `else // ifndef F1_BOARD
         assign clk_locked = 1'b1;
         assign chipset_clk = sys_clk;
@@ -2223,7 +2219,6 @@ chipset_impl_noc_power_test  chipset_impl (
                 .net_phy_mdio_io    (net_phy_mdio_io        ),
                 .net_phy_mdc        (net_phy_mdc            ),
             `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
-                .net_axi_clk         (net_axi_clk           ),
                 .qsfp_ref_clk_n      (qsfp_ref_clk_n),
                 .qsfp_ref_clk_p      (qsfp_ref_clk_p),
                 .qsfp_4x_grx_n       (qsfp_4x_grx_n),
