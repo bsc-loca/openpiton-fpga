@@ -29,7 +29,7 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include"
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include ${DV_ROOT}/design/chip/tile/ariane/common/submodules/common_cells/include ${DV_ROOT}/design/chip/tile/ariane/common/local/util ${DV_ROOT}/design/chip/tile/ariane/corev_apu/register_interface/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -786,7 +786,6 @@ set CHIPSET_PRJ_IP_FILES [list \
 ]
 
 set ARIANE_ROOT "${DV_ROOT}/design/chip/tile/ariane"
-set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
 # the tcl parser in the core is called from "piton/design/xilinx/design.tcl"
