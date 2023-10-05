@@ -26,7 +26,8 @@ def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath,
 
     gitver_cmd = "git log | grep commit -m1 | LD_LIBRARY_PATH= awk -e '{print $2;}'"
     piton_ver  = subprocess.check_output([gitver_cmd], shell=True)
-    core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'], gitver_cmd)], shell=True)
+    if core == "Ariane":
+      core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'],  gitver_cmd)], shell=True)
     if core == "Lagarto":
       core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['LAGARTO_ROOT'], gitver_cmd)], shell=True)
 
@@ -133,14 +134,14 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
 
     # Core dependant parameters  
+    if core == "Ariane":
+        riscv_isa = "rv64imafdc"
+        dts_core = "rv64_platform"
+        org = "eth"
     if core == "Lagarto":
         riscv_isa = "rv64imafdcv"
         dts_core = "lagarto"
         org = "BSC"
-    elif core == "Ariane":
-        riscv_isa = "rv64imafdc"
-        dts_core = "rv64_platform"
-        org = "eth"
 
     # get UART base
     uartBase = 0xDEADBEEF
