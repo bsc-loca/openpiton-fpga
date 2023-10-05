@@ -3,7 +3,7 @@ bootrom_img = bootrom.img bootrom.sv
 GCC=riscv64-unknown-elf-gcc
 OBJCOPY=riscv64-unknown-elf-objcopy
 DTB=rv64_platform.dtb
-PYTHON=python3
+PYTHON=/usr/bin/python2.7
 
 all: $(bootrom_img)
 
@@ -16,9 +16,6 @@ all: $(bootrom_img)
 %.elf: %.S linker.ld $(DTB)
 	$(GCC) -Tlinker.ld $< -nostdlib -static -Wl,--no-gc-sections -o $@
 
-rv64_platform.dts: FORCE
-	$(PYTHON) ${DV_ROOT}/tools/bin/riscvlib.py
-
 %.dtb: %.dts
 	dtc -I dts $< -O dtb -o $@
 
@@ -27,5 +24,3 @@ rv64_platform.dts: FORCE
 
 clean:
 	rm -f $(bootrom_img) $(DTB)
-
-FORCE:

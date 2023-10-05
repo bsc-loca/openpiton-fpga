@@ -788,7 +788,7 @@ set CHIPSET_PRJ_IP_FILES [list \
 ]
 
 if {[info exists ::env(PITON_ARIANE)]} {
-  set CHIP_RTL_IMPL_FILES [concat ${CHIP_RTL_IMPL_FILES} ${ARIANE_RTL_IMPL_FILES$}]
+  set CHIP_RTL_IMPL_FILES [concat ${CHIP_RTL_IMPL_FILES} ${ARIANE_RTL_IMPL_FILES}]
 }
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
