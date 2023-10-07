@@ -37,11 +37,31 @@ set DESIGN_DEFAULT_VERILOG_MACROS "PITON_FULL_SYSTEM PITON_FPGA_NO_DMBR MERGE_L1
 
 set CORE_RTL_FILES ""
 
+if {[info exists ::env(PITON_ARIANE)]} {
+  set fp [open "$::env(ARIANE_ROOT)/Flist.ariane" r]
+  set file_data [read $fp]
+  set data [split $file_data "\n"]
+  set ARIANE_RTL_FILES {}
+  puts "Sources from $::env(ARIANE_ROOT)/Flist.ariane:"
+  foreach line $data {
+   set line [regsub -all  {\r} $line ""]
+   set line [regsub -all  {\+.*} $line ""]
+   set line [regsub {cpp.*} $line ""]
+   set line [regsub {//.*} $line ""]
+   set line [regsub {#.*} $line ""]
+   if  {[string trim $line] eq ""} then continue
+   lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/${line}"
+   puts "$::env(ARIANE_ROOT)/${line}"
+  } 
+  close $fp
+
+  set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${ARIANE_RTL_FILES}]
+  puts "Including Ariane RTL files"
+}
+
 if {$::env(PITON_LAGARTO) != "0" } {
     source $LAGARTO_ROOT/parseFlistLagarto.tcl
-    set CORE_RTL_FILES [concat \
-	${LAGARTO_RTL_FILES} \
-    ]
+    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${LAGARTO_RTL_FILES}]
     puts "Including Lagarto RTL files"
 }
 

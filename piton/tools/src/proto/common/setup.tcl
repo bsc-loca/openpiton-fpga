@@ -221,7 +221,7 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 3
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
-  cd $::env(ARIANE_ROOT)/corev_apu/rv_plic/rtl
+  cd $::env(ARIANE_ROOT)/src/rv_plic/rtl
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
 
   cd $TMP
