@@ -80,8 +80,8 @@ $content
 def read_bin():
 
     with open(filename + ".img", 'rb') as f:
-        rom = binascii.hexlify(f.read())
-        rom = map(''.join, zip(rom[::2], rom[1::2]))
+        rom = str(binascii.hexlify(f.read()))
+        rom = list(map(''.join, zip(rom[2::2], rom[3::2])))
 
 
     # align to 64 bit

@@ -2,7 +2,7 @@ UART_FREQ ?= 30000000
 MAX_HARTS ?= 1
 CROSSCOMPILE ?= riscv64-unknown-elf-
 CC = ${CROSSCOMPILE}gcc
-PYTHON=/usr/bin/python2.7
+PYTHON=python3
 
 CFLAGS = -DMAX_HARTS=$(MAX_HARTS) -DUART_FREQ=$(UART_FREQ) -Os -ggdb -march=rv64imac -mabi=lp64 -Wall -mcmodel=medany -mexplicit-relocs
 CCASFLAGS = -mcmodel=medany -mexplicit-relocs
@@ -42,6 +42,9 @@ $(MAIN): rv64_platform.dtb $(OBJS_C) $(OBJS_S) linker.lds
 	@$(CC) $(CFLAGS) $(CCASFLAGS) $(INCLUDES) -c $<  -o $@ 
 	@echo "CC    <= $<"
 
+rv64_platform.dts: FORCE
+	$(PYTHON) ${DV_ROOT}/tools/bin/riscvlib.py
+
 %.dtb: %.dts
 	dtc -I dts $< -O dtb -o $@
 
@@ -54,5 +57,7 @@ clean:
 
 all: $(MAIN) $(MAIN_BIN) $(MAIN_IMG) $(MAIN_SV)
 	@echo "zero stage bootloader has been compiled!"
+
+FORCE:
 
 # DO NOT DELETE THIS LINE -- make depend needs it
