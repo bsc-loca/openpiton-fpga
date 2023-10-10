@@ -55,6 +55,13 @@ if {[info exists ::env(PITON_ARIANE)]} {
   } 
   close $fp
 
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/pmp.sv"
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/pmp_entry.sv"
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/napot_extract.sv"
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/pmp_na4_entry.sv"
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/pmp_napot_entry.sv"
+  lappend ARIANE_RTL_FILES "$::env(ARIANE_ROOT)/src/pmp/src/pmp_tor_entry.sv"
+
   set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${ARIANE_RTL_FILES}]
   puts "Including Ariane RTL files"
 }
