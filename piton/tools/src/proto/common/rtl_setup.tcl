@@ -400,7 +400,7 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chipset/rv64_platform/bootrom/linux/bootrom_linux.sv"                  \
 ]
 set ARIANE_RTL_IMPL_FILES [list \
-    "${DV_ROOT}/design/chip/tile/ariane/core/include/cv64a6_imafdc_sv39_openpiton_config_pkg.sv" \
+    "${DV_ROOT}/design/chip/tile/ariane/core/include/cv64a6_imafdc_sv39_config_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/ariane/core/include/riscv_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/riscv-dbg/src/dm_pkg.sv"                          \
     "${DV_ROOT}/design/chip/tile/ariane/core/include/ariane_pkg.sv"                                \
