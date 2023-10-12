@@ -727,8 +727,21 @@ The flow is very simillar to synthesizing image for any other FPGA OpenPiton sup
 4. Run the synthesis:
 
 ```
-    protosyn -b alveou280 -d system --core=ariane --uart-dmw ddr --zeroer_off
+    protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 
+    Extra avaialble protosyn options:   
+             --eth                     # adding CMAC based Ethernet unit
+             --ethport <num>           # optional board-level Ethernet port (default=0)
+
+             --pronoc                  # specifies that the ProNoC NoC shall be used instead of PitonNoC
+
+             --hbm                     # define HBM as primary system memory
+             --multimc <num>           # implement design with multiple <num> connections to system memory (valid only for HBM)
+             --multimc_indices <coma separated list> # optional list of particular edge tiles for above `multimc` option
+
+             --bram-test hello_world.c # compiling and runniing VCS-based simulation before synthesis
+             --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
+             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 ```
 
 This will create a Vivado design under $ROOT_DIR/build/...
@@ -737,27 +750,23 @@ This will create a Vivado design under $ROOT_DIR/build/...
 
 6. Probably you would need to reboot to be able to use the new QDMA PCIe interface.
 
-7. Now you can download from the intranet the bbl containing the Linux kernel, a script to load it to the DDR and the bitstream itself in case you want to skip steps above.
+7. Now you can download from the intranet the bbl containing the Linux kernel, a script to load it to the SDRAM and the bitstream itself in case you want to skip steps above.
 
 ```
-    Intranet URL
+    /home/fpga-runnerMEEP/lagarto_sdk_deploy/rv64gc/
 ```
 
-In a separated bash window, open a sniffer for the UART:
+In a separated bash window, open a client for the UART:
 
 ```
- $screen /dev/ttyUSB<n> 115200
+    picocom -b 115200 /dev/ttyUSB2
 ```
 
 Issue the next commands inside the downloaded folder:
 
 ```
-    load_bistream.sh <fpga_bistream_name>.bit
-	config_pcie.sh
-	boot_linux.sh
+    load-bitstream-onic.sh qdma <fpga_bistream_name>.bit
+	boot_acme.sh <osbi_buildroot>.bin
 ```
 
 You should be able to see Linux booting on the other terminal.
-
-8. You are ready to play tetris.
-
