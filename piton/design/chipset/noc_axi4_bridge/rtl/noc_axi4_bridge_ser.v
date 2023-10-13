@@ -103,6 +103,8 @@ reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] dat_offset;
 reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
 always @(*) noc_extractSize(header_in, dat_size_log, dat_offset);
 
+wire [`MSG_LENGTH_WIDTH-1:0] dat_payload_len = 1 << clip2zer($signed({1'b0,dat_size_log}) - $clog2(`NOC_DATA_WIDTH/8));
+
 always @(posedge clk)
         if (in_go) begin
           resp_header[`MSG_DST_CHIPID  ]     <= header_in[`MSG_SRC_CHIPID];
@@ -124,7 +126,7 @@ always @(posedge clk)
             end
             `MSG_TYPE_NC_LOAD_REQ: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_NC_LOAD_MEM_ACK;
-              resp_header[`MSG_LENGTH  ]     <= `PAYLOAD_LEN; 
+              resp_header[`MSG_LENGTH  ]     <= dat_payload_len; 
             end
             `MSG_TYPE_NC_STORE_REQ: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_NC_STORE_MEM_ACK;
