@@ -118,7 +118,7 @@ always @(posedge clk)
           case (header_in[`MSG_TYPE])
             `MSG_TYPE_LOAD_MEM: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_LOAD_MEM_ACK;
-              resp_header[`MSG_LENGTH  ]     <= `PAYLOAD_LEN; 
+              resp_header[`MSG_LENGTH  ]     <= `PAYLOAD_LEN; // dat_payload_len; // ideally should be flexible data packet length 
             end
             `MSG_TYPE_STORE_MEM: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_STORE_MEM_ACK;
@@ -126,7 +126,7 @@ always @(posedge clk)
             end
             `MSG_TYPE_NC_LOAD_REQ: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_NC_LOAD_MEM_ACK;
-              resp_header[`MSG_LENGTH  ]     <= dat_payload_len; 
+              resp_header[`MSG_LENGTH  ]     <= `PAYLOAD_LEN; // dat_payload_len; // ideally should be flexible data packet length 
             end
             `MSG_TYPE_NC_STORE_REQ: begin
               resp_header[`MSG_TYPE    ]     <= `MSG_TYPE_NC_STORE_MEM_ACK;
