@@ -3017,6 +3017,11 @@ sub parse_args
     print "$prg: Building/running for rv64\n" ;
   }
 
+  # Patching Ariane submodule
+  if ($opt{ariane}) {
+    system("$ENV{DV_ROOT}/design/chip/tile/ariane_patch/ariane_patch.sh");
+  }
+
   # in case a precompiled riscv binary is directly specified
   if ($opt{precompiled} and ($opt{rv32} | $opt{rv64})) {
     if (!($opt{asm_diag_name} =~ /\.riscv/)) {
