@@ -1096,6 +1096,8 @@ def main():
             os.environ['RTL_ARIANE' + str(i)] = "1"
             print_info('setenv RTL_ARIANE' + str(i))
 
+        os.system('$DV_ROOT/design/chip/tile/ariane_patch/ariane_patch.sh')
+
     elif options.core == 'lagarto':
         os.environ['PITON_LAGARTO'] = "1"
         #os.environ['WT_DCACHE']     = "1"

@@ -2,4 +2,4 @@
 
 echo "Patching Ariane submodule..."
 cp $DV_ROOT/design/chip/tile/ariane_patch/Flist.ariane $ARIANE_ROOT
-cp $DV_ROOT/design/chip/tile/ariane_patch/frontend.sv  $ARIANE_ROOT/src/frontend
+# cp $DV_ROOT/design/chip/tile/ariane_patch/frontend.sv  $ARIANE_ROOT/src/frontend
