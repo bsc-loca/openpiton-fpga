@@ -29,7 +29,7 @@
 # Not intended to be run standalone
 #
 
-set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include"
+set GLOBAL_INCLUDE_DIRS "${DV_ROOT}/design/include ${DV_ROOT}/design/chipset/include ${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include ${DV_ROOT}/design/chip/tile/ariane/src/util ${DV_ROOT}/design/chip/tile/ariane/include"
 
 # RTL include files
 set GLOBAL_INCLUDE_FILES [list \
@@ -398,6 +398,8 @@ set CHIP_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/sparc/srams/rtl/sram_wrappers/sram_l1i_tag.v" \
     "${DV_ROOT}/design/chipset/rv64_platform/bootrom/baremetal/bootrom.sv"                    \
     "${DV_ROOT}/design/chipset/rv64_platform/bootrom/linux/bootrom_linux.sv"                  \
+]
+set ARIANE_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/core/include/cv64a6_imafdc_sv39_config_pkg.sv" \
     "${DV_ROOT}/design/chip/tile/ariane/core/include/riscv_pkg.sv"                                 \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/riscv-dbg/src/dm_pkg.sv"                          \
@@ -785,8 +787,9 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
 
-set ARIANE_ROOT "${DV_ROOT}/design/chip/tile/ariane"
-set ARIANE_INCLUDE_DIRS "${DV_ROOT}/design/chip/tile/ariane/src/common_cells/include"
+# if {[info exists ::env(PITON_ARIANE)]} {
+#   set CHIP_RTL_IMPL_FILES [concat ${CHIP_RTL_IMPL_FILES} ${ARIANE_RTL_IMPL_FILES}]
+# }
 
 # Set the path for the lagarto FList parser. This needs to be thought further.
 # the tcl parser in the core is called from "piton/design/xilinx/design.tcl"

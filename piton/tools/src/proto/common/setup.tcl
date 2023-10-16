@@ -85,11 +85,6 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
 ################# CORE SPECIFIC SECTION #################
 #
 
-if {[info exists ::env(PITON_ARIANE)]} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${ARIANE_INCLUDE_DIRS}]
-  puts "Add Ariane include directories"
-}
-
 if  {$::env(PITON_LAGARTO) != "0"} {
   set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
   puts "Add Lagarto include directories"
@@ -147,7 +142,6 @@ if {[info exists ::env(PITON_ARIANE)]} {
 
 if  {$::env(PITON_LAGARTO) != "0"} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO WT_DCACHE"
-
 }
 
 if  {$::env(SA_HEVC_ENABLE) != "0"} {
@@ -212,14 +206,12 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   unset ::env(PYTHONHOME)
   
   set TMP [pwd]
-  cd $::env(ARIANE_ROOT)/openpiton/bootrom/baremetal
+  cd $::env(DV_ROOT)/design/chipset/rv64_platform/bootrom/baremetal
   # Note: dd dumps info to stderr that we do not want to interpret
   # otherwise this command fails...
   exec make clean 2> /dev/null
   exec make all 2> /dev/null
-  puts "INFO: Baremetal compilation succeeded"
-  puts "INFO: Compiling bootrom for Linux"
-  cd $::env(ARIANE_ROOT)/openpiton/bootrom/linux
+  cd $::env(DV_ROOT)/design/chipset/rv64_platform/bootrom/linux
   # Note: dd dumps info to stderr that we do not want to interpret
   # otherwise this command fails...
   exec make clean 2> /dev/null

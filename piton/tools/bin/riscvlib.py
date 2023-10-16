@@ -22,12 +22,14 @@ from pyhplib import *
 import time
 
 # this prints some system information, to be printed by the bootrom at power-on
-# dts path needs to be chosen in the caller process
 def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp, core):
 
     gitver_cmd = "git log | grep commit -m1 | LD_LIBRARY_PATH= awk -e '{print $2;}'"
     piton_ver  = subprocess.check_output([gitver_cmd], shell=True)
-    core_ver = subprocess.check_output(["cd %s && %s" % (dtsPath, gitver_cmd)], shell=True)
+    if core == "Ariane":
+      core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'],  gitver_cmd)], shell=True)
+    if core == "Lagarto":
+      core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['LAGARTO_ROOT'], gitver_cmd)], shell=True)
 
     # get length of memory
     memLen  = 0
@@ -132,14 +134,14 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
 
     # Core dependant parameters  
+    if core == "Ariane":
+        riscv_isa = "rv64imafdc"
+        dts_core = "rv64_platform"
+        org = "eth"
     if core == "Lagarto":
         riscv_isa = "rv64imafdcv"
         dts_core = "lagarto"
         org = "BSC"
-    elif core == "Ariane":
-        riscv_isa = "rv64imafdc"
-        dts_core = "ariane"
-        org = "eth"
 
     # get UART base
     uartBase = 0xDEADBEEF
@@ -405,8 +407,8 @@ def main():
         sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
     timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-    gen_riscv_dts(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
-    get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
+    gen_riscv_dts   (devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
+    get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
 
 if __name__ == "__main__":
     main()

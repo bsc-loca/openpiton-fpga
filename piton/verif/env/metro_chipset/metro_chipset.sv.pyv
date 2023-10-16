@@ -46,7 +46,6 @@ import time
 
 if PITON_ARIANE:
   devices = pyhplib.ReadDevicesXMLFile()
-  core = "Ariane"
 
   # just use a default frequency for device tree generation if not defined
   sysFreq = 50000000
@@ -54,12 +53,11 @@ if PITON_ARIANE:
     sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
   timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-  gen_riscv_dts(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp,core)
-  get_bootrom_info(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['ARIANE_ROOT']+"/openpiton/bootrom/", timeStamp,core)
+  gen_riscv_dts   (devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
+  get_bootrom_info(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
 
 if PITON_LAGARTO:
   devices = pyhplib.ReadDevicesXMLFile()
-  core = "Lagarto"
    
   # just use a default frequency for device tree generation if not defined
   sysFreq = 50000000
@@ -67,8 +65,8 @@ if PITON_LAGARTO:
     sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
   timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-  gen_riscv_dts(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp,core)
-  get_bootrom_info(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp,core)
+  gen_riscv_dts   (devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp, "Lagarto")
+  get_bootrom_info(devices, PITON_X_TILES*PITON_Y_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['LAGARTO_ROOT']+"/bootrom/", timeStamp, "Lagarto")
 %>
 
 `ifdef PITON_DPI
