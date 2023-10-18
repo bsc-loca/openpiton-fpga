@@ -729,7 +729,7 @@ def makeDefList(options):
         defines.append("PITON_UART16550")
 
     # --eth CL options is default for chipset
-    os.environ['ALVEO_ETH'] = "0"
+    os.environ['FPGA_ETH'] = "0"
 
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo
@@ -738,10 +738,10 @@ def makeDefList(options):
             defines.append("PITON_FPGA_ETHERNETLITE")
         # Ethernet controller is also supported on Alveo-U280
         elif options.board == "alveou280":
+          defines.append("PITON_FPGA_ETH")
           if options.eth:
-            defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETH_CMAC")
-            os.environ['ALVEO_ETH'] = "1"
+            os.environ['FPGA_ETH'] = "1"
             if int(options.ethport) > 0:
               defines.append("PITON_FPGA_ETH_PORT1")
         else:
