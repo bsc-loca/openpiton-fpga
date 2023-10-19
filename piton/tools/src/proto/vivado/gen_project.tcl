@@ -241,7 +241,7 @@ set_property "used_in_synthesis" "1" $file_obj
 add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
 add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
 
-if { $env(ALVEO_ETH) eq "1"} {
+if { $env(FPGA_ETH) eq "1"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
 }
 
