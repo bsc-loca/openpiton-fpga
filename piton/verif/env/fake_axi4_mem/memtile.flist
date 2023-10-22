@@ -4,11 +4,11 @@
 
 // for MOCK
 ../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge.v
-../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_buffer.v
-../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_ser.v
-../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_deser.v
-../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_read.v
-../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_write.v
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_buffer.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_ser.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_deser.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_read.sv
+../../../design/chipset/noc_axi4_bridge/rtl/noc_axi4_bridge_write.sv
 
 
 // for BEHAV
