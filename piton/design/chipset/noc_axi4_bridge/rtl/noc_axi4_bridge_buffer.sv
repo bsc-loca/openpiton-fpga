@@ -30,8 +30,56 @@
 `include "define.tmp.h"
 `include "noc_axi4_bridge_define.vh"
 
+function integer clip2zer;
+  input integer val;
+  clip2zer = val < 0 ? 0 : val;
+endfunction
+
+task automatic noc_extractSize;
+  input  [`MSG_HEADER_WIDTH-1 :0] header;
+  output [`MSG_DATA_SIZE_WIDTH      -1:0] size_log;
+  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
+  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
+  reg uncacheable;
+  begin
+    virt_addr = header[`MSG_ADDR];
+    uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
+                  (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
+                  (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+    offset   = uncacheable ? virt_addr : 0;
+    size_log = uncacheable ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
+  end
+endtask
+
+function automatic [`NOC_DATA_WIDTH -1:0] swapData;
+  input [           `NOC_DATA_WIDTH -1:0] data;
+  input [`MSG_DATA_SIZE_WIDTH       -1:0] size_log;
+  reg [  `MSG_DATA_SIZE_WIDTH       -1:0] swap_granlty_log;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] swap_granlty;
+  reg [$clog2(`NOC_DATA_WIDTH/8)      :0] itr_swp;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] swap_granlties;
+  reg [$clog2(`NOC_DATA_WIDTH/8)      :0] itr_grn;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] lo_swap_idx;
+  reg [$clog2(`NOC_DATA_WIDTH/8)    -1:0] hi_swap_idx;
+  begin
+    // limiting swapping granularity to data width
+    swap_granlty_log = size_log < $clog2(`NOC_DATA_WIDTH/8) ? size_log : $clog2(`NOC_DATA_WIDTH/8);
+
+    swap_granlties = ((`NOC_DATA_WIDTH/8) >> swap_granlty_log) - 1;
+    swap_granlty   = (                 1  << swap_granlty_log) - 1;
+
+    for (itr_grn = 0; itr_grn <= swap_granlties; itr_grn = itr_grn+1)
+    for (itr_swp = 0; itr_swp <= swap_granlty  ; itr_swp = itr_swp+1) begin
+      lo_swap_idx =  (itr_grn << swap_granlty_log) +                itr_swp;
+      hi_swap_idx =  (itr_grn << swap_granlty_log) + swap_granlty - itr_swp;
+      swapData[lo_swap_idx*8 +: 8] = data[hi_swap_idx*8 +: 8];
+    end
+  end
+endfunction
+
 
 module noc_axi4_bridge_buffer #(
+    parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
     parameter ADDR_OFFSET = `AXI4_ADDR_WIDTH'h0,
     parameter ADDR_SWAP_LBITS = 0,                  // number of moved low bits in AXI address for memory interleaving
     parameter ADDR_SWAP_MSB   = `AXI4_ADDR_WIDTH-1, // high position to put moved bits in AXI address
@@ -64,6 +112,7 @@ module noc_axi4_bridge_buffer #(
 
   // read request out
   output [`AXI4_ADDR_WIDTH-1:0] read_req_addr,
+  output [`MSG_DATA_SIZE_WIDTH-1:0] read_req_size_log,
   output [`AXI4_ID_WIDTH  -1:0] read_req_id,
   output read_req_val, 
   input  read_req_rdy,
@@ -76,6 +125,7 @@ module noc_axi4_bridge_buffer #(
 
   // write request out
   output [`AXI4_ADDR_WIDTH-1:0] write_req_addr,
+  output [`MSG_DATA_SIZE_WIDTH-1:0] write_req_size_log,
   output [`AXI4_ID_WIDTH  -1:0] write_req_id,
   output [`AXI4_DATA_WIDTH-1:0] write_req_data, 
   output [`AXI4_STRB_WIDTH-1:0] write_req_strb,
@@ -202,6 +252,20 @@ wire [`MSG_DATA_SIZE_WIDTH -1:0] data_size  = req_header[`MSG_DATA_SIZE];
 wire [`MSG_LENGTH_WIDTH    -1:0] msg_length = req_header[`MSG_LENGTH];
 
 
+// Transformation of write data according to queueed request
+reg [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] req_offset;
+reg [`MSG_DATA_SIZE_WIDTH         -1:0] req_size_log;
+always @(*) noc_extractSize(req_header, req_size_log, req_offset);
+
+assign read_req_size_log  = req_size_log;
+assign write_req_size_log = req_size_log;
+
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] req_size = 1 << req_size_log;
+wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << req_size) -`AXI4_STRB_WIDTH'h1;
+assign write_req_data = wdata << (8*req_offset);
+assign write_req_strb = wstrb <<    req_offset;
+
+
 wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];
 wire [`AXI4_ADDR_WIDTH-1:0] phys_addr;
 
@@ -224,25 +288,13 @@ generate
     assign req_addr = {addr[`AXI4_ADDR_WIDTH-1 : ADDR_SWAP_MSB                  ],
                        addr[ADDR_SWAP_LSB     +: ADDR_SWAP_LBITS                ], // Low address part moved up
                        addr[ADDR_SWAP_MSB-1    : ADDR_SWAP_LSB + ADDR_SWAP_LBITS], // High address part shifted down
-                       addr[ADDR_SWAP_LSB-1    : 6], 6'b0};
+                       addr[ADDR_SWAP_LSB-1    : 0]} & ({`AXI4_ADDR_WIDTH{1'b1}} << req_size_log);
   else
-    assign req_addr = {addr[`AXI4_ADDR_WIDTH-1 : 6], 6'b0};
+    assign req_addr =  addr                          & ({`AXI4_ADDR_WIDTH{1'b1}} << req_size_log);
 endgenerate
 
 assign read_req_addr  = req_addr;
 assign write_req_addr = req_addr;
-
-
-// Transformation of write data according to queueed request
-reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] wr_offset;
-reg [`MSG_DATA_SIZE_WIDTH      -1:0] wr_size_log;
-always @(*) noc_extractSize(req_header, wr_size_log, wr_offset);
-
-wire [$clog2(`AXI4_DATA_WIDTH/8) :0] wr_size = 1 << wr_size_log;
-wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << wr_size) -`AXI4_STRB_WIDTH'h1;
-
-assign write_req_data = wdata << (8*wr_offset);
-assign write_req_strb = wstrb <<    wr_offset;
 
 
 //
@@ -496,20 +548,20 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] rd_offset;
-reg [`MSG_DATA_SIZE_WIDTH      -1:0] rd_size_log;
-always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], rd_size_log, rd_offset);
+reg [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] stor_offset;
+reg [`MSG_DATA_SIZE_WIDTH         -1:0] stor_size_log;
+always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], stor_size_log, stor_offset);
 
-wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*rd_offset);
+wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*stor_offset);
 
-wire [$clog2(`AXI4_DATA_WIDTH/8) :0] rd_size = 1 << rd_size_log;
-wire [`AXI4_DATA_WIDTH -1:0] rdata = rd_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
-                                     rd_size[1] ? {32 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/32]}} :
-                                     rd_size[2] ? {16 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/16]}} :
-                                     rd_size[3] ? {8  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/8 ]}} :
-                                     rd_size[4] ? {4  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/4 ]}} :
-                                     rd_size[5] ? {2  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/2 ]}} :
-                                     rd_size[6] ?      rdata_offseted     : `AXI4_DATA_WIDTH'h0;
+wire [$clog2(`AXI4_DATA_WIDTH/8) :0] stor_size = 1 << stor_size_log;
+wire [`AXI4_DATA_WIDTH -1:0] rdata = stor_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
+                                     stor_size[1] ? {32 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/32]}} :
+                                     stor_size[2] ? {16 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/16]}} :
+                                     stor_size[3] ? {8  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/8 ]}} :
+                                     stor_size[4] ? {4  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/4 ]}} :
+                                     stor_size[5] ? {2  {rdata_offseted[0  +: `AXI4_DATA_WIDTH/2 ]}} :
+                                     stor_size[6] ?      rdata_offseted     : `AXI4_DATA_WIDTH'h0;
 
 assign ser_val    = stor_hdr_en;
 assign ser_data   = stor_command ? `AXI4_DATA_WIDTH'b0 : rdata;

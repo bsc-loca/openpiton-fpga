@@ -641,7 +641,11 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
     .uart_boot_en       (1'b0),
+  `ifdef PITON_FPGA_MC_HBM
     .phy_init_done      (noc_axi4_bridge_init_done),
+  `else
+    .phy_init_done      (sys_rst_n),
+  `endif
     .axi_id_deadlock    (),
 
     .src_bridge_vr_noc2_val(ncmem_flit_in_val),
