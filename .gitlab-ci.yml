@@ -35,14 +35,14 @@ variables:
 .multi_target_production:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h, acme_ea_1h2g]
+      - EA: [acme_ea_4a, acme_ea_4h2v]
     #acme_ea_1h16v: the synthesis is "heavy"
 #For test, you can choose the specific ones included in the accelerator_build.sh. Just add or remove as you prefer
 
 .multi_target_test:
   parallel:
     matrix:
-      - EA: [acme_ea_4a, acme_ea_4h2v, acme_ea_1h, acme_ea_1h2g]
+      - EA: [acme_ea_4a, acme_ea_4h2v]
     # full test: acme_ea_4a, acme_ea_4h2v, acme_ea_1h16v
     #short test: acme_ea_16h, acme_ea_1h
 
@@ -553,7 +553,7 @@ fpga-shell-trigger-production:
       shell-prelaunch-production,
     ]
   trigger:
-    project: meep/FPGA_implementations/AlveoU280/fpga_shell
+    project: hwdesign/fpga/integration-lab/fpga-shell
     branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
@@ -578,7 +578,7 @@ fpga-shell-trigger-test:
       shell-prelaunch-test,
     ]
   trigger:
-    project: meep/FPGA_implementations/AlveoU280/fpga_shell
+    project: hwdesign/fpga/integration-lab/fpga-shell
     branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
@@ -604,7 +604,7 @@ fpga-shell-trigger-quick-test:
       shell-prelaunch-quick-test,
     ]
   trigger:
-    project: meep/FPGA_implementations/AlveoU280/fpga_shell
+    project: hwdesign/fpga/integration-lab/fpga-shell
     branch: production
     # master is a protected branch, which causes permission issues with triggered pipelines
     # production should be almost a mirror of master
