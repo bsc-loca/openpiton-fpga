@@ -87,7 +87,6 @@ To compile with choice of Memtile implementation, use `-memtile_enable=PARAM` ke
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=MOCK
     sims -sys=manycore -x_tiles=1 -y_tiles=1 -msm_build -lagarto -config_rtl=BSC_RTL_SRAMS -config_rtl=FPU_ZAGREB -hbm -memtile_enable=BEHAV
 
-
 ### Clean builds
 
 You can clean-up the environment and meta data among compilations by doing:
@@ -708,7 +707,7 @@ The command will tell print the afi and agfi of your image. You can track the sy
 
 8. After the synthesis is done - you can go load it in your F1 instance!
 
-#### Synthesizing OpenPiton for ALVEO u280
+### Synthesizing OpenPiton for ALVEO u280
 
 This section has been added under MEEP project. For an eventual PR to OpenPiton team, we will need to review it.
 
@@ -729,7 +728,7 @@ The flow is very simillar to synthesizing image for any other FPGA OpenPiton sup
 ```
     protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
 
-    Extra avaialble protosyn options:   
+    Extra avaialble protosyn options:
              --eth                     # adding CMAC based Ethernet unit
              --ethport <num>           # optional board-level Ethernet port (default=0)
 
