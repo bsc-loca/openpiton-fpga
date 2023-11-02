@@ -99,6 +99,27 @@ module noc_axi4_bridge_buffer #(
     parameter NUM_REQ_XTHREADS = 1, // low  component of number of "Outstanding requests" threads
     parameter SRCXY_AS_AXIID   = 0 // defines NOC tile x/y field to use for forming AXI ID (INI_X/Y by default)
 ) (
+    // ======== Buffer simplified structure ========
+    //
+    // Input request queue
+    // (depth = `NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT)
+    //                     _________                             ____________
+    //                        | | | |                           |Address/Data|
+    //  NOC deser in  ------> | | | | ------------------------> | Conversion | ------> AXI read/write requests
+    //                     ___|_|_|_|  |                        |____________|
+    //                                 |
+    //                                 |
+    //                                 | Outstanding request queue
+    //                                 | (depth = 1<<NUM_REQ_OUTSTANDING_LOG2)
+    //                                 |      _________
+    //                                 |         | | | |          __________
+    //                                 --------> | | | | ------> |          |
+    //                                        ___|_|_|_|         |   Data   |
+    //                                                           |Conversion| ------>  NOC ser out
+    //  AXI read/write responses  -----------------------------> |__________|
+    //
+    // =============================================
+
   input clk, 
   input rst_n, 
   input uart_boot_en, 
