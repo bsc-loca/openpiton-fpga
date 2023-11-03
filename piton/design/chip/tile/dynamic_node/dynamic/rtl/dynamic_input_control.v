@@ -45,11 +45,7 @@ module dynamic_input_control(thanks_all_temp_out,
                              default_ready_n, default_ready_e, default_ready_s, default_ready_w, default_ready_p,
                              tail_out, clk, reset,
                              my_loc_x_in, my_loc_y_in, my_chip_id_in,
-                             abs_x, abs_y, abs_chip_id,
-`ifdef EDGE_ROUTE_ENABLE
-                             abs_addr,
-`endif
-                             final_bits, valid_in,
+                             abs_x, abs_y, abs_chip_id, final_bits, valid_in,
                              thanks_n, thanks_e, thanks_s, thanks_w, thanks_p,
                              length);
 
@@ -77,9 +73,6 @@ input [`CHIP_ID_WIDTH-1:0] my_chip_id_in;
 input [`XY_WIDTH-1:0] abs_x;
 input [`XY_WIDTH-1:0] abs_y;
 input [`CHIP_ID_WIDTH-1:0] abs_chip_id;
-`ifdef EDGE_ROUTE_ENABLE
-input [`PHY_ADDR_WIDTH-1:0] abs_addr;
-`endif
 input [2:0] final_bits;
 input valid_in;
 input thanks_n;
@@ -148,10 +141,7 @@ dynamic_input_route_request_calc tail_calc(.route_req_n(route_req_n_out),
                                            .my_chip_id_in(my_chip_id_in),
                                            .abs_x(abs_x),
                                            .abs_y(abs_y),
-                                           .abs_chip_id(abs_chip_id),    
-`ifdef EDGE_ROUTE_ENABLE                                       
-                                           .abs_addr(abs_addr),
-`endif
+                                           .abs_chip_id(abs_chip_id),
                                            .final_bits(final_bits),
                                            .length(length),
                                            .header_in(header));
