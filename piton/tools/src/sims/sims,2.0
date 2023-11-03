@@ -1466,12 +1466,6 @@ sub generic_sim_build
       push (@{$opt{vcs_build_args}}, "+warn=all");
       push (@{$opt{vcs_build_args}}, "-l compile.log") ;
 
-      # some SystemVerilog-specific options
-      if ($opt{ariane} | $opt{lagarto}) {
-          push (@{$opt{vcs_build_args}}, "-sverilog +systemverilogext+.sv") ;
-          push (@{$opt{vcs_build_args}}, "-ntb_opts uvm-1.1 +vpi ") ;
-      }
-
       if ($opt{ibm}) {
           push (@{$opt{config_rtl}}, "IBM_SRAM_RF16X160_MODEL_CHECKER") ;
           push (@{$opt{config_rtl}}, "IBM_SRAM_RF32X80_MODEL_CHECKER") ;
@@ -2982,6 +2976,11 @@ sub parse_args
     }
   }
 
+  # Patching Ariane submodule
+  if ($opt{ariane}) {
+    system("$ENV{DV_ROOT}/design/chip/tile/ariane_patch/ariane_patch.sh");
+  }
+
   # Considering board specific defines, needed when sims is run from protosyn, not to confuse it with their incorrect values
   if ($opt{board}) {
   $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
@@ -3003,17 +3002,6 @@ sub parse_args
     elsif ($x =~ /\.image/) { $opt{image_diag_name} = $x ; }
     elsif ($x =~ /\.c/)     { $opt{asm_diag_name}   = $x ; }
     else { die ("DIE. Unprocessed argument: $x") ; }
-  }
-
-  # Set ISA to choose compilation flow based on ISA
-  if ($opt{ariane} | $opt{lagarto}) {
-    $opt{rv64} = 1 ;
-    print "$prg: Building/running for rv64\n" ;
-  }
-
-  # Patching Ariane submodule
-  if ($opt{ariane}) {
-    system("$ENV{DV_ROOT}/design/chip/tile/ariane_patch/ariane_patch.sh");
   }
 
   # in case a precompiled riscv binary is directly specified
@@ -3092,7 +3080,6 @@ sub parse_args
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
   $ENV{PITON_COVERAGE}  = $opt{cov};
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
-  push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}));
   push (@{$opt{config_rtl}}, "SA_HEVC_ENABLE") if ($opt{sa_hevc_enable});

@@ -223,17 +223,8 @@ print(s)
 `endif // ifdef PITON_RV64_PLATFORM
 
 `ifdef PITON_LAGARTO
-    ,
-    // Debug
-    input                               debug_req_i,   // async debug request
-    output                              unavailable_o, // communicate whether the hart is unavailable (e.g.: power down)
-    // CLINT
-    input                               timer_irq_i,   // Timer interrupts
-    input                               ipi_i,         // software interrupt (a.k.a inter-process-interrupt)
-    // PLIC
-    input   [1:0]                       irq_i,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    output  [26:0]                      pmu_sig_o
+,   output  [26:0]                      pmu_sig_o
 `endif
 );
     // clock gating
