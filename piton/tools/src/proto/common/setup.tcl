@@ -141,7 +141,7 @@ if {[info exists ::env(PITON_ARIANE)]} {
 }
 
 if  {$::env(PITON_LAGARTO) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO WT_DCACHE"
+  append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO PITON_RV64_PLATFORM PITON_RV64_DEBUGUNIT PITON_RV64_CLINT PITON_RV64_PLIC WT_DCACHE"
 }
 
 if  {$::env(SA_HEVC_ENABLE) != "0"} {
@@ -194,8 +194,8 @@ set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
 set ALL_INCLUDE_FILES [pyhp_preprocess ${ALL_INCLUDE_FILES}]
 
 
-if  {[info exists ::env(PITON_ARIANE)]} {
-  puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
+if  {[info exists ::env(PITON_ARIANE)] || $::env(PITON_LAGARTO) != "0"} {
+  puts "INFO: compiling DTS and bootroms for Ariane/Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   
   
   # credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50 
@@ -220,44 +220,14 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   # two targets per hart (M,S) and two interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 3
+  if  {[info exists ::env(PITON_ARIANE)]} {
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
   cd $::env(ARIANE_ROOT)/src/rv_plic/rtl
-  exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
-
-  cd $TMP
-  puts "INFO: done"
-  set ::env(PYTHONPATH) $tmp_PYTHONPATH
-  set ::env(PYTHONHOME) $tmp_PYTHONHOME
-}
-
-
-if  { $::env(PITON_LAGARTO) != "0"} {
-  puts "INFO: compiling DTS and bootroms for Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
-
-  set tmp_PYTHONPATH $::env(PYTHONPATH)
-  set tmp_PYTHONHOME $::env(PYTHONHOME)
-  unset ::env(PYTHONPATH)
-  unset ::env(PYTHONHOME)
-
-  set TMP [pwd]
-  cd $::env(LAGARTO_ROOT)/openpiton/bootrom/baremetal
-  # Note: dd dumps info to stderr that we do not want to interpret
-  # otherwise this command fails...
-  exec make clean 2> /dev/null
-  exec make all 2> /dev/null
-  puts "INFO: Baremetal compilation succeeded"
-  puts "INFO: Compiling bootrom for Linux"
-  cd $::env(LAGARTO_ROOT)/openpiton/bootrom/linux
-  # Note: dd dumps info to stderr that we do not want to interpret
-  # otherwise this command fails...
-  exec make clean 2> /dev/null
-  exec make all MAX_HARTS=$::env(PITON_NUM_TILES) UART_FREQ=$::env(CONFIG_SYS_FREQ) 2> /dev/null
-  puts "INFO: done"
-  # two targets per hart (M,S) and three interrupt sources (UART, DMA Ethernet(2))
-  set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
-  set NUM_SOURCES 3
+  }
+  if  { $::env(PITON_LAGARTO) != "0"} {
   puts "INFO: generating PLIC for Lagarto ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
   cd $::env(LAGARTO_ROOT)/src/rv_plic/rtl
+  }
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
 
   cd $TMP

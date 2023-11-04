@@ -22,14 +22,20 @@ from pyhplib import *
 import time
 
 # this prints some system information, to be printed by the bootrom at power-on
-def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp, core):
+def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp):
 
     gitver_cmd = "git log | grep commit -m1 | LD_LIBRARY_PATH= awk -e '{print $2;}'"
     piton_ver  = subprocess.check_output([gitver_cmd], shell=True)
-    if core == "Ariane":
-      core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'],  gitver_cmd)], shell=True)
-    if core == "Lagarto":
-      core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['LAGARTO_ROOT'], gitver_cmd)], shell=True)
+
+    if os.getenv("PITON_ARIANE") is not None:
+      if int(os.getenv("PITON_ARIANE")):
+        core = "Ariane"
+        core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'],  gitver_cmd)], shell=True)
+
+    if os.getenv("PITON_LAGARTO") is not None:
+      if int(os.getenv("PITON_LAGARTO")):
+        core = "Lagarto"
+        core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['LAGARTO_ROOT'], gitver_cmd)], shell=True)
 
     # get length of memory
     memLen  = 0
@@ -128,19 +134,21 @@ def _reg_fmt(addrBase, addrLen, addrCells, sizeCells):
 
     return tmpStr
 
-def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp, core):
+def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, timeStamp):
 
     assert nCpus >= 1
 
-
     # Core dependant parameters  
-    if core == "Ariane":
+    if os.getenv("PITON_ARIANE") is not None:
+      if int(os.getenv("PITON_ARIANE")):
+        core = "Ariane"
         riscv_isa = "rv64imafdc"
-        dts_core = "rv64_platform"
         org = "eth"
-    if core == "Lagarto":
+
+    if os.getenv("PITON_LAGARTO") is not None:
+      if int(os.getenv("PITON_LAGARTO")):
+        core = "Lagarto"
         riscv_isa = "rv64imafdcv"
-        dts_core = "lagarto"
         org = "BSC"
 
     # get UART base
@@ -395,7 +403,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     # this needs to match // 20/08/2022: This doesn't match if the device has more than 1 interrupt, as the Ethernet DMA
     # assert ioDeviceNr-1 == numIrqs
 
-    with open(dtsPath + '/' + dts_core + '.dts','w') as file:
+    with open(dtsPath + '/rv64_platform.dts','w') as file:
         file.write(tmpStr)
 
 def main():
@@ -407,8 +415,8 @@ def main():
         sysFreq = int(os.environ['CONFIG_SYS_FREQ'])
 
     timeStamp = time.strftime("%b %d %Y %H:%M:%S", time.localtime())
-    gen_riscv_dts   (devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
-    get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp, "Ariane")
+    gen_riscv_dts(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
+    get_bootrom_info(devices, PITON_NUM_TILES, sysFreq, sysFreq/128, sysFreq, os.environ['DV_ROOT']+"/design/chipset/rv64_platform/bootrom/", timeStamp)
 
 if __name__ == "__main__":
     main()

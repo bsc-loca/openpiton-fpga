@@ -1100,6 +1100,7 @@ def main():
 
     elif options.core == 'lagarto':
         os.environ['PITON_LAGARTO'] = "1"
+        os.environ['PITON_RV64_PLATFORM'] = "1"
         #os.environ['WT_DCACHE']     = "1"
 
         for i in range(int(options.num_tiles)):
