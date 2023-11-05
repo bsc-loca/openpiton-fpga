@@ -649,28 +649,10 @@ module chipset_impl(
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
 `ifdef PITON_LAGARTO 
-    // Debug
-    output                                      ndmreset_o,    // non-debug module reset
-    output                                      dmactive_o,    // debug module is active
-    output [`PITON_NUM_TILES-1:0]                     debug_req_o,   // async debug request
-    input  [`PITON_NUM_TILES-1:0]                     unavailable_i, // communicate whether the hart is unavailable (e.g.: power down)
-    // JTAG
-    input                                       tck_i,
-    input                                       tms_i,
-    input                                       trst_ni,
-    input                                       td_i,
-    output                                      td_o,
-    output                                      tdo_oe_o,
-    // CLINT
-    input                                       rtc_i,         // Real-time clock in (usually 32.768 kHz)
-    output [`PITON_NUM_TILES-1:0]                     timer_irq_o,   // Timer interrupts
-    output [`PITON_NUM_TILES-1:0]                     ipi_o,         // software interrupt (a.k.a inter-process-interrupt)
-    // PLIC
-    output [`PITON_NUM_TILES*2-1:0]                   irq_o,         // level sensitive IR lines, mip & sip (async)
     // PMU
-    input [27*(`PITON_NUM_TILES)-1:0]                 pmu_sig_i,
-    input                                       pmu_clk
-    //input                                       vpu_clk
+,   input [27*(`PITON_NUM_TILES)-1:0]           pmu_sig_i
+,   input                                       pmu_clk
+    //input                                     vpu_clk
 `endif
 );
 
@@ -1950,8 +1932,6 @@ uart_top        uart_top (
     eth_top #(
     `ifdef PITON_RV64_PLATFORM
       .SWAP_ENDIANESS(1),
-    `elsif PITON_LAGARTO
-      .SWAP_ENDIANESS(1),
     `else
       .SWAP_ENDIANESS(0),
     `endif
@@ -2131,7 +2111,7 @@ fake_uart fake_uart (
 // Ariane-Specific Chipset //
 /////////////////////////////
 
-`ifdef PITON_RV64_PLATFORM
+`ifdef PITON_ARIANE
 
     wire [NUM_INTR_ETH+1-1:0] irq_sources, irq_le;
     // 0:level 1:edge

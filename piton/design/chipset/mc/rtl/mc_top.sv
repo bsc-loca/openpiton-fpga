@@ -411,9 +411,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
 `endif // `ifndef PITONSYS_MEEP
 
  noc_axi4_bridge #(
-    `ifdef PITON_ARIANE
-      .SWAP_ENDIANESS (1),
-    `elsif PITON_LAGARTO
+    `ifdef PITON_RV64_PLATFORM
       .SWAP_ENDIANESS (1),
     `endif
     `ifndef PITON_FPGA_MC_DDR3
@@ -624,9 +622,7 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
 `endif // `ifndef PITONSYS_MEEP
 
  noc_axi4_bridge #(
-  `ifdef PITON_ARIANE
-    .SWAP_ENDIANESS (1),
-  `elsif PITON_LAGARTO
+  `ifdef PITON_RV64_PLATFORM
     .SWAP_ENDIANESS (1),
   `endif
   `ifdef PITON_FPGA_MC_HBM
@@ -1391,9 +1387,7 @@ assign init_calib_complete_out  = init_calib_complete & ~ui_clk_syn_rst_delayed;
 localparam MEM_BASE_UNALIGN = '0;
 
 noc_axi4_bridge #(
-  `ifdef PITON_ARIANE
-    .SWAP_ENDIANESS (1),
-  `elsif PITON_LAGARTO
+  `ifdef PITON_RV64_PLATFORM
     .SWAP_ENDIANESS (1),
   `endif
   `ifdef PITON_FPGA_MC_HBM
