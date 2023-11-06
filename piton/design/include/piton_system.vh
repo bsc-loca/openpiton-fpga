@@ -119,6 +119,8 @@
     `define PITON_CHIPSET_DIFF_CLK
 `elsif VCU118_BOARD
     `define PITON_CHIPSET_DIFF_CLK
+`elsif ALVEOU55C_BOARD
+    `define PITON_CHIPSET_DIFF_CLK
 `elsif ALVEOU280_BOARD
     `define PITON_CHIPSET_DIFF_CLK
 `elsif XUPP3R_BOARD
@@ -166,7 +168,7 @@
 `ifdef VCU118_BOARD
     `define PITONSYS_DDR4
 `elsif XUPP3R_BOARD
-    `define PITONSYS_DDR4
+    `define PITONSYS_DDR4 
 `elsif ALVEOU280_BOARD
     `define PITONSYS_DDR4	
 `endif

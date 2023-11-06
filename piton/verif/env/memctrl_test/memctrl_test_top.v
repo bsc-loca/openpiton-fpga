@@ -53,6 +53,7 @@ module memctrl_test_top_helper
     //
     
     wire [7:0] led;
+    `ifndef ALVEOU55C_BOARD
 
     wire [`DDR3_ADDR_WIDTH-1:0]     ddr_addr;
     wire [`DDR3_BA_WIDTH-1:0]       ddr_ba;
@@ -69,7 +70,7 @@ module memctrl_test_top_helper
     wire [`DDR3_CS_WIDTH-1:0]       ddr_cs_n;
     wire [`DDR3_DM_WIDTH-1:0]       ddr_dm;
     wire                            ddr_odt;
-
+    `endif // endif ALVEOU55C_BOARD
     //
     // Combinational Logic
     //

@@ -54,7 +54,7 @@ module mc_top (
   `endif
 
     input                           uart_boot_en,
-    
+
 `ifdef PITONSYS_DDR4
     // directly feed in 250MHz ref clock
     `ifndef PITONSYS_MEEP
@@ -87,6 +87,7 @@ module mc_top (
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]     ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
+
 `ifdef PITONSYS_DDR4
 `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
@@ -1152,7 +1153,7 @@ memory_zeroer #(
 // reserved, tie to 0
 wire app_hi_pri;
 assign app_hi_pri = 1'b0;
-  
+
 ddr4_0 i_ddr4_0 (
   .sys_rst                   ( ~sys_rst_n                ),
   .c0_sys_clk_p              ( sys_clk_p                 ),
@@ -1206,6 +1207,7 @@ ddr4_0 i_ddr4_0 (
 );
 
 `else // PITONSYS_DDR4
+
 mig_7series_0   mig_7series_0 (
     // Memory interface ports
 `ifndef NEXYS4DDR_BOARD
@@ -1242,9 +1244,7 @@ mig_7series_0   mig_7series_0 (
     .ddr2_dm                        (ddr_dm),
     .ddr2_odt                       (ddr_odt),
 `endif // endif NEXYS4DDR_BOARD
-
     .init_calib_complete            (init_calib_complete),
-
     // Application interface ports
     .app_addr                       (app_addr),
     .app_cmd                        (app_cmd),

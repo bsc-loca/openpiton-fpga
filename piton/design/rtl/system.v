@@ -210,6 +210,7 @@ module system(
 
     // DRAM and I/O interfaces
 `ifndef PITONSYS_NO_MC
+   
 `ifdef PITON_FPGA_MC_DDR3
 `ifndef F1_BOARD
 
@@ -225,26 +226,23 @@ module system(
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
     `endif
-
-    output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
-    output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
-    `ifdef ALVEOU280_BOARD
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
-    `else
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
-    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
-    `endif
-    output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
-    output                                      ddr_reset_n,
-    inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
-    `ifdef ALVEOU280_BOARD
+   
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
-    `else
+     `ifndef ALVEOU280_BOARD
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
+    output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_p,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
     `endif
+
+    output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
+    output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
+    output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
+    output                                      ddr_reset_n,
+    inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
     `ifndef NEXYSVIDEO_BOARD
         output [`DDR3_CS_WIDTH-1:0]             ddr_cs_n,
     `endif // endif NEXYSVIDEO_BOARD
@@ -253,9 +251,9 @@ module system(
     output                                      ddr_parity,
     `else
     `ifndef ALVEOU280_BOARD
-    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
+    inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,   
     `else
-     output                                     ddr_parity,
+     output                                      ddr_parity,
     `endif //ALVEO
     `endif // XUPP3R_BOARD
     `else // PITONSYS_DDR4
@@ -263,6 +261,7 @@ module system(
     `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
     `endif //ALVEO
+
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals

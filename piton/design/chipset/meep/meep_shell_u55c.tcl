@@ -44,7 +44,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 set list_projs [get_projects -quiet]
 if { $list_projs eq "" } {
 
-   create_project project_1 myproj -part xcu280-fsvh2892-2L-e
+   create_project project_1 myproj -part xcu55c-fsvh2892-2L-e
 }
 
 

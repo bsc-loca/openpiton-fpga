@@ -79,7 +79,10 @@ module memctrl_test(
 
     output [7:0]                                led,
 
+    `ifndef ALVEOU55C_BOARD
+
     // DDR interface
+
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
     output                                      ddr_cas_n,
@@ -97,6 +100,7 @@ module memctrl_test(
 `endif // endif NEXYSVIDEO_BOARD
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
     output                                      ddr_odt
+    `endif // endif ALVEOU55C_BOARD
 );
 
 ///////////////////////

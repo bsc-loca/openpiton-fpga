@@ -239,7 +239,9 @@ module chipset(
 `ifdef PITON_FPGA_MC_DDR3
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
-`ifndef F1_BOARD
+
+    `ifndef F1_BOARD
+
 `ifdef PITONSYS_DDR4
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
@@ -248,6 +250,7 @@ module chipset(
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
 `endif // PITONSYS_DDR4
+
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
@@ -273,7 +276,7 @@ module chipset(
 `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-`elsif ALVEOU280_BOARD
+`elsif ALVEOU280_BOARD 
   `ifdef PITONSYS_MEEP
     input                           hbm_calib_complete,    
     // regular MC AXI bus
@@ -580,13 +583,17 @@ module chipset(
   `endif //`ifdef PITONSYS_MEEP
 
 `else
+
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
 `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
 `endif // PITONSYS_DDR4
+
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
+
 `else // F1_BOARD
+
     input                                        mc_clk,
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    m_axi_awid,
@@ -2183,7 +2190,7 @@ chipset_impl_noc_power_test  chipset_impl (
             `ifdef PITONSYS_UART_BOOT
                 .uart_boot_en(uart_boot_en),
                 .uart_timeout_en(uart_timeout_en),
-                `ifdef ALVEOU280_BOARD                           
+                `ifdef ALVEOU280_BOARD                          
                 .bootrom_linux_en(uart_bootrom_linux_en),
                 `endif
             `endif // endif PITONSYS_UART_BOOT

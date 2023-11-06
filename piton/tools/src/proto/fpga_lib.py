@@ -60,6 +60,7 @@ STORAGE_BLOCK_BIT_WIDTH         =   {   "ddr":  {   "vc707":512,
                                         "bram": {   "vc707":512,
                                                     "vcu118":512,
                                                     "alveou280":512,
+                                                    "alveou55c":512,
                                                     "xupp3r":512,
                                                     "nexys4ddr":512,
                                                     "genesys2":512,
@@ -70,6 +71,7 @@ STORAGE_BLOCK_BIT_WIDTH         =   {   "ddr":  {   "vc707":512,
                                         "dmw":  {   "vc707":512,
                                                     "vcu118":512,
                                                     "alveou280":512,
+                                                    "alveou55c":512,
                                                     "xupp3r":512,
                                                     "nexys4ddr":512,
                                                     "genesys2":512,
@@ -77,7 +79,8 @@ STORAGE_BLOCK_BIT_WIDTH         =   {   "ddr":  {   "vc707":512,
                                                     "piton_board":512,
                                                     "f1":512
                                                 },
-                                        "hbm":  {   "alveou280":256
+                                        "hbm":  {   "alveou280":256,
+                                                    "alveou55c":256
                                                 }
                                     }
 
@@ -93,6 +96,7 @@ STORAGE_ADDRESSABLE_BIT_WIDTH   =   {   "ddr":  {   "vc707":64,
                                         "bram": {   "vc707":512,
                                                     "vcu118":512,
                                                     "alveou280":512,
+                                                    "alveou55c":512,
                                                     "xupp3r":512,
                                                     "nexys4ddr":512,
                                                     "genesys2":512,
@@ -103,6 +107,7 @@ STORAGE_ADDRESSABLE_BIT_WIDTH   =   {   "ddr":  {   "vc707":64,
                                         "dmw": {    "vc707":512,
                                                     "vcu118":512,
                                                     "alveou280":512,
+                                                    "alveou55c":512,
                                                     "xupp3r":512,
                                                     "nexys4ddr":512,
                                                     "genesys2":512,
@@ -110,7 +115,8 @@ STORAGE_ADDRESSABLE_BIT_WIDTH   =   {   "ddr":  {   "vc707":64,
                                                     "piton_board":512,
                                                     "f1":512
                                                 },
-                                        "hbm":  {   "alveou280":33
+                                        "hbm":  {   "alveou280":33,
+                                                    "alveou55c":33,
                                                 }
 
                                     }
@@ -127,6 +133,7 @@ STORAGE_BIT_SIZE                =   {   "ddr":  {   "vc707":8*2**30,
                                         "bram": {   "vc707":16384*512,
                                                     "vcu118":16384*512,
                                                     "alveou280":16384*512,
+                                                    "alveou55c":16384*512,
                                                     "xupp3r":16384*512,
                                                     "nexys4ddr":16384*512,
                                                     "genesys2":16384*512,
@@ -137,13 +144,15 @@ STORAGE_BIT_SIZE                =   {   "ddr":  {   "vc707":8*2**30,
                                         "dmw":  {   "vc707":8*2**30,
                                                     "vcu118":2*8*2**30,
                                                     "alveou280":2*8*2**30,
+                                                    "alveou55c":2*8*2**30,
                                                     "xupp3r":32*8*2**30,
                                                     "nexys4ddr":8*128*2**20,
                                                     "genesys2":8*2**30,
                                                     "nexysVideo":8*512*2**20,
                                                     "f1":8*4*2**30
                                                 },
-                                        "hbm":  {   "alveou280":8*4*2**33
+                                        "hbm":  {   "alveou280":8*4*2**33,
+                                                    "alveou55c":8*4*2**33
                                                 }
                                     }
 DW_BIT_SIZE     = 64

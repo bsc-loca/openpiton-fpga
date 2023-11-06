@@ -154,6 +154,8 @@ module chipset_impl(
     output                                      ddr_ras_n,
     output                                      ddr_we_n,
 `endif // PITONSYS_DDR4
+`ifndef ALVEOU55C_BOARD
+
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_n,
@@ -163,9 +165,12 @@ module chipset_impl(
     inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_n,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_p,
+
 `ifndef NEXYSVIDEO_BOARD
     output [`DDR3_CS_WIDTH-1:0]                 ddr_cs_n,
 `endif // endif NEXYSVIDEO_BOARD
+`endif // endif ALVEOU55C_BOARD_BOARD
+
 `ifdef PITONSYS_DDR4
   `ifdef PITONSYS_PCIE
     input  [15:0] pci_express_x16_rxn,
@@ -505,12 +510,15 @@ module chipset_impl(
       output                                    hbm_cattrip,
    `endif //`ifdef PITONSYS_MEEP
 `else
+`ifndef ALVEOU55C_BOARD
+
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
 `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
 `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
+`endif // ALVEOU55C_BOARD
 `else // ifndef F1_BOARD
     // AXI Write Address Channel Signals
     input                                        mc_clk,
