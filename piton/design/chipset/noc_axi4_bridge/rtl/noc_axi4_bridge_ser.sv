@@ -54,6 +54,7 @@ localparam SEND_HEADER = 2'd1;
 localparam SEND_DATA = 2'd2;
 
 reg [`AXI4_DATA_WIDTH-1:0] data_in_f;
+reg [`NOC_DATA_WIDTH-1:0] resp_header;
 reg [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log_f;
 reg [`NOC_DATA_WIDTH      -1:0] data_swapped;
 
@@ -64,7 +65,6 @@ reg [`MSG_LENGTH_WIDTH-1:0] remaining_flits;
 assign flit_out_val = (state == SEND_HEADER) || (state == SEND_DATA);
 assign in_rdy = (state == ACCEPT);
 
-reg [`NOC_DATA_WIDTH-1:0] resp_header;
 always @(posedge clk)
   if(~rst_n) state <= ACCEPT;
   else
