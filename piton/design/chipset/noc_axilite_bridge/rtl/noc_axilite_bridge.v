@@ -40,7 +40,7 @@
 //==================================================================================================
 
 `include "define.tmp.h"
-// These defines are already present in piton/design/include/define.h.pyv
+// These defines are moved to piton/design/include/define.h.pyv due to support of MEEP shell (used in accelerator_mod.sv)
 // `define C_M_AXI_LITE_DATA_WIDTH  `NOC_DATA_WIDTH
 // `define C_M_AXI_LITE_ADDR_WIDTH  `NOC_DATA_WIDTH
 // `define C_M_AXI_LITE_RESP_WIDTH  2
