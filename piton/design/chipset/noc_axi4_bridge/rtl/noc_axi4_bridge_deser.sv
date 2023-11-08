@@ -66,9 +66,12 @@ assign flit_in_rdy = (state != SEND) & phy_init_done;
 wire flit_in_go = flit_in_val & flit_in_rdy;
 assign out_val = (state == SEND);
 
-reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] dat_offset;
-reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
-always @(*) noc_extractSize(header_out, dat_size_log, dat_offset);
+wire [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log;
+noc_extractSize deser_extractSize(
+                .header  (header_out),
+                .size_log(dat_size_log),
+                .offset  ());
+
 wire [`NOC_DATA_WIDTH -1:0] data_swapped = SWAP_ENDIANESS ? swapData(flit_in, dat_size_log) :
                                                                      flit_in;
 always @(posedge clk)

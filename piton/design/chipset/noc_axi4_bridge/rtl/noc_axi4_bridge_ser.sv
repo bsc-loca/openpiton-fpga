@@ -99,9 +99,11 @@ always @(posedge clk)
       end
     endcase // state
 
-reg [$clog2(`AXI4_DATA_WIDTH/8)-1:0] dat_offset;
-reg [`MSG_DATA_SIZE_WIDTH      -1:0] dat_size_log;
-always @(*) noc_extractSize(header_in, dat_size_log, dat_offset);
+wire [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log;
+noc_extractSize ser_extractSize(
+                .header  (header_in),
+                .size_log(dat_size_log),
+                .offset  ());
 
 wire [`MSG_LENGTH_WIDTH-1:0] dat_payload_len = 1 << clip2zer($signed({1'b0,dat_size_log}) - $clog2(`NOC_DATA_WIDTH/8));
 
