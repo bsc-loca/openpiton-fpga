@@ -681,7 +681,7 @@ module chipset(
         `ifdef PITONSYS_UART_RESET
             output uart_rst_out_n,
         `endif
-      `endif // PITONSYS_MEE
+      `endif // PITONSYS_MEEP
     `endif // endif PITONSYS_UART
 
 
@@ -1271,12 +1271,11 @@ end
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
 
-            `ifndef ALVEOU280_BOARD
             `ifdef PITONSYS_SPI
                 // SPI system clock
                 , .sd_sys_clk(sd_sys_clk)
             `endif // endif PITONSYS_SPI
-            `else
+            `ifdef ALVEOU280_BOARD
                 // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
                , .vpu_clk(vpu_clk)
             `endif

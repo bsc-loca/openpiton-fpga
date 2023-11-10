@@ -51,7 +51,6 @@ DESIGN_BLOCK_LIST = os.path.join(DV_ROOT, "tools/src/proto/block.list")
 BOARD_TOOL_LIST = os.path.join(DV_ROOT, "tools/src/proto/board.list")
 PROJECT_BUILD_LOG = "make_project.log"
 PROJECT_IMPL_LOG = "implementation.log"
-VIVADO_PATH = "/opt/Xilinx/Vivado/2021.2/bin"
 
 FLOW_STEP_OPTIONS = ["project", "impl"]
 
@@ -772,7 +771,6 @@ def makeDefList(options):
     return defines
 
 def updateBlockList(options):
-
     subprocess.Popen('$PITON_ROOT/piton/tools/src/proto/alveou280/update_blocklist.sh ' + options.core, shell=True, executable="/bin/bash")
 
 def makeMemMapping(st_brd, work_dir, log_dir):
@@ -813,13 +811,12 @@ def setUARTXilinxFreq(board, design_data):
     os.environ['SYSTEM_FREQ'] = str(design_data["BOARDS"][board]["FREQ"])
 
 
-def unique(list1):  
-    unique_list = []  
+def unique(list1):
+    unique_list = []
     for x in list1:
         if x not in unique_list:
             unique_list.append(x)
     return unique_list
-  
 
 def get_both_xy_edge_routers_ids (piton_X, piton_Y):
     edges=[]
@@ -827,17 +824,17 @@ def get_both_xy_edge_routers_ids (piton_X, piton_Y):
     j=0
     for i in range(piton_X): # first row 
       id = j * piton_X + i;
-      edges.append(id)     
+      edges.append(id)
     
     i=piton_X-1
     for j in range(1,piton_Y,1):  #last column 
       id = j * piton_X + i
-      edges.append(id)  	
+      edges.append(id)
 
     j=piton_Y-1
     for i in reversed(list(range(1, piton_X-1))): # last row
       id = j * piton_X + i 
-      edges.append(id)  
+      edges.append(id)
 
     i=0;
     for j in reversed(list(range(1, piton_Y))): #first column
@@ -845,22 +842,21 @@ def get_both_xy_edge_routers_ids (piton_X, piton_Y):
       edges.append(id)  
     return unique(edges)
 
-
 def distribute_mc_equal_space_on_all_edges (x_tiles, y_tiles, multimc):
     edge_ids = get_both_xy_edge_routers_ids (x_tiles,y_tiles)
     edges = len(edge_ids)
     d = 0
-    if(multimc > 0) : 
+    if(multimc > 0) :
       d = int(edges/multimc)
     mc_num=0
-    mmc = ''	
+    mmc = ''
     for m in range (multimc):
       mc_num= int (d * m)
       mc_id = edge_ids[mc_num]
       if(m==0) :
          mmc=str(mc_id)
       else :
-         mmc= mmc + "," + str(mc_id) 	
+         mmc= mmc + "," + str(mc_id)
     return mmc
 
 

@@ -157,7 +157,6 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         if devices[i]["name"] == "uart":
             uartBase = devices[i]["base"]
 
-    ethClkFreq = 156250000
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
 // OpenPiton + %s framework
@@ -258,9 +257,9 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     eth0_clk: eth0_clk {
         compatible = "fixed-clock";
         #clock-cells = <0>;
-        clock-frequency = <%d>;
+        clock-frequency = <156250000>;
     };
-        ''' % (ethClkFreq)
+    '''
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
@@ -271,9 +270,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     devWithIrq = ["uart", "net"];
     for i in range(len(devices)):
         if devices[i]["name"] in devWithIrq:
+            numIrqs += 1
             if devices[i]["name"] == "net":
-                numIrqs += 2
-            else:
                 numIrqs += 1
 
 
@@ -329,10 +327,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
-            device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            reg-offset = <0x1000>;
             reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
@@ -410,8 +406,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 };
     '''
 
-    # this needs to match // 20/08/2022: This doesn't match if the device has more than 1 interrupt, as the Ethernet DMA
-    # assert ioDeviceNr-1 == numIrqs
+    # this needs to match
+    assert ioDeviceNr-1 == numIrqs
 
     with open(dtsPath + '/rv64_platform.dts','w+') as file:
         file.write(tmpStr)
