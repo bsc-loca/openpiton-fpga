@@ -307,8 +307,6 @@ system system(
 `ifndef VERILATOR
 `ifdef PITON_EXTRA_MEMS
     .chipset_clk(core_ref_clk),
-`elsif PITON_MANYGUI
-    .chipset_clk(core_ref_clk),
 `else
     .chipset_clk(chipset_clk),
 `endif
@@ -432,88 +430,7 @@ system system(
 ////////////////////////////////////////////////////////
 // MONITOR STUFF
 ////////////////////////////////////////////////////////
-<%
-for core_id in range(PITON_NUM_TILES) :
-    print("`define CORE_%d system.chip.tile%d.g_lagarto_m20_core.core" %(core_id, core_id))
-%>
 
-`ifdef VPU_ENABLE
-<%
-for core_id in range(PITON_NUM_TILES) :
-    print("`define VPU_%d `CORE_%d.lagarto_m20.vpu_inst" %(core_id, core_id))
-%>
-`endif // endif VPU_ENABLE
-
-`ifdef MEEP_COSIM
-<%
-print("    spike_setup #(.NUM_CORES(%d)) spike_cosim_setup();" %(PITON_NUM_TILES))
-
-for core_id in range(PITON_NUM_TILES) :
-    print("""
-    spike_scoreboard spike_scoreboard_core{coreid} (.clk            (core_ref_clk),
-                                             .rst            (sys_rst_n),
-                                             .commit         (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_valid),
-                                             .pc             (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_pc),
-                                             .exe_to_wb_wb   (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb),
-                                             .xreg_dest      (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_addr_reg),
-                                             .cu_rr_int      (`CORE_{coreid}.lagarto_m20.datapath_inst.cu_rr_int),
-                                             .commit_data    (`CORE_{coreid}.lagarto_m20.datapath_inst.commit_data),
-                                             .excep          (`CORE_{coreid}.lagarto_m20.datapath_inst.wb_xcpt),
-                                             .csr_excep      (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
-                                             .csr_cause      (`CORE_{coreid}.i_csr_regfile.csr_xcpt_cause),
-                                             .control_intf   (`CORE_{coreid}.lagarto_m20.datapath_inst.control_int),
-`ifdef VPU_ENABLE
-                                             .vpu_resp       (`CORE_{coreid}.lagarto_m20.datapath_inst.resp_vpu_cpu_i),
-`else
-                                             .vpu_resp       ('b0),
-`endif
-                                             .hart_id        (`CORE_{coreid}.hart_id_i),
-                                             .ref_hart_id    (64'd{coreid}),
-                                             .csr_mip        (`CORE_{coreid}.i_csr_regfile.mip_q));
-    """.format(coreid = core_id))
-%>
-`endif
-
-// Lagarto coverage instance for ISA coverage
-`ifdef PITON_COVERAGE
-// `ifndef PITON_LAGARTO_TILE
-<%
-for core_id in range(PITON_NUM_TILES) :
-  print("""
-cov_isa cov_isa_inst{coreid}(.i_clk            (core_ref_clk),
-                            .i_rsn            (sys_rst_n),
-                            .i_valid          (`CORE_{coreid}.lagarto_m20.datapath_inst.valid_wb),
-                            .i_instruction    (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.inst_orig)
-                            );
-  """.format(coreid = core_id))
-%>
-// `endif // endif PITON_LAGARTO_TILE
-
-// Lagarto coverage instance for RISC-V Privilege ISA coverage
-<%
-for core_id in range(PITON_NUM_TILES) :
-  print("""
-cov_priv_isa cov_priv_isa_inst{coreid}(.i_clk             (core_ref_clk),
-                            .i_rsn              (sys_rst_n),
-                            .i_valid            (`CORE_{coreid}.lagarto_m20.datapath_inst.valid_wb),
-                            .i_instruction      (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.inst_orig),
-                            .i_mstatus          (`CORE_{coreid}.i_csr_regfile.mstatus_d),
-                            .i_mcause           (`CORE_{coreid}.i_csr_regfile.mcause_d),
-                            .i_scause           (`CORE_{coreid}.i_csr_regfile.scause_d),
-                            .i_mtvec            (`CORE_{coreid}.i_csr_regfile.mtvec_d),
-                            .i_stvec            (`CORE_{coreid}.i_csr_regfile.stvec_d),
-                            .i_mideleg          (`CORE_{coreid}.i_csr_regfile.mideleg_d),
-                            .i_medeleg          (`CORE_{coreid}.i_csr_regfile.medeleg_d),
-                            .i_csr_addr         (`CORE_{coreid}.i_csr_regfile.csr_addr_i),
-                            .i_csr_cmd          (`CORE_{coreid}.i_csr_regfile.csr_op_i),
-                            .i_priv_lvl         (`CORE_{coreid}.i_csr_regfile.priv_lvl_o),
-                            .i_pipeline_exc     (`CORE_{coreid}.i_csr_regfile.ex_i),
-                            .i_csr_exc          (`CORE_{coreid}.i_csr_regfile.csr_exception_o),
-                            .i_int              (`CORE_{coreid}.i_csr_regfile.ex_i),
-                            .i_instr_type       (`CORE_{coreid}.lagarto_m20.datapath_inst.exe_to_wb_wb.instr_type));
-  """.format(coreid = core_id))
-%>
-`endif // endif PITON_COVERAGE
 
 `ifndef DISABLE_ALL_MONITORS
 
@@ -649,11 +566,6 @@ cov_priv_isa cov_priv_isa_inst{coreid}(.i_clk             (core_ref_clk),
 `endif
 
     manycore_network_mon network_mon (`CHIP_INT_CLK);
-
-    my_network_mon my_network_monitor (`CHIP_INT_CLK);
-    
-    my_mon #(`PITON_NUM_TILES) my_monitor (
-        .clk (`CHIP_INT_CLK));//,
 
 `endif // MINIMAL_MONITORING
 `endif // DISABLE_ALL_MONITORS

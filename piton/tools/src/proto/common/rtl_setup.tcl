@@ -788,25 +788,3 @@ set CHIPSET_PRJ_IP_FILES [list \
 # if {[info exists ::env(PITON_ARIANE)]} {
 #   set CHIP_RTL_IMPL_FILES [concat ${CHIP_RTL_IMPL_FILES} ${ARIANE_RTL_IMPL_FILES}]
 # }
-
-# Set the path for the lagarto FList parser. This needs to be thought further.
-# the tcl parser in the core is called from "piton/design/xilinx/design.tcl"
-set LAGARTO_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core"
-
-#set LAGARTO_INCLUDE_DIRS "${LAGARTO_ROOT}/modules/meep-vpu/src/include ${LAGARTO_ROOT}/modules/meep-vpu/modules/axi_crossbar_lvrf/include"
-# Include dirs is created on the Flist parser, and used @./tools/src/proto/common/setup.tcl 
-
-set PRONOC_ROOT "${DV_ROOT}/design/chip/tile/noc"
-
-set SA_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/sa-shell_sa-hevc"
-
-set VPU_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu"
-
-set XBAR_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/modules/axi_crossbar_lvrf"
-
-set MEEP_RTL_FILES ""
-if { [info exists "::env(MEEP_SHELL)"] } {
-  set MEEP_RTL_FILES [list \
-    "${DV_ROOT}/design/chipset/meep_shell/accelerator_mod.sv" \
-  ]
-}

@@ -170,12 +170,6 @@ module chip(
 ,   input   [`PITON_NUM_TILES*2-1:0]            irq_i           // level sensitive IR lines, mip & sip (async)
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
-
-`ifdef PITON_LAGARTO
-    // PMU
-,   output  [27*(`PITON_NUM_TILES)-1:0]         pmu_sig_o
-
-`endif
 );
 
 <%
@@ -453,126 +447,6 @@ module chip(
            # print "wire offchip_out_S_noc%d_yummy;" % (k)
            print("wire offchip_out_E_noc%d_yummy;" % (k))
 %>
-
-
- `ifdef PITON_PRONOC 
- 	import pronoc_pkg::*; 
- 	localparam CHIP_SET_ID = T1*T2*T3+2*T1; // endp connected  of west port of router 0-0
-	localparam CHIP_SET_PORT = 3; //west port of first router
- 
-        wire  [`NOC_CHIPID_WIDTH-1:0]  default_chipid =0;
-        wire  [`NOC_X_WIDTH-1:0]       default_coreid_x[NE-1 : 0];
-        wire  [`NOC_Y_WIDTH-1:0]       default_coreid_y[NE-1 : 0];
-        wire  [`JTAG_FLATID_WIDTH-1:0]         flat_tileid[NE-1 : 0];
- 
- 
-        wire [`DATA_WIDTH-1:0]         dataIn1 [NE-1 : 0];
-        wire [NE-1 : 0] validIn1;
-        wire [NE-1 : 0] yummyIn1;
-        
-        wire [`DATA_WIDTH-1:0]         dataOut1 [NE-1 : 0];
-        wire [NE-1 : 0] validOut1;
-        wire [NE-1 : 0] yummyOut1; 
-        
-        wire [`DATA_WIDTH-1:0]         dataIn2 [NE-1 : 0];
-        wire [NE-1 : 0] validIn2;
-        wire [NE-1 : 0] yummyIn2;
-        
-        wire [`DATA_WIDTH-1:0]         dataOut2 [NE-1 : 0];
-        wire [NE-1 : 0] validOut2;
-        wire [NE-1 : 0] yummyOut2; 
-        
-        wire [`DATA_WIDTH-1:0]         dataIn3 [NE-1 : 0];
-        wire [NE-1 : 0] validIn3;
-        wire [NE-1 : 0] yummyIn3;
-        
-        wire [`DATA_WIDTH-1:0]         dataOut3 [NE-1 : 0];
-        wire [NE-1 : 0] validOut3;
-        wire [NE-1 : 0] yummyOut3; 
-                                                       
-  
-        pronoc_noc 
-        #(
-                .NOC_NUM(1),
-                .CHIP_SET_PORT(CHIP_SET_PORT),
-                .FLATID_WIDTH(`JTAG_FLATID_WIDTH)
-        )noc1
-        (
-                .dataIn(dataOut1),
-                .validIn(validOut1),
-                .yummyIn(yummyOut1),
-                
-                .dataOut(dataIn1),
-                .validOut(validIn1),
-                .yummyOut(yummyIn1),
-                
-                .default_chipid(default_chipid),
-                .default_coreid_x(default_coreid_x),
-                .default_coreid_y(default_coreid_y),
-                .flat_tileid(flat_tileid),
-                 
-                .reset(~rst_n_inter_sync),
-                .clk(clk_muxed)
-        
-        );
-        
-        
-        pronoc_noc 
-        #(
-                .NOC_NUM(2),
-                .CHIP_SET_PORT(CHIP_SET_PORT),
-                .FLATID_WIDTH(`JTAG_FLATID_WIDTH)
-        )noc2
-        (
-                .dataIn(dataOut2),
-                .validIn(validOut2),
-                .yummyIn(yummyOut2),
-                
-                .dataOut(dataIn2),
-                .validOut(validIn2),
-                .yummyOut(yummyIn2),
-                
-                .default_chipid(default_chipid),
-                .default_coreid_x(default_coreid_x),
-                .default_coreid_y(default_coreid_y),
-                .flat_tileid(flat_tileid),
-                 
-                .reset(~rst_n_inter_sync),
-                .clk(clk_muxed)
-        
-        );
-        
-        pronoc_noc 
-        #(
-                .NOC_NUM(3),
-                .CHIP_SET_PORT(CHIP_SET_PORT)
-        )noc3
-        (
-                .dataIn(dataOut3),
-                .validIn(validOut3),
-                .yummyIn(yummyOut3),
-                
-                .dataOut(dataIn3),
-                .validOut(validIn3),
-                .yummyOut(yummyIn3),
-                
-                .default_chipid(default_chipid),
-                .default_coreid_x(default_coreid_x),
-                .default_coreid_y(default_coreid_y),
-                .flat_tileid(flat_tileid),
-                 
-                .reset(~rst_n_inter_sync),
-                .clk(clk_muxed)
-        
-        );
- 
-`else 
-  localparam 
-    CHIP_SET_PORT=3,
-          SMARTFLIT_CHANEL_w=1,
-          RAw=1;
-`endif
-
 
    //////////////////////
    // Sequential logic
@@ -1209,40 +1083,12 @@ module chip(
     `endif // ifdef PITON_RV64_PLIC
     `endif // ifdef PITON_RV64_PLATFORM
         ,
-    `ifdef PITON_LAGARTO
-        .pmu_sig_o           ( pmu_sig_o[27*_FLAT_ID_+:27]),
-    `endif
         // ucb from tiles to jtag
         .tile_jtag_ucb_val   ( tile0_jtag_ucb_val      ),
         .tile_jtag_ucb_data  ( tile0_jtag_ucb_data     ),
         // ucb from jtag to tiles
         .jtag_tiles_ucb_val  ( jtag_tiles_ucb_val      ),
         .jtag_tiles_ucb_data ( jtag_tiles_ucb_data     ),
-    `ifdef PITON_PRONOC 
-        .dataIn1         (dataIn1[_FLAT_ID_] ),
-        .validIn1        (validIn1[_FLAT_ID_]),
-        .yummyIn1        (yummyIn1[_FLAT_ID_]),
-        
-        .dataOut1        (dataOut1[_FLAT_ID_]),
-        .validOut1       (validOut1[_FLAT_ID_]),
-        .yummyOut1       (yummyOut1[_FLAT_ID_]), 
-        
-        .dataIn2         (dataIn2[_FLAT_ID_]),
-        .validIn2        (validIn2[_FLAT_ID_]),
-        .yummyIn2        (yummyIn2[_FLAT_ID_]),
-        
-        .dataOut2        (dataOut2[_FLAT_ID_]),
-        .validOut2       (validOut2[_FLAT_ID_]),
-        .yummyOut2       (yummyOut2[_FLAT_ID_]), 
-        
-        .dataIn3         (dataIn3[_FLAT_ID_]),
-        .validIn3        (validIn3[_FLAT_ID_]),
-        .yummyIn3        (yummyIn3[_FLAT_ID_]),
-        
-        .dataOut3        (dataOut3[_FLAT_ID_]),
-        .validOut3       (validOut3[_FLAT_ID_]),
-        .yummyOut3       (yummyOut3[_FLAT_ID_])     
-    `else
     '''
 
     subtemplate = r'''
@@ -1287,7 +1133,6 @@ module chip(
 
     template += subtemplate + sub2 + sub3;
     template = template[:-1] + r'''
-    `endif
     );
     '''
    
@@ -1396,8 +1241,6 @@ module chip(
                 currenttype = "`PICORV32_TILE"
             elif (PITON_ARIANE):
                 currenttype = "`ARIANE_RV64_TILE"
-            elif (PITON_LAGARTO):
-                currenttype = "`LAGARTO_M20_TILE"
             else:
                 currenttype = "`SPARC_TILE"
 
@@ -1440,9 +1283,6 @@ module chip(
             # print "`ifdef RTL_SPARC%d" % flatid
             print(currenttile)
             # print "`endif"
-    print ("`ifdef PITON_PRONOC");
-    print(assign + edge_assign)
-    print("`endif")    
 %>
 endmodule
 

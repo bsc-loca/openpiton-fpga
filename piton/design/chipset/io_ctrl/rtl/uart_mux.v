@@ -1,4 +1,3 @@
-// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 // ========== Copyright Header Begin ============================================
 // Copyright (c) 2015 Princeton University
 // All rights reserved.
@@ -55,7 +54,6 @@ module uart_mux (
     output              test_start,
     input               test_good_end,
     input               test_bad_end,
-    input               mc_axi_deadlock,
 
     // init ATG <-> uart_mux
     input   [12:0]      init_axi_awaddr, 
@@ -187,10 +185,9 @@ always @(posedge axi_clk) begin
                 mux_sel <= TEST_SEL;
         end
         TEST_SEL: begin
-            mux_sel <=  pc_good_trap | pc_bad_trap | asm_test_timeout | mc_axi_deadlock ? WRITER_SEL   : mux_sel;
+            mux_sel <=  pc_good_trap | pc_bad_trap | asm_test_timeout ? WRITER_SEL   : mux_sel;
             writer_str_sel <=   pc_good_trap        ?   `PASSED_STRING  :
                                 pc_bad_trap         ?   `FAILED_STRING  :
-                                mc_axi_deadlock     ?   `MC_AXI_DEADLOCK_STRING  :
                                 asm_test_timeout    ?   `TIMEOUT_STRING : writer_str_sel;         
         end
         default: begin

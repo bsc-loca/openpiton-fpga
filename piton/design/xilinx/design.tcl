@@ -59,48 +59,6 @@ if {[info exists ::env(PITON_ARIANE)]} {
   puts "Including Ariane RTL files"
 }
 
-if {$::env(PITON_LAGARTO) != "0" } {
-    source $LAGARTO_ROOT/parseFlistLagarto.tcl
-    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${LAGARTO_RTL_FILES}]
-    puts "Including Lagarto RTL files"
-}
-
-if {$::env(SA_HEVC_ENABLE) != "0" } {
-    source $SA_ROOT/parseFileListSA_HEVC.tcl
-    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_HEVC_RTL_FILES}]
-    puts "Add HEVC Systolic Arrays RTL files"    
-}
-
-if {$::env(SA_NN_ENABLE) != "0" } {
-    source $SA_ROOT/parseFileListSA_NN.tcl
-    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_NN_RTL_FILES}]
-    puts "Add NN Systolic Arrays RTL files"    
-}
-
-if {$::env(PITON_SA_ENABLE) != "0" } {
-	source $SA_ROOT/parseFileListSA.tcl
-	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${SA_RTL_FILES}]
-  	puts "Add Systolic Arrays RTL files"	
-}
-
-if {$::env(VPU_ENABLE) != "0" } {
-    source $VPU_ROOT/parseFileListVPU.tcl
-    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${VPU_RTL_FILES}]
-    puts "Add VPU RTL files"    
-}
-
-if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
-    source $LAGARTO_ROOT/parseFlistXbar.tcl
-    set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${XBAR_RTL_FILES}]
-    puts "Add crossbar RTL files"
-}
-
-if {$::env(PITON_PRONOC) != "0" } {
-	source $PRONOC_ROOT/parseFileListProNoC.tcl
-	set CORE_RTL_FILES [concat ${CORE_RTL_FILES} ${PRONOC_RTL_FILES}]
-  	puts "Add ProNoC RTL files"	
-}
-
 
 set DESIGN_RTL_IMPL_FILES [concat \
     ${SYSTEM_RTL_IMPL_FILES} \

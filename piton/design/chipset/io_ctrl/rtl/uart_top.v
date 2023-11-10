@@ -47,7 +47,6 @@ module uart_top (
     output                                  test_start,
     input                                   test_good_end,
     input                                   test_bad_end,
-    input                                   mc_axi_deadlock,
     output                                  uart_rst_out_n,
     input                                   init_calib_complete,
 
@@ -378,7 +377,6 @@ uart_mux   uart_mux (
 
   .test_good_end        (test_good_end      ),
   .test_bad_end         (test_bad_end       ),
-  .mc_axi_deadlock      (mc_axi_deadlock    ),
 
 `ifdef PITONSYS_UART_BOOT
   .init_axi_awaddr      (init_axi_awaddr    ), 

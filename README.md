@@ -732,15 +732,12 @@ The flow is very simillar to synthesizing image for any other FPGA OpenPiton sup
              --eth                     # adding CMAC based Ethernet unit
              --ethport <num>           # optional board-level Ethernet port (default=0)
 
-             --pronoc                  # specifies that the ProNoC NoC shall be used instead of PitonNoC
-
              --hbm                     # define HBM as primary system memory
              --multimc <num>           # implement design with multiple <num> connections to system memory (valid only for HBM)
              --multimc_indices <coma separated list> # optional list of particular edge tiles for above `multimc` option
 
              --bram-test hello_world.c # compiling and runniing VCS-based simulation before synthesis
              --verdi-dbg  # creating Verdi compliant simulation database for above test (verdi run inside ./build dir (-sx is optional): verdi -ssf ./novas.fsdb)
-             --mgui                    # run ManyGUI traffic visualizer while simulating above test
 ```
 
 This will create a Vivado design under $ROOT_DIR/build/...

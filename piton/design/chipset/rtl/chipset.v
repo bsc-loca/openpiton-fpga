@@ -681,7 +681,7 @@ module chipset(
         `ifdef PITONSYS_UART_RESET
             output uart_rst_out_n,
         `endif
-      `endif // PITONSYS_MEE
+      `endif // PITONSYS_MEEP
     `endif // endif PITONSYS_UART
 
 
@@ -870,12 +870,6 @@ module chipset(
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
 
-`ifdef PITON_LAGARTO
-    // PMU
-,   input   [27*(`PITON_NUM_TILES)-1:0]                     pmu_sig_i
-,   input                                                   pmu_clk
-,   output                                                  vpu_clk
-`endif
 );
 
 ///////////////////////
@@ -1271,15 +1265,10 @@ end
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
 
-            `ifndef ALVEOU280_BOARD
             `ifdef PITONSYS_SPI
                 // SPI system clock
                 , .sd_sys_clk(sd_sys_clk)
             `endif // endif PITONSYS_SPI
-            `else
-                // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
-               , .vpu_clk(vpu_clk)
-            `endif
 
             // Chipset<->passthru clocks
             `ifdef PITONSYS_INC_PASSTHRU
@@ -2233,11 +2222,6 @@ chipset_impl_noc_power_test  chipset_impl (
         ,.irq_o                  ( irq_o         )
     `endif // ifdef PITON_RV64_PLIC
     `endif // ifdef PITON_RV64_PLATFORM
-    
-    `ifdef PITON_LAGARTO            
-        ,.pmu_sig_i              ( pmu_sig_i     )
-        ,.pmu_clk                ( pmu_clk       )
-    `endif
 );
 
 

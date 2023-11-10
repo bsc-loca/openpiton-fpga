@@ -51,14 +51,13 @@ DESIGN_BLOCK_LIST = os.path.join(DV_ROOT, "tools/src/proto/block.list")
 BOARD_TOOL_LIST = os.path.join(DV_ROOT, "tools/src/proto/board.list")
 PROJECT_BUILD_LOG = "make_project.log"
 PROJECT_IMPL_LOG = "implementation.log"
-VIVADO_PATH = "/opt/Xilinx/Vivado/2021.2/bin"
 
 FLOW_STEP_OPTIONS = ["project", "impl"]
 
 def usage():
     print(file=sys.stderr)
     print("Usage:\nprotosyn -b <board_type> [-d <design>] [--bram-test <test_name>]", end=' ', file=sys.stderr)
-    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--sa_nn_enable] [--sa_hevc_enable] [--vpu_enable] [--pronoc] [--oled <string>]", file=sys.stderr)
+    print("[--from <FPGA flow step>] [--to <FPGA flow step>] [--no-ddr] [--uart-dmw ddr] [--eth] [--ethport] [--oled <string>]", file=sys.stderr)
     print(file=sys.stderr)
     print("       -b, --board  <board_type>", file=sys.stderr)
     print("              Name of a supported Xilinx's development board. Available options are:", file=sys.stderr)
@@ -79,7 +78,6 @@ def usage():
     print("                  pico      (32bit RISCV core)", file=sys.stderr)
     print("                  pico_het  (heterogeneous pico+sparc arrangement)", file=sys.stderr)
     print("                  ariane    (64bit RISCV core)", file=sys.stderr)
-    print("                  lagarto   (64bit RISCV core)", file=sys.stderr)
     print("\n       --network_config <network_config>", file=sys.stderr)
     print("              Name of the network type to be used:", file=sys.stderr)
     print("                  2dmesh_config (default)", file=sys.stderr)
@@ -104,8 +102,6 @@ def usage():
     print("              Name of the test to be simulated and mapped into BRAM/DRAM", file=sys.stderr)
     print("\n       --verdi-dbg", file=sys.stderr)
     print("              Create Verdi compliant simulation database of test specified by --bram-test option", file=sys.stderr)
-    print("\n       --mgui", file=sys.stderr)
-    print("              Run ManyGUI traffic visualizer while simulating test specified by --bram-test option", file=sys.stderr)
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
@@ -173,16 +169,6 @@ def usage():
     print("              Number of jobs to use in Vivado implementation flow", file=sys.stderr)
     print("\n       --postroutephysopt", file=sys.stderr)
     print("              Use post-route physical optimisation in Vivado implementation flow (can improve timing, not recommended by default)", file=sys.stderr)
-    print("         --sa_nn_enable", file.sys.stderr)
-    print("              Implement design with NN Systolic Arrays", file=sys.stderr) 
-    print("         --sa_hevc_enable", file.sys.stderr)
-    print("              Implement design with HEVC Systolic Arrays", file=sys.stderr) 
-    print("         --vpu_enable", file.sys.stderr)
-    print("              Implement design with VPU", file=sys.stderr)
-    print("\n       --pronoc", file=sys.stderr)
-    print("              This specifies that the ProNoC NoC shall be used instead of PitonNoC", file=sys.stderr) 
-    print("\n       --vlanes", file=sys.stderr)
-    print("              Configures the numer of vector lanes per VPU instance", file=sys.stderr) 
     print("\n       -h, --help", file=sys.stderr)
     print("              Display this help message and exit", file=sys.stderr)
     print("\n", file=sys.stderr)
@@ -561,7 +547,6 @@ def setParserOptions(parser):
     parser.add_option("--config_l2_associativity", dest="config_l2_associativity",   action="store", default=4)
     parser.add_option("--bram-test", dest="test_name", action="store")
     parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
-    parser.add_option("--mgui", dest="mgui", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
     parser.add_option("--vnpm", dest="vivado_mode", action="store_true", default=False)
     parser.add_option("--meep", dest="meep_mode", action="store_true", default=False)
@@ -572,11 +557,6 @@ def setParserOptions(parser):
     parser.add_option("--multimc_indices", dest="multimc_indices", action="store", default=None)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
-    parser.add_option("--sa_nn_enable", dest="sa_nn_enable", action="store_true", default=False)
-    parser.add_option("--sa_hevc_enable", dest="sa_hevc_enable", action="store_true", default=False)
-    parser.add_option("--vpu_enable", dest="vpu_enable", action="store_true", default=False)
-    parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
-    parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
     parser.add_option("--sram", dest="sram", action="store_true", default=False)
     parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
@@ -613,22 +593,6 @@ def makeDefList(options):
     if options.core == 'ariane':
         defines.append("NO_RTL_CSM")
 
-    if options.core == 'lagarto':
-        defines.append("NO_RTL_CSM")
-        defines.append("BSC_RTL_SRAMS")
-        defines.append("FPU_ZAGREB")
-        if options.vpu_enable:
-            defines.append("VPU_ENABLE")
-            if options.vlanes == "2":
-                defines.append("VPU_2_LANES")
-            elif options.vlanes == "4":
-                defines.append("VPU_4_LANES")
-            elif options.vlanes == "8":
-                defines.append("VPU_8_LANES")
-            elif options.vlanes == "16":
-                defines.append("VPU_16_LANES")
-            else:
-                defines.append("VPU_4_LANES")
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
     if (options.meep_mode == True):
@@ -771,10 +735,6 @@ def makeDefList(options):
 
     return defines
 
-def updateBlockList(options):
-
-    subprocess.Popen('$PITON_ROOT/piton/tools/src/proto/alveou280/update_blocklist.sh ' + options.core, shell=True, executable="/bin/bash")
-
 def makeMemMapping(st_brd, work_dir, log_dir):
     prev_dir = os.getcwd()
 
@@ -813,13 +773,12 @@ def setUARTXilinxFreq(board, design_data):
     os.environ['SYSTEM_FREQ'] = str(design_data["BOARDS"][board]["FREQ"])
 
 
-def unique(list1):  
-    unique_list = []  
+def unique(list1):
+    unique_list = []
     for x in list1:
         if x not in unique_list:
             unique_list.append(x)
     return unique_list
-  
 
 def get_both_xy_edge_routers_ids (piton_X, piton_Y):
     edges=[]
@@ -827,17 +786,17 @@ def get_both_xy_edge_routers_ids (piton_X, piton_Y):
     j=0
     for i in range(piton_X): # first row 
       id = j * piton_X + i;
-      edges.append(id)     
+      edges.append(id)
     
     i=piton_X-1
     for j in range(1,piton_Y,1):  #last column 
       id = j * piton_X + i
-      edges.append(id)  	
+      edges.append(id)
 
     j=piton_Y-1
     for i in reversed(list(range(1, piton_X-1))): # last row
       id = j * piton_X + i 
-      edges.append(id)  
+      edges.append(id)
 
     i=0;
     for j in reversed(list(range(1, piton_Y))): #first column
@@ -845,22 +804,21 @@ def get_both_xy_edge_routers_ids (piton_X, piton_Y):
       edges.append(id)  
     return unique(edges)
 
-
 def distribute_mc_equal_space_on_all_edges (x_tiles, y_tiles, multimc):
     edge_ids = get_both_xy_edge_routers_ids (x_tiles,y_tiles)
     edges = len(edge_ids)
     d = 0
-    if(multimc > 0) : 
+    if(multimc > 0) :
       d = int(edges/multimc)
     mc_num=0
-    mmc = ''	
+    mmc = ''
     for m in range (multimc):
       mc_num= int (d * m)
       mc_id = edge_ids[mc_num]
       if(m==0) :
          mmc=str(mc_id)
       else :
-         mmc= mmc + "," + str(mc_id) 	
+         mmc= mmc + "," + str(mc_id)
     return mmc
 
 
@@ -875,8 +833,6 @@ def main():
     ###################################################
     # All options are considered valid from this point
     ###################################################
-
-    #updateBlockList(options)
 
     rc_dir = ProtoDir(options.board, options.design, design_data)
 
@@ -1012,56 +968,6 @@ def main():
         print_info ("No memory controller (MC) indices are given as input. Distribute MCs with equal space on all edges:" + options.multimc_indices)
         os.environ['PITON_MC_INDICES']=options.multimc_indices
 
-
-    # Syslolic Arrays
-    os.environ['PITON_SA_ENABLE'] = "0"
-    if options.sa_nn_enable or options.sa_hevc_enable:
-        defines.append('PITON_SA_ENABLE')
-        os.environ['PITON_SA_ENABLE']  = "1"
-        print_info('setenv PITON_SA_ENABLE')
-
-    # Systolic Array NN
-    os.environ['SA_NN_ENABLE'] = "0"
-    if options.sa_nn_enable:
-        defines.append('SA_NN_ENABLE')
-        os.environ['SA_NN_ENABLE'] = "1"
-        print_info('setenv SA_NN_ENABLE')
-
-    # Systolic Array HEVC
-    os.environ['SA_HEVC_ENABLE'] = "0"
-    if options.sa_hevc_enable:
-        defines.append('SA_HEVC_ENABLE')
-        os.environ['SA_HEVC_ENABLE'] = "1"
-        print_info('setenv SA_HEVC_ENABLE')
-
-    # VPU
-    os.environ['VPU_ENABLE'] = "0"
-    if options.vpu_enable:
-        os.environ['VPU_ENABLE'] = "1"
-        print_info('setenv VPU_ENABLE')
-
-    # Crossbar and LVRF
-    if options.sa_nn_enable or options.sa_hevc_enable or options.vpu_enable:
-        defines.append('XBAR_LVRF_ENABLE')
-        print_info('setenv XBAR_LVRF_ENABLE')
-
-    # ProNoC
-    os.environ['PITON_PRONOC'] = "0"
-    if options.pronoc:
-        os.environ['PITON_PRONOC']     = "1"
-        print_info('setenv PITON_PRONOC')
-
-    # Create only the bootrom
-    if options.brom_only:
-        os.environ['BROM_ONLY'] = "1"
-        pid = os.getpid()
-        print_info("Generating the bootrom binary")
-        print_info('Protosyn PID = %s' % str(pid))
-        os.environ['PROTOPID'] = str(pid)
-
-    # Lagarto
-    os.environ['PITON_LAGARTO']  = "0"
-
     # core variant
     print_info("core      = " + str(options.core))
     for i in range(int(options.num_tiles)):
@@ -1100,15 +1006,6 @@ def main():
             print_info('setenv RTL_ARIANE' + str(i))
 
         os.system('$DV_ROOT/design/chip/tile/ariane_patch/ariane_patch.sh')
-
-    elif options.core == 'lagarto':
-        os.environ['PITON_LAGARTO'] = "1"
-        os.environ['PITON_RV64_PLATFORM'] = "1"
-        #os.environ['WT_DCACHE']     = "1"
-
-        for i in range(int(options.num_tiles)):
-            os.environ['RTL_LAGARTO' + str(i)] = "1"
-            print_info('setenv RTL_LAGARTO' + str(i))
 
     elif options.core == 'sparc':
         # this is the default
@@ -1193,9 +1090,6 @@ def main():
 
         if options.core == 'ariane':
             config += ' -ariane'
-        
-        if options.core == 'lagarto':
-            config += ' -lagarto'
 
         if options.board:
             config += ' -board=' + options.board
@@ -1218,15 +1112,9 @@ def main():
                       ' -vcs_build_args=-Wl,--no-as-needed'         + \
                       ' -vcs_build_args=+vcs+lic+wait'
 
-        mgui_build = '' 
-        mgui_run   = '' 
-        if options.mgui:
-            mgui_build = ' -mgui_build'
-            mgui_run   = ' -mgui_run'
-
         print_info("Synthesizing a test: %s" % options.test_name)
         print_info("Compilation started")
-        ret_val = os.system('sims -sys=manycore' + config + mgui_build + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
+        ret_val = os.system('sims -sys=manycore' + config + ' -vcs_build -vcs_build_args=+libext+.v -vcs_build_args=-Mupdate > %s/compilation.log' % rc_dir.log)
         if ret_val != 0:
             print_error("Compilation didn't finish successfully!")
             print_info("See for Errors in %s/compilation.log" % rc_dir.log)
@@ -1234,7 +1122,7 @@ def main():
         print_info("Simulation started")
         print_info("Using core clock frequency: %s MHz" % design_data["BOARDS"][options.board]["FREQ"])
         div = calcUARTLatch(design_data, options.board)
-        os.system('sims -sys=manycore ' + config + mgui_run + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
+        os.system('sims -sys=manycore ' + config + ' -vcs_run -midas_args=-DUART_DIV_LATCH=0x%x %s > %s/simulation.log' % (div, options.test_name, rc_dir.log))
 
         f = open('%s/simulation.log' % rc_dir.log, 'r')
         cont = f.read()

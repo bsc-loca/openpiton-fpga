@@ -26,16 +26,7 @@ def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath,
 
     gitver_cmd = "git log | grep commit -m1 | LD_LIBRARY_PATH= awk -e '{print $2;}'"
     piton_ver  = subprocess.check_output([gitver_cmd], shell=True)
-
-    if os.getenv("PITON_ARIANE") is not None:
-      if int(os.getenv("PITON_ARIANE")):
-        core = "Ariane"
-        core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'],  gitver_cmd)], shell=True)
-
-    if os.getenv("PITON_LAGARTO") is not None:
-      if int(os.getenv("PITON_LAGARTO")):
-        core = "Lagarto"
-        core_ver = subprocess.check_output(["cd %s && %s" % (os.environ['LAGARTO_ROOT'], gitver_cmd)], shell=True)
+    ariane_ver = subprocess.check_output(["cd %s && %s" % (os.environ['ARIANE_ROOT'], gitver_cmd)], shell=True)
 
     # get length of memory
     memLen  = 0
@@ -57,16 +48,16 @@ def get_bootrom_info(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath,
         sysFreq = "Unknown"
 
     tmpStr = '''// Info string generated with get_bootrom_info(...)
-// OpenPiton + %s framework
+// OpenPiton + Ariane framework
 // Date: %s
 
 const char info[] = {
 "\\r\\n\\r\\n"
 "----------------------------------------\\r\\n"
-"--     OpenPiton+%s Platform          --\\r\\n"
+"--     OpenPiton+Ariane Platform      --\\r\\n"
 "----------------------------------------\\r\\n"
 "OpenPiton Version: %s                   \\r\\n"
-"%s Version:    %s                       \\r\\n"
+"Ariane Version:    %s                   \\r\\n"
 "                                        \\r\\n"
 "FPGA Board:        %s                   \\r\\n"
 "Build Date:        %s                   \\r\\n"
@@ -85,12 +76,9 @@ const char info[] = {
 "----------------------------------------\\r\\n\\r\\n\\r\\n"
 };
 
-''' % (core,
-       timeStamp,
-       core,
+''' % (timeStamp,
        piton_ver[0:8],
-       core,
-       core_ver[0:8],
+       ariane_ver[0:8],
        boardName,
        timeStamp,
        int(os.environ['PITON_X_TILES']),
@@ -138,19 +126,6 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 
     assert nCpus >= 1
 
-    # Core dependant parameters  
-    if os.getenv("PITON_ARIANE") is not None:
-      if int(os.getenv("PITON_ARIANE")):
-        core = "cva6"
-        riscv_isa = "rv64imafdc"
-        org = "openhwgroup"
-
-    if os.getenv("PITON_LAGARTO") is not None:
-      if int(os.getenv("PITON_LAGARTO")):
-        core = "Lagarto"
-        riscv_isa = "rv64imafdcv"
-        org = "BSC"
-
     # get UART base
     uartBase = 0xDEADBEEF
     for i in range(len(devices)):
@@ -160,7 +135,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     ethClkFreq = 156250000
 
     tmpStr = '''// DTS generated with gen_riscv_dts(...)
-// OpenPiton + %s framework
+// OpenPiton + Ariane framework
 // Date: %s
 
 /dts-v1/;
@@ -187,7 +162,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         #size-cells = <0>;
         u-boot,dm-pre-reloc;
         timebase-frequency = <%d>;
-    ''' % (core, timeStamp, timeBaseFreq)
+    ''' % (timeStamp, timeBaseFreq)
 
     for k in range(nCpus):
         tmpStr += '''
@@ -197,8 +172,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             device_type = "cpu";
             reg = <%d>;
             status = "okay";
-            compatible = "%s, %s", "riscv";
-            riscv,isa = "%s";
+            compatible = "openhwgroup, cva6", "riscv";
+            riscv,isa = "rv64imafdc";
             mmu-type = "riscv,sv39";
             tlb-split;
             // HLIC - hart local interrupt controller
@@ -208,7 +183,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
                 compatible = "riscv,cpu-intc";
             };
         };
-        ''' % (k,k,cpuFreq,k,org,core,riscv_isa,k)
+        ''' % (k,k,cpuFreq,k,k)
 
     tmpStr += '''
     };
@@ -258,9 +233,9 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     eth0_clk: eth0_clk {
         compatible = "fixed-clock";
         #clock-cells = <0>;
-        clock-frequency = <%d>;
+        clock-frequency = <156250000>;
     };
-        ''' % (ethClkFreq)
+    '''
 
     # TODO: this needs to be extended
     # get the number of interrupt sources
@@ -271,9 +246,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     devWithIrq = ["uart", "net"];
     for i in range(len(devices)):
         if devices[i]["name"] in devWithIrq:
+            numIrqs += 1
             if devices[i]["name"] == "net":
-                numIrqs += 2
-            else:
                 numIrqs += 1
 
 
@@ -281,7 +255,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
     ioDeviceNr=1
     for i in range(len(devices)):
         # CLINT
-        if devices[i]["name"] == "ariane_clint" or devices[i]["name"] == "lagarto_clint" :
+        if devices[i]["name"] == "ariane_clint":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
@@ -297,7 +271,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
         };
             ''' % (_reg_fmt(addrBase, addrLen, 2, 2))
         # PLIC
-        if devices[i]["name"] == "ariane_plic" or devices[i]["name"] == "lagarto_plic":
+        if devices[i]["name"] == "ariane_plic":
             addrBase = devices[i]["base"]
             addrLen  = devices[i]["length"]
             tmpStr += '''
@@ -329,10 +303,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             reg = <%s>;
             clock-frequency = <%d>;
             current-speed = <115200>;
-            device_type = "serial";
             interrupt-parent = <&PLIC0>;
             interrupts = <%d>;
-            reg-offset = <0x1000>;
             reg-shift = <0>; // regs are spaced on 8 bit boundary (modified from Xilinx UART16550 to be ns16550 compatible)
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), periphFreq, ioDeviceNr)
@@ -410,8 +382,8 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
 };
     '''
 
-    # this needs to match // 20/08/2022: This doesn't match if the device has more than 1 interrupt, as the Ethernet DMA
-    # assert ioDeviceNr-1 == numIrqs
+    # this needs to match
+    assert ioDeviceNr-1 == numIrqs
 
     with open(dtsPath + '/rv64_platform.dts','w+') as file:
         file.write(tmpStr)

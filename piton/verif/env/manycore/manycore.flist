@@ -23,25 +23,7 @@
 +incdir+../../../design/chipset/include
 +incdir+.
 
-//+incdir+../../../design/chip/tile/vas_tile_core/modules/meep-vpu/src/include
-//
-//../../../design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/EPI_pkg.sv
-//../../../design/chip/tile/vas_tile_core/modules/drac-inorder/includes/riscv_pkg.sv
-////../../../design/chip/tile/vas_tile_core/modules/drac-inorder/modules/fpnew/src/fpnew_pkg.sv
-////../../../design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_pkg.sv
-//../../../design/chip/tile/vas_tile_core/src/package/riscv_pkg.sv
-//
-//../../../design/chip/tile/vas_tile_core/modules/riscv-dbg/src/dm_pkg.sv
-////../../../design/chip/tile/vas_tile_core/src/package/ariane_pkg.sv
-////../../../design/chip/tile/vas_tile_core/modules/ariane_cache_subsystem/src/rtl/cache_subsystem/wt_cache_pkg.sv
-//
-//../../../design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/fpuv_pkg.sv
-//../../../design/chip/tile/vas_tile_core/modules/meep-vpu/src/package/fpuv_wrapper_pkg.sv
-////../../../design/chip/tile/vas_tile_core/modules/drac-inorder/includes/drac_icache_pkg.sv
-
 cross_module.h
-my_mon.sv
-my_network_mon.sv
 manycore_network_mon.v
 // -v one_hot_mux_mon.v
 -v sas_intf.v

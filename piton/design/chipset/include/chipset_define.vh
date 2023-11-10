@@ -1,4 +1,3 @@
-// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 // ========== Copyright Header Begin ============================================
 // Copyright (c) 2015 Princeton University
 // All rights reserved.
@@ -96,7 +95,6 @@
 `define PASSED_STRING       1
 `define FAILED_STRING       2
 `define TIMEOUT_STRING      3
-`define MC_AXI_DEADLOCK_STRING 4
 
 `define PC_STATUS_WIDTH     2
 `define PC_STATUS_NOSTATUS  0

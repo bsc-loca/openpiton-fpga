@@ -47,6 +47,13 @@ set ISE_PROJECT_FILE "${PROJECT_DIR}/${PROJECT_NAME}.xise"
 # Combined variables from global, design, and board
 set ALL_INCLUDE_DIRS [concat ${GLOBAL_INCLUDE_DIRS} ${DESIGN_INCLUDE_DIRS}]
 
+set MEEP_RTL_FILES ""
+if { [info exists "::env(MEEP_SHELL)"] } {
+  set MEEP_RTL_FILES [list \
+    "${DV_ROOT}/design/chipset/meep_shell/accelerator_mod.sv" \
+  ]
+}
+
 set ALL_RTL_IMPL_FILES [concat ${DESIGN_RTL_IMPL_FILES} ${MEEP_RTL_FILES}] 
 
 set ALL_INCLUDE_FILES [concat ${GLOBAL_INCLUDE_FILES} ${DESIGN_INCLUDE_FILES}]
@@ -82,48 +89,6 @@ set ALL_DEFAULT_VERILOG_MACROS [concat \
     ${BOARD_DEFAULT_VERILOG_MACROS}    \
 ]
 
-################# CORE SPECIFIC SECTION #################
-#
-
-if  {$::env(PITON_LAGARTO) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${LAGARTO_INCLUDE_DIRS}]
-  puts "Add Lagarto include directories"
-}
-
-if  {$::env(SA_HEVC_ENABLE) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_HEVC_INCLUDE_DIRS}]
-  puts "Add HEVC Systolic Arrays include directories"
-}
-
-if  {$::env(SA_NN_ENABLE) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_NN_INCLUDE_DIRS}]
-  puts "Add NN Systolic Arrays include directories"
-}
-
-if  {$::env(PITON_SA_ENABLE) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${SA_INCLUDE_DIRS}]
-  puts "Add Systolic Arrays include directories"
-}
-
-if  {$::env(VPU_ENABLE) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${VPU_INCLUDE_DIRS}]
-  puts "Add VPU include directories"
-}
-
-if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${XBAR_INCLUDE_DIRS}]
-  puts "Add crossbar include directories"
-}
-
-if  {$::env(PITON_PRONOC) != "0"} {
-  set ALL_INCLUDE_DIRS [concat ${ALL_INCLUDE_DIRS} ${PRONOC_INCLUDE_DIRS}]
-  puts "Add ProNoC include directories"
-}
-
-#
-#########################################################
-
-
 if {[info exists ::env(PITON_OST1)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_OST1"
 }
@@ -140,38 +105,7 @@ if {[info exists ::env(PITON_ARIANE)]} {
   append ALL_DEFAULT_VERILOG_MACROS " PITON_ARIANE PITON_RV64_PLATFORM PITON_RV64_DEBUGUNIT PITON_RV64_CLINT PITON_RV64_PLIC WT_DCACHE"
 }
 
-if  {$::env(PITON_LAGARTO) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " PITON_LAGARTO PITON_RV64_PLATFORM PITON_RV64_DEBUGUNIT PITON_RV64_CLINT PITON_RV64_PLIC WT_DCACHE"
-}
-
-if  {$::env(SA_HEVC_ENABLE) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " SA_HEVC_ENABLE"
-}
-
-if  {$::env(SA_NN_ENABLE) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " SA_NN_ENABLE"
-}
-
-if  {$::env(PITON_SA_ENABLE) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " PITON_SA_ENABLE"
-}
-
-if  {$::env(VPU_ENABLE) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " VPU_ENABLE"
-}
-
-if {($::env(PITON_SA_ENABLE) != "0") || ($::env(VPU_ENABLE) != "0")} {
-  append ALL_DEFAULT_VERILOG_MACROS " XBAR_LVRF_ENABLE"
-}
-
-if  {$::env(PITON_PRONOC) != "0"} {
-  append ALL_DEFAULT_VERILOG_MACROS " PITON_PRONOC"
-}
-
 for {set k 0} {$k < $::env(PITON_NUM_TILES)} {incr k} {
-  if {[info exists "::env(RTL_LAGARTO$k)"]} {
-    append ALL_DEFAULT_VERILOG_MACROS " RTL_LAGARTO$k"
-  }
   if {[info exists "::env(RTL_ARIANE$k)"]} {
     append ALL_DEFAULT_VERILOG_MACROS " RTL_ARIANE$k"
   }
@@ -194,8 +128,8 @@ set ALL_RTL_IMPL_FILES [pyhp_preprocess ${ALL_RTL_IMPL_FILES}]
 set ALL_INCLUDE_FILES [pyhp_preprocess ${ALL_INCLUDE_FILES}]
 
 
-if  {[info exists ::env(PITON_ARIANE)] || $::env(PITON_LAGARTO) != "0"} {
-  puts "INFO: compiling DTS and bootroms for Ariane/Lagarto (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
+if  {[info exists ::env(PITON_ARIANE)]} {
+  puts "INFO: compiling DTS and bootroms for Ariane (MAX_HARTS=$::env(PITON_NUM_TILES), UART_FREQ=$env(CONFIG_SYS_FREQ))..."
   
   
   # credit goes to https://github.com/PrincetonUniversity/openpiton/issues/50 
@@ -247,14 +181,8 @@ if  {[info exists ::env(PITON_ARIANE)] || $::env(PITON_LAGARTO) != "0"} {
   # two targets per hart (M,S) and two interrupt sources (UART, DMA Ethernet(2))
   set NUM_TARGETS [expr 2*$::env(PITON_NUM_TILES)]
   set NUM_SOURCES 3
-  if  {[info exists ::env(PITON_ARIANE)]} {
   puts "INFO: generating PLIC for Ariane ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
   cd $::env(ARIANE_ROOT)/src/rv_plic/rtl
-  }
-  if  { $::env(PITON_LAGARTO) != "0"} {
-  puts "INFO: generating PLIC for Lagarto ($NUM_TARGETS targets, $NUM_SOURCES sources)..."
-  cd $::env(LAGARTO_ROOT)/src/rv_plic/rtl
-  }
   exec ./gen_plic_addrmap.py -t $NUM_TARGETS -s $NUM_SOURCES > plic_regmap.sv
 
   cd $TMP
@@ -264,8 +192,7 @@ if  {[info exists ::env(PITON_ARIANE)] || $::env(PITON_LAGARTO) != "0"} {
 }
 
 if { [info exists ::env(BROM_ONLY) ]} {
-	puts "Boot ROM created. Finishing protosyn..."
-	exec kill [pid]
-	exec kill $::env(PROTOPID)
-}	
-
+  puts "Boot ROM created. Finishing protosyn..."
+  exec kill [pid]
+  exec kill $::env(PROTOPID)
+}

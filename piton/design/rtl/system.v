@@ -455,7 +455,6 @@ module system(
     input chipset_clk,
     input mc_clk,
     input mc_rstn,
-    input vpu_clk,
     // AXI Write Address Channel Signals
     output wire [`AXI4_ID_WIDTH     -1:0]    mem_axi_awid,
     output wire [`AXI4_ADDR_WIDTH   -1:0]    mem_axi_awaddr,
@@ -919,11 +918,6 @@ wire  [`PITON_NUM_TILES*2-1:0] irq;         // level sensitive IR lines, mip & s
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
 
-`ifdef PITON_LAGARTO
-// PMU
-wire  [27*(`PITON_NUM_TILES)-1:0] pmu_sig;
-`endif
-
 //////////////////////
 // Sequential Logic //
 //////////////////////
@@ -1354,11 +1348,6 @@ chip chip(
     ,.irq_i                         ( irq                        )  // level sensitive IR lines, mip & sip (async)
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
-
-`ifdef PITON_LAGARTO
-    // PMU
-    ,.pmu_sig_o                     ( pmu_sig                    )
-`endif
 );
 
 
@@ -2168,13 +2157,6 @@ chipset chipset(
     ,.irq_o                         ( irq                        ) // level sensitive IR lines, mip & sip (async)
 `endif // ifdef PITON_RV64_PLIC
 `endif // ifdef PITON_RV64_PLATFORM
-
-`ifdef PITON_LAGARTO    
-    // PMU
-    ,.pmu_sig_i                     ( pmu_sig                    )
-    ,.pmu_clk                       ( core_ref_clk               )
-    ,.vpu_clk                       ( vpu_clk                    )
-`endif
 
 );
 
