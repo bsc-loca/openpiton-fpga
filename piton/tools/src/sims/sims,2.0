@@ -3159,8 +3159,6 @@ sub parse_args
   }
 
 
-
-
 my $mmc_num= $ENV{PITON_EXTRA_MEMS};
 my $mmc_num_tmp = ($mmc_num==0)? 1 : $mmc_num;
 my $map_file ="
@@ -3609,7 +3607,7 @@ VERILOG COMPILATION RELATED
     -mgui_build
     	   this specifies that the simulator creates additional traffic monitoring files that can
     	   be used for traffic visualization using ManyGUI tool (https://github.com/kevinjohnmartin/manyGUI)
-    
+
     -metro_mpi_build
            this specifies that the simulator builds a verilator model, accelared using MPI. 
            The default is off. 
@@ -3617,22 +3615,22 @@ VERILOG COMPILATION RELATED
     -metro_mpi_build_args=OPTION
            metro_mpi (Verilator) compile options. multiple options can be specified using
            multiple such arguments.           
-           
+
     -hbm_lat
            this specifies that the simulator considers an estimated latency for packets read from HBM memory.
            without specifying this flag, the HBM memory (fake-memory module) has an ideal single-cycle read latency. 
-           
+
     -multimc=CHANNEL_NUMBER
            default is zero and embeds only one memory controller (MC) in chipset.  Given any inteher number
            greater than zero (n) results in n MCs connected to routers located in edges. Each router located in
            edge of the Mesh, can have maximum of one MC. The list of edge routers having MC should be given 
            using multimc_indices argument.
-           
+
     -multimc_indices'=             
            This defines where each MC should be placed. The input is the list of edge tile's IDs seprated by ','
            the tile ID is (Y_index * x_tiles) + X_index; The number of edge routers in multimc_indices should be
            equal to multimc
-           
+
 VERILOG RUNTIME RELATED
 
     -vcs_run/-novcs_run
