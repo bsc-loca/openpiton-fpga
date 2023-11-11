@@ -89,7 +89,7 @@ export LIBRARY_PATH=$RISCV/lib
 export LD_LIBRARY_PATH=$RISCV/lib
 export C_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
 export CPLUS_INCLUDE_PATH=$RISCV/include:$VERILATOR_ROOT/include
-export MODELSIM_HOME=/eda/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4 
+export MODELSIM_HOME=/apps/Siemens/2022-23/RHELx86/QUESTA-CORE-PRIME_2022.4
 
 # source OpenPiton setup script
 # note: customize this script to reflect your tool setup
