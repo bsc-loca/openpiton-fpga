@@ -642,7 +642,6 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
   `else
     .phy_init_done      (sys_rst_n),
   `endif
-    .axi_id_deadlock    (),
 
     .src_bridge_vr_noc2_val(ncmem_flit_in_val),
     .src_bridge_vr_noc2_dat(ncmem_flit_in_data),
@@ -1550,7 +1549,6 @@ noc_axi4_bridge #(
     .rst_n              (sys_rst_n),
     .uart_boot_en       (1'b0),
     .phy_init_done      (noc_axi4_bridge_init_done),
-    .axi_id_deadlock    (),
 
     .src_bridge_vr_noc2_rdy(mcx_flit_in_rdy [idx]),
     .src_bridge_vr_noc2_val(mcx_flit_in_val [idx]),

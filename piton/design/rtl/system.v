@@ -756,23 +756,27 @@ module system(
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
 
-    output  [12:0]                          uart_axi_awaddr,
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
-    output  [31:0]                          uart_axi_wdata,
-    output  [3:0 ]                          uart_axi_wstrb,
+
+    output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_wdata,
+    output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] uart_axi_wstrb,
     output                                  uart_axi_wvalid,
     input                                   uart_axi_wready,
-    input  [1:0]                            uart_axi_bresp,
+
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   uart_axi_bresp,
     input                                   uart_axi_bvalid,
     output                                  uart_axi_bready,
-    output  [12:0]                          uart_axi_araddr,
+
+    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_araddr,
     output                                  uart_axi_arvalid,
     input                                   uart_axi_arready,
-    input  [31:0]                           uart_axi_rdata,
-    input  [1:0]                            uart_axi_rresp,
+
+    input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_rdata,
+    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   uart_axi_rresp,
     input                                   uart_axi_rvalid,
-    output                                  uart_axi_rready,    
+    output                                  uart_axi_rready,
     input                                   uart_irq
     
 `endif //`ifndef PITONSYS_MEEP
@@ -1454,23 +1458,27 @@ passthru passthru(
 `endif // endif PITONSYS_INC_PASSTHRU
 
 `ifndef PITONSYS_MEEP
-wire  [12:0]      uart_axi_awaddr;
-wire              uart_axi_awvalid;
-wire              uart_axi_awready;
-wire  [31:0]      uart_axi_wdata;
-wire  [3:0 ]      uart_axi_wstrb;
-wire              uart_axi_wvalid;
-wire              uart_axi_wready;
-wire  [1:0]       uart_axi_bresp;
-wire              uart_axi_bvalid;
-wire              uart_axi_bready;
-wire  [12:0]      uart_axi_araddr;
-wire              uart_axi_arvalid;
-wire              uart_axi_arready;
-wire  [31:0]      uart_axi_rdata;
-wire  [1:0]       uart_axi_rresp;
-wire              uart_axi_rvalid;
-wire              uart_axi_rready;
+    wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr;
+    wire                                  uart_axi_awvalid;
+    wire                                  uart_axi_awready;
+
+    wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_wdata;
+    wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] uart_axi_wstrb;
+    wire                                  uart_axi_wvalid;
+    wire                                  uart_axi_wready;
+
+    wire  [`C_M_AXI_LITE_RESP_WIDTH-1:0]  uart_axi_bresp;
+    wire                                  uart_axi_bvalid;
+    wire                                  uart_axi_bready;
+
+    wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_araddr;
+    wire                                  uart_axi_arvalid;
+    wire                                  uart_axi_arready;
+
+    wire  [`C_M_AXI_LITE_DATA_WIDTH-1:0]  uart_axi_rdata;
+    wire  [`C_M_AXI_LITE_RESP_WIDTH-1:0]  uart_axi_rresp;
+    wire                                  uart_axi_rvalid;
+    wire                                  uart_axi_rready;
 `endif
 
 

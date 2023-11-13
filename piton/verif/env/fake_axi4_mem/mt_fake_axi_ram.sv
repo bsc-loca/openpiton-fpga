@@ -77,7 +77,6 @@ module mt_fake_axi_ram (
         .rst_n              ( rst_n ), 
         .uart_boot_en       ( 1'b0  ),
         .phy_init_done      ( 1'b1  ),
-        .axi_id_deadlock    (       ),
 
         .src_bridge_vr_noc2_val ( noc_valid_in  ),
         .src_bridge_vr_noc2_dat ( noc_data_in   ),
