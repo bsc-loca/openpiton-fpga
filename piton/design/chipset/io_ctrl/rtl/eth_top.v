@@ -422,7 +422,6 @@ noc_axi4_bridge #(
     .rst_n              (net_axi_arstn   ), 
     .uart_boot_en       (1'b0       ),
     .phy_init_done      (1'b1       ),
-    .axi_id_deadlock    (           ),
 
     .src_bridge_vr_noc2_val(afifo_netbridge_val ),
     .src_bridge_vr_noc2_dat(afifo_netbridge_data),
