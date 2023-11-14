@@ -148,11 +148,6 @@ foreach impl_file $ALL_RTL_IMPL_FILES {
         set_property "used_in_implementation" "1" $file_obj
         set_property "used_in_simulation" "1" $file_obj
         set_property "used_in_synthesis" "1" $file_obj
-       
-        # Outside the if else tree from above	
-        if {[file extension $impl_file] == ".vhd"} { 
-          set_property "file_type" "VHDL" $file_obj
-        }
     }
 }
 foreach coe_file $ALL_COE_FILES {
