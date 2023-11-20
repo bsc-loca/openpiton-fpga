@@ -339,10 +339,8 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
     jid = None
     if (tool == "vivado"):
         print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
-        print(proj_log, proj_script, design_data["PATH"], board,slurm, 1, 4096, "1:00:00", jname, dep_list)
         jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
                          slurm, 1, 4096, "1:00:00", jname, dep_list)
-
     elif (tool == "ise") :
         jid = run_ise(proj_log, proj_script, design_data["PATH"], board, \
                       slurm, 1, 4096, "1:00:00", jname, dep_list)
@@ -648,7 +646,7 @@ def makeDefList(options):
         defines.append("PITONSYS_MC_SRAM")
 
     # --no-ddr option
-    if (options.no_ddr == True) or (options.board == "piton_board") or options.board == "alveou55c":
+    if (options.no_ddr == True) or (options.board == "piton_board"):
         defines.append("PITONSYS_NO_MC")
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")

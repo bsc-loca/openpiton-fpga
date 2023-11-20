@@ -188,7 +188,7 @@ module chip(
 `endif
 );
 
-// /home/sshah/OpenPiton/meep_openpiton/piton/design/./xilinx/alveou280/devices_ariane.xml
+// /home/sshah/OpenPiton/meep_openpiton/piton/design/./xilinx/alveou55c/devices_ariane.xml
 
 
    ///////////////////////
