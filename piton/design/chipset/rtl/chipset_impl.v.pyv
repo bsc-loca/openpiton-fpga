@@ -1984,7 +1984,7 @@ uart_top        uart_top (
 		// in PITONSYS_MEEP the CLK, RST, and interrupts are inputs to this core
 		.net_axi_clk        (eth_axi_aclk   ),		
 		.net_axi_arstn      (eth_axi_arstn  ),		
-		.net_axi_intr       (eth_irq        ),
+		.unsync_net_int     (eth_irq        ),
         `ifdef ETHERNET_DMA
            .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
            .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
@@ -2117,7 +2117,7 @@ fake_uart fake_uart (
 
 `ifdef PITON_ARIANE
 
-    wire [NUM_INTR_ETH+1-1:0] irq_sources, irq_le;
+    wire [NUM_INTR_RISCV-1:0] irq_sources, irq_le;
     // 0:level 1:edge
     // Eth is edge, Uart is level
     wire [NUM_INTR_ETH-1:0] irq_eth_le = 0;
@@ -2250,7 +2250,7 @@ print(str)
 
 `elsif PITON_LAGARTO
 
-    wire [NUM_INTR_ETH+1-1:0] irq_sources, irq_le;
+    wire [NUM_INTR_RISCV-1:0] irq_sources, irq_le;
     // 0:level 1:edge
     // Eth is edge, Uart is level
     wire [NUM_INTR_ETH-1:0] irq_eth_le = 0;
