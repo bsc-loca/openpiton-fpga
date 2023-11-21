@@ -646,7 +646,7 @@ def makeDefList(options):
         defines.append("PITONSYS_MC_SRAM")
 
     # --no-ddr option
-    if (options.no_ddr == True) or (options.board == "piton_board"):
+    if (options.no_ddr == True) or (options.board == "piton_board") or  (options.board == "alveou55c"):
         defines.append("PITONSYS_NO_MC")
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
@@ -733,7 +733,7 @@ def makeDefList(options):
 
     # Adding alveou280 for alveou55c
     if options.board == "alveou55c":
-        defines.append("ALVEOU280_BOARD")
+        os.environ['ALVEOU55C_BOARD'] = "TRUE"
 
     # --eth CL options is default for chipset
     os.environ['FPGA_ETH'] = "0"

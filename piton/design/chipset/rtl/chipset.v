@@ -1298,6 +1298,7 @@ end
             `endif // endif PITONSYS_NO_MC
 
             `ifndef ALVEOU280_BOARD
+            `ifndef ALVEOU55C_BOARD             
             `ifdef PITONSYS_SPI
                 // SPI system clock
                 , .sd_sys_clk(sd_sys_clk)
@@ -1305,8 +1306,8 @@ end
             `else
                 // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
                , .vpu_clk(vpu_clk)
+            `endif // ifndef ALVEOU55C 
             `endif
-
             // Chipset<->passthru clocks
             `ifdef PITONSYS_INC_PASSTHRU
                 // Chipset to passthru source synchronous clock

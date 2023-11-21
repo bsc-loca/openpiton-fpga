@@ -104,21 +104,8 @@ foreach prj_file ${ALL_FILES} {
 }
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
-#Generating IP cores for Alveou55c board
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU55C_BOARD" } {
-  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
-  source $DV_ROOT/design/chipset/meep/meep_shell_u55c.tcl 
-
-  # Generating Ethernet system
-  source $DV_ROOT/design/chipset/xilinx/alveou55c/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
-  cr_bd_Eth_CMAC_syst ""
-  make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
-  add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
-
-}
-
-#Generating IP cores for Alveo280 board
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
+#Generating IP cores for Alveo280 board or Alveou55c board
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" || $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU55C_BOARD" } {
 
   # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
