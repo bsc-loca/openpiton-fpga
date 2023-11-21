@@ -37,4 +37,4 @@ generate:
     pyhp_preprocess:
         generator: pyhp_preprocess_gen
         parameters:
-            process_me : [[chip.sv.pyv, chip.tmp.sv]]
+            process_me : [[chip.v.pyv, chip.tmp.v]]
