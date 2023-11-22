@@ -212,9 +212,6 @@ module system(
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
 `ifndef F1_BOARD
-
-    `ifndef PITONSYS_MEEP
-
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
     `ifdef PITONSYS_DDR4
@@ -262,7 +259,6 @@ module system(
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
     `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
-    `endif //ALVEO
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals
@@ -1456,31 +1452,6 @@ passthru passthru(
     // with the chip is concerned
 );
 `endif // endif PITONSYS_INC_PASSTHRU
-
-`ifndef PITONSYS_MEEP
-    wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr;
-    wire                                  uart_axi_awvalid;
-    wire                                  uart_axi_awready;
-
-    wire [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_wdata;
-    wire [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] uart_axi_wstrb;
-    wire                                  uart_axi_wvalid;
-    wire                                  uart_axi_wready;
-
-    wire  [`C_M_AXI_LITE_RESP_WIDTH-1:0]  uart_axi_bresp;
-    wire                                  uart_axi_bvalid;
-    wire                                  uart_axi_bready;
-
-    wire [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_araddr;
-    wire                                  uart_axi_arvalid;
-    wire                                  uart_axi_arready;
-
-    wire  [`C_M_AXI_LITE_DATA_WIDTH-1:0]  uart_axi_rdata;
-    wire  [`C_M_AXI_LITE_RESP_WIDTH-1:0]  uart_axi_rresp;
-    wire                                  uart_axi_rvalid;
-    wire                                  uart_axi_rready;
-`endif
-
 
 `ifdef PITONSYS_MEEP
 //wire chipset_clk;
