@@ -1,4 +1,3 @@
-// Modified by Barcelona Supercomputing Center on March 3rd, 2022
 // ========== Copyright Header Begin ============================================
 // Copyright (c) 2015 Princeton University
 // All rights reserved.
@@ -40,10 +39,9 @@
 //==================================================================================================
 
 `include "define.tmp.h"
-// These defines are moved to piton/design/include/define.h.pyv due to support of MEEP shell (used in accelerator_mod.sv)
-// `define C_M_AXI_LITE_DATA_WIDTH  `NOC_DATA_WIDTH
-// `define C_M_AXI_LITE_ADDR_WIDTH  `NOC_DATA_WIDTH
-// `define C_M_AXI_LITE_RESP_WIDTH  2
+`define C_M_AXI_LITE_DATA_WIDTH  `NOC_DATA_WIDTH
+`define C_M_AXI_LITE_ADDR_WIDTH  `NOC_DATA_WIDTH
+`define C_M_AXI_LITE_RESP_WIDTH  2
 // this is non-standard
 `define C_M_AXI_LITE_SIZE_WIDTH  3
 
@@ -433,41 +431,6 @@ localparam STORE_ACK = 1'd1;
         m_axi_rready = (r_resp_buf_status_f == BUF_STATUS_WAITRESP);
         m_axi_bready = (w_resp_buf_status == BUF_STATUS_WAITRESP);
     end
-
-   // A set of wires for debug purposes
-   wire [`MSG_SRC_CHIPID_WIDTH-1:0] r_req_src_chipid = r_req_buf_header2_f[`MSG_SRC_CHIPID_];
-   wire [`MSG_SRC_X_WIDTH     -1:0] r_req_src_x      = r_req_buf_header2_f[`MSG_SRC_X_];
-   wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_src_y      = r_req_buf_header2_f[`MSG_SRC_Y_];
-   wire [`MSG_SRC_FBITS_WIDTH -1:0] r_req_src_fbits  = r_req_buf_header2_f[`MSG_SRC_FBITS_];
-   wire [`MSG_SRC_X_WIDTH     -1:0] r_req_ini_x      = r_req_buf_header2_f[`MSG_INI_X_];
-   wire [`MSG_SRC_Y_WIDTH     -1:0] r_req_ini_y      = r_req_buf_header2_f[`MSG_INI_Y_];
-
-   wire [`MSG_DST_CHIPID_WIDTH-1:0] r_req_dst_chipid = r_req_buf_header0_f[`MSG_DST_CHIPID];
-   wire [`MSG_DST_X_WIDTH     -1:0] r_req_dst_x      = r_req_buf_header0_f[`MSG_DST_X];
-   wire [`MSG_DST_Y_WIDTH     -1:0] r_req_dst_y      = r_req_buf_header0_f[`MSG_DST_Y];
-   wire [`MSG_DST_FBITS_WIDTH -1:0] r_req_dst_fbits  = r_req_buf_header0_f[`MSG_DST_FBITS];
-
-   wire [`MSG_TYPE_WIDTH      -1:0] r_msg_type       = r_req_buf_header0_f[`MSG_TYPE];
-   wire [`MSG_LENGTH_WIDTH    -1:0] r_msg_length     = r_req_buf_header0_f[`MSG_LENGTH];
-   wire [`MSG_DATA_SIZE_WIDTH -1:0] r_data_size      = r_req_buf_header1_f[`MSG_DATA_SIZE_];
-   wire [`PHY_ADDR_WIDTH      -1:0] r_addr           = r_req_buf_header1_f[`MSG_ADDR_];
-
-   wire [`MSG_SRC_CHIPID_WIDTH-1:0] w_req_src_chipid = w_req_buf_header2_f[`MSG_SRC_CHIPID_];
-   wire [`MSG_SRC_X_WIDTH     -1:0] w_req_src_x      = w_req_buf_header2_f[`MSG_SRC_X_];
-   wire [`MSG_SRC_Y_WIDTH     -1:0] w_req_src_y      = w_req_buf_header2_f[`MSG_SRC_Y_];
-   wire [`MSG_SRC_FBITS_WIDTH -1:0] w_req_src_fbits  = w_req_buf_header2_f[`MSG_SRC_FBITS_];
-   wire [`MSG_SRC_X_WIDTH     -1:0] w_req_ini_x      = w_req_buf_header2_f[`MSG_INI_X_];
-   wire [`MSG_SRC_Y_WIDTH     -1:0] w_req_ini_y      = w_req_buf_header2_f[`MSG_INI_Y_];
-
-   wire [`MSG_DST_CHIPID_WIDTH-1:0] w_req_dst_chipid = w_req_buf_header0_f[`MSG_DST_CHIPID];
-   wire [`MSG_DST_X_WIDTH     -1:0] w_req_dst_x      = w_req_buf_header0_f[`MSG_DST_X];
-   wire [`MSG_DST_Y_WIDTH     -1:0] w_req_dst_y      = w_req_buf_header0_f[`MSG_DST_Y];
-   wire [`MSG_DST_FBITS_WIDTH -1:0] w_req_dst_fbits  = w_req_buf_header0_f[`MSG_DST_FBITS];
-
-   wire [`MSG_TYPE_WIDTH      -1:0] w_msg_type       = w_req_buf_header0_f[`MSG_TYPE];
-   wire [`MSG_LENGTH_WIDTH    -1:0] w_msg_length     = w_req_buf_header0_f[`MSG_LENGTH];
-   wire [`MSG_DATA_SIZE_WIDTH -1:0] w_data_size      = w_req_buf_header1_f[`MSG_DATA_SIZE_];
-   wire [`PHY_ADDR_WIDTH      -1:0] w_addr           = w_req_buf_header1_f[`MSG_ADDR_];
 
     // Create response header
     assign r_resp_buf_header0_next[`MSG_DST_CHIPID] = r_req_buf_header2_f[`MSG_SRC_CHIPID_];

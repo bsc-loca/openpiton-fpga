@@ -39,14 +39,12 @@
 
 import os, sys, re, make_mem_map, subprocess, stat, time
 import image2stream as i2s
-import datetime as dt
 from optparse import OptionParser
 from fpga_lib import *
 from dbg import *
 
 DV_ROOT = os.environ['DV_ROOT']
 MODEL_DIR = os.environ['MODEL_DIR']
-MEEP_DIR = os.environ['MEEP_DIR']
 DESIGN_BLOCK_LIST = os.path.join(DV_ROOT, "tools/src/proto/block.list")
 BOARD_TOOL_LIST = os.path.join(DV_ROOT, "tools/src/proto/board.list")
 PROJECT_BUILD_LOG = "make_project.log"
@@ -105,7 +103,7 @@ def usage():
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
-    print("              Implement design with HBM memory going first (meep entity)", file=sys.stderr)
+    print("              Implement design with HBM memory going first", file=sys.stderr)
     print("\n       --multimc <number of memory controller ports>", file=sys.stderr)
     print("              Implement design with multiple connections to system memory", file=sys.stderr)
     print("\n       --multimc_indices <comma separated list of indices connected to MCs>", file=sys.stderr)
@@ -114,14 +112,6 @@ def usage():
     print("              Add Ethernet controller to implementation", file=sys.stderr)
     print("\n       --ethport <number>", file=sys.stderr)
     print("              Define board-level Ethernet port number", file=sys.stderr)
-    print("\n       --brom-only", file=sys.stderr)
-    print("              Create the bootrom binary only", file=sys.stderr)
-    print("\n       --debug-brom", file=sys.stderr)
-    print("              Create PCIe access to the boot ROM. Only available with meep option", file=sys.stderr)
-    print("\n       --ncmem", file=sys.stderr)
-    print("              Create an alias of the main memory bypassing the cache. Flexible with meep option, otherwise is enabled.", file=sys.stderr)    
-    print("\n       --sram", file=sys.stderr)
-    print("              Create exchange SRAM. Flexible with meep option, otherwise is enabled.", file=sys.stderr)    
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -154,10 +144,6 @@ def usage():
     print("              Run FPGA flow to a specified step (including). Available options are:", file=sys.stderr)
     print("                  project", file=sys.stderr)
     print("                  impl", file=sys.stderr)
-    print("\n       --vnpm", file=sys.stderr)
-    print("\n            Run implementation and bitstrean via GNU Make", file=sys.stderr)
-    print("\n       --meep", file=sys.stderr)
-    print("\n            Generate a file list and a define list to called by the MEEP Shell project flow", file=sys.stderr)    
     print("\n       --oled <string>", file=sys.stderr)
     print("\n            String to be displayed on OLED display.", file=sys.stderr)
     print("\n            (Genesys2 and nexysVideo boards only", file=sys.stderr)
@@ -325,7 +311,6 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
         os.environ['PROTOSYN_RUNTIME_ETHPORT'] = "1"
     jid = None
     if (tool == "vivado"):
-        print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
         jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
                          slurm, 1, 4096, "1:00:00", jname, dep_list)
     elif (tool == "ise") :
@@ -337,7 +322,7 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
     return jid
 
 
-def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep_list, vivado_mode):
+def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep_list):
     prev_dir = os.getcwd()
 
     os.chdir(work_dir)
@@ -366,18 +351,6 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
     #dname = board + "_piton"
     #os.chdir(dname)
     print_info("Running FPGA implementation down to bitstream generation")
-
-    if (vivado_mode == False):
-        os.environ["VIVADO_NON_PROJECT_MODE"] = "0"
-        print_info("Running Vivdo in project mode")
-    else:
-        os.environ["VIVADO_NON_PROJECT_MODE"] = "1"
-        print_info("Running Vivado in non-project mode with creation of DCP in $PITON_ROOT/dcp")
-
-    now_time = dt.datetime.now()
-    timeStampStr = now_time.strftime("%d-%b-%Y %H:%M")
-    print_info("Starting FPGA implementation at %s" % timeStampStr)
-
     design_board_dir = os.path.join(design_data["PATH"], board)
     impl_log = os.path.join(log_dir, PROJECT_IMPL_LOG)
     impl_flow = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/impl_flow.tcl")
@@ -393,42 +366,6 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
     # Copy sw defines for Ethernet core to proper place
     if board == "alveou280" and eth:
       os.system('cp -rf $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
-
-    os.chdir(prev_dir)
-
-    return jid
-
-
-def makeMEEPflow(board, design_data, work_dir, log_dir, slurm, dep_list, def_list):
-    prev_dir = os.getcwd()
-
-    os.chdir(MEEP_DIR)
-
-    # Generate additional defines file that will be sourced in tcl script
-    f = open("tcl/additional_defines.tcl", "w")
-    print("set PROTOSYN_RUNTIME_DEFINES \"%s\"" % ' '.join(def_list), file=f)
-    f.close()
-
-    os.chdir(work_dir)
-
-    tool = find_board_tool(board)
-
-    #os.system('cp -r $DV_ROOT/tools/src/proto/%s/* .' % board)
-    #os.system('cp -r -n $DV_ROOT/tools/src/proto/common/* .')
-    print_info("Building a project for design '%s' for MEEP '%s'" % (design_data["ID"],board))
-    proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
-    proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
-    jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
-    setUARTXilinxFreq(board, design_data)
-    # Passing parameter to TCL
-    if board == "alveou280" :
-        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
-        print_info("HBM is defined as primary system RAM")
-    jid = None
-    if (tool == "vivado"):
-        print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
-        jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
-                         slurm, 1, 4096, "1:00:00", jname, dep_list)
 
     os.chdir(prev_dir)
 
@@ -465,7 +402,7 @@ def checkCmdOptions(options):
     if options.board == "f1":
         design_data = find_design_block("piton_aws")
     else:
-        design_data = find_design_block(options.design, options.meep_mode)
+        design_data = find_design_block(options.design)
     if (design_data == None):
         print_error("Could not find design module '" + options.design + "'")
         usage()
@@ -548,8 +485,6 @@ def setParserOptions(parser):
     parser.add_option("--bram-test", dest="test_name", action="store")
     parser.add_option("--verdi-dbg", dest="verdi_dbg", action="store_true", default=False)
     parser.add_option("--from", dest="from_step", action="store", default=None)
-    parser.add_option("--vnpm", dest="vivado_mode", action="store_true", default=False)
-    parser.add_option("--meep", dest="meep_mode", action="store_true", default=False)
     parser.add_option("--to", dest="to_step", action="store", default=None)
     parser.add_option("--no-ddr", dest="no_ddr", action="store_true", default=False)
     parser.add_option("--hbm", dest="hbm", action="store_true", default=False)
@@ -557,10 +492,6 @@ def setParserOptions(parser):
     parser.add_option("--multimc_indices", dest="multimc_indices", action="store", default=None)
     parser.add_option("--eth", dest="eth", action="store_true", default=False)
     parser.add_option("--ethport", dest="ethport", action="store", default=0)
-    parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
-    parser.add_option("--sram", dest="sram", action="store_true", default=False)
-    parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
-    parser.add_option("--debug-brom", dest="debug_brom", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
     parser.add_option("--uart-reset", dest="uart_reset", action="store_true", default=False)
     parser.add_option("--asic-rtl", dest="asic_rtl", action="store_true", default=False)
@@ -595,16 +526,6 @@ def makeDefList(options):
 
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
-    if (options.meep_mode == True):
-        defines.append("PITONSYS_MEEP")
-        if (options.debug_brom == True):
-            defines.append("DEBUG_ROM")
-        if (options.eth):
-            defines.append("ETHERNET_DMA")
-        if (options.ncmem):
-            defines.append("PITON_NONCACH_MEM")
-        if (options.sram):
-            defines.append("PITONSYS_MC_SRAM")
     elif options.board == "alveou280":
         defines.append("PITON_NONCACH_MEM")
         defines.append("PITONSYS_MC_SRAM")
@@ -845,7 +766,6 @@ def main():
     run_fpga_impl           = True
     run_gen_test_bram       = False
     run_f1_impl             = False
-    run_MEEP_flow           = False
 
     if options.test_name != None:
         run_sim             = True
@@ -866,13 +786,6 @@ def main():
         run_map_test        = True
         run_make_project    = False
         run_fpga_impl       = False
-
-    if options.meep_mode == True:
-        run_MEEP_flow           = True
-        run_make_project        = False
-        run_fpga_impl           = False
-        run_sim                 = False # maybe change later
-        run_map_test            = False # maybe change later
 
     if options.board == "f1":
         run_f1_impl             = True
@@ -1177,14 +1090,7 @@ def main():
         if int(options.jobs)>1:
             print_info("Using %d jobs in Vivado" % int(options.jobs))
         os.environ['NUM_VIVADO_JOBS']   = str(int(options.jobs))
-        jid = runImplFlow(options.board, options.eth, design_data, rc_dir.work, rc_dir.log, defines, options.slurm, dep_list, options.vivado_mode)
-        if jid != None:
-            dep_list.append(jid)
-
-    # MEEP            
-    if run_MEEP_flow:
-        os.environ['MEEP_SHELL']   = str(int(1))
-        jid = makeMEEPflow(options.board, design_data, rc_dir.work, rc_dir.log, options.slurm, None, defines)
+        jid = runImplFlow(options.board, options.eth, design_data, rc_dir.work, rc_dir.log, defines, options.slurm, dep_list)
         if jid != None:
             dep_list.append(jid)
 
@@ -1212,23 +1118,15 @@ def main():
     if (options.slurm and options.swait) or (not options.slurm):
         if run_make_project:
             print_info("Checking Project Build results")
-            if options.brom_only:
-                print_info("Bootrom binary created")
-                exit_code = 0
- 
-            elif not buildProjectSuccess(rc_dir.log):
+            if not buildProjectSuccess(rc_dir.log):
                 exit_code = 1
 
         if run_fpga_impl:
             # check implementation only if project build was successfull
-            if (exit_code == 0) and (not options.vivado_mode):
+            if exit_code == 0:
                 print_info("Checking Project Implementation results")
                 if not implFlowSuccess(rc_dir.log, rc_dir.run, options.postroutephysopt):
                     exit_code = 1
-
-        now_time = dt.datetime.now()
-        timeStampStr = now_time.strftime("%d-%b-%Y %H:%M")
-        print_info("Check performed at %s" % timeStampStr)
 
     os.chdir(prev_dir)
 

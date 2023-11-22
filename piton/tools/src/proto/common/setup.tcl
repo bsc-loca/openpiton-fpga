@@ -47,14 +47,7 @@ set ISE_PROJECT_FILE "${PROJECT_DIR}/${PROJECT_NAME}.xise"
 # Combined variables from global, design, and board
 set ALL_INCLUDE_DIRS [concat ${GLOBAL_INCLUDE_DIRS} ${DESIGN_INCLUDE_DIRS}]
 
-set MEEP_RTL_FILES ""
-if { [info exists "::env(MEEP_SHELL)"] } {
-  set MEEP_RTL_FILES [list \
-    "${DV_ROOT}/design/chipset/meep_shell/accelerator_mod.sv" \
-  ]
-}
-
-set ALL_RTL_IMPL_FILES [concat ${DESIGN_RTL_IMPL_FILES} ${MEEP_RTL_FILES}] 
+set ALL_RTL_IMPL_FILES [concat ${DESIGN_RTL_IMPL_FILES}]
 
 set ALL_INCLUDE_FILES [concat ${GLOBAL_INCLUDE_FILES} ${DESIGN_INCLUDE_FILES}]
 
@@ -191,8 +184,3 @@ if  {[info exists ::env(PITON_ARIANE)]} {
   set ::env(PYTHONHOME) $tmp_PYTHONHOME
 }
 
-if { [info exists ::env(BROM_ONLY) ]} {
-  puts "Boot ROM created. Finishing protosyn..."
-  exec kill [pid]
-  exec kill $::env(PROTOPID)
-}

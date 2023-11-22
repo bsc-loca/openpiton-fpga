@@ -1,5 +1,4 @@
 #!/bin/bash
-# Modified by Barcelona Supercomputing Center on March 3rd, 2022
 # Copyright 2018 ETH Zurich and University of Bologna.
 # Copyright and related rights are licensed under the Solderpad Hardware
 # License, Version 0.51 (the "License"); you may not use this file except in
@@ -52,10 +51,8 @@ echo "make sure that you source this script in a bash shell in the root folder o
 
 if [ -z "$BASH" ] || [ ${0: -4} !=  "bash" ]
 then
-  #echo "not in bash ($0), aborting"
-  # Commentted out, as it is not really an issue and it may fail when running the CICD
-  echo "not in bash ($0)"
-  #return
+  echo "not in bash ($0), aborting"
+  return
 fi
 
 SCRIPTNAME=ariane_setup.sh
@@ -79,8 +76,9 @@ export ARIANE_ROOT=${PITON_ROOT}/piton/design/chip/tile/ariane/
 export CXX=g++ CC=gcc
 # customize this to a fast local disk
 
-if [ x$RISCV == x ]; then
-  export RISCV=/home/tools/openpiton/riscv_install
+if [ "$RISCV" ==  "" ]
+then
+  export RISCV=$HOME/scratch/riscv_install
 fi
 export VERILATOR_ROOT=$ARIANE_ROOT/tmp/verilator-4.014/
 

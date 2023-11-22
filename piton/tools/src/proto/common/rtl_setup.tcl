@@ -784,7 +784,3 @@ set CHIPSET_PRJ_IP_FILES [list \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_0/mig_a.prj" \
     "${DV_ROOT}/design/chipset/mc/xilinx/${BOARD}/ip_cores/mig_7series_axi4/mig_b.prj" \
 ]
-
-# if {[info exists ::env(PITON_ARIANE)]} {
-#   set CHIP_RTL_IMPL_FILES [concat ${CHIP_RTL_IMPL_FILES} ${ARIANE_RTL_IMPL_FILES}]
-# }

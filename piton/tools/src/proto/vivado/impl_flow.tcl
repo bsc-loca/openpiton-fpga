@@ -31,7 +31,6 @@
 
 # Boiler plate startup
 set DV_ROOT $::env(DV_ROOT)
-set g_number_of_jobs $::env(NUM_VIVADO_JOBS)
 source $DV_ROOT/tools/src/proto/vivado/setup.tcl
 
 # Get additional protosyn runtime defines
@@ -66,35 +65,6 @@ set_property -dict [list CONFIG.C_S_AXI_ACLK_FREQ_HZ_d "$UART_FREQ" CONFIG.C_S_A
 close_project
 open_project ${VIVADO_PROJECT_FILE}
 auto_detect_xpm
-proc synthesis { g_root_dir g_number_of_jobs } {
-
-        set number_of_jobs $g_number_of_jobs
-        reset_run synth_1
-        launch_runs synth_1 -jobs ${g_number_of_jobs}
-        puts "Waiting for the Out Of Context IPs to be synthesized..."
-        wait_on_run synth_1
-        open_run synth_1
-
-	set status [get_property STATUS [get_runs synth_1]]
-
-	if { $status == "synth_design Complete!"} {
-		file mkdir ${g_root_dir}/dcp
-        	write_checkpoint -force $g_root_dir/dcp/synthesis.dcp
-	} else {
-		puts "Synthesis didn't succeed"
-		exit 1
-	}	
-}
-
-
-if { $env(VIVADO_NON_PROJECT_MODE) eq "1" } {
-
-	puts "Project will be implemented in non-project mode. Do make implementation, make bitstream"
-        #TODO: Need to use the right directory to place the dcp file.	
-        synthesis $env(PITON_ROOT) $g_number_of_jobs
-
-} else { 
-
 # Launch implementation
 launch_run impl_1 -to_step write_bitstream -jobs $::env(NUM_VIVADO_JOBS)
 puts "INFO: Implementation launched for project '${PROJECT_NAME}'"
@@ -106,5 +76,4 @@ if {[get_property PROGRESS [get_runs impl_1]] != "100%"} {
     puts "ERROR: Implementation failed."
 } else {
     puts "INFO: Implementation passed!"
-}
 }

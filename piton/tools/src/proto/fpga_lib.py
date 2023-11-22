@@ -44,7 +44,6 @@ PROJECT_BUILD_LOG = "make_project.log"
 PROJECT_IMPL_LOG = "implementation.log"
 DV_ROOT = os.environ['DV_ROOT']
 MODEL_DIR = os.environ['MODEL_DIR']
-MEEP_DIR = os.environ['MEEP_DIR']
 DESIGN_BLOCK_LIST = os.path.join(DV_ROOT, "tools/src/proto/block.list")
 MAP_MODULE_NAME = "storage_addr_trans.v"
 NOC_PAYLOAD_WIDTH = 512
@@ -168,7 +167,7 @@ class ProtoDir:
         proj_name = board + "_" + design
         self.run = os.path.join(self.work, proj_name, proj_name + ".runs")
 
-def find_design_block(design_block, meep_mode=False):
+def find_design_block(design_block):
     fp = open(DESIGN_BLOCK_LIST, 'r')
     for line in fp:
         # Check for comments
@@ -184,18 +183,7 @@ def find_design_block(design_block, meep_mode=False):
                 for board_string in line_split[2].split(';'):
                     if board_string != "":
                         board_string_split = board_string.split(',')
-                        board_freq = board_string_split[1]
-                        print("Defined %s clock frequency for %s board" % (design_block, board_string_split[0]), end="")
-                        if meep_mode:
-                          print(" under MEEP shell", end="")
-                          facc = open(os.path.join(MEEP_DIR, "accelerator_def.csv"), 'r')
-                          for acc_line in facc:
-                            acc_feature = re.split(',|\n', acc_line)
-                            if len(acc_feature) > 2:
-                              if acc_feature[2] == 'chipset_clk' : board_freq = str(int( float(acc_feature[1])/1e6 ))
-                          facc.close()
-                        print(": %s MHz" % board_freq)
-                        board_support[board_string_split[0]] = {"FREQ": board_freq,
+                        board_support[board_string_split[0]] = {"FREQ": board_string_split[1],
                                                                 "DDRSIZE": board_string_split[2]}
                 block_data["BOARDS"] = board_support
 

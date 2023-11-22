@@ -34,10 +34,8 @@ module uart_top (
     input                                   axi_clk,
     input                                   rst_n,
    
-    `ifndef PITONSYS_MEEP
     output                                  uart_tx,
     input                                   uart_rx,
-    `endif
     output                  uart_interrupt,
 
     input                                   uart_lb_sw,
@@ -70,31 +68,6 @@ module uart_top (
     input                                   xbar_uart_noc3_valid,
     input [`NOC_DATA_WIDTH-1:0]             xbar_uart_noc3_data,     
     output                                  uart_xbar_noc3_ready
-
-    `ifdef PITONSYS_MEEP
-                                            ,
-    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
-    output                                  uart_axi_awvalid,
-    input                                   uart_axi_awready,
-
-    output [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_wdata,
-    output [`C_M_AXI_LITE_DATA_WIDTH/8-1:0] uart_axi_wstrb,
-    output                                  uart_axi_wvalid,
-    input                                   uart_axi_wready,
-
-    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   uart_axi_bresp,
-    input                                   uart_axi_bvalid,
-    output                                  uart_axi_bready,
-
-    output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_araddr,
-    output                                  uart_axi_arvalid,
-    input                                   uart_axi_arready,
-
-    input  [`C_M_AXI_LITE_DATA_WIDTH-1:0]   uart_axi_rdata,
-    input  [`C_M_AXI_LITE_RESP_WIDTH-1:0]   uart_axi_rresp,
-    input                                   uart_axi_rvalid,
-    output                                  uart_axi_rready
-    `endif
 );
 
 wire  uart16550_tx;
@@ -241,10 +214,8 @@ noc_axilite_bridge #(
     
 );
 // control of loopback
-`ifndef PITONSYS_MEEP
 assign uart_tx        = uart_lb_sw ? uart_rx  : uart16550_tx;
 assign uart16550_rx   = uart_rx; 
-`endif 
 
 `ifdef PITON_BOARD
   assign init_done = 1'b1;
@@ -519,26 +490,6 @@ uart_mux   uart_mux (
       assign s_axi_bresp   = 2'h0;
 
       assign uart_interrupt = 1'b0;
-    `elsif PITONSYS_MEEP
-    
-      assign uart_axi_awaddr = s_axi_awaddr;
-      assign uart_axi_awvalid = s_axi_awvalid;
-      assign s_axi_awready = uart_axi_awready;
-      assign uart_axi_wdata =  s_axi_wdata;
-      assign uart_axi_wstrb  = s_axi_wstrb;
-      assign uart_axi_wvalid = s_axi_wvalid; 
-      assign s_axi_wready = uart_axi_wready;
-      assign s_axi_bresp   = uart_axi_bresp;
-      assign s_axi_bvalid  = uart_axi_bvalid;
-      assign uart_axi_bready = s_axi_bready;
-      assign uart_axi_araddr = s_axi_araddr;
-      assign uart_axi_arvalid = s_axi_arvalid;
-      assign s_axi_arready = uart_axi_arready;
-      assign s_axi_rdata = uart_axi_rdata;
-      assign s_axi_rresp = uart_axi_rresp;
-      assign s_axi_rvalid = uart_axi_rvalid;
-      assign uart_axi_rready = s_axi_rready;
-      
     `else
       uart_16550   uart_16550 (
         .s_axi_aclk       (axi_clk          ),  // input wire s_axi_aclk
