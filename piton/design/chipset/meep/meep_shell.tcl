@@ -866,10 +866,10 @@ if {[info exists ::env(ALVEOU55C_BOARD)] &&
 # #   connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c0] [get_bd_intf_pins ddr4_0/C0_DDR4]
    connect_bd_intf_net -intf_net ext_axi_sram_ctrl_BRAM_PORTA [get_bd_intf_pins int_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTB]
 # #   connect_bd_intf_net -intf_net int_connect_M01_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins smartconnect_0/M01_AXI]
-#   connect_bd_intf_net -intf_net int_connect_M02_AXI [get_bd_intf_pins int_axi_sram_ctrl/S_AXI] [get_bd_intf_pins smartconnect_0/M02_AXI]
+   connect_bd_intf_net -intf_net int_connect_M02_AXI [get_bd_intf_pins int_axi_sram_ctrl/S_AXI] [get_bd_intf_pins smartconnect_0/M02_AXI]
    connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
-#   connect_bd_intf_net -intf_net qdma_0_M_AXI [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S00_AXI]
-#   connect_bd_intf_net -intf_net qdma_0_M_AXI_LITE [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins qdma_0/M_AXI_LITE]
+   connect_bd_intf_net -intf_net qdma_0_M_AXI [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S00_AXI]
+   connect_bd_intf_net -intf_net qdma_0_M_AXI_LITE [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins qdma_0/M_AXI_LITE]
    connect_bd_intf_net -intf_net qdma_0_pcie_mgt [get_bd_intf_ports pci_express_x16] [get_bd_intf_pins qdma_0/pcie_mgt]
    connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_ports pci2hbm_maxi] [get_bd_intf_pins smartconnect_0/M00_AXI]
 
@@ -896,6 +896,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
                 $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
   connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins hbm_0/SAXI_16_8HI]
   connect_bd_intf_net -intf_net ncmem_axi_net [get_bd_intf_ports ncmem_axi] [get_bd_intf_pins hbm_0/SAXI_31_8HI]
+  connect_bd_intf_net [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S00_AXI]
+
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     connect_bd_intf_net -intf_net m_axi_net$idx [get_bd_intf_ports mcx_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr $distHBMchan]]]
   }

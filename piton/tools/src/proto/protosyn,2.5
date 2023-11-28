@@ -645,11 +645,12 @@ def makeDefList(options):
         defines.append("PITON_NONCACH_MEM")
         defines.append("PITONSYS_MC_SRAM")
 
-    # --no-ddr option
-    if (options.no_ddr == True) or (options.board == "piton_board") or  (options.board == "alveou55c"):
-        defines.append("PITONSYS_NO_MC")
-    else:   # default option
-        defines.append("PITON_FPGA_MC_DDR3")
+    # --no-ddr option 
+    if (options.board != "alveou55c"):
+        if (options.no_ddr == True) or (options.board == "piton_board") or  (options.board == "alveou55c"):
+            defines.append("PITONSYS_NO_MC")
+        else:   # default option
+            defines.append("PITON_FPGA_MC_DDR3")
 
     if (options.hbm == True):
         defines.append("PITON_FPGA_MC_HBM")
@@ -731,7 +732,7 @@ def makeDefList(options):
     if options.board != "piton_board":
         defines.append("PITON_UART16550")
 
-    # Adding alveou280 for alveou55c
+    # Adding environment alveou55c
     if options.board == "alveou55c":
         os.environ['ALVEOU55C_BOARD'] = "TRUE"
 
