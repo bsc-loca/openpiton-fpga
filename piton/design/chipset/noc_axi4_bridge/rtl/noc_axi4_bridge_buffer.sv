@@ -30,7 +30,9 @@
 `include "define.tmp.h"
 `include "noc_axi4_bridge_define.vh"
 
-function integer clip2zer;
+
+package noc_axi4_bridge_pkg;
+function automatic integer clip2zer;
   input integer val;
   clip2zer = val < 0 ? 0 : val;
 endfunction
@@ -60,7 +62,9 @@ function automatic [`NOC_DATA_WIDTH -1:0] swapData;
     end
   end
 endfunction
+endpackage
 
+import noc_axi4_bridge_pkg::*;
 
 module noc_axi4_bridge_buffer #(
     parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
