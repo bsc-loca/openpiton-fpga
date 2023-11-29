@@ -262,8 +262,8 @@ wire [`MSG_LENGTH_WIDTH    -1:0] msg_length = req_header[`MSG_LENGTH];
 
 
 // Transformation of write data according to queueed request
-wire [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] req_offset;
-wire [`MSG_DATA_SIZE_WIDTH         -1:0] req_size_log;
+wire [$clog2(`AXI4_DATA_WIDTH/8)-1:0] req_offset;
+wire [`MSG_DATA_SIZE_WIDTH      -1:0] req_size_log;
 noc_extractSize req_extractSize(
                 .header  (req_header),
                 .size_log(req_size_log),
@@ -274,8 +274,8 @@ assign write_req_size_log = req_size_log;
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] req_size = 1 << req_size_log;
 wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << req_size) -`AXI4_STRB_WIDTH'h1;
-assign write_req_data = wdata << (8*req_offset);
-assign write_req_strb = wstrb <<    req_offset;
+assign write_req_data = wdata << (8*req_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0]);
+assign write_req_strb = wstrb <<    req_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0];
 
 
 wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];
@@ -560,14 +560,14 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-wire [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] stor_offset;
-wire [`MSG_DATA_SIZE_WIDTH         -1:0] stor_size_log;
+wire [$clog2(`AXI4_DATA_WIDTH/8)-1:0] stor_offset;
+wire [`MSG_DATA_SIZE_WIDTH      -1:0] stor_size_log;
 noc_extractSize stor_extractSize(
                 .header  (stor_header[`MSG_HEADER_WIDTH-1:0]),
                 .size_log(stor_size_log),
                 .offset  (stor_offset));
 
-wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*stor_offset);
+wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*stor_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0]);
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] stor_size = 1 << stor_size_log;
 wire [`AXI4_DATA_WIDTH -1:0] rdata = stor_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :

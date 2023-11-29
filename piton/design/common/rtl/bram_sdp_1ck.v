@@ -15,7 +15,7 @@
 // Author: Alexander Kropotov, BSC-CNS
 // Date: 22.02.2022
 // Description: 
-//  Xilinx Simple Dual Port Single Clock RAM
+//  Xilinx Simple Dual Port Single Clock RAM (taken from Xilinx Vivado synthesis templates)
 //  This code implements a parameterizable SDP single clock memory.
 //  If a reset or enable is not necessary, it may be tied off or removed from the code.
 
@@ -42,16 +42,18 @@ module xilinx_simple_dual_port_1_clock_ram #(
   // actual read pipeline for inter-port write-first policy
   reg [clogb2(RAM_DEPTH-1)-1:0] addrb_rd;
 
-  // The following code either initializes the memory values to a specified file or to all zeros to match hardware
+  // The following code either initializes the memory values to a specified file or to all zeros to match Xilinx hardware
   generate
-    if (INIT_FILE != "") begin: use_init_file
-      initial
-        $readmemh(INIT_FILE, BRAM, 0, RAM_DEPTH-1);
-    end else begin: init_bram_to_zero
+    if (INIT_FILE == "zero") // Explicit initialization with zeroes (power-up zero filling is not applicable for ASIC)
+    begin: init_bram_to_zero
       integer ram_index;
       initial
         for (ram_index = 0; ram_index < RAM_DEPTH; ram_index = ram_index + 1)
           BRAM[ram_index] = {RAM_WIDTH{1'b0}};
+    end
+    else if (INIT_FILE != "") begin: use_init_file
+      initial
+        $readmemh(INIT_FILE, BRAM, 0, RAM_DEPTH-1);
     end
   endgenerate
 
