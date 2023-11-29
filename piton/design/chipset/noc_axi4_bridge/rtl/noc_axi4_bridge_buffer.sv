@@ -30,26 +30,12 @@
 `include "define.tmp.h"
 `include "noc_axi4_bridge_define.vh"
 
-function integer clip2zer;
+
+package noc_axi4_bridge_pkg;
+function automatic integer clip2zer;
   input integer val;
   clip2zer = val < 0 ? 0 : val;
 endfunction
-
-task automatic noc_extractSize;
-  input  [`MSG_HEADER_WIDTH-1 :0] header;
-  output [`MSG_DATA_SIZE_WIDTH      -1:0] size_log;
-  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset;
-  reg [`PHY_ADDR_WIDTH-1:0] virt_addr;
-  reg uncacheable;
-  begin
-    virt_addr = header[`MSG_ADDR];
-    uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
-                  (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-                  (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-    offset   = uncacheable ? virt_addr : 0;
-    size_log = uncacheable ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
-  end
-endtask
 
 function automatic [`NOC_DATA_WIDTH -1:0] swapData;
   input [           `NOC_DATA_WIDTH -1:0] data;
@@ -76,7 +62,9 @@ function automatic [`NOC_DATA_WIDTH -1:0] swapData;
     end
   end
 endfunction
+endpackage
 
+import noc_axi4_bridge_pkg::*;
 
 module noc_axi4_bridge_buffer #(
     parameter AXI4_DAT_WIDTH_USED = `AXI4_DATA_WIDTH, // actually used AXI Data width (down converted if needed)
@@ -99,6 +87,27 @@ module noc_axi4_bridge_buffer #(
     parameter NUM_REQ_XTHREADS = 1, // low  component of number of "Outstanding requests" threads
     parameter SRCXY_AS_AXIID   = 0 // defines NOC tile x/y field to use for forming AXI ID (INI_X/Y by default)
 ) (
+    // ======== Buffer simplified structure ========
+    //
+    // Input request queue
+    // (depth = `NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT)
+    //                     _________                             ____________
+    //                        | | | |                           |Address/Data|
+    //  NOC deser in  ------> | | | | ------------------------> | Conversion | ------> AXI read/write requests
+    //                     ___|_|_|_|  |                        |____________|
+    //                                 |
+    //                                 |
+    //                                 | Outstanding request queue
+    //                                 | (depth = 1<<NUM_REQ_OUTSTANDING_LOG2)
+    //                                 |      _________
+    //                                 |         | | | |          __________
+    //                                 --------> | | | | ------> |          |
+    //                                        ___|_|_|_|         |   Data   |
+    //                                                           |Conversion| ------>  NOC ser out
+    //  AXI read/write responses  -----------------------------> |__________|
+    //
+    // =============================================
+
   input clk, 
   input rst_n, 
   input uart_boot_en, 
@@ -253,17 +262,20 @@ wire [`MSG_LENGTH_WIDTH    -1:0] msg_length = req_header[`MSG_LENGTH];
 
 
 // Transformation of write data according to queueed request
-reg [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] req_offset;
-reg [`MSG_DATA_SIZE_WIDTH         -1:0] req_size_log;
-always @(*) noc_extractSize(req_header, req_size_log, req_offset);
+wire [$clog2(`AXI4_DATA_WIDTH/8)-1:0] req_offset;
+wire [`MSG_DATA_SIZE_WIDTH      -1:0] req_size_log;
+noc_extractSize req_extractSize(
+                .header  (req_header),
+                .size_log(req_size_log),
+                .offset  (req_offset));
 
 assign read_req_size_log  = req_size_log;
 assign write_req_size_log = req_size_log;
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] req_size = 1 << req_size_log;
 wire [`AXI4_STRB_WIDTH-1:0] wstrb = ({`AXI4_STRB_WIDTH'h0,1'b1} << req_size) -`AXI4_STRB_WIDTH'h1;
-assign write_req_data = wdata << (8*req_offset);
-assign write_req_strb = wstrb <<    req_offset;
+assign write_req_data = wdata << (8*req_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0]);
+assign write_req_strb = wstrb <<    req_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0];
 
 
 wire [`PHY_ADDR_WIDTH -1:0] virt_addr = req_header[`MSG_ADDR];
@@ -548,11 +560,14 @@ assign read_resp_rdy  = stor_hdr_en & ser_rdy & ~stor_command;
 assign write_resp_rdy = stor_hdr_en & ser_rdy &  stor_command;
 
 // Transformation of read data according to outstanded request
-reg [$clog2(AXI4_DAT_WIDTH_USED/8)-1:0] stor_offset;
-reg [`MSG_DATA_SIZE_WIDTH         -1:0] stor_size_log;
-always @(*) noc_extractSize(stor_header[`MSG_HEADER_WIDTH-1:0], stor_size_log, stor_offset);
+wire [$clog2(`AXI4_DATA_WIDTH/8)-1:0] stor_offset;
+wire [`MSG_DATA_SIZE_WIDTH      -1:0] stor_size_log;
+noc_extractSize stor_extractSize(
+                .header  (stor_header[`MSG_HEADER_WIDTH-1:0]),
+                .size_log(stor_size_log),
+                .offset  (stor_offset));
 
-wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*stor_offset);
+wire [`AXI4_DATA_WIDTH-1:0] rdata_offseted = read_resp_data >> (8*stor_offset[$clog2(AXI4_DAT_WIDTH_USED/8)-1:0]);
 
 wire [$clog2(`AXI4_DATA_WIDTH/8) :0] stor_size = 1 << stor_size_log;
 wire [`AXI4_DATA_WIDTH -1:0] rdata = stor_size[0] ? {64 {rdata_offseted[0  +: `AXI4_DATA_WIDTH/64]}} :
@@ -632,4 +647,17 @@ ila_axi_protocol_checker ila_axi_protocol_checker (
 );
 */
 
+endmodule
+
+module noc_extractSize (
+  input  [`MSG_HEADER_WIDTH         -1:0] header,
+  output [`MSG_DATA_SIZE_WIDTH      -1:0] size_log,
+  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset
+);
+  wire [`PHY_ADDR_WIDTH-1:0] virt_addr = header[`MSG_ADDR];
+  wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
+                     (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
+                     (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+  assign size_log = uncacheable ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
+  assign offset   = uncacheable ? virt_addr : 0;
 endmodule

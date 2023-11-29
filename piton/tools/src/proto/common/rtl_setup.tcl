@@ -499,8 +499,6 @@ set ARIANE_RTL_IMPL_FILES [list \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/riscv-dbg/src/dmi_jtag_tap.sv"                    \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/openpiton/riscv_peripherals.sv"                       \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/openpiton/ariane_verilog_wrap.sv"                     \
-    "${DV_ROOT}/design/chip/tile/ariane/corev_apu/openpiton/bootrom/baremetal/bootrom.sv"               \
-    "${DV_ROOT}/design/chip/tile/ariane/corev_apu/openpiton/bootrom/linux/bootrom_linux.sv"             \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/rv_plic/rtl/rv_plic_target.sv"                    \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/rv_plic/rtl/rv_plic_gateway.sv"                   \
     "${DV_ROOT}/design/chip/tile/ariane/corev_apu/rv_plic/rtl/plic_regmap.sv"                       \
@@ -805,10 +803,3 @@ set SA_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/sa-shell_sa-hevc"
 set VPU_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu"
 
 set XBAR_ROOT "${DV_ROOT}/design/chip/tile/vas_tile_core/modules/meep-vpu/modules/axi_crossbar_lvrf"
-
-set MEEP_RTL_FILES ""
-if { [info exists "::env(MEEP_SHELL)"] } {
-  set MEEP_RTL_FILES [list \
-    "${DV_ROOT}/design/chipset/meep_shell/accelerator_mod.sv" \
-  ]
-}

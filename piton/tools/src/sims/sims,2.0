@@ -1466,12 +1466,6 @@ sub generic_sim_build
       push (@{$opt{vcs_build_args}}, "+warn=all");
       push (@{$opt{vcs_build_args}}, "-l compile.log") ;
 
-      # some SystemVerilog-specific options
-      if ($opt{ariane} | $opt{lagarto}) {
-          push (@{$opt{vcs_build_args}}, "-sverilog +systemverilogext+.sv") ;
-          push (@{$opt{vcs_build_args}}, "-ntb_opts uvm-1.1 +vpi ") ;
-      }
-
       if ($opt{ibm}) {
           push (@{$opt{config_rtl}}, "IBM_SRAM_RF16X160_MODEL_CHECKER") ;
           push (@{$opt{config_rtl}}, "IBM_SRAM_RF32X80_MODEL_CHECKER") ;
@@ -2982,6 +2976,11 @@ sub parse_args
     }
   }
 
+  # Patching Ariane submodule
+  if ($opt{ariane}) {
+    system("$ENV{DV_ROOT}/design/chip/tile/ariane_patch/ariane_patch.sh");
+  }
+
   # Considering board specific defines, needed when sims is run from protosyn, not to confuse it with their incorrect values
   if ($opt{board}) {
   $ENV{PROTOSYN_RUNTIME_DESIGN_PATH} = $ENV{DV_ROOT} . "/design/xilinx";
@@ -3003,17 +3002,6 @@ sub parse_args
     elsif ($x =~ /\.image/) { $opt{image_diag_name} = $x ; }
     elsif ($x =~ /\.c/)     { $opt{asm_diag_name}   = $x ; }
     else { die ("DIE. Unprocessed argument: $x") ; }
-  }
-
-  # Set ISA to choose compilation flow based on ISA
-  if ($opt{ariane} | $opt{lagarto}) {
-    $opt{rv64} = 1 ;
-    print "$prg: Building/running for rv64\n" ;
-  }
-
-  # Patching Ariane submodule
-  if ($opt{ariane}) {
-    system("$ENV{DV_ROOT}/design/chip/tile/ariane_patch/ariane_patch.sh");
   }
 
   # in case a precompiled riscv binary is directly specified
@@ -3092,7 +3080,6 @@ sub parse_args
   $ENV{PITON_METRO_MPI}  = $opt{metro_mpi_build};
   $ENV{PITON_COVERAGE}  = $opt{cov};
   push (@{$opt{config_rtl}}, "PITON_PICO_HET") if ($opt{pico_het});
-  push (@{$opt{config_rtl}}, "PITON_LAGARTO")  if ($opt{lagarto});
   push (@{$opt{config_rtl}}, "PITON_PRONOC")   if ($opt{pronoc});
   push (@{$opt{config_rtl}}, "PITON_SA_ENABLE")  if (($opt{sa_nn_enable}) || ($opt{sa_hevc_enable}));
   push (@{$opt{config_rtl}}, "SA_HEVC_ENABLE") if ($opt{sa_hevc_enable});
@@ -3170,8 +3157,6 @@ sub parse_args
  	
  	@mc_map = get_mc_mapping ($opt{x_tiles},$opt{y_tiles},$opt{multimc_indices},$ENV{PITON_EXTRA_MEMS},$ENV{PITON_NETWORK_CONFIG});
   }
-
-
 
 
 my $mmc_num= $ENV{PITON_EXTRA_MEMS};
@@ -3622,7 +3607,7 @@ VERILOG COMPILATION RELATED
     -mgui_build
     	   this specifies that the simulator creates additional traffic monitoring files that can
     	   be used for traffic visualization using ManyGUI tool (https://github.com/kevinjohnmartin/manyGUI)
-    
+
     -metro_mpi_build
            this specifies that the simulator builds a verilator model, accelared using MPI. 
            The default is off. 
@@ -3630,22 +3615,22 @@ VERILOG COMPILATION RELATED
     -metro_mpi_build_args=OPTION
            metro_mpi (Verilator) compile options. multiple options can be specified using
            multiple such arguments.           
-           
+
     -hbm_lat
            this specifies that the simulator considers an estimated latency for packets read from HBM memory.
            without specifying this flag, the HBM memory (fake-memory module) has an ideal single-cycle read latency. 
-           
+
     -multimc=CHANNEL_NUMBER
            default is zero and embeds only one memory controller (MC) in chipset.  Given any inteher number
            greater than zero (n) results in n MCs connected to routers located in edges. Each router located in
            edge of the Mesh, can have maximum of one MC. The list of edge routers having MC should be given 
            using multimc_indices argument.
-           
+
     -multimc_indices'=             
            This defines where each MC should be placed. The input is the list of edge tile's IDs seprated by ','
            the tile ID is (Y_index * x_tiles) + X_index; The number of edge routers in multimc_indices should be
            equal to multimc
-           
+
 VERILOG RUNTIME RELATED
 
     -vcs_run/-novcs_run

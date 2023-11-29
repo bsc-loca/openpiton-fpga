@@ -114,9 +114,9 @@ simulation:
     - !reference [.sim_rules, rules]
   before_script:
     - !reference [.git_clean, before_script]
-    - . /apps/mentor/2020-21/scripts/QUESTA-CORE-PRIME_2020.4_RHELx86.sh
-    - export QUESTA_HOME=/apps/mentor/2020-21/RHELx86/QUESTA-CORE-PRIME_2020.4
-    # eda env mentor licence
+    - . /apps/Siemens/2022-23/scripts/QUESTA-CORE-PRIME_2022.4_RHELx86.sh
+    - export QUESTA_HOME=/apps/Siemens/2022-23/RHELx86/QUESTA-CORE-PRIME_2022.4
+    # eda env Siemens licence
     - export MGLS_LICENSE_FILE=1717@epi03.bsc.es
     - export MGLS1_LICENSE_FILE=1717@epi01.bsc.es
     - export LM_LICENSE_FILE=$LM_LICENSE_FILE:$MGLS_LICENSE_FILE:$MGLS1_LICENSE_FILE

@@ -15,7 +15,7 @@
 // Author: Alexander Kropotov, BSC-CNS
 // Date: 22.02.2022
 // Description: 
-//  Xilinx True Dual Port RAM, Write First with Single Clock
+//  Xilinx True Dual Port RAM, Write First with Single Clock (taken from Xilinx Vivado synthesis templates)
 //  This code implements a parameterizable true dual port memory (both ports can read and write).
 //  This implements write-first mode where the data being written to the RAM also resides on
 //  the output port.  If the output data is not needed during writes or the last read value is
@@ -53,16 +53,18 @@ module xilinx_true_dual_port_write_first_1_clock_ram #(
   reg [clogb2(RAM_DEPTH-1)-1:0] addra_rd;
   reg [clogb2(RAM_DEPTH-1)-1:0] addrb_rd;
 
-  // The following code either initializes the memory values to a specified file or to all zeros to match hardware
+  // The following code either initializes the memory values to a specified file or to all zeros to match Xilinx hardware
   generate
-    if (INIT_FILE != "") begin: use_init_file
-      initial
-        $readmemh(INIT_FILE, BRAM, 0, RAM_DEPTH-1);
-    end else begin: init_bram_to_zero
+    if (INIT_FILE == "zero") // Explicit initialization with zeroes (power-up zero filling is not applicable for ASIC)
+    begin: init_bram_to_zero
       integer ram_index;
       initial
         for (ram_index = 0; ram_index < RAM_DEPTH; ram_index = ram_index + 1)
           BRAM[ram_index] = {RAM_WIDTH{1'b0}};
+    end
+    else if (INIT_FILE != "") begin: use_init_file
+      initial
+        $readmemh(INIT_FILE, BRAM, 0, RAM_DEPTH-1);
     end
   endgenerate
 
