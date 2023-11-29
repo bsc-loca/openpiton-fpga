@@ -33,6 +33,8 @@
 module mc_top (
     input                           core_ref_clk,
     `ifdef ALVEOU55C_BOARD
+    input mc_clk,
+    input mc_rstn,
     output                          mc_ui_clk_sync_rst,
 
     input   [`NOC_DATA_WIDTH-1:0]   mc_flit_in_data,

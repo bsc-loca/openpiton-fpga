@@ -124,6 +124,12 @@ module system(
     input                                       mc_clk_p,
     input                                       mc_clk_n,
 `endif // PITONSYS_DDR4
+// 250MHz(VCU118) or 100 MHz(XUPP3R) diff input ref clock for DDR4 memory controller
+    `ifdef ALVEOU55C_BOARD
+    input                                       mc_clk,
+    input                                       mc_rstn,
+`endif // ALVEOU55C_BOARD
+
 
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     input                                       chipset_clk,
@@ -146,7 +152,7 @@ module system(
 `endif
 
 `ifndef ALVEOU280_BOARD
-    `ifndef ALVEOU55C_BOARD
+`ifndef ALVEOU55C_BOARD
 
     input                                       sys_rst_n,
 `endif
@@ -445,7 +451,7 @@ module system(
     // no switches :(
 `elsif ALVEOU280_BOARD
     // no switches :(    
-    `elsif ALVEOU55C_BOARD
+`elsif ALVEOU55C_BOARD
     // no switches :(            
 `else
     input  [7:0]                                sw,
@@ -473,7 +479,8 @@ module system(
     input  pcie_refclk_n,
     input  pcie_refclk_p,
     output   hbm_cattrip
-    `else 
+    
+    
 `endif
 `else //`ifndef PITONSYS_MEEP
 
@@ -1054,7 +1061,7 @@ always @ *
 begin
 `ifdef ALVEOU280_BOARD
     sys_rst_n_rect = sw[3];
-`elsif     ALVEOU55C_BOARD
+`elsif ALVEOU55C_BOARD
     sys_rst_n_rect = sw[3];
     
 `elsif PITON_FPGA_RST_ACT_HIGH
@@ -1085,7 +1092,7 @@ begin
   `endif 
 `elsif ALVEOU280_BOARD // PYTONSYS_UART_BOOT
     chip_rst_n = chip_rst_n & sw[4];
-    `elsif ALVEOU55C_BOARD // PYTONSYS_UART_BOOT
+`elsif ALVEOU55C_BOARD // PYTONSYS_UART_BOOT
     chip_rst_n = chip_rst_n & sw[4];    
 `endif
 `ifdef PITONSYS_UART_RESET
@@ -1619,6 +1626,8 @@ chipset chipset(
      .pcie_refclk_n(pcie_refclk_n),
      .pcie_refclk_p(pcie_refclk_p),
     `endif
+     .mc_clk(mc_clk),
+     .mc_rstn(mc_rstn),
      
      `ifdef PITONSYS_MEEP
        

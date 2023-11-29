@@ -90,6 +90,13 @@ module chipset(
 `ifdef F1_BOARD
     input sys_clk,
 `else
+
+`ifdef ALVEOU55C_BOARD
+
+    input                                       mc_clk,
+    input                                       mc_rstn,
+    `endif // ALVEOU55C_BOARD
+
     // Oscillator clock
  `ifdef PITONSYS_MEEP
   input                                       chipset_clk,
@@ -110,6 +117,7 @@ module chipset(
         input                                       mc_clk_n,
     `endif // PITONSYS_DDR4
 
+
 `else // ifndef PITON_CHIPSET_CLKS_GEN
     input                                       chipset_clk,
 
@@ -117,6 +125,7 @@ module chipset(
     `ifdef PITON_FPGA_MC_DDR3
         input                                       mc_clk,
     `endif // endif PITON_FPGA_MC_DDR3
+  
     `endif // endif PITONSYS_NO_MC
 
     `ifdef PITONSYS_SPI
@@ -649,7 +658,6 @@ module chipset(
 `endif // ifndef F1_BOARD
 `endif //`ifdef PITON_FPGA_MC_DDR3
 
-`endif // endif PITONSYS_NO_MC
 `ifdef ALVEOU55C_BOARD
     `ifdef PITONSYS_PCIE
         input  [15:0] pci_express_x16_rxn,
@@ -966,6 +974,7 @@ module chipset(
           output                          hbm_cattrip,
       `endif //`ifdef PITONSYS_MEEP
 `endif // ALVEOU55C
+`endif // endif PITONSYS_NO_MC
 
 
 `ifdef PITONSYS_IOCTRL
@@ -1599,6 +1608,12 @@ end
                 , .mc_sys_clk(//mc_clk
                              )
             `endif // endif PITON_FPGA_MC_DDR3
+
+            `ifdef ALVEOU55C_BOARD
+                // Memory controller clock
+                , .mc_sys_clk(//mc_clk
+                )
+                 `endif // endif ALVEOU55C_BOARD
             `endif // endif PITONSYS_NO_MC
 
             `ifdef PITONSYS_SPI
@@ -2013,6 +2028,11 @@ chipset_impl_noc_power_test  chipset_impl (
 `endif
 
     `ifndef PITONSYS_NO_MC
+    `ifdef ALVEOU55C_BOARD
+        // Memory controller clock
+            .mc_clk(mc_clk),
+            .mc_rstn(mc_rstn),
+    `endif // endif ALVEOU55C_BOARD  
     `ifdef PITON_FPGA_MC_DDR3
     `ifndef F1_BOARD
         // Memory controller clock
@@ -2406,313 +2426,8 @@ chipset_impl_noc_power_test  chipset_impl (
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
-                `ifdef ALVEOU55C_BOARD
-                  `ifdef PITONSYS_MEEP
-                    .hbm_calib_complete (hbm_calib_complete),
-                    
-                    .m_axi_awid      (m_axi_awid     ),
-                    .m_axi_awaddr    (m_axi_awaddr   ),
-                    .m_axi_awlen     (m_axi_awlen    ),
-                    .m_axi_awsize    (m_axi_awsize   ),
-                    .m_axi_awburst   (m_axi_awburst  ),
-                    .m_axi_awlock    (m_axi_awlock   ),
-                    .m_axi_awcache   (m_axi_awcache  ),
-                    .m_axi_awprot    (m_axi_awprot   ),
-                    .m_axi_awqos     (m_axi_awqos    ),
-                    .m_axi_awregion  (m_axi_awregion ),
-                    .m_axi_awuser    (m_axi_awuser   ),
-                    .m_axi_awvalid   (m_axi_awvalid  ),
-                    .m_axi_awready   (m_axi_awready  ),
-                    
-                    .m_axi_wid       (m_axi_wid      ),
-                    .m_axi_wdata     (m_axi_wdata    ),
-                    .m_axi_wstrb     (m_axi_wstrb    ),
-                    .m_axi_wlast     (m_axi_wlast    ),
-                    .m_axi_wuser     (m_axi_wuser    ),
-                    .m_axi_wvalid    (m_axi_wvalid   ),
-                    .m_axi_wready    (m_axi_wready   ),
-                    
-                    .m_axi_arid      (m_axi_arid     ),
-                    .m_axi_araddr    (m_axi_araddr   ),
-                    .m_axi_arlen     (m_axi_arlen    ),
-                    .m_axi_arsize    (m_axi_arsize   ),
-                    .m_axi_arburst   (m_axi_arburst  ),
-                    .m_axi_arlock    (m_axi_arlock   ),
-                    .m_axi_arcache   (m_axi_arcache  ),
-                    .m_axi_arprot    (m_axi_arprot   ),
-                    .m_axi_arqos     (m_axi_arqos    ),
-                    .m_axi_arregion  (m_axi_arregion ),
-                    .m_axi_aruser    (m_axi_aruser   ),
-                    .m_axi_arvalid   (m_axi_arvalid  ),
-                    .m_axi_arready   (m_axi_arready  ),
-                    
-                    .m_axi_rid       (m_axi_rid      ),
-                    .m_axi_rdata     (m_axi_rdata    ),
-                    .m_axi_rresp     (m_axi_rresp    ),
-                    .m_axi_rlast     (m_axi_rlast    ),
-                    .m_axi_ruser     (m_axi_ruser    ),
-                    .m_axi_rvalid    (m_axi_rvalid   ),
-                    .m_axi_rready    (m_axi_rready   ),
-                    
-                    .m_axi_bid       (m_axi_bid      ),
-                    .m_axi_bresp     (m_axi_bresp    ),
-                    .m_axi_buser     (m_axi_buser    ),
-                    .m_axi_bvalid    (m_axi_bvalid   ),
-                    .m_axi_bready    (m_axi_bready   ),
-					
-		    // Ethernet
-		    .eth_axi_aclk(eth_axi_aclk),
-		    .eth_axi_arstn(eth_axi_arstn),
-                    .eth_irq         (eth_irq        ),
-          `ifdef ETHERNET_DMA
-           .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
-           .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
-           .dma_s_axi_awready  (dma_s_axi_awready) ,
 
-           .dma_s_axi_wdata    (dma_s_axi_wdata  ) ,
-           .dma_s_axi_wstrb    (dma_s_axi_wstrb  ) ,
-           .dma_s_axi_wvalid   (dma_s_axi_wvalid ) ,
-           .dma_s_axi_wready   (dma_s_axi_wready ) ,
-
-           .dma_s_axi_bresp    (dma_s_axi_bresp  ) ,
-           .dma_s_axi_bvalid   (dma_s_axi_bvalid ) ,
-           .dma_s_axi_bready   (dma_s_axi_bready ) ,
-
-           .dma_s_axi_araddr   (dma_s_axi_araddr ) ,
-           .dma_s_axi_arvalid  (dma_s_axi_arvalid) ,
-           .dma_s_axi_arready  (dma_s_axi_arready) ,
-
-           .dma_s_axi_rdata    (dma_s_axi_rdata  ) ,
-           .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
-           .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
-           .dma_s_axi_rready   (dma_s_axi_rready ) ,
-          `else
-
-				    .eth_axi_araddr(eth_axi_araddr),
-				    .eth_axi_arburst(eth_axi_arburst),
-				    .eth_axi_arcache(eth_axi_arcache),
-				    .eth_axi_arid(eth_axi_arid),
-				    .eth_axi_arlen(eth_axi_arlen),
-				    .eth_axi_arlock(eth_axi_arlock),
-				    .eth_axi_arprot(eth_axi_arprot),
-				    .eth_axi_arqos(eth_axi_arqos),
-                    .eth_axi_arregion(eth_axi_arregion),
-				    .eth_axi_arready(eth_axi_arready),
-				    .eth_axi_arsize(eth_axi_arsize),
-				    .eth_axi_aruser(eth_axi_aruser),
-				    .eth_axi_arvalid(eth_axi_arvalid),
-				  
-				    .eth_axi_awaddr(eth_axi_awaddr),
-				    .eth_axi_awburst(eth_axi_awburst),
-				    .eth_axi_awcache(eth_axi_awcache),
-				    .eth_axi_awid(eth_axi_awid),
-				    .eth_axi_awlen(eth_axi_awlen),
-				    .eth_axi_awlock(eth_axi_awlock),
-				    .eth_axi_awprot(eth_axi_awprot),
-				    .eth_axi_awqos(eth_axi_awqos),
-                    .eth_axi_awregion(eth_axi_awregion),
-				    .eth_axi_awready(eth_axi_awready),
-				    .eth_axi_awsize(eth_axi_awsize),
-				    .eth_axi_awuser(eth_axi_awuser),
-				    .eth_axi_awvalid(eth_axi_awvalid),
-				  
-				    .eth_axi_bid(eth_axi_bid),
-				    .eth_axi_bready(eth_axi_bready),
-				    .eth_axi_bresp(eth_axi_bresp),
-				    .eth_axi_buser(eth_axi_buser),
-				    .eth_axi_bvalid(eth_axi_bvalid),
-				  
-				    .eth_axi_rdata(eth_axi_rdata),
-				    .eth_axi_rid(eth_axi_rid),
-				    .eth_axi_rlast(eth_axi_rlast),
-				    .eth_axi_rready(eth_axi_rready),
-				    .eth_axi_rresp(eth_axi_rresp),
-				    .eth_axi_ruser(eth_axi_ruser),
-				    .eth_axi_rvalid(eth_axi_rvalid),
-				  
-				    .eth_axi_wdata(eth_axi_wdata),
-				    .eth_axi_wid(eth_axi_wid),
-				    .eth_axi_wlast(eth_axi_wlast),
-				    .eth_axi_wready(eth_axi_wready),
-				    .eth_axi_wstrb(eth_axi_wstrb),
-				    .eth_axi_wuser(eth_axi_wuser),
-				    .eth_axi_wvalid(eth_axi_wvalid),
-				   `endif
-				    // SRAM Pheripheral
-				    `ifdef PITONSYS_MC_SRAM
-
-				    .sram_axi_araddr(sram_axi_araddr),
-				    .sram_axi_arburst(sram_axi_arburst),
-				    .sram_axi_arcache(sram_axi_arcache),
-				    .sram_axi_arid(sram_axi_arid),
-				    .sram_axi_arlen(sram_axi_arlen),
-				    .sram_axi_arlock(sram_axi_arlock),
-				    .sram_axi_arprot(sram_axi_arprot),
-				    .sram_axi_arqos(sram_axi_arqos),
-                    .sram_axi_arregion(sram_axi_arregion),
-				    .sram_axi_arready(sram_axi_arready),
-				    .sram_axi_arsize(sram_axi_arsize),
-				    .sram_axi_aruser(sram_axi_aruser),
-				    .sram_axi_arvalid(sram_axi_arvalid),
-
-				    .sram_axi_awaddr(sram_axi_awaddr),
-				    .sram_axi_awburst(sram_axi_awburst),
-				    .sram_axi_awcache(sram_axi_awcache),
-				    .sram_axi_awid(sram_axi_awid),
-				    .sram_axi_awlen(sram_axi_awlen),
-				    .sram_axi_awlock(sram_axi_awlock),
-				    .sram_axi_awprot(sram_axi_awprot),
-				    .sram_axi_awqos(sram_axi_awqos),
-                    .sram_axi_awregion(sram_axi_awregion),
-				    .sram_axi_awready(sram_axi_awready),
-				    .sram_axi_awsize(sram_axi_awsize),
-				    .sram_axi_awuser(sram_axi_awuser),
-				    .sram_axi_awvalid(sram_axi_awvalid),
-
-				    .sram_axi_bid(sram_axi_bid),
-				    .sram_axi_bready(sram_axi_bready),
-				    .sram_axi_bresp(sram_axi_bresp),
-				    .sram_axi_buser(sram_axi_buser),
-				    .sram_axi_bvalid(sram_axi_bvalid),
-				   
-				    .sram_axi_rdata(sram_axi_rdata),
-				    .sram_axi_rid(sram_axi_rid),
-				    .sram_axi_rlast(sram_axi_rlast),
-				    .sram_axi_rready(sram_axi_rready),
-				    .sram_axi_rresp(sram_axi_rresp),
-				    .sram_axi_ruser(sram_axi_ruser),
-				    .sram_axi_rvalid(sram_axi_rvalid),
-
-				    .sram_axi_wdata(sram_axi_wdata),
-				    .sram_axi_wid(sram_axi_wid),
-				    .sram_axi_wlast(sram_axi_wlast),
-				    .sram_axi_wready(sram_axi_wready),
-				    .sram_axi_wstrb(sram_axi_wstrb),
-				    .sram_axi_wuser(sram_axi_wuser),
-				    .sram_axi_wvalid(sram_axi_wvalid),
-				    `endif //`ifdef PITONSYS_MC_SRAM
-
-				    `ifdef DEBUG_ROM 
-				    .debug_rom_en(sw[1]), // pcie_gpio[4]
-                    .debug_rom_req(debug_rom_req),
-                    .debug_rom_addr(debug_rom_addr),
-                    .debug_rom_rdata(debug_rom_rdata),
-                    `endif
-                                   
-                    `ifdef PITON_NONCACH_MEM     
-				    .ncmem_axi_araddr(ncmem_axi_araddr),
-				    .ncmem_axi_arburst(ncmem_axi_arburst),
-				    .ncmem_axi_arcache(ncmem_axi_arcache),
-				    .ncmem_axi_arid(ncmem_axi_arid),
-				    .ncmem_axi_arlen(ncmem_axi_arlen),
-				    .ncmem_axi_arlock(ncmem_axi_arlock),
-				    .ncmem_axi_arprot(ncmem_axi_arprot),
-				    .ncmem_axi_arqos(ncmem_axi_arqos),
-                    .ncmem_axi_arregion(ncmem_axi_arregion),
-				    .ncmem_axi_arready(ncmem_axi_arready),
-				    .ncmem_axi_arsize(ncmem_axi_arsize),
-				    .ncmem_axi_aruser(ncmem_axi_aruser),
-				    .ncmem_axi_arvalid(ncmem_axi_arvalid),
-				   
-				    .ncmem_axi_awaddr(ncmem_axi_awaddr),
-				    .ncmem_axi_awburst(ncmem_axi_awburst),
-				    .ncmem_axi_awcache(ncmem_axi_awcache),
-				    .ncmem_axi_awid(ncmem_axi_awid),
-				    .ncmem_axi_awlen(ncmem_axi_awlen),
-				    .ncmem_axi_awlock(ncmem_axi_awlock),
-				    .ncmem_axi_awprot(ncmem_axi_awprot),
-				    .ncmem_axi_awqos(ncmem_axi_awqos),
-                    .ncmem_axi_awregion(ncmem_axi_awregion),
-				    .ncmem_axi_awready(ncmem_axi_awready),
-				    .ncmem_axi_awsize(ncmem_axi_awsize),
-				    .ncmem_axi_awuser(ncmem_axi_awuser),
-				    .ncmem_axi_awvalid(ncmem_axi_awvalid),
-				   
-				    .ncmem_axi_bid(ncmem_axi_bid),
-				    .ncmem_axi_bready(ncmem_axi_bready),
-				    .ncmem_axi_bresp(ncmem_axi_bresp),
-				    .ncmem_axi_buser(ncmem_axi_buser),
-				    .ncmem_axi_bvalid(ncmem_axi_bvalid),
-				   
-				    .ncmem_axi_rdata(ncmem_axi_rdata),
-				    .ncmem_axi_rid(ncmem_axi_rid),
-				    .ncmem_axi_rlast(ncmem_axi_rlast),
-				    .ncmem_axi_rready(ncmem_axi_rready),
-				    .ncmem_axi_rresp(ncmem_axi_rresp),
-				    .ncmem_axi_ruser(ncmem_axi_ruser),
-				    .ncmem_axi_rvalid(ncmem_axi_rvalid),
-				   
-				    .ncmem_axi_wdata(ncmem_axi_wdata),
-				    .ncmem_axi_wid(ncmem_axi_wid),
-				    .ncmem_axi_wlast(ncmem_axi_wlast),
-				    .ncmem_axi_wready(ncmem_axi_wready),
-				    .ncmem_axi_wstrb(ncmem_axi_wstrb),
-				    .ncmem_axi_wuser(ncmem_axi_wuser),
-				    .ncmem_axi_wvalid(ncmem_axi_wvalid),
-				    `endif //NONC_CHACH_MEM
-
-            `ifdef PITON_EXTRA_MEMS
-             // vectorized multi-MC AXI bus
-            .mcx_axi_awid      (mcx_axi_awid     ),
-            .mcx_axi_awaddr    (mcx_axi_awaddr   ),
-            .mcx_axi_awlen     (mcx_axi_awlen    ),
-            .mcx_axi_awsize    (mcx_axi_awsize   ),
-            .mcx_axi_awburst   (mcx_axi_awburst  ),
-            .mcx_axi_awlock    (mcx_axi_awlock   ),
-            .mcx_axi_awcache   (mcx_axi_awcache  ),
-            .mcx_axi_awprot    (mcx_axi_awprot   ),
-            .mcx_axi_awqos     (mcx_axi_awqos    ),
-            .mcx_axi_awregion  (mcx_axi_awregion ),
-            .mcx_axi_awuser    (mcx_axi_awuser   ),
-            .mcx_axi_awvalid   (mcx_axi_awvalid  ),
-            .mcx_axi_awready   (mcx_axi_awready  ),
-            
-            .mcx_axi_wid       (mcx_axi_wid      ),
-            .mcx_axi_wdata     (mcx_axi_wdata    ),
-            .mcx_axi_wstrb     (mcx_axi_wstrb    ),
-            .mcx_axi_wlast     (mcx_axi_wlast    ),
-            .mcx_axi_wuser     (mcx_axi_wuser    ),
-            .mcx_axi_wvalid    (mcx_axi_wvalid   ),
-            .mcx_axi_wready    (mcx_axi_wready   ),
-            
-            .mcx_axi_arid      (mcx_axi_arid     ),
-            .mcx_axi_araddr    (mcx_axi_araddr   ),
-            .mcx_axi_arlen     (mcx_axi_arlen    ),
-            .mcx_axi_arsize    (mcx_axi_arsize   ),
-            .mcx_axi_arburst   (mcx_axi_arburst  ),
-            .mcx_axi_arlock    (mcx_axi_arlock   ),
-            .mcx_axi_arcache   (mcx_axi_arcache  ),
-            .mcx_axi_arprot    (mcx_axi_arprot   ),
-            .mcx_axi_arqos     (mcx_axi_arqos    ),
-            .mcx_axi_arregion  (mcx_axi_arregion ),
-            .mcx_axi_aruser    (mcx_axi_aruser   ),
-            .mcx_axi_arvalid   (mcx_axi_arvalid  ),
-            .mcx_axi_arready   (mcx_axi_arready  ),
-            
-            .mcx_axi_rid       (mcx_axi_rid      ),
-            .mcx_axi_rdata     (mcx_axi_rdata    ),
-            .mcx_axi_rresp     (mcx_axi_rresp    ),
-            .mcx_axi_rlast     (mcx_axi_rlast    ),
-            .mcx_axi_ruser     (mcx_axi_ruser    ),
-            .mcx_axi_rvalid    (mcx_axi_rvalid   ),
-            .mcx_axi_rready    (mcx_axi_rready   ),
-            
-            .mcx_axi_bid       (mcx_axi_bid      ),
-            .mcx_axi_bresp     (mcx_axi_bresp    ),
-            .mcx_axi_buser     (mcx_axi_buser    ),
-            .mcx_axi_bvalid    (mcx_axi_bvalid   ),
-            .mcx_axi_bready    (mcx_axi_bready   ),
-            `endif //`ifdef PITON_EXTRA_MEMS
-
-                  `else //`ifdef PITONSYS_MEEP
-                    .ddr_parity(ddr_parity),
-                    .hbm_cattrip(hbm_cattrip),       
-                  `endif //`ifdef PITONSYS_MEEP
-                `else
-                `endif // ALVEOU55C
-                `ifndef ALVEOU55C_BOARD
                 .ddr_odt(ddr_odt),
-                `endif
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),
                 // AXI Write Address Channel Signals
@@ -2773,6 +2488,321 @@ chipset_impl_noc_power_test  chipset_impl (
                 .ddr_ready(ddr_ready),
             `endif //ifndef F1_BOARD
         `endif // endif PITON_FPGA_MC_DDR3
+
+                `ifdef ALVEOU55C_BOARD 
+                .init_calib_complete(init_calib_complete),
+                         `ifdef PITONSYS_PCIE
+                         .pci_express_x16_rxn(pci_express_x16_rxn),
+                         .pci_express_x16_rxp(pci_express_x16_rxp),
+                         .pci_express_x16_txn(pci_express_x16_txn),
+                         .pci_express_x16_txp(pci_express_x16_txp),
+                         .pcie_gpio(pcie_gpio),        
+                         .pcie_perstn(pcie_perstn),
+                         .pcie_refclk_n(pcie_refclk_n),
+                         .pcie_refclk_p(pcie_refclk_p),
+                         `endif
+                      `ifdef PITONSYS_MEEP
+                        .hbm_calib_complete (hbm_calib_complete),
+                        
+                        .m_axi_awid      (m_axi_awid     ),
+                        .m_axi_awaddr    (m_axi_awaddr   ),
+                        .m_axi_awlen     (m_axi_awlen    ),
+                        .m_axi_awsize    (m_axi_awsize   ),
+                        .m_axi_awburst   (m_axi_awburst  ),
+                        .m_axi_awlock    (m_axi_awlock   ),
+                        .m_axi_awcache   (m_axi_awcache  ),
+                        .m_axi_awprot    (m_axi_awprot   ),
+                        .m_axi_awqos     (m_axi_awqos    ),
+                        .m_axi_awregion  (m_axi_awregion ),
+                        .m_axi_awuser    (m_axi_awuser   ),
+                        .m_axi_awvalid   (m_axi_awvalid  ),
+                        .m_axi_awready   (m_axi_awready  ),
+                        
+                        .m_axi_wid       (m_axi_wid      ),
+                        .m_axi_wdata     (m_axi_wdata    ),
+                        .m_axi_wstrb     (m_axi_wstrb    ),
+                        .m_axi_wlast     (m_axi_wlast    ),
+                        .m_axi_wuser     (m_axi_wuser    ),
+                        .m_axi_wvalid    (m_axi_wvalid   ),
+                        .m_axi_wready    (m_axi_wready   ),
+                        
+                        .m_axi_arid      (m_axi_arid     ),
+                        .m_axi_araddr    (m_axi_araddr   ),
+                        .m_axi_arlen     (m_axi_arlen    ),
+                        .m_axi_arsize    (m_axi_arsize   ),
+                        .m_axi_arburst   (m_axi_arburst  ),
+                        .m_axi_arlock    (m_axi_arlock   ),
+                        .m_axi_arcache   (m_axi_arcache  ),
+                        .m_axi_arprot    (m_axi_arprot   ),
+                        .m_axi_arqos     (m_axi_arqos    ),
+                        .m_axi_arregion  (m_axi_arregion ),
+                        .m_axi_aruser    (m_axi_aruser   ),
+                        .m_axi_arvalid   (m_axi_arvalid  ),
+                        .m_axi_arready   (m_axi_arready  ),
+                        
+                        .m_axi_rid       (m_axi_rid      ),
+                        .m_axi_rdata     (m_axi_rdata    ),
+                        .m_axi_rresp     (m_axi_rresp    ),
+                        .m_axi_rlast     (m_axi_rlast    ),
+                        .m_axi_ruser     (m_axi_ruser    ),
+                        .m_axi_rvalid    (m_axi_rvalid   ),
+                        .m_axi_rready    (m_axi_rready   ),
+                        
+                        .m_axi_bid       (m_axi_bid      ),
+                        .m_axi_bresp     (m_axi_bresp    ),
+                        .m_axi_buser     (m_axi_buser    ),
+                        .m_axi_bvalid    (m_axi_bvalid   ),
+                        .m_axi_bready    (m_axi_bready   ),
+                        
+                // Ethernet
+                .eth_axi_aclk(eth_axi_aclk),
+                .eth_axi_arstn(eth_axi_arstn),
+                        .eth_irq         (eth_irq        ),
+              `ifdef ETHERNET_DMA
+               .dma_s_axi_awaddr   (dma_s_axi_awaddr ) ,
+               .dma_s_axi_awvalid  (dma_s_axi_awvalid) ,
+               .dma_s_axi_awready  (dma_s_axi_awready) ,
+    
+               .dma_s_axi_wdata    (dma_s_axi_wdata  ) ,
+               .dma_s_axi_wstrb    (dma_s_axi_wstrb  ) ,
+               .dma_s_axi_wvalid   (dma_s_axi_wvalid ) ,
+               .dma_s_axi_wready   (dma_s_axi_wready ) ,
+    
+               .dma_s_axi_bresp    (dma_s_axi_bresp  ) ,
+               .dma_s_axi_bvalid   (dma_s_axi_bvalid ) ,
+               .dma_s_axi_bready   (dma_s_axi_bready ) ,
+    
+               .dma_s_axi_araddr   (dma_s_axi_araddr ) ,
+               .dma_s_axi_arvalid  (dma_s_axi_arvalid) ,
+               .dma_s_axi_arready  (dma_s_axi_arready) ,
+    
+               .dma_s_axi_rdata    (dma_s_axi_rdata  ) ,
+               .dma_s_axi_rresp    (dma_s_axi_rresp  ) ,
+               .dma_s_axi_rvalid   (dma_s_axi_rvalid ) ,
+               .dma_s_axi_rready   (dma_s_axi_rready ) ,
+              `else
+    
+                        .eth_axi_araddr(eth_axi_araddr),
+                        .eth_axi_arburst(eth_axi_arburst),
+                        .eth_axi_arcache(eth_axi_arcache),
+                        .eth_axi_arid(eth_axi_arid),
+                        .eth_axi_arlen(eth_axi_arlen),
+                        .eth_axi_arlock(eth_axi_arlock),
+                        .eth_axi_arprot(eth_axi_arprot),
+                        .eth_axi_arqos(eth_axi_arqos),
+                        .eth_axi_arregion(eth_axi_arregion),
+                        .eth_axi_arready(eth_axi_arready),
+                        .eth_axi_arsize(eth_axi_arsize),
+                        .eth_axi_aruser(eth_axi_aruser),
+                        .eth_axi_arvalid(eth_axi_arvalid),
+                      
+                        .eth_axi_awaddr(eth_axi_awaddr),
+                        .eth_axi_awburst(eth_axi_awburst),
+                        .eth_axi_awcache(eth_axi_awcache),
+                        .eth_axi_awid(eth_axi_awid),
+                        .eth_axi_awlen(eth_axi_awlen),
+                        .eth_axi_awlock(eth_axi_awlock),
+                        .eth_axi_awprot(eth_axi_awprot),
+                        .eth_axi_awqos(eth_axi_awqos),
+                        .eth_axi_awregion(eth_axi_awregion),
+                        .eth_axi_awready(eth_axi_awready),
+                        .eth_axi_awsize(eth_axi_awsize),
+                        .eth_axi_awuser(eth_axi_awuser),
+                        .eth_axi_awvalid(eth_axi_awvalid),
+                      
+                        .eth_axi_bid(eth_axi_bid),
+                        .eth_axi_bready(eth_axi_bready),
+                        .eth_axi_bresp(eth_axi_bresp),
+                        .eth_axi_buser(eth_axi_buser),
+                        .eth_axi_bvalid(eth_axi_bvalid),
+                      
+                        .eth_axi_rdata(eth_axi_rdata),
+                        .eth_axi_rid(eth_axi_rid),
+                        .eth_axi_rlast(eth_axi_rlast),
+                        .eth_axi_rready(eth_axi_rready),
+                        .eth_axi_rresp(eth_axi_rresp),
+                        .eth_axi_ruser(eth_axi_ruser),
+                        .eth_axi_rvalid(eth_axi_rvalid),
+                      
+                        .eth_axi_wdata(eth_axi_wdata),
+                        .eth_axi_wid(eth_axi_wid),
+                        .eth_axi_wlast(eth_axi_wlast),
+                        .eth_axi_wready(eth_axi_wready),
+                        .eth_axi_wstrb(eth_axi_wstrb),
+                        .eth_axi_wuser(eth_axi_wuser),
+                        .eth_axi_wvalid(eth_axi_wvalid),
+                       `endif
+                        // SRAM Pheripheral
+                        `ifdef PITONSYS_MC_SRAM
+    
+                        .sram_axi_araddr(sram_axi_araddr),
+                        .sram_axi_arburst(sram_axi_arburst),
+                        .sram_axi_arcache(sram_axi_arcache),
+                        .sram_axi_arid(sram_axi_arid),
+                        .sram_axi_arlen(sram_axi_arlen),
+                        .sram_axi_arlock(sram_axi_arlock),
+                        .sram_axi_arprot(sram_axi_arprot),
+                        .sram_axi_arqos(sram_axi_arqos),
+                        .sram_axi_arregion(sram_axi_arregion),
+                        .sram_axi_arready(sram_axi_arready),
+                        .sram_axi_arsize(sram_axi_arsize),
+                        .sram_axi_aruser(sram_axi_aruser),
+                        .sram_axi_arvalid(sram_axi_arvalid),
+    
+                        .sram_axi_awaddr(sram_axi_awaddr),
+                        .sram_axi_awburst(sram_axi_awburst),
+                        .sram_axi_awcache(sram_axi_awcache),
+                        .sram_axi_awid(sram_axi_awid),
+                        .sram_axi_awlen(sram_axi_awlen),
+                        .sram_axi_awlock(sram_axi_awlock),
+                        .sram_axi_awprot(sram_axi_awprot),
+                        .sram_axi_awqos(sram_axi_awqos),
+                        .sram_axi_awregion(sram_axi_awregion),
+                        .sram_axi_awready(sram_axi_awready),
+                        .sram_axi_awsize(sram_axi_awsize),
+                        .sram_axi_awuser(sram_axi_awuser),
+                        .sram_axi_awvalid(sram_axi_awvalid),
+    
+                        .sram_axi_bid(sram_axi_bid),
+                        .sram_axi_bready(sram_axi_bready),
+                        .sram_axi_bresp(sram_axi_bresp),
+                        .sram_axi_buser(sram_axi_buser),
+                        .sram_axi_bvalid(sram_axi_bvalid),
+                       
+                        .sram_axi_rdata(sram_axi_rdata),
+                        .sram_axi_rid(sram_axi_rid),
+                        .sram_axi_rlast(sram_axi_rlast),
+                        .sram_axi_rready(sram_axi_rready),
+                        .sram_axi_rresp(sram_axi_rresp),
+                        .sram_axi_ruser(sram_axi_ruser),
+                        .sram_axi_rvalid(sram_axi_rvalid),
+    
+                        .sram_axi_wdata(sram_axi_wdata),
+                        .sram_axi_wid(sram_axi_wid),
+                        .sram_axi_wlast(sram_axi_wlast),
+                        .sram_axi_wready(sram_axi_wready),
+                        .sram_axi_wstrb(sram_axi_wstrb),
+                        .sram_axi_wuser(sram_axi_wuser),
+                        .sram_axi_wvalid(sram_axi_wvalid),
+                        `endif //`ifdef PITONSYS_MC_SRAM
+    
+                        `ifdef DEBUG_ROM 
+                        .debug_rom_en(sw[1]), // pcie_gpio[4]
+                        .debug_rom_req(debug_rom_req),
+                        .debug_rom_addr(debug_rom_addr),
+                        .debug_rom_rdata(debug_rom_rdata),
+                        `endif
+                                       
+                        `ifdef PITON_NONCACH_MEM     
+                        .ncmem_axi_araddr(ncmem_axi_araddr),
+                        .ncmem_axi_arburst(ncmem_axi_arburst),
+                        .ncmem_axi_arcache(ncmem_axi_arcache),
+                        .ncmem_axi_arid(ncmem_axi_arid),
+                        .ncmem_axi_arlen(ncmem_axi_arlen),
+                        .ncmem_axi_arlock(ncmem_axi_arlock),
+                        .ncmem_axi_arprot(ncmem_axi_arprot),
+                        .ncmem_axi_arqos(ncmem_axi_arqos),
+                        .ncmem_axi_arregion(ncmem_axi_arregion),
+                        .ncmem_axi_arready(ncmem_axi_arready),
+                        .ncmem_axi_arsize(ncmem_axi_arsize),
+                        .ncmem_axi_aruser(ncmem_axi_aruser),
+                        .ncmem_axi_arvalid(ncmem_axi_arvalid),
+                       
+                        .ncmem_axi_awaddr(ncmem_axi_awaddr),
+                        .ncmem_axi_awburst(ncmem_axi_awburst),
+                        .ncmem_axi_awcache(ncmem_axi_awcache),
+                        .ncmem_axi_awid(ncmem_axi_awid),
+                        .ncmem_axi_awlen(ncmem_axi_awlen),
+                        .ncmem_axi_awlock(ncmem_axi_awlock),
+                        .ncmem_axi_awprot(ncmem_axi_awprot),
+                        .ncmem_axi_awqos(ncmem_axi_awqos),
+                        .ncmem_axi_awregion(ncmem_axi_awregion),
+                        .ncmem_axi_awready(ncmem_axi_awready),
+                        .ncmem_axi_awsize(ncmem_axi_awsize),
+                        .ncmem_axi_awuser(ncmem_axi_awuser),
+                        .ncmem_axi_awvalid(ncmem_axi_awvalid),
+                       
+                        .ncmem_axi_bid(ncmem_axi_bid),
+                        .ncmem_axi_bready(ncmem_axi_bready),
+                        .ncmem_axi_bresp(ncmem_axi_bresp),
+                        .ncmem_axi_buser(ncmem_axi_buser),
+                        .ncmem_axi_bvalid(ncmem_axi_bvalid),
+                       
+                        .ncmem_axi_rdata(ncmem_axi_rdata),
+                        .ncmem_axi_rid(ncmem_axi_rid),
+                        .ncmem_axi_rlast(ncmem_axi_rlast),
+                        .ncmem_axi_rready(ncmem_axi_rready),
+                        .ncmem_axi_rresp(ncmem_axi_rresp),
+                        .ncmem_axi_ruser(ncmem_axi_ruser),
+                        .ncmem_axi_rvalid(ncmem_axi_rvalid),
+                       
+                        .ncmem_axi_wdata(ncmem_axi_wdata),
+                        .ncmem_axi_wid(ncmem_axi_wid),
+                        .ncmem_axi_wlast(ncmem_axi_wlast),
+                        .ncmem_axi_wready(ncmem_axi_wready),
+                        .ncmem_axi_wstrb(ncmem_axi_wstrb),
+                        .ncmem_axi_wuser(ncmem_axi_wuser),
+                        .ncmem_axi_wvalid(ncmem_axi_wvalid),
+                        `endif //NONC_CHACH_MEM
+    
+                `ifdef PITON_EXTRA_MEMS
+                 // vectorized multi-MC AXI bus
+                .mcx_axi_awid      (mcx_axi_awid     ),
+                .mcx_axi_awaddr    (mcx_axi_awaddr   ),
+                .mcx_axi_awlen     (mcx_axi_awlen    ),
+                .mcx_axi_awsize    (mcx_axi_awsize   ),
+                .mcx_axi_awburst   (mcx_axi_awburst  ),
+                .mcx_axi_awlock    (mcx_axi_awlock   ),
+                .mcx_axi_awcache   (mcx_axi_awcache  ),
+                .mcx_axi_awprot    (mcx_axi_awprot   ),
+                .mcx_axi_awqos     (mcx_axi_awqos    ),
+                .mcx_axi_awregion  (mcx_axi_awregion ),
+                .mcx_axi_awuser    (mcx_axi_awuser   ),
+                .mcx_axi_awvalid   (mcx_axi_awvalid  ),
+                .mcx_axi_awready   (mcx_axi_awready  ),
+                
+                .mcx_axi_wid       (mcx_axi_wid      ),
+                .mcx_axi_wdata     (mcx_axi_wdata    ),
+                .mcx_axi_wstrb     (mcx_axi_wstrb    ),
+                .mcx_axi_wlast     (mcx_axi_wlast    ),
+                .mcx_axi_wuser     (mcx_axi_wuser    ),
+                .mcx_axi_wvalid    (mcx_axi_wvalid   ),
+                .mcx_axi_wready    (mcx_axi_wready   ),
+                
+                .mcx_axi_arid      (mcx_axi_arid     ),
+                .mcx_axi_araddr    (mcx_axi_araddr   ),
+                .mcx_axi_arlen     (mcx_axi_arlen    ),
+                .mcx_axi_arsize    (mcx_axi_arsize   ),
+                .mcx_axi_arburst   (mcx_axi_arburst  ),
+                .mcx_axi_arlock    (mcx_axi_arlock   ),
+                .mcx_axi_arcache   (mcx_axi_arcache  ),
+                .mcx_axi_arprot    (mcx_axi_arprot   ),
+                .mcx_axi_arqos     (mcx_axi_arqos    ),
+                .mcx_axi_arregion  (mcx_axi_arregion ),
+                .mcx_axi_aruser    (mcx_axi_aruser   ),
+                .mcx_axi_arvalid   (mcx_axi_arvalid  ),
+                .mcx_axi_arready   (mcx_axi_arready  ),
+                
+                .mcx_axi_rid       (mcx_axi_rid      ),
+                .mcx_axi_rdata     (mcx_axi_rdata    ),
+                .mcx_axi_rresp     (mcx_axi_rresp    ),
+                .mcx_axi_rlast     (mcx_axi_rlast    ),
+                .mcx_axi_ruser     (mcx_axi_ruser    ),
+                .mcx_axi_rvalid    (mcx_axi_rvalid   ),
+                .mcx_axi_rready    (mcx_axi_rready   ),
+                
+                .mcx_axi_bid       (mcx_axi_bid      ),
+                .mcx_axi_bresp     (mcx_axi_bresp    ),
+                .mcx_axi_buser     (mcx_axi_buser    ),
+                .mcx_axi_bvalid    (mcx_axi_bvalid   ),
+                .mcx_axi_bready    (mcx_axi_bready   ),
+                `endif //`ifdef PITON_EXTRA_MEMS
+    
+                      `else //`ifdef PITONSYS_MEEP
+                        .hbm_cattrip(hbm_cattrip),       
+                      `endif //`ifdef PITONSYS_MEEP  
+                        `endif //`ifdef ALVEOU55C_BOARD  
+
     `endif // endif PITONSYS_NO_MC
 
     `ifdef PITONSYS_IOCTRL
