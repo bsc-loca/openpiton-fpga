@@ -935,6 +935,8 @@ if {[info exists ::env(ALVEOU55C_BOARD)] &&
   connect_bd_net -net hbm_0_apb_complete_0 [get_bd_pins hbm_0/apb_complete_0] [get_bd_pins hbm_calib_comb/Op1]
   connect_bd_net -net hbm_0_apb_complete_1 [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins hbm_calib_comb/Op2]
   connect_bd_net -net hbm_cattrip_comb_Res [get_bd_ports hbm_cattrip] [get_bd_pins hbm_cattrip_comb/Res]
+  connect_bd_net [get_bd_pins mem_calib_sync/ext_reset_in] [get_bd_pins hbm_calib_comb/Res]
+
   connect_bd_net -net mem_calib_sync_peripheral_aresetn [get_bd_ports mem_calib_complete] [get_bd_pins mem_calib_sync/peripheral_aresetn]
   connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins qdma_0/soft_reset_n] [get_bd_pins qdma_0/sys_rst_n]
   connect_bd_net -net util_ds_buf_IBUF_DS_ODIV2 [get_bd_pins qdma_0/sys_clk] [get_bd_pins util_ds_buf/IBUF_DS_ODIV2]
