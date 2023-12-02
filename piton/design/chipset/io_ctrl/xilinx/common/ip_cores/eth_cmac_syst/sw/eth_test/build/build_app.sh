@@ -15,11 +15,11 @@ sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g'
 echo "----- Checking if hw is implemented under MEEP_SHELL:"
 # SG_MEM_CACHED and TXRX_MEM_CACHED defines are suitable only for Ariane-based design
 # DEF_DMA_MEM_HBM="-DDMA_MEM_HBM -DSG_MEM_CACHED -DTXRX_MEM_CACHED"
-if grep "ETHERNET,yes.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+if grep "ETHERNET,yes.*hbm" ../../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Eth DMA memory is HBM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM="-DDMA_MEM_HBM"
-elif grep "AURORA,yes.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+elif grep "AURORA,yes.*hbm" ../../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Aurora DMA memory is HBM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM="-DAURORA -DDMA_MEM_HBM"

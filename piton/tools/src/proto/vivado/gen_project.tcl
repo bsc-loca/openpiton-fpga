@@ -30,7 +30,6 @@
 #
 
 # Boiler plate startup
-
 set DV_ROOT $::env(DV_ROOT)
 set MEEP_ROOT $::env(MEEP_DIR)
 
@@ -111,17 +110,15 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" || $BOARD_DEFAULT_VERILO
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
   # Generating Ethernet system
-  source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
+  source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
   cr_bd_Eth_CMAC_syst ""
   make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
   add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
   #Use this script to save BD after editing
-  # source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
+  # source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
 }
 
-
 # Set 'sources_1' fileset file properties for local files
-
 foreach inc_file $ALL_INCLUDE_FILES {
     if {[file exists $inc_file]} {
         set file_obj [get_files -of_objects $fileset_obj [list "$inc_file"]]
@@ -236,13 +233,14 @@ set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
 
-add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
-if { $BOARD_DEFAULT_VERILOG_MACROS != "ALVEOU55C_BOARD" } {
-add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
-}
-
-if { $env(FPGA_ETH) eq "1"} {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" || $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU55C_BOARD" } {
+  add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
+  if { $env(FPGA_ETH) eq "1"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
+  }
+}
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
+  add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
 }
 
 # Set 'constrs_1' fileset properties

@@ -67,7 +67,7 @@ def usage():
     print("                  genesys2", file=sys.stderr)
     print("                  nexysVideo", file=sys.stderr)
     print("                  f1", file=sys.stderr)
-    print("                  alveou280", file=sys.stderr)  
+    print("                  alveou280", file=sys.stderr)
     print("                  alveou55c", file=sys.stderr)
     print("\n       -d, --design <design>", file=sys.stderr)
     print("              Name of design module to synthesize.  The default is 'system', which", file=sys.stderr)
@@ -332,7 +332,7 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
     setUARTXilinxFreq(board, design_data)
     # Passing parameter to TCL
-    if board == "alveou280" or  board == "alveou55c" and hbm:
+    if hbm:
         os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
         print_info("HBM is defined as primary system RAM")
     if int(ethport) > 0:
@@ -347,6 +347,7 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
                       slurm, 1, 4096, "1:00:00", jname, dep_list)
 
     os.chdir(prev_dir)
+
     return jid
 
 
@@ -404,11 +405,8 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
                       slurm, 8, 64000, "6:00:00", jname, dep_list)
 
     # Copy sw defines for Ethernet core to proper place
-    if board == "alveou280" and eth:
-      os.system('cp -rf $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
-    
-    if board == "alveou55c" and eth:
-      os.system('cp -rf $MODEL_DIR/alveou55c/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou55c/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
+    if (board == "alveou280" or board == "alveou55c") and eth:
+      os.system('cp -rf $MODEL_DIR/%s/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/' % board)
 
     os.chdir(prev_dir)
 
@@ -437,9 +435,6 @@ def makeMEEPflow(board, design_data, work_dir, log_dir, slurm, dep_list, def_lis
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
     setUARTXilinxFreq(board, design_data)
     # Passing parameter to TCL
-    if board == "alveou280" or board == "alveou55c" :
-        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
-        print_info("HBM is defined as primary system RAM")
     jid = None
     if (tool == "vivado"):
         print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
@@ -647,12 +642,11 @@ def makeDefList(options):
         defines.append("PITON_NONCACH_MEM")
         defines.append("PITONSYS_MC_SRAM")
 
-    # --no-ddr option 
-    if (options.board != "alveou55c"):
-        if (options.no_ddr == True) or (options.board == "piton_board") or  (options.board == "alveou55c"):
-            defines.append("PITONSYS_NO_MC")
-        else:   # default option
-            defines.append("PITON_FPGA_MC_DDR3")
+    # --no-ddr option
+    if (options.no_ddr == True) or (options.board == "piton_board"):
+        defines.append("PITONSYS_NO_MC")
+    else:   # default option
+        defines.append("PITON_FPGA_MC_DDR3")
 
     if (options.hbm == True):
         defines.append("PITON_FPGA_MC_HBM")
@@ -734,10 +728,6 @@ def makeDefList(options):
     if options.board != "piton_board":
         defines.append("PITON_UART16550")
 
-    # Adding environment alveou55c
-    if options.board == "alveou55c":
-        os.environ['ALVEOU55C_BOARD'] = "TRUE"
-
     # --eth CL options is default for chipset
     os.environ['FPGA_ETH'] = "0"
 
@@ -779,8 +769,7 @@ def makeDefList(options):
     return defines
 
 def updateBlockList(options):
-    subprocess.Popen('$PITON_ROOT/piton/tools/src/proto/alveou280/update_blocklist.sh ' + options.core, shell=True, executable="/bin/bash")
-    subprocess.Popen('$PITON_ROOT/piton/tools/src/proto/alveou55c/update_blocklist.sh ' + options.core, shell=True, executable="/bin/bash")
+    print_info("updateBlockList: Here an adjustment of parameters in $PITON_ROOT/piton/tools/src/proto/block.list could be implemented according to options.core")
 
 def makeMemMapping(st_brd, work_dir, log_dir):
     prev_dir = os.getcwd()

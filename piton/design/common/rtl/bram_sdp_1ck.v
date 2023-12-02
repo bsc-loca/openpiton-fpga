@@ -44,7 +44,7 @@ module xilinx_simple_dual_port_1_clock_ram #(
 
   // The following code either initializes the memory values to a specified file or to all zeros to match Xilinx hardware
   generate
-    if (INIT_FILE == "zero") // Explicit initialization with zeroes (power-up zero filling is not applicable for ASIC)
+    if (INIT_FILE == "xilinx_default_zeroes") // Explicit initialization with zeroes (power-up zero filling is not applicable for ASIC)
     begin: init_bram_to_zero
       integer ram_index;
       initial

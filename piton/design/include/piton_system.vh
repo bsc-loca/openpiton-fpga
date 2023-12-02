@@ -119,11 +119,8 @@
     `define PITON_CHIPSET_DIFF_CLK
 `elsif VCU118_BOARD
     `define PITON_CHIPSET_DIFF_CLK
-`elsif ALVEOU55C_BOARD
-    `define PITON_CHIPSET_DIFF_CLK
 `elsif ALVEOU280_BOARD
     `define PITON_CHIPSET_DIFF_CLK
-
 `elsif XUPP3R_BOARD
     `define PITON_CHIPSET_DIFF_CLK
 `elsif GENESYS2_BOARD
@@ -154,11 +151,6 @@
     `undef PITONSYS_SPI
     `define PITONSYS_AXI4_MEM
     `define PITONSYS_PCIE
-`elsif ALVEOU55C_BOARD
-    `undef PITON_FPGA_SD_BOOT
-    `undef PITONSYS_SPI
-    `define PITONSYS_AXI4_MEM
-    `define PITONSYS_PCIE    
 `endif
 
 // If PITON_FPGA_SD_BOOT is set we should always include SPI
@@ -174,7 +166,7 @@
 `ifdef VCU118_BOARD
     `define PITONSYS_DDR4
 `elsif XUPP3R_BOARD
-    `define PITONSYS_DDR4 
+    `define PITONSYS_DDR4
 `elsif ALVEOU280_BOARD
     `define PITONSYS_DDR4	
 `endif
