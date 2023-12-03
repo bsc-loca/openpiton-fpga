@@ -20,24 +20,24 @@ int main(int argc, char ** argv) {
 
   enum {
     RTL_SIMUL = 0,
-    SRAM_BASEADDR = 0xfff0400000,
-    SRAM_ADRRANGE = RTL_SIMUL ? 512 : 0x00080000,
+    MEM_BASEADDR = 0x8040000000,
+    MEM_ADRRANGE = RTL_SIMUL ? 512 : 0x00080000,
     ETH_SYST_BASEADDR = 0xfff0800000,
     TX_MEM_CPU_BASEADDR = ETH_SYST_BASEADDR + 0x00100000,
     RX_MEM_CPU_BASEADDR = ETH_SYST_BASEADDR + 0x00200000
 
     // SDRAM access; to exclude UART access read check below should be changed to "=="
-    // SRAM_BASEADDR = 0x1ADD0000,
-    // SRAM_ADRRANGE = 0x4000
+    // MEM_BASEADDR = 0x1ADD0000,
+    // MEM_ADRRANGE = 0x4000
   };
 
-  uint8_t volatile* memPtr8 = (uint8_t*)SRAM_BASEADDR; //TX_MEM_CPU_BASEADDR, RX_MEM_CPU_BASEADDR
+  uint8_t volatile* memPtr8 = (uint8_t*)MEM_BASEADDR; //TX_MEM_CPU_BASEADDR, RX_MEM_CPU_BASEADDR
   // int fid = open("/dev/mem", O_RDWR);
   // if( fid < 0 ) {
   //   printf("Could not open /dev/mem \n");
   //   exit(1);
   // }
-  // memPtr8 = (uint8_t*)mmap(0, SRAM_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, SRAM_BASEADDR);
+  // memPtr8 = (uint8_t*)mmap(0, MEM_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, MEM_BASEADDR);
   // if (memPtr8 == MAP_FAILED) {
   //   printf("Memory mapping of On-chip Static memory failed.\n");
   //   exit(1);
@@ -46,13 +46,13 @@ int main(int argc, char ** argv) {
   uint32_t volatile* memPtr32 = (uint32_t*)memPtr8;
   uint64_t volatile* memPtr64 = (uint64_t*)memPtr8;
 
-  size_t const memBytes = SRAM_ADRRANGE / sizeof(uint8_t);
+  size_t const memBytes = MEM_ADRRANGE / sizeof(uint8_t);
   size_t const axiWidth = 512 / 8;
 
   if (!RTL_SIMUL) {
-  printf("-- SRAM test --\n");
-  printf("-- Hart %d of %d: Test of SRAM at addr 0x%lx(virt: 0x%lx) with size %d -- \n",
-         argv[0][0], argv[0][1], SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
+  printf("-- MEM test --\n");
+  printf("-- Hart %d of %d: Test of MEM at addr 0x%lx(virt: 0x%lx) with size %d -- \n",
+         argv[0][0], argv[0][1], MEM_BASEADDR, (size_t)memPtr8, MEM_ADRRANGE);
   // printf(" Checking memory with random values from %x to %x \n", 0, RAND_MAX);
   // first clearing previously stored values
   for (size_t addr = 0; addr < memBytes; ++addr) memPtr8 [addr] = 0;
@@ -104,12 +104,12 @@ int main(int argc, char ** argv) {
   }
 
   if (!RTL_SIMUL)
-  printf("-- SRAM test on hart %d of %d harts Passed --\n", argv[0][0], argv[0][1]);
+  printf("-- MEM test on hart %d of %d harts Passed --\n", argv[0][0], argv[0][1]);
 
 
   if (!RTL_SIMUL && 0) {
-  printf("-- Hart %d of %d: BW measurement of memcpy() of SRAM at addr 0x%lx(virt: 0x%lx) with size %d (100Gb Eth core is required)-- \n",
-         argv[0][0], argv[0][1], SRAM_BASEADDR, (size_t)memPtr8, SRAM_ADRRANGE);
+  printf("-- Hart %d of %d: BW measurement of memcpy() of MEM at addr 0x%lx(virt: 0x%lx) with size %d (100Gb Eth core is required)-- \n",
+         argv[0][0], argv[0][1], MEM_BASEADDR, (size_t)memPtr8, MEM_ADRRANGE);
 
   // Using Timer in 100Gb Eth core
   enum {
@@ -167,7 +167,7 @@ int main(int argc, char ** argv) {
 	timerPtr[XTC_TCSR_OFFSET] = timerCSR | XTC_CSR_ENABLE_TMR_MASK;
 
   // copying 1st half to the 2nd
-  memcpy((void*)(memPtr8 + SRAM_ADRRANGE/2), (const void*)(memPtr8), SRAM_ADRRANGE/2);
+  memcpy((void*)(memPtr8 + MEM_ADRRANGE/2), (const void*)(memPtr8), MEM_ADRRANGE/2);
 
   float ownTime = timerPtr[XTC_TCR_OFFSET] * TIMER_TICK; // Get time
   if (0) {
@@ -198,7 +198,7 @@ int main(int argc, char ** argv) {
 	timerPtr[XTC_TCSR_OFFSET] = XTC_CSR_LOAD_MASK;
 	timerPtr[XTC_TCSR_OFFSET] = timerCSR | XTC_CSR_ENABLE_TMR_MASK;
   // copying 2nd half to the 1st
-  memcpy((void*)(memPtr8), (const void*)(memPtr8 + SRAM_ADRRANGE/2), SRAM_ADRRANGE/2);
+  memcpy((void*)(memPtr8), (const void*)(memPtr8 + MEM_ADRRANGE/2), MEM_ADRRANGE/2);
   ownTime = timerPtr[XTC_TCR_OFFSET] * TIMER_TICK; // Get time
 
   // checking copied values
