@@ -164,59 +164,6 @@ module openpiton_wrapper(
     output                                eth_axi_bready,
    `endif
 
-   `ifdef PITONSYS_MC_SRAM
-    // AXI interface
-    output [`AXI4_ID_WIDTH     -1:0]     sram_axi_awid,
-    output [`AXI4_ADDR_WIDTH   -1:0]     sram_axi_awaddr,
-    output [`AXI4_LEN_WIDTH    -1:0]     sram_axi_awlen,
-    output [`AXI4_SIZE_WIDTH   -1:0]     sram_axi_awsize,
-    output [`AXI4_BURST_WIDTH  -1:0]     sram_axi_awburst,
-    output                               sram_axi_awlock,
-    output [`AXI4_CACHE_WIDTH  -1:0]     sram_axi_awcache,
-    output [`AXI4_PROT_WIDTH   -1:0]     sram_axi_awprot,
-    output [`AXI4_QOS_WIDTH    -1:0]     sram_axi_awqos,
-    output [`AXI4_REGION_WIDTH -1:0]     sram_axi_awregion,
-    output [`AXI4_USER_WIDTH   -1:0]     sram_axi_awuser,
-    output                               sram_axi_awvalid,
-    input                                sram_axi_awready,
-
-    output  [`AXI4_ID_WIDTH     -1:0]    sram_axi_wid,
-    output  [`AXI4_DATA_WIDTH   -1:0]    sram_axi_wdata,
-    output  [`AXI4_STRB_WIDTH   -1:0]    sram_axi_wstrb,
-    output                               sram_axi_wlast,
-    output  [`AXI4_USER_WIDTH   -1:0]    sram_axi_wuser,
-    output                               sram_axi_wvalid,
-    input                                sram_axi_wready,
-
-    output  [`AXI4_ID_WIDTH     -1:0]    sram_axi_arid,
-    output  [`AXI4_ADDR_WIDTH   -1:0]    sram_axi_araddr,
-    output  [`AXI4_LEN_WIDTH    -1:0]    sram_axi_arlen,
-    output  [`AXI4_SIZE_WIDTH   -1:0]    sram_axi_arsize,
-    output  [`AXI4_BURST_WIDTH  -1:0]    sram_axi_arburst,
-    output                               sram_axi_arlock,
-    output  [`AXI4_CACHE_WIDTH  -1:0]    sram_axi_arcache,
-    output  [`AXI4_PROT_WIDTH   -1:0]    sram_axi_arprot,
-    output  [`AXI4_QOS_WIDTH    -1:0]    sram_axi_arqos,
-    output  [`AXI4_REGION_WIDTH -1:0]    sram_axi_arregion,
-    output  [`AXI4_USER_WIDTH   -1:0]    sram_axi_aruser,
-    output                               sram_axi_arvalid,
-    input                                sram_axi_arready,
-
-    input   [`AXI4_ID_WIDTH     -1:0]    sram_axi_rid,
-    input   [`AXI4_DATA_WIDTH   -1:0]    sram_axi_rdata,
-    input   [`AXI4_RESP_WIDTH   -1:0]    sram_axi_rresp,
-    input                                sram_axi_rlast,
-    input   [`AXI4_USER_WIDTH   -1:0]    sram_axi_ruser,
-    input                                sram_axi_rvalid,
-    output                               sram_axi_rready,
-
-    input   [`AXI4_ID_WIDTH     -1:0]    sram_axi_bid,
-    input   [`AXI4_RESP_WIDTH   -1:0]    sram_axi_bresp,
-    input   [`AXI4_USER_WIDTH   -1:0]    sram_axi_buser,
-    input                                sram_axi_bvalid,
-    output                               sram_axi_bready,
-    `endif
-
     // AXI non-cacheable system memory
     `ifdef PITON_NONCACH_MEM
     output  [`AXI4_ID_WIDTH     -1:0]    ncmem_axi_awid,

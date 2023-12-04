@@ -66,22 +66,6 @@ while {[gets $dv_xml line] >= 0} {
       puts $bd_hdr $line
     }
   }
-  # extracting system SRAM address definitions
-  if      {[string first "<name>sram</name>" $line] >= 0} {
-    while {[string first "</port>"           $line] <  0} {
-      gets $dv_xml line
-      if        {[string first "<base>"      $line] >= 0} {
-        set line [string map  {"<base>"  "SRAM_SYST_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                      $line]
-      } elseif  {[string first "<length>"    $line] >= 0} {
-        set line [string map  {"<length>" "SRAM_SYST_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}                    $line]
-      } else {
-        continue
-      }
-      puts $bd_hdr $line
-    }
-  }
 }
 
 

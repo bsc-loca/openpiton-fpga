@@ -124,8 +124,6 @@ def usage():
     print("              Create PCIe access to the boot ROM. Only available with meep option", file=sys.stderr)
     print("\n       --ncmem", file=sys.stderr)
     print("              Create an alias of the main memory bypassing the cache. Flexible with meep option, otherwise is enabled.", file=sys.stderr)    
-    print("\n       --sram", file=sys.stderr)
-    print("              Create exchange SRAM. Flexible with meep option, otherwise is enabled.", file=sys.stderr)    
     print("\n       --uart-dmw <storage type>", file=sys.stderr)
     print("              Implement design with Direct Memory Write (DMW) from UART module turned on.", file=sys.stderr)
     print("              Storage type: \"ddr\"", file=sys.stderr)
@@ -575,7 +573,6 @@ def setParserOptions(parser):
     parser.add_option("--pronoc", dest="pronoc", action="store_true", default=False)
     parser.add_option("--vlanes", dest="vlanes", action="store", default=4)    
     parser.add_option("--ncmem", dest="ncmem", action="store_true", default=False)
-    parser.add_option("--sram", dest="sram", action="store_true", default=False)
     parser.add_option("--brom-only", dest="brom_only", action="store_true", default=False)
     parser.add_option("--debug-brom", dest="debug_brom", action="store_true", default=False)
     parser.add_option("--uart-dmw", dest="uart_dmw", action="store", default=None)
@@ -636,11 +633,8 @@ def makeDefList(options):
             defines.append("ETHERNET_DMA")
         if (options.ncmem):
             defines.append("PITON_NONCACH_MEM")
-        if (options.sram):
-            defines.append("PITONSYS_MC_SRAM")
     elif options.board == "alveou280" or options.board == "alveou55c":
         defines.append("PITON_NONCACH_MEM")
-        defines.append("PITONSYS_MC_SRAM")
 
     # --no-ddr option
     if (options.no_ddr == True) or (options.board == "piton_board"):
