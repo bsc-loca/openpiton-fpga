@@ -56,18 +56,3 @@ riscv64-unknown-linux-gnu-gcc -Wall -Og -D__aarch64__ $DEF_DMA_MEM_HBM -o ./eth_
                                 ../src/syst_hw/EthSyst.cpp \
                                 ../src/app/ping_test.cpp \
                                 ../src/app/eth_test.cpp
-
-echo ""
-FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
-ln -s -f $FEDORA_IMG_PATH/send-file_noswap.sh ./send-file
-ln -s -f $FEDORA_IMG_PATH/get-file_noswap.sh  ./get-file
-echo "Transfering files to/from Fedora on RISC-V (Caution: Transfers are *limited to 1MB* in both directions):"
-echo "Host to Riscv:"
-echo "host_ $ ./send-file <filename>            # the file is copied to the intermediate memory"
-echo "riscv_$   get-file  <filesize> <filename> # this is indicated in above step"
-echo "Riscv to Host:"
-echo "riscv_$   send-file <filename>            # the file is copied to the intermediate memory"
-echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above step"
-echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma-to-device/dma-from-device utils"
-
-# ./send-file ./eth_test

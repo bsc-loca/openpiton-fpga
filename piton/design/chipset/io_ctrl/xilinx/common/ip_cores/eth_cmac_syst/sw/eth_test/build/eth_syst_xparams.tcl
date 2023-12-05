@@ -1,7 +1,7 @@
 
 # Script to generate C-header containing hardware definitions for Ethernet core
 
-set dv_xml [open ../../../../../../../../../xilinx/alveou55c/devices_ariane.xml r]
+set dv_xml [open ../../../../../../../../../xilinx/alveou280/devices_ariane.xml r]
 set bd_tcl [open ../../../eth_cmac_syst.tcl                                     r]
 set bd_hdr [open ./xparameters.h                                                w]
 
