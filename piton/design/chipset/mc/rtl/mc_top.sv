@@ -260,10 +260,9 @@ module mc_top (
       input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid,
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
-  `else //`ifdef PITONSYS_MEEP
+  `endif //`ifdef PITONSYS_MEEP
     output                          ddr_parity,
     output                          hbm_cattrip,
-  `endif //`ifdef PITONSYS_MEEP
 `else
     inout [`DDR3_DM_WIDTH-1:0]      ddr_dm,
 `endif // XUPP3R_BOARD
@@ -1626,7 +1625,12 @@ axi4_zeroer axi4_zeroer(
         .mem_clk(ui_clk),
         .mem_rst(ui_clk_sync_rst),
         .mem_calib_complete(init_calib_complete),
+        .mem_refclk_clk_n(sys_clk_n),
+        .mem_refclk_clk_p(sys_clk_p),
 
+  `ifdef PITON_FPGA_MC_HBM
+        .hbm_cattrip(hbm_cattrip),
+  `else
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),
         .ddr4_sdram_c0_ba(ddr_ba),
@@ -1641,11 +1645,8 @@ axi4_zeroer axi4_zeroer(
         .ddr4_sdram_c0_odt(ddr_odt),
         .ddr4_sdram_c0_par(ddr_parity),
         .ddr4_sdram_c0_reset_n(ddr_reset_n),
-        
-        .hbm_cattrip(hbm_cattrip),
+  `endif
 
-        .ddr_clk_clk_n(sys_clk_n),
-        .ddr_clk_clk_p(sys_clk_p),
         .sys_rst(~sys_rst_n),
         .sys_clk(core_ref_clk),
 

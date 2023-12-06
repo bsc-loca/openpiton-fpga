@@ -321,8 +321,3 @@ set_property PACKAGE_PIN BM29              [ get_ports  {ddr_dqs_c[1]} ]       ;
 set_property IOSTANDARD DIFF_POD12_DCI     [ get_ports  {ddr_dqs_c[1]} ]       ;# Bank  64 VCCO - VCC1V2 Net "DDR4_C0_DQS_C9"  - IO_L1N_T0L_N1_DBC_64
 set_property PACKAGE_PIN BM28              [ get_ports  {ddr_dqs_t[1]} ]       ;# Bank  64 VCCO - VCC1V2 Net "DDR4_C0_DQS_T9"  - IO_L1P_T0L_N0_DBC_64
 set_property IOSTANDARD DIFF_POD12_DCI     [ get_ports  {ddr_dqs_t[1]} ]       ;# Bank  64 VCCO - VCC1V2 Net "DDR4_C0_DQS_T9"  - IO_L1P_T0L_N0_DBC_64
-
-set_property PACKAGE_PIN BJ44 [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
-set_property IOSTANDARD  LVDS [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
-set_property PACKAGE_PIN BJ43 [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
-set_property IOSTANDARD  LVDS [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65

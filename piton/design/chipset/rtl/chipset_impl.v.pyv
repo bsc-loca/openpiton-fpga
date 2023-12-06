@@ -450,11 +450,10 @@ module chipset_impl(
     input                                   uart_axi_rvalid,
     output                                  uart_axi_rready,
     input                                   uart_irq,
+   `endif //`ifdef PITONSYS_MEEP
 
-   `else //`ifdef PITONSYS_MEEP
       output                                    ddr_parity,
       output                                    hbm_cattrip,
-   `endif //`ifdef PITONSYS_MEEP
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
 `endif // XUPP3R_BOARD
@@ -1332,11 +1331,10 @@ credit_to_valrdy noc3_xbar_to_%s(
             .mcx_axi_bvalid    (mcx_axi_bvalid   ),
             .mcx_axi_bready    (mcx_axi_bready   ),
             `endif //`ifdef PITON_EXTRA_MEMS
+          `endif //`ifdef PITONSYS_MEEP
 
-          `else //`ifdef PITONSYS_MEEP
             .ddr_parity(ddr_parity),
             .hbm_cattrip(hbm_cattrip),       
-          `endif //`ifdef PITONSYS_MEEP
         `else
             .ddr_dm(ddr_dm),
         `endif // XUPP3R_BOARD

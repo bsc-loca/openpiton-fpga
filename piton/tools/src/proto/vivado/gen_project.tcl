@@ -104,7 +104,7 @@ foreach prj_file ${ALL_FILES} {
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
 #Generating IP cores for Alveo280 board or Alveou55c board
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" || $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU55C_BOARD" } {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
 
   # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
@@ -233,14 +233,16 @@ set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
 
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" || $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU55C_BOARD" } {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
   add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
-  if { $env(FPGA_ETH) eq "1"} {
+  if {[info exists ::env(PROTOSYN_RUNTIME_ETH)] &&
+                  $::env(PROTOSYN_RUNTIME_ETH)=="TRUE"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
   }
-}
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
-  add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
+  if {![info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] ||
+                   $::env(PROTOSYN_RUNTIME_HBM_FIRST)!="TRUE"} {
+    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
+  }
 }
 
 # Set 'constrs_1' fileset properties

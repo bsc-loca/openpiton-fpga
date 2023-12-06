@@ -520,11 +520,10 @@ module chipset(
       input  [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bvalid,
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
+  `endif //`ifdef PITONSYS_MEEP
 
-  `else //`ifdef PITONSYS_MEEP
       output                          ddr_parity,
       output                          hbm_cattrip,
-  `endif //`ifdef PITONSYS_MEEP
 
 `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
@@ -1964,10 +1963,10 @@ chipset_impl_noc_power_test  chipset_impl (
             .mcx_axi_bready    (mcx_axi_bready   ),
            `endif //`ifdef PITON_EXTRA_MEMS
 
-                  `else //`ifdef PITONSYS_MEEP
+                  `endif //`ifdef PITONSYS_MEEP
                     .ddr_parity(ddr_parity),
                     .hbm_cattrip(hbm_cattrip),       
-                  `endif //`ifdef PITONSYS_MEEP
+
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
