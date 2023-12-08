@@ -239,8 +239,8 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
                   $::env(PROTOSYN_RUNTIME_ETH)=="TRUE"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
   }
-  if {![info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] ||
-                   $::env(PROTOSYN_RUNTIME_HBM_FIRST)!="TRUE"} {
+  if {![info exists ::env(PROTOSYN_RUNTIME_HBM)] ||
+                   $::env(PROTOSYN_RUNTIME_HBM)!="TRUE"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
   }
 }

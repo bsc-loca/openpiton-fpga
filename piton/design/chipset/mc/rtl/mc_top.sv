@@ -366,11 +366,9 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
     .clk                (core_ref_clk),  
     .rst_n              (sys_rst_n), 
     .uart_boot_en       (1'b0),
-  `ifndef PITON_FPGA_MC_DDR3
     .phy_init_done      (sys_rst_n),
+  `ifndef PITON_FPGA_MC_DDR3
     .axi_id_deadlock    (mc_axi_deadlock), // taking "alarm" signal from NCMEM AXI for simulation (SDRAM is absent)
-  `else
-    .phy_init_done      (noc_axi4_bridge_init_done),
   `endif
 
     .src_bridge_vr_noc2_val(ncmem_flit_in_val),
@@ -1346,7 +1344,7 @@ noc_axi4_bridge #(
     .clk                (core_ref_clk),
     .rst_n              (sys_rst_n),
     .uart_boot_en       (1'b0),
-    .phy_init_done      (noc_axi4_bridge_init_done),
+    .phy_init_done      (sys_rst_n),
 
     .src_bridge_vr_noc2_rdy(mcx_flit_in_rdy [idx]),
     .src_bridge_vr_noc2_val(mcx_flit_in_val [idx]),
@@ -1587,13 +1585,16 @@ axi4_zeroer axi4_zeroer(
        (
          .*, // implicit connection of all AXI's at once
 
+        .mem_clk(ui_clk),
+        .mem_rst(ui_clk_sync_rst),
+        .mem_calib_complete(init_calib_complete),
+        .mem_refclk_clk_n(sys_clk_n),
+        .mem_refclk_clk_p(sys_clk_p),
+
   `ifdef PITON_FPGA_MC_HBM
+        .hbm_cattrip(hbm_cattrip),
         .pci2hbm_saxi_araddr  (pci2hbm_raddr),
         .pci2hbm_saxi_awaddr  (pci2hbm_waddr),
-  `else
-        .pci2hbm_saxi_araddr  (pci2hbm_maxi_araddr),
-        .pci2hbm_saxi_awaddr  (pci2hbm_maxi_awaddr),
-  `endif
         .pci2hbm_saxi_arburst (pci2hbm_maxi_arburst),
         .pci2hbm_saxi_arid    ('0),
         .pci2hbm_saxi_arlen   (pci2hbm_maxi_arlen),
@@ -1621,15 +1622,6 @@ axi4_zeroer axi4_zeroer(
         .pci2hbm_saxi_wready  (pci2hbm_maxi_wready),
         .pci2hbm_saxi_wstrb   (pci2hbm_maxi_wstrb),
         .pci2hbm_saxi_wvalid  (pci2hbm_maxi_wvalid),
-
-        .mem_clk(ui_clk),
-        .mem_rst(ui_clk_sync_rst),
-        .mem_calib_complete(init_calib_complete),
-        .mem_refclk_clk_n(sys_clk_n),
-        .mem_refclk_clk_p(sys_clk_p),
-
-  `ifdef PITON_FPGA_MC_HBM
-        .hbm_cattrip(hbm_cattrip),
   `else
         .ddr4_sdram_c0_act_n(ddr_act_n),
         .ddr4_sdram_c0_adr(ddr_addr),

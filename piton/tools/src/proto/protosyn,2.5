@@ -736,7 +736,7 @@ def makeDefList(options):
 
     # --hbm option for utilizing HBM
     if options.hbm:
-        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
+        os.environ['PROTOSYN_RUNTIME_HBM'] = "TRUE"
         print_info("HBM is defined as primary system SDRAM")
 
     # --oled option for String on a display
