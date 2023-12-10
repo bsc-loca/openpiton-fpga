@@ -106,16 +106,13 @@ add_files -norecurse -fileset $fileset_obj $files_to_add
 #Generating IP cores for Alveo280 board or Alveou55c board
 if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
 
-  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
+  # Generating PCIe-based Shell
+  # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
   # Generating Ethernet system
+  # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl)
   source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
-  cr_bd_Eth_CMAC_syst ""
-  make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
-  add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
-  #Use this script to save BD after editing
-  # source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
 }
 
 # Set 'sources_1' fileset file properties for local files

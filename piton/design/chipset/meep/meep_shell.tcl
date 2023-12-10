@@ -1,66 +1,26 @@
+# Copyright 2022 Barcelona Supercomputing Center-Centro Nacional de Supercomputación
 
-################################################################
-# This is a generated script based on design: meep_shell
-#
-# Though there are limitations about the generated script,
-# the main purpose of this utility is to make learning
-# IP Integrator Tcl commands easier.
-################################################################
+# Licensed under the Solderpad Hardware License v 2.1 (the "License");
+# you may not use this file except in compliance with the License, or, at your option, the Apache License version 2.0.
+# You may obtain a copy of the License at
+# 
+#     http://www.solderpad.org/licenses/SHL-2.1
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-namespace eval _tcl {
-proc get_script_folder {} {
-   set script_path [file normalize [info script]]
-   set script_folder [file dirname $script_path]
-   return $script_folder
-}
-}
-variable script_folder
-set script_folder [_tcl::get_script_folder]
+# Author: Alexander Kropotov, BSC-CNS
+# Date: 10.12.2023
+# Description: 
 
-################################################################
-# Check if script is running in correct Vivado version.
-################################################################
-set scripts_vivado_version 2021.2
-set current_vivado_version [version -short]
+# Proc to create BD meep_shell
+proc cr_bd_meep_shell { parentCell } {
 
-if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
-   puts ""
-   catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
-
-   return 1
-}
-
-################################################################
-# START
-################################################################
-
-# To test this script, run the following commands from Vivado Tcl console:
-# source meep_shell_script.tcl
-
-# If there is no project opened, this script will create a
-# project, but make sure you do not have an existing project
-# <./myproj/project_1.xpr> in the current working folder.
-
-if {[info exists ::env(ALVEOU55C_BOARD)] &&
-                $::env(ALVEOU55C_BOARD)=="TRUE"} {
-set list_projs [get_projects -quiet]
-
-if { $list_projs eq "" } {
-
-   create_project project_1 myproj -part xcu55c-fsvh2892-2L-e
-}
-} else {
-set list_projs [get_projects -quiet]
-
-if { $list_projs eq "" } {
-
-   create_project project_1 myproj -part xcu280-fsvh2892-2L-e
-}
-}
-
-# CHANGE DESIGN NAME HERE
-variable design_name
-set design_name meep_shell
+  # CHANGE DESIGN NAME HERE
+  set design_name meep_shell
 
 # This script was generated for a remote BD. To create a non-remote design,
 # change the variable <run_remote_bd_flow> to <0>.
@@ -125,25 +85,25 @@ if { $run_remote_bd_flow == 1 } {
 
 current_bd_design $design_name
 
-set bCheckIPsPassed 1
-##################################################################
-# CHECK IPs
-##################################################################
-set bCheckIPs 1
-if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
-xilinx.com:ip:axi_gpio:2.0\
-xilinx.com:ip:ddr4:2.2\
-xilinx.com:ip:util_vector_logic:2.0\
-xilinx.com:ip:axi_bram_ctrl:4.1\
-xilinx.com:ip:xlconstant:1.1\
-xilinx.com:ip:hbm:1.0\
-xilinx.com:ip:proc_sys_reset:5.0\
-xilinx.com:ip:qdma:4.0\
-xilinx.com:ip:smartconnect:1.0\
-xilinx.com:ip:util_ds_buf:2.2\
-xilinx.com:ip:blk_mem_gen:8.4\
-"
+  set bCheckIPsPassed 1
+  ##################################################################
+  # CHECK IPs
+  ##################################################################
+  set bCheckIPs 1
+  if { $bCheckIPs == 1 } {
+     set list_check_ips "\ 
+  xilinx.com:ip:axi_gpio:2.0\
+  xilinx.com:ip:ddr4:2.2\
+  xilinx.com:ip:util_vector_logic:2.0\
+  xilinx.com:ip:axi_bram_ctrl:4.1\
+  xilinx.com:ip:xlconstant:1.1\
+  xilinx.com:ip:hbm:1.0\
+  xilinx.com:ip:proc_sys_reset:5.0\
+  xilinx.com:ip:qdma:4.0\
+  xilinx.com:ip:smartconnect:1.0\
+  xilinx.com:ip:util_ds_buf:2.2\
+  xilinx.com:ip:blk_mem_gen:8.4\
+  "
 
    set list_ips_missing ""
    common::send_gid_msg -ssname BD::TCL -id 2011 -severity "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
@@ -160,25 +120,14 @@ xilinx.com:ip:blk_mem_gen:8.4\
       set bCheckIPsPassed 0
    }
 
-}
+  }
 
-if { $bCheckIPsPassed != 1 } {
-  common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
-  return 3
-}
-
-##################################################################
-# DESIGN PROCs
-##################################################################
-
-
-
-# Procedure to create entire design; Provide argument to make
-# procedure reusable. If parentCell is "", will use root.
-proc create_root_design { parentCell } {
+  if { $bCheckIPsPassed != 1 } {
+    common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
+    return 3
+  }
 
   variable script_folder
-  variable design_name
 
   if { $parentCell eq "" } {
      set parentCell [get_bd_cells /]
@@ -875,14 +824,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 
   validate_bd_design
   save_bd_design
+  close_bd_design $design_name 
 }
-# End of create_root_design()
+# End of cr_bd_meep_shell()
 
-
-##################################################################
-# MAIN FLOW
-##################################################################
-
-create_root_design ""
-
-
+cr_bd_meep_shell ""
