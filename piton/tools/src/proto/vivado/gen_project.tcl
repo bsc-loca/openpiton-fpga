@@ -78,19 +78,16 @@ foreach prj_file ${ALL_FILES} {
 }
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
-#Generating IP cores for Alveo280 board
+#Generating IP cores for Alveo280 board or Alveou55c board
 if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
 
-  # Generating PCIe-based Shell (to save BD: write_bd_tcl -force ../piton/design/chipset/meep/meep_shell.tcl)
+  # Generating PCIe-based Shell
+  # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
   # Generating Ethernet system
-  source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
-  cr_bd_Eth_CMAC_syst ""
-  make_wrapper -files [get_files ${PROJECT_DIR}/../bd/Eth_CMAC_syst/Eth_CMAC_syst.bd] -top
-  add_files -norecurse           ${PROJECT_DIR}/../bd/Eth_CMAC_syst/hdl/Eth_CMAC_syst_wrapper.v
-  #Use this script to save BD after editing
-  # source $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/write_eth_syst_bd.tcl
+  # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl)
+  source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
 }
 
 # Set 'sources_1' fileset file properties for local files
@@ -208,11 +205,16 @@ set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
 
-add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
-add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
-
-if { $env(FPGA_ETH) eq "1"} {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
+  add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
+  if {[info exists ::env(PROTOSYN_RUNTIME_ETH)] &&
+                  $::env(PROTOSYN_RUNTIME_ETH)=="TRUE"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"
+  }
+  if {![info exists ::env(PROTOSYN_RUNTIME_HBM)] ||
+                   $::env(PROTOSYN_RUNTIME_HBM)!="TRUE"} {
+    add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ddr4.xdc"
+  }
 }
 
 # Set 'constrs_1' fileset properties

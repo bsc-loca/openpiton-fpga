@@ -66,6 +66,7 @@ def usage():
     print("                  nexysVideo", file=sys.stderr)
     print("                  f1", file=sys.stderr)
     print("                  alveou280", file=sys.stderr)
+    print("                  alveou55c", file=sys.stderr)
     print("\n       -d, --design <design>", file=sys.stderr)
     print("              Name of design module to synthesize.  The default is 'system', which", file=sys.stderr)
     print("              synthesizes a full system with chip and chipset. See", file=sys.stderr)
@@ -289,7 +290,7 @@ def runImplF1(board, design_data, src_dir, work_dir, log_dir, def_list, slurm, d
     return jid
 
 
-def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_list):
+def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
     prev_dir = os.getcwd()
 
     os.chdir(work_dir)
@@ -303,12 +304,6 @@ def makeProject(board, hbm, ethport, design_data, work_dir, log_dir, slurm, dep_
     proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
     setUARTXilinxFreq(board, design_data)
-    # Passing parameter to TCL
-    if board == "alveou280" and hbm:
-        os.environ['PROTOSYN_RUNTIME_HBM_FIRST'] = "TRUE"
-        print_info("HBM is defined as primary system RAM")
-    if int(ethport) > 0:
-        os.environ['PROTOSYN_RUNTIME_ETHPORT'] = "1"
     jid = None
     if (tool == "vivado"):
         jid = run_vivado(proj_log, proj_script, design_data["PATH"], board, \
@@ -364,8 +359,8 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
                       slurm, 8, 64000, "6:00:00", jname, dep_list)
 
     # Copy sw defines for Ethernet core to proper place
-    if board == "alveou280" and eth:
-      os.system('cp -rf $MODEL_DIR/alveou280/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/xilinx/alveou280/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/')
+    if (board == "alveou280" or board == "alveou55c") and eth:
+      os.system('cp -rf $MODEL_DIR/%s/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/' % board)
 
     os.chdir(prev_dir)
 
@@ -526,9 +521,8 @@ def makeDefList(options):
 
     if (options.board == "f1"):
         print_info("design option is ignored for f1")
-    elif options.board == "alveou280":
+    elif options.board == "alveou280" or options.board == "alveou55c":
         defines.append("PITON_NONCACH_MEM")
-        defines.append("PITONSYS_MC_SRAM")
 
     # --no-ddr option
     if (options.no_ddr == True) or (options.board == "piton_board"):
@@ -551,7 +545,7 @@ def makeDefList(options):
         defines.append("PITONSYS_MEM_ZEROER")    
 
     # do not use SD controller if BRAM is used for boot or a test or if board doesn't have sd
-    if (options.test_name != None) or (options.board in {"piton_board", "xupp3r", "f1", "alveou280"}):
+    if (options.test_name != None) or (options.board in {"piton_board", "xupp3r", "f1", "alveou280", "alveou55c"}):
         pass
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
@@ -617,23 +611,27 @@ def makeDefList(options):
         defines.append("PITON_UART16550")
 
     # --eth CL options is default for chipset
-    os.environ['FPGA_ETH'] = "0"
-
     if options.eth or options.design == "chipset" or options.design == "system":
         # Ethernet controller is supported on Genesys2 and nexysVideo
         if options.board == "genesys2" or options.board == "nexysVideo":
             defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
         # Ethernet controller is also supported on Alveo-U280
-        elif options.board == "alveou280":
+        elif options.board == "alveou280" or options.board == "alveou55c":
           defines.append("PITON_FPGA_ETH")
           if options.eth:
             defines.append("PITON_FPGA_ETH_CMAC")
-            os.environ['FPGA_ETH'] = "1"
+            os.environ['PROTOSYN_RUNTIME_ETH'] = "TRUE"
             if int(options.ethport) > 0:
               defines.append("PITON_FPGA_ETH_PORT1")
+              os.environ['PROTOSYN_RUNTIME_ETHPORT'] = "1"
         else:
             print_info("--eth option is ignored for %s" % options.board)
+
+    # --hbm option for utilizing HBM
+    if options.hbm:
+        os.environ['PROTOSYN_RUNTIME_HBM'] = "TRUE"
+        print_info("HBM is defined as primary system SDRAM")
 
     # --oled option for String on a display
     if options.oled != None:
@@ -1073,7 +1071,7 @@ def main():
     dep_list = []
 
     if run_make_project:
-        jid = makeProject(options.board, options.hbm, options.ethport, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
+        jid = makeProject(options.board, design_data, rc_dir.work, rc_dir.log, options.slurm, None)
         if jid != None:
             dep_list.append(jid)
 

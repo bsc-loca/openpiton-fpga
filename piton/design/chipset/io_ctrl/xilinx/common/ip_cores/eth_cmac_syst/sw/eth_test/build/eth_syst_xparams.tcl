@@ -1,9 +1,9 @@
 
 # Script to generate C-header containing hardware definitions for Ethernet core
 
-set dv_xml [open ../../../../../../../../xilinx/alveou280/devices_ariane.xml r]
-set bd_tcl [open ../../../eth_cmac_syst.tcl                                  r]
-set bd_hdr [open ./xparameters.h                                             w]
+set dv_xml [open ../../../../../../../../../xilinx/alveou280/devices_ariane.xml r]
+set bd_tcl [open ../../../eth_cmac_syst.tcl                                     r]
+set bd_hdr [open ./xparameters.h                                                w]
 
 puts $bd_hdr "#ifndef XPARAMETERS_H  // prevent circular inclusions"
 puts $bd_hdr "#define XPARAMETERS_H  // by using protection macros"
@@ -60,22 +60,6 @@ while {[gets $dv_xml line] >= 0} {
       } elseif  {[string first "<length>"        $line] >= 0} {
         set line [string map  {"<length>" "DRAM_UNCACHE_ADRRANGE = "} $line]
         set line [string map  {"</length>" ","}                       $line]
-      } else {
-        continue
-      }
-      puts $bd_hdr $line
-    }
-  }
-  # extracting system SRAM address definitions
-  if      {[string first "<name>sram</name>" $line] >= 0} {
-    while {[string first "</port>"           $line] <  0} {
-      gets $dv_xml line
-      if        {[string first "<base>"      $line] >= 0} {
-        set line [string map  {"<base>"  "SRAM_SYST_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                      $line]
-      } elseif  {[string first "<length>"    $line] >= 0} {
-        set line [string map  {"<length>" "SRAM_SYST_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}                    $line]
       } else {
         continue
       }

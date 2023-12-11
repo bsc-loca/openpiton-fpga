@@ -9,6 +9,9 @@
 
 pcienum=`lspci -m -d 10ee:| cut -d' ' -f 1 | cut -d ':' -f 1`
 
+# Here a path to Xilinx PCIe DMA driver binary should be applied
+# export PATH=path_to_Xilinx_PCIe_drivers/QDMA/linux-kernel/bin/:$PATH
+
 #PCIe GPIO bus: {Timeout_en(bit4), Bootrom_nOS(bit3), UartBoot_en(bit2), Ariane_rstn(bit1), System_rstn(bit0)}
 dma-ctl qdma${pcienum}000 reg write bar 2 0x0 0x0 #Both resets
 sleep 2

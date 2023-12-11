@@ -1,55 +1,26 @@
+# Copyright 2022 Barcelona Supercomputing Center-Centro Nacional de Supercomputación
 
-################################################################
-# This is a generated script based on design: meep_shell
-#
-# Though there are limitations about the generated script,
-# the main purpose of this utility is to make learning
-# IP Integrator Tcl commands easier.
-################################################################
+# Licensed under the Solderpad Hardware License v 2.1 (the "License");
+# you may not use this file except in compliance with the License, or, at your option, the Apache License version 2.0.
+# You may obtain a copy of the License at
+# 
+#     http://www.solderpad.org/licenses/SHL-2.1
+# 
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-namespace eval _tcl {
-proc get_script_folder {} {
-   set script_path [file normalize [info script]]
-   set script_folder [file dirname $script_path]
-   return $script_folder
-}
-}
-variable script_folder
-set script_folder [_tcl::get_script_folder]
+# Author: Alexander Kropotov, BSC-CNS
+# Date: 10.12.2023
+# Description: 
 
-################################################################
-# Check if script is running in correct Vivado version.
-################################################################
-set scripts_vivado_version 2021.2
-set current_vivado_version [version -short]
+# Proc to create BD meep_shell
+proc cr_bd_meep_shell { parentCell } {
 
-if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
-   puts ""
-   catch {common::send_gid_msg -ssname BD::TCL -id 2041 -severity "ERROR" "This script was generated using Vivado <$scripts_vivado_version> and is being run in <$current_vivado_version> of Vivado. Please run the script in Vivado <$scripts_vivado_version> then open the design in Vivado <$current_vivado_version>. Upgrade the design by running \"Tools => Report => Report IP Status...\", then run write_bd_tcl to create an updated script."}
-
-   return 1
-}
-
-################################################################
-# START
-################################################################
-
-# To test this script, run the following commands from Vivado Tcl console:
-# source meep_shell_script.tcl
-
-# If there is no project opened, this script will create a
-# project, but make sure you do not have an existing project
-# <./myproj/project_1.xpr> in the current working folder.
-
-set list_projs [get_projects -quiet]
-if { $list_projs eq "" } {
-   create_project project_1 myproj -part xcu280-fsvh2892-2L-e
-}
-
-
-# CHANGE DESIGN NAME HERE
-variable design_name
-set design_name meep_shell
+  # CHANGE DESIGN NAME HERE
+  set design_name meep_shell
 
 # This script was generated for a remote BD. To create a non-remote design,
 # change the variable <run_remote_bd_flow> to <0>.
@@ -114,26 +85,25 @@ if { $run_remote_bd_flow == 1 } {
 
 current_bd_design $design_name
 
-set bCheckIPsPassed 1
-##################################################################
-# CHECK IPs
-##################################################################
-set bCheckIPs 1
-if { $bCheckIPs == 1 } {
-   set list_check_ips "\ 
-xilinx.com:ip:axi_gpio:2.0\
-xilinx.com:ip:ddr4:2.2\
-xilinx.com:ip:util_vector_logic:2.0\
-xilinx.com:ip:axi_bram_ctrl:4.1\
-xilinx.com:ip:xlconstant:1.1\
-xilinx.com:ip:hbm:1.0\
-xilinx.com:ip:proc_sys_reset:5.0\
-xilinx.com:ip:qdma:4.0\
-xilinx.com:ip:smartconnect:1.0\
-xilinx.com:ip:system_ila:1.1\
-xilinx.com:ip:util_ds_buf:2.2\
-xilinx.com:ip:blk_mem_gen:8.4\
-"
+  set bCheckIPsPassed 1
+  ##################################################################
+  # CHECK IPs
+  ##################################################################
+  set bCheckIPs 1
+  if { $bCheckIPs == 1 } {
+     set list_check_ips "\ 
+  xilinx.com:ip:axi_gpio:2.0\
+  xilinx.com:ip:ddr4:2.2\
+  xilinx.com:ip:util_vector_logic:2.0\
+  xilinx.com:ip:axi_bram_ctrl:4.1\
+  xilinx.com:ip:xlconstant:1.1\
+  xilinx.com:ip:hbm:1.0\
+  xilinx.com:ip:proc_sys_reset:5.0\
+  xilinx.com:ip:qdma:4.0\
+  xilinx.com:ip:smartconnect:1.0\
+  xilinx.com:ip:util_ds_buf:2.2\
+  xilinx.com:ip:blk_mem_gen:8.4\
+  "
 
    set list_ips_missing ""
    common::send_gid_msg -ssname BD::TCL -id 2011 -severity "INFO" "Checking if the following IPs exist in the project's IP catalog: $list_check_ips ."
@@ -150,25 +120,14 @@ xilinx.com:ip:blk_mem_gen:8.4\
       set bCheckIPsPassed 0
    }
 
-}
+  }
 
-if { $bCheckIPsPassed != 1 } {
-  common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
-  return 3
-}
-
-##################################################################
-# DESIGN PROCs
-##################################################################
-
-
-
-# Procedure to create entire design; Provide argument to make
-# procedure reusable. If parentCell is "", will use root.
-proc create_root_design { parentCell } {
+  if { $bCheckIPsPassed != 1 } {
+    common::send_gid_msg -ssname BD::TCL -id 2023 -severity "WARNING" "Will not continue with creation of design due to the error(s) above."
+    return 3
+  }
 
   variable script_folder
-  variable design_name
 
   if { $parentCell eq "" } {
      set parentCell [get_bd_cells /]
@@ -196,9 +155,7 @@ proc create_root_design { parentCell } {
 
 
   # Create interface ports
-  set ddr4_sdram_c0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c0 ]
-
-  set ddr_clk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 ddr_clk ]
+  set mem_refclk       [ create_bd_intf_port -mode Slave  -vlnv xilinx.com:interface:diff_clock_rtl:1.0 mem_refclk ]
 
   set m_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi ]
   set_property -dict [ list \
@@ -230,8 +187,8 @@ proc create_root_design { parentCell } {
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $m_axi
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   set_property CONFIG.PROTOCOL         {AXI3} [get_bd_intf_ports m_axi]
   set_property CONFIG.DATA_WIDTH       {256}  [get_bd_intf_ports m_axi]
   set_property CONFIG.MAX_BURST_LENGTH {16}   [get_bd_intf_ports m_axi]
@@ -267,21 +224,19 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
    CONFIG.WUSER_BITS_PER_BYTE {0} \
    CONFIG.WUSER_WIDTH {0} \
    ] $ncmem_axi
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   set_property CONFIG.PROTOCOL         {AXI3} [get_bd_intf_ports ncmem_axi]
   set_property CONFIG.DATA_WIDTH       {256}  [get_bd_intf_ports ncmem_axi]
   set_property CONFIG.MAX_BURST_LENGTH {16}   [get_bd_intf_ports ncmem_axi]
 }
 
-
 set PITON_EXTRA_MEMS 0
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE" &&
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE" &&
     [info exists ::env(PITON_EXTRA_MEMS)]} {
   set PITON_EXTRA_MEMS $::env(PITON_EXTRA_MEMS)
 }
-
 for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   set mcx_axi$idx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 mcx_axi$idx ]
   set_property -dict [ list \
@@ -315,6 +270,8 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    ] [get_bd_intf_ports mcx_axi$idx]
 }
 
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   set pci2hbm_maxi [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:aximm_rtl:1.0 pci2hbm_maxi ]
   set_property -dict [ list \
    CONFIG.ADDR_WIDTH {34} \
@@ -360,6 +317,11 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.WUSER_WIDTH {0} \
    ] $pci2hbm_saxi
 
+  set hbm_cattrip [ create_bd_port -dir O -from 0 -to 0 hbm_cattrip ]
+} else {
+  set ddr4_sdram_c0 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:ddr4_rtl:1.0 ddr4_sdram_c0 ]
+}
+
   set pci_express_x16 [ create_bd_intf_port -mode Master -vlnv xilinx.com:interface:pcie_7x_mgt_rtl:1.0 pci_express_x16 ]
 
   set pcie_refclk [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:diff_clock_rtl:1.0 pcie_refclk ]
@@ -367,40 +329,8 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.FREQ_HZ {100000000} \
    ] $pcie_refclk
 
-  set sram_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 sram_axi ]
-  set_property -dict [ list \
-   CONFIG.ADDR_WIDTH {19} \
-   CONFIG.ARUSER_WIDTH {0} \
-   CONFIG.AWUSER_WIDTH {0} \
-   CONFIG.BUSER_WIDTH {0} \
-   CONFIG.DATA_WIDTH {512} \
-   CONFIG.HAS_BRESP {1} \
-   CONFIG.HAS_BURST {1} \
-   CONFIG.HAS_CACHE {1} \
-   CONFIG.HAS_LOCK {1} \
-   CONFIG.HAS_PROT {1} \
-   CONFIG.HAS_QOS {0} \
-   CONFIG.HAS_REGION {0} \
-   CONFIG.HAS_RRESP {1} \
-   CONFIG.HAS_WSTRB {1} \
-   CONFIG.ID_WIDTH {6} \
-   CONFIG.MAX_BURST_LENGTH {256} \
-   CONFIG.NUM_READ_OUTSTANDING {2} \
-   CONFIG.NUM_READ_THREADS {1} \
-   CONFIG.NUM_WRITE_OUTSTANDING {2} \
-   CONFIG.NUM_WRITE_THREADS {1} \
-   CONFIG.PROTOCOL {AXI4} \
-   CONFIG.READ_WRITE_MODE {READ_WRITE} \
-   CONFIG.RUSER_BITS_PER_BYTE {0} \
-   CONFIG.RUSER_WIDTH {0} \
-   CONFIG.SUPPORTS_NARROW_BURST {1} \
-   CONFIG.WUSER_BITS_PER_BYTE {0} \
-   CONFIG.WUSER_WIDTH {0} \
-   ] $sram_axi
-
 
   # Create ports
-  set hbm_cattrip [ create_bd_port -dir O -from 0 -to 0 hbm_cattrip ]
   set mem_calib_complete [ create_bd_port -dir O -from 0 -to 0 -type rst mem_calib_complete ]
   set pcie_gpio [ create_bd_port -dir O -from 4 -to 0 pcie_gpio ]
   set pcie_perstn [ create_bd_port -dir I -type rst pcie_perstn ]
@@ -408,7 +338,7 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.POLARITY {ACTIVE_LOW} \
  ] $pcie_perstn
 
-  set sysck_axi_ports "ncmem_axi:sram_axi"
+  set sysck_axi_ports "ncmem_axi"
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     append sysck_axi_ports ":mcx_axi" $idx
   }
@@ -431,68 +361,8 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
  ] $mem_rst
 
 
-  # Create instance: axi_gpio_0, and set properties
-  set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
-  set_property -dict [ list \
-   CONFIG.C_ALL_OUTPUTS {1} \
-   CONFIG.C_GPIO_WIDTH {5} \
- ] $axi_gpio_0
-
-  # Create instance: ddr4_0, and set properties
-  set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
-  set_property -dict [ list \
-   CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
-   CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
-   CONFIG.C0.DDR4_AxiAddressWidth {34} \
-   CONFIG.C0.DDR4_AxiDataWidth {512} \
-   CONFIG.C0.DDR4_CLKFBOUT_MULT {15} \
-   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
-   CONFIG.C0.DDR4_CasLatency {17} \
-   CONFIG.C0.DDR4_CasWriteLatency {12} \
-   CONFIG.C0.DDR4_DataMask {NONE} \
-   CONFIG.C0.DDR4_DataWidth {72} \
-   CONFIG.C0.DDR4_EN_PARITY {true} \
-   CONFIG.C0.DDR4_Ecc {true} \
-   CONFIG.C0.DDR4_InputClockPeriod {9996} \
-   CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
-   CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
-   CONFIG.C0.DDR4_MemoryType {RDIMMs} \
-   CONFIG.C0.DDR4_TimePeriod {833} \
-   CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
-   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
-   CONFIG.RESET_BOARD_INTERFACE {Custom} \
- ] $ddr4_0
-
-  # Create instance: ddr_axi_rst_inv, and set properties
-  set ddr_axi_rst_inv [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 ddr_axi_rst_inv ]
-  set_property -dict [ list \
-   CONFIG.C_OPERATION {not} \
-   CONFIG.C_SIZE {1} \
-   CONFIG.LOGO_FILE {data/sym_notgate.png} \
- ] $ddr_axi_rst_inv
-
-  # Create instance: ext_axi_sram_ctrl, and set properties
-  set ext_axi_sram_ctrl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 ext_axi_sram_ctrl ]
-  set_property -dict [ list \
-   CONFIG.DATA_WIDTH {512} \
-   CONFIG.ECC_TYPE {0} \
-   CONFIG.SINGLE_PORT_BRAM {1} \
- ] $ext_axi_sram_ctrl
-
-  # Create instance: gndx1, and set properties
-  set gndx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx1 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {1} \
- ] $gndx1
-
-  # Create instance: gndx32, and set properties
-  set gndx32 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx32 ]
-  set_property -dict [ list \
-   CONFIG.CONST_VAL {0} \
-   CONFIG.CONST_WIDTH {32} \
- ] $gndx32
-
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   # Create instance: hbm_0, and set properties
   set hbm_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:hbm:1.0 hbm_0 ]
   set_property -dict [ list \
@@ -559,7 +429,7 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.USER_SAXI_13 {false} \
    CONFIG.USER_SAXI_14 {false} \
    CONFIG.USER_SAXI_15 {false} \
-   CONFIG.USER_SAXI_16 {false} \
+   CONFIG.USER_SAXI_16 {true}  \
    CONFIG.USER_SAXI_17 {false} \
    CONFIG.USER_SAXI_18 {false} \
    CONFIG.USER_SAXI_19 {false} \
@@ -574,7 +444,7 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.USER_SAXI_28 {false} \
    CONFIG.USER_SAXI_29 {false} \
    CONFIG.USER_SAXI_30 {false} \
-   CONFIG.USER_SAXI_31 {false} \
+   CONFIG.USER_SAXI_31 {true}  \
    CONFIG.USER_SWITCH_ENABLE_01 {TRUE} \
  ] $hbm_0
 
@@ -583,24 +453,17 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.NUM_WRITE_THREADS {16} \
  ] [get_bd_intf_pins /hbm_0/SAXI_00]
 
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  set_property CONFIG.USER_SAXI_16                                  {true} [get_bd_cells hbm_0]
-  set_property CONFIG.USER_SAXI_31                                  {true} [get_bd_cells hbm_0]
-}
-# A function distributing extra HBM channels evenly around center channel of the switch
-set distHBMchan {16 + ($idx%2 ? $idx/2+1 : -$idx/2-1)}
-for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
-  set_property CONFIG.USER_SAXI_[format {%02d} [expr $distHBMchan]] {true} [get_bd_cells hbm_0]
-}
+  # A function distributing extra HBM channels evenly around center channel of the switch
+  set distHBMchan {16 + ($idx%2 ? $idx/2+1 : -$idx/2-1)}
+  for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+    set_property CONFIG.USER_SAXI_[format {%02d} [expr $distHBMchan]] {true} [get_bd_cells hbm_0]
+  }
 
-  # Create instance: hbm_calib_comb, and set properties
-  set hbm_calib_comb [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 hbm_calib_comb ]
+  # Create instance: mem_refclk_buf, and set properties
+  set mem_refclk_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 mem_refclk_buf ]
   set_property -dict [ list \
-   CONFIG.C_OPERATION {and} \
-   CONFIG.C_SIZE {1} \
-   CONFIG.LOGO_FILE {data/sym_andgate.png} \
- ] $hbm_calib_comb
+   CONFIG.C_BUF_TYPE {IBUFDS} \
+ ] $mem_refclk_buf
 
   # Create instance: hbm_cattrip_comb, and set properties
   set hbm_cattrip_comb [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 hbm_cattrip_comb ]
@@ -610,19 +473,67 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.LOGO_FILE {data/sym_orgate.png} \
  ] $hbm_cattrip_comb
 
-  # Create instance: int_axi_sram_ctrl, and set properties
-  set int_axi_sram_ctrl [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 int_axi_sram_ctrl ]
+} else {
+
+  # Create instance: ddr4_0, and set properties
+  set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
-   CONFIG.DATA_WIDTH {512} \
-   CONFIG.ECC_TYPE {0} \
-   CONFIG.SINGLE_PORT_BRAM {1} \
- ] $int_axi_sram_ctrl
+   CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
+   CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
+   CONFIG.C0.DDR4_AxiAddressWidth {34} \
+   CONFIG.C0.DDR4_AxiDataWidth {512} \
+   CONFIG.C0.DDR4_CLKFBOUT_MULT {15} \
+   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+   CONFIG.C0.DDR4_CasLatency {17} \
+   CONFIG.C0.DDR4_CasWriteLatency {12} \
+   CONFIG.C0.DDR4_DataMask {NONE} \
+   CONFIG.C0.DDR4_DataWidth {72} \
+   CONFIG.C0.DDR4_EN_PARITY {true} \
+   CONFIG.C0.DDR4_Ecc {true} \
+   CONFIG.C0.DDR4_InputClockPeriod {9996} \
+   CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
+   CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
+   CONFIG.C0.DDR4_MemoryType {RDIMMs} \
+   CONFIG.C0.DDR4_TimePeriod {833} \
+   CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
+   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
+   CONFIG.RESET_BOARD_INTERFACE {Custom} \
+ ] $ddr4_0
+
+  # Create instance: gndx1, and set properties
+  set gndx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx1 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+   CONFIG.CONST_WIDTH {1} \
+ ] $gndx1
+}
+
+  # Create instance: gndx32, and set properties
+  set gndx32 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx32 ]
+  set_property -dict [ list \
+   CONFIG.CONST_VAL {0} \
+   CONFIG.CONST_WIDTH {32} \
+ ] $gndx32
+
+  # Create instance: rst_inv, and set properties
+  set rst_inv [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 rst_inv ]
+  set_property -dict [ list \
+   CONFIG.C_OPERATION {not} \
+   CONFIG.C_SIZE {1} \
+   CONFIG.LOGO_FILE {data/sym_notgate.png} \
+ ] $rst_inv
 
   # Create instance: mem_calib_sync, and set properties
   set mem_calib_sync [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 mem_calib_sync ]
   set_property -dict [ list \
    CONFIG.C_AUX_RESET_HIGH {0} \
  ] $mem_calib_sync
+
+  # Create instance: pcie_refclk_buf, and set properties
+  set pcie_refclk_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 pcie_refclk_buf ]
+  set_property -dict [ list \
+   CONFIG.C_BUF_TYPE {IBUFDSGTE} \
+ ] $pcie_refclk_buf
 
   # Create instance: qdma_0, and set properties
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:4.0 qdma_0 ]
@@ -667,137 +578,108 @@ for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
+  set_property CONFIG.pl_link_cap_max_link_speed {5.0_GT/s} [get_bd_cells qdma_0]
+}
+
+  # Create instance: vccx1, and set properties
+  set vccx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 vccx1 ]
+
+  # Create instance: axi_gpio_0, and set properties
+  set axi_gpio_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_gpio:2.0 axi_gpio_0 ]
+  set_property -dict [ list \
+   CONFIG.C_ALL_OUTPUTS {1} \
+   CONFIG.C_GPIO_WIDTH {5} \
+ ] $axi_gpio_0
 
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
   set_property -dict [ list \
    CONFIG.NUM_CLKS {3} \
-   CONFIG.NUM_MI {3} \
    CONFIG.NUM_SI {3} \
+   CONFIG.NUM_MI {1} \
  ] $smartconnect_0
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  set_property CONFIG.NUM_CLKS {2} [get_bd_cells smartconnect_0]
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
+  set_property CONFIG.NUM_CLKS {1} [get_bd_cells smartconnect_0]
   set_property CONFIG.NUM_SI   {1} [get_bd_cells smartconnect_0]
 }
 
-  # Create instance: sys_rst_inv, and set properties
-  set sys_rst_inv [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_vector_logic:2.0 sys_rst_inv ]
-  set_property -dict [ list \
-   CONFIG.C_OPERATION {not} \
-   CONFIG.C_SIZE {1} \
-   CONFIG.LOGO_FILE {data/sym_notgate.png} \
- ] $sys_rst_inv
-
-  # Create instance: system_ila_1, and set properties
-  set system_ila_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_1 ]
-  set_property -dict [ list \
-   CONFIG.C_BRAM_CNT {0.0} \
-   CONFIG.C_MON_TYPE {NATIVE} \
-   CONFIG.C_NUM_OF_PROBES {1} \
-   CONFIG.C_PROBE0_TYPE {0} \
- ] $system_ila_1
-
-  # Create instance: util_ds_buf, and set properties
-  set util_ds_buf [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf ]
-  set_property -dict [ list \
-   CONFIG.C_BUF_TYPE {IBUFDSGTE} \
- ] $util_ds_buf
-
-  # Create instance: vccx1, and set properties
-  set vccx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 vccx1 ]
-
-  # Create instance: xchng_sram, and set properties
-  set xchng_sram [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 xchng_sram ]
-  set_property -dict [ list \
-   CONFIG.Assume_Synchronous_Clk {false} \
-   CONFIG.EN_SAFETY_CKT {true} \
-   CONFIG.Enable_B {Use_ENB_Pin} \
-   CONFIG.Memory_Type {True_Dual_Port_RAM} \
-   CONFIG.Operating_Mode_A {WRITE_FIRST} \
-   CONFIG.Operating_Mode_B {WRITE_FIRST} \
-   CONFIG.PRIM_type_to_Implement {BRAM} \
-   CONFIG.Port_B_Clock {100} \
-   CONFIG.Port_B_Enable_Rate {100} \
-   CONFIG.Port_B_Write_Rate {50} \
-   CONFIG.Use_RSTB_Pin {true} \
- ] $xchng_sram
-
   # Create interface connections
-  connect_bd_intf_net -intf_net C0_SYS_CLK_0_1 [get_bd_intf_ports ddr_clk] [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
-  connect_bd_intf_net -intf_net SAXI_00_0_1 [get_bd_intf_ports pci2hbm_saxi] [get_bd_intf_pins hbm_0/SAXI_00]
-  connect_bd_intf_net -intf_net S_AXI_0_1 [get_bd_intf_ports sram_axi] [get_bd_intf_pins ext_axi_sram_ctrl/S_AXI]
-  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins ext_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTA]
-  connect_bd_intf_net -intf_net ddr4_0_C0_DDR4 [get_bd_intf_ports ddr4_sdram_c0] [get_bd_intf_pins ddr4_0/C0_DDR4]
-  connect_bd_intf_net -intf_net ext_axi_sram_ctrl_BRAM_PORTA [get_bd_intf_pins int_axi_sram_ctrl/BRAM_PORTA] [get_bd_intf_pins xchng_sram/BRAM_PORTB]
-  connect_bd_intf_net -intf_net int_connect_M01_AXI [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins smartconnect_0/M01_AXI]
-  connect_bd_intf_net -intf_net int_connect_M02_AXI [get_bd_intf_pins int_axi_sram_ctrl/S_AXI] [get_bd_intf_pins smartconnect_0/M02_AXI]
-  connect_bd_intf_net -intf_net pcie_refclk_1 [get_bd_intf_ports pcie_refclk] [get_bd_intf_pins util_ds_buf/CLK_IN_D]
-  connect_bd_intf_net -intf_net qdma_0_M_AXI [get_bd_intf_pins qdma_0/M_AXI] [get_bd_intf_pins smartconnect_0/S00_AXI]
-  connect_bd_intf_net -intf_net qdma_0_M_AXI_LITE [get_bd_intf_pins axi_gpio_0/S_AXI] [get_bd_intf_pins qdma_0/M_AXI_LITE]
-  connect_bd_intf_net -intf_net qdma_0_pcie_mgt [get_bd_intf_ports pci_express_x16] [get_bd_intf_pins qdma_0/pcie_mgt]
-  connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_ports pci2hbm_maxi] [get_bd_intf_pins smartconnect_0/M00_AXI]
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins hbm_0/SAXI_16]
-  connect_bd_intf_net -intf_net ncmem_axi_net [get_bd_intf_ports ncmem_axi] [get_bd_intf_pins hbm_0/SAXI_31]
+  connect_bd_intf_net [get_bd_intf_ports pcie_refclk]      [get_bd_intf_pins pcie_refclk_buf/CLK_IN_D]
+  connect_bd_intf_net [get_bd_intf_pins qdma_0/M_AXI]      [get_bd_intf_pins smartconnect_0/S00_AXI]
+  connect_bd_intf_net [get_bd_intf_pins qdma_0/M_AXI_LITE] [get_bd_intf_pins axi_gpio_0/S_AXI]
+  connect_bd_intf_net [get_bd_intf_pins qdma_0/pcie_mgt]   [get_bd_intf_ports pci_express_x16]
+
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
+  connect_bd_intf_net [get_bd_intf_ports mem_refclk] [get_bd_intf_pins mem_refclk_buf/CLK_IN_D]
+  connect_bd_intf_net [get_bd_intf_ports pci2hbm_saxi] [get_bd_intf_pins hbm_0/SAXI_00]
+  connect_bd_intf_net [get_bd_intf_ports m_axi]        [get_bd_intf_pins hbm_0/SAXI_16]
+  connect_bd_intf_net [get_bd_intf_ports ncmem_axi]    [get_bd_intf_pins hbm_0/SAXI_31]
+  connect_bd_intf_net [get_bd_intf_ports pci2hbm_maxi] [get_bd_intf_pins smartconnect_0/M00_AXI]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
-    connect_bd_intf_net -intf_net m_axi_net$idx [get_bd_intf_ports mcx_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr $distHBMchan]]]
+    connect_bd_intf_net [get_bd_intf_ports mcx_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr $distHBMchan]]]
   }
 } else {
-  connect_bd_intf_net -intf_net axi4_mm_1 [get_bd_intf_ports m_axi] [get_bd_intf_pins smartconnect_0/S01_AXI]
-  connect_bd_intf_net -intf_net ncmem_axi_net [get_bd_intf_ports ncmem_axi] [get_bd_intf_pins smartconnect_0/S02_AXI]
+  connect_bd_intf_net [get_bd_intf_ports mem_refclk]    [get_bd_intf_pins ddr4_0/C0_SYS_CLK]
+  connect_bd_intf_net [get_bd_intf_ports ddr4_sdram_c0] [get_bd_intf_pins ddr4_0/C0_DDR4]
+  connect_bd_intf_net [get_bd_intf_ports m_axi]               [get_bd_intf_pins smartconnect_0/S01_AXI]
+  connect_bd_intf_net [get_bd_intf_ports ncmem_axi]           [get_bd_intf_pins smartconnect_0/S02_AXI]
+  connect_bd_intf_net [get_bd_intf_pins ddr4_0/C0_DDR4_S_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI]
 }
 
   # Create port connections
-  connect_bd_net -net axi_gpio_0_gpio_io_o [get_bd_ports pcie_gpio] [get_bd_pins axi_gpio_0/gpio_io_o] [get_bd_pins system_ila_1/probe0]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets axi_gpio_0_gpio_io_o]
-  connect_bd_net -net ddr4_0_addn_ui_clkout1 [get_bd_pins ddr4_0/addn_ui_clkout1] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1]
-  connect_bd_net -net ddr4_0_c0_init_calib_complete [get_bd_pins ddr4_0/c0_init_calib_complete] [get_bd_pins mem_calib_sync/ext_reset_in]
-  connect_bd_net -net ddr_calib_comb_Res [get_bd_pins hbm_calib_comb/Res] [get_bd_pins mem_calib_sync/aux_reset_in]
-  connect_bd_net -net gndx1_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_arvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_bready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_rready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wvalid] [get_bd_pins gndx1/dout]
-  connect_bd_net -net hbm_0_DRAM_0_STAT_CATTRIP [get_bd_pins hbm_0/DRAM_0_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op1]
-  connect_bd_net -net hbm_0_DRAM_1_STAT_CATTRIP [get_bd_pins hbm_0/DRAM_1_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op2]
-  connect_bd_net -net hbm_0_apb_complete_0 [get_bd_pins hbm_0/apb_complete_0] [get_bd_pins hbm_calib_comb/Op1]
-  connect_bd_net -net hbm_0_apb_complete_1 [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins hbm_calib_comb/Op2]
-  connect_bd_net -net hbm_cattrip_comb_Res [get_bd_ports hbm_cattrip] [get_bd_pins hbm_cattrip_comb/Res]
-  connect_bd_net -net mem_calib_sync_peripheral_aresetn [get_bd_ports mem_calib_complete] [get_bd_pins mem_calib_sync/peripheral_aresetn]
-  connect_bd_net -net pcie_perstn_1 [get_bd_ports pcie_perstn] [get_bd_pins qdma_0/soft_reset_n] [get_bd_pins qdma_0/sys_rst_n]
-  connect_bd_net -net util_ds_buf_IBUF_DS_ODIV2 [get_bd_pins qdma_0/sys_clk] [get_bd_pins util_ds_buf/IBUF_DS_ODIV2]
-  connect_bd_net -net util_ds_buf_IBUF_OUT [get_bd_pins qdma_0/sys_clk_gt] [get_bd_pins util_ds_buf/IBUF_OUT]
-  connect_bd_net -net xlconstant_0_dout [get_bd_pins qdma_0/qsts_out_rdy] [get_bd_pins qdma_0/tm_dsc_sts_rdy] [get_bd_pins vccx1/dout]
-  connect_bd_net -net qdma_0_axi_aclk [get_bd_pins axi_gpio_0/s_axi_aclk] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins int_axi_sram_ctrl/s_axi_aclk] [get_bd_pins qdma_0/axi_aclk] [get_bd_pins smartconnect_0/aclk] [get_bd_pins system_ila_1/clk]
-  connect_bd_net -net qdma_0_axi_aresetn [get_bd_pins axi_gpio_0/s_axi_aresetn] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins int_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn]
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_16_WDATA_PARITY] [get_bd_pins hbm_0/AXI_31_WDATA_PARITY]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports mem_clk] [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_16_ACLK] [get_bd_pins hbm_0/AXI_31_ACLK] [get_bd_pins mem_calib_sync/slowest_sync_clk]
-  connect_bd_net -net sys_rst_0_1 [get_bd_ports mem_rst] [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
-  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_16_ARESET_N] [get_bd_pins hbm_0/AXI_31_ARESET_N] [get_bd_pins mem_calib_sync/dcm_locked] [get_bd_pins sys_rst_inv/Res]
+  connect_bd_net [get_bd_ports pcie_perstn] [get_bd_pins qdma_0/soft_reset_n] [get_bd_pins qdma_0/sys_rst_n]
+  connect_bd_net [get_bd_pins qdma_0/sys_clk]    [get_bd_pins pcie_refclk_buf/IBUF_DS_ODIV2]
+  connect_bd_net [get_bd_pins qdma_0/sys_clk_gt] [get_bd_pins pcie_refclk_buf/IBUF_OUT]
+  connect_bd_net [get_bd_pins qdma_0/qsts_out_rdy] [get_bd_pins qdma_0/tm_dsc_sts_rdy] [get_bd_pins vccx1/dout]
+  connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins axi_gpio_0/s_axi_aclk]
+  connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins axi_gpio_0/s_axi_aresetn]
+  connect_bd_net [get_bd_ports pcie_gpio]         [get_bd_pins axi_gpio_0/gpio_io_o]
+  connect_bd_net [get_bd_pins mem_calib_sync/slowest_sync_clk]   [get_bd_ports mem_clk]
+  connect_bd_net [get_bd_pins mem_calib_sync/mb_debug_sys_rst]   [get_bd_pins rst_inv/Op1]
+  connect_bd_net [get_bd_pins mem_calib_sync/dcm_locked]         [get_bd_pins rst_inv/Res]
+  connect_bd_net [get_bd_pins mem_calib_sync/peripheral_aresetn] [get_bd_ports mem_calib_complete]
+
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
+  connect_bd_net [get_bd_pins mem_refclk_buf/IBUF_OUT] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1]
+  connect_bd_net [get_bd_pins hbm_0/DRAM_0_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op1]
+  connect_bd_net [get_bd_pins hbm_0/DRAM_1_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op2]
+  connect_bd_net [get_bd_ports hbm_cattrip]              [get_bd_pins hbm_cattrip_comb/Res]
+  connect_bd_net [get_bd_pins hbm_0/apb_complete_0] [get_bd_pins mem_calib_sync/ext_reset_in]
+  connect_bd_net [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins mem_calib_sync/aux_reset_in]
+  connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_00_ACLK] 
+  connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_00_ARESET_N]
+  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_16_WDATA_PARITY] [get_bd_pins hbm_0/AXI_31_WDATA_PARITY]
+  connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_16_ACLK] [get_bd_pins hbm_0/AXI_31_ACLK]
+  connect_bd_net [get_bd_ports sys_rst] [get_bd_ports mem_rst] [get_bd_pins rst_inv/Op1]
+  connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_16_ARESET_N] [get_bd_pins hbm_0/AXI_31_ARESET_N]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     set hbm_port [format {%02d} [expr $distHBMchan]]
-    connect_bd_net -net gndx32_dout     [get_bd_pins hbm_0/AXI_${hbm_port}_WDATA_PARITY]
-    connect_bd_net -net s_axi_aclk_0_1  [get_bd_pins hbm_0/AXI_${hbm_port}_ACLK]
-    connect_bd_net -net sys_rst_inv_Res [get_bd_pins hbm_0/AXI_${hbm_port}_ARESET_N]
+    connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_${hbm_port}_WDATA_PARITY]
+    connect_bd_net [get_bd_ports sys_clk]    [get_bd_pins hbm_0/AXI_${hbm_port}_ACLK]
+    connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/AXI_${hbm_port}_ARESET_N]
   }
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins smartconnect_0/aclk1]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins ddr_axi_rst_inv/Op1]
-  connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res]
 } else {
-  connect_bd_net -net gndx32_dout [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata] [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY]
-  connect_bd_net -net s_axi_aclk_0_1 [get_bd_ports sys_clk] [get_bd_pins ext_axi_sram_ctrl/s_axi_aclk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins smartconnect_0/aclk2]
-  connect_bd_net -net sys_rst_0_1 [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst] [get_bd_pins mem_calib_sync/mb_debug_sys_rst] [get_bd_pins sys_rst_inv/Op1]
-  connect_bd_net -net sys_rst_inv_Res [get_bd_pins ext_axi_sram_ctrl/s_axi_aresetn] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins sys_rst_inv/Res]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk [get_bd_ports mem_clk] [get_bd_pins ddr4_0/c0_ddr4_ui_clk] [get_bd_pins mem_calib_sync/slowest_sync_clk] [get_bd_pins smartconnect_0/aclk1]
-  connect_bd_net -net ddr4_0_c0_ddr4_ui_clk_sync_rst [get_bd_ports mem_rst] [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_pins ddr_axi_rst_inv/Op1]
-  connect_bd_net -net ddr_axi_rst_inv_Res [get_bd_pins ddr4_0/c0_ddr4_aresetn] [get_bd_pins ddr_axi_rst_inv/Res] [get_bd_pins mem_calib_sync/dcm_locked]
+  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata]
+  connect_bd_net [get_bd_pins gndx1/dout]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_arvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_bready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_rready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wvalid]
+  connect_bd_net [get_bd_pins ddr4_0/c0_ddr4_ui_clk]          [get_bd_ports mem_clk]    [get_bd_pins smartconnect_0/aclk]
+  connect_bd_net [get_bd_pins ddr4_0/c0_ddr4_ui_clk_sync_rst] [get_bd_ports mem_rst]    [get_bd_pins rst_inv/Op1]
+  connect_bd_net [get_bd_pins ddr4_0/c0_ddr4_aresetn]         [get_bd_pins rst_inv/Res] [get_bd_pins smartconnect_0/aresetn]
+  connect_bd_net [get_bd_pins ddr4_0/c0_init_calib_complete] [get_bd_pins mem_calib_sync/ext_reset_in] [get_bd_pins mem_calib_sync/aux_reset_in]
+  connect_bd_net [get_bd_pins qdma_0/axi_aclk] [get_bd_pins smartconnect_0/aclk1]
+  connect_bd_net [get_bd_ports sys_clk] [get_bd_pins smartconnect_0/aclk2]
+  connect_bd_net [get_bd_ports sys_rst] [get_bd_pins ddr4_0/sys_rst]
 }
+
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
-if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
-                $::env(PROTOSYN_RUNTIME_HBM_FIRST)=="TRUE"} {
-  assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
+                $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
   assign_bd_address -offset 0x00000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
   assign_bd_address -offset 0x10000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM01] -force
@@ -932,64 +814,18 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM_FIRST)] &&
   assign_bd_address -offset 0x0001F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port/HBM_MEM31] -force
   }
 } else {
-  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
-  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x00000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
-  assign_bd_address -offset 0x000200000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM00] -force
-  assign_bd_address -offset 0x000210000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM01] -force
-  assign_bd_address -offset 0x000220000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM02] -force
-  assign_bd_address -offset 0x000230000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM03] -force
-  assign_bd_address -offset 0x000240000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM04] -force
-  assign_bd_address -offset 0x000250000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM05] -force
-  assign_bd_address -offset 0x000260000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM06] -force
-  assign_bd_address -offset 0x000270000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM07] -force
-  assign_bd_address -offset 0x000280000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM08] -force
-  assign_bd_address -offset 0x000290000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM09] -force
-  assign_bd_address -offset 0x0002A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM10] -force
-  assign_bd_address -offset 0x0002B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM11] -force
-  assign_bd_address -offset 0x0002C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM12] -force
-  assign_bd_address -offset 0x0002D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM13] -force
-  assign_bd_address -offset 0x0002E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM14] -force
-  assign_bd_address -offset 0x0002F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM15] -force
-  assign_bd_address -offset 0x000300000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM16] -force
-  assign_bd_address -offset 0x000310000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM17] -force
-  assign_bd_address -offset 0x000320000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM18] -force
-  assign_bd_address -offset 0x000330000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM19] -force
-  assign_bd_address -offset 0x000340000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM20] -force
-  assign_bd_address -offset 0x000350000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM21] -force
-  assign_bd_address -offset 0x000360000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM22] -force
-  assign_bd_address -offset 0x000370000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM23] -force
-  assign_bd_address -offset 0x000380000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM24] -force
-  assign_bd_address -offset 0x000390000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM25] -force
-  assign_bd_address -offset 0x0003A0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM26] -force
-  assign_bd_address -offset 0x0003B0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM27] -force
-  assign_bd_address -offset 0x0003C0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM28] -force
-  assign_bd_address -offset 0x0003D0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM29] -force
-  assign_bd_address -offset 0x0003E0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM30] -force
-  assign_bd_address -offset 0x0003F0000000 -range 0x10000000 -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00/HBM_MEM31] -force
-  assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
-  assign_bd_address -offset 0x000200000000 -range 0x000200000000 -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
+  assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces m_axi]        [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
+  assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces ncmem_axi]    [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
 }
-  assign_bd_address -offset 0x000800000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs int_axi_sram_ctrl/S_AXI/Mem0] -force
-  assign_bd_address -offset 0x00000000 -range 0x00080000 -target_address_space [get_bd_addr_spaces sram_axi] [get_bd_addr_segs ext_axi_sram_ctrl/S_AXI/Mem0] -force
-
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
   validate_bd_design
   save_bd_design
+  close_bd_design $design_name 
 }
-# End of create_root_design()
+# End of cr_bd_meep_shell()
 
-
-##################################################################
-# MAIN FLOW
-##################################################################
-
-create_root_design ""
-
-
+cr_bd_meep_shell ""

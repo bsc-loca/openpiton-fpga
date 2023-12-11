@@ -213,6 +213,7 @@ module system(
 `ifndef F1_BOARD
     // Generalized interface for any FPGA board we support.
     // Not all signals will be used for all FPGA boards (see constraints)
+  `ifndef PITON_FPGA_MC_HBM
     `ifdef PITONSYS_DDR4
     output                                      ddr_act_n,
     output [`DDR3_BG_WIDTH-1:0]                 ddr_bg,
@@ -247,17 +248,16 @@ module system(
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
+    `elsif ALVEOU280_BOARD
+    output                                      ddr_parity,
     `else
-    `ifndef ALVEOU280_BOARD
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
-    `else
-     output                                     ddr_parity,
-    `endif //ALVEO
     `endif // XUPP3R_BOARD
     `else // PITONSYS_DDR4
     output [`DDR3_DM_WIDTH-1:0]                 ddr_dm,
     `endif // PITONSYS_DDR4
     output [`DDR3_ODT_WIDTH-1:0]                ddr_odt,
+  `endif // `ifndef PITON_FPGA_MC_HBM
 `else //ifndef F1_BOARD 
     input                                        mc_clk,
     // AXI Write Address Channel Signals
@@ -1196,6 +1196,7 @@ chipset chipset(
 `ifndef PITONSYS_NO_MC
 `ifdef PITON_FPGA_MC_DDR3
 `ifndef F1_BOARD
+`ifndef PITON_FPGA_MC_HBM
 `ifdef PITONSYS_DDR4
     .ddr_act_n(ddr_act_n),
     .ddr_bg(ddr_bg),
@@ -1223,16 +1224,16 @@ chipset chipset(
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
 `elsif ALVEOU280_BOARD
-            .ddr_parity(ddr_parity),
-            .hbm_cattrip(hbm_cattrip),  
-            .ddr_ck_n(ddr_ck_c),
-            .ddr_ck_p(ddr_ck_t),
-            .ddr_dqs_n(ddr_dqs_c),
-            .ddr_dqs_p(ddr_dqs_t),     
+    .ddr_parity(ddr_parity),
+    .ddr_ck_n(ddr_ck_c),
+    .ddr_ck_p(ddr_ck_t),
+    .ddr_dqs_n(ddr_dqs_c),
+    .ddr_dqs_p(ddr_dqs_t),     
 `else
     .ddr_dm(ddr_dm),
 `endif
     .ddr_odt(ddr_odt),
+`endif // `ifndef PITON_FPGA_MC_HBM
 `else //ifndef F1_BOARD
     .mc_clk(mc_clk),
     // AXI Write Address Channel Signals
@@ -1378,6 +1379,7 @@ chipset chipset(
 
 `ifndef XUPP3R_BOARD
 `ifdef ALVEOU280_BOARD
+    .hbm_cattrip(hbm_cattrip),  
     .sw(sw[2:0]),
 `else
     .sw(sw),

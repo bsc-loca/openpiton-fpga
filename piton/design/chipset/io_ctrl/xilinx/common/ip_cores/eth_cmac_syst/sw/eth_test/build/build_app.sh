@@ -15,11 +15,11 @@ sed -i 's|#define XPAR_AXIDMA_0_INCLUDE_SG|//#define XPAR_AXIDMA_0_INCLUDE_SG|g'
 echo "----- Checking if hw is implemented under MEEP_SHELL:"
 # SG_MEM_CACHED and TXRX_MEM_CACHED defines are suitable only for Ariane-based design
 # DEF_DMA_MEM_HBM="-DDMA_MEM_HBM -DSG_MEM_CACHED -DTXRX_MEM_CACHED"
-if grep "ETHERNET,yes.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+if grep "ETHERNET,yes.*hbm" ../../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Eth DMA memory is HBM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM="-DDMA_MEM_HBM"
-elif grep "AURORA,yes.*hbm" ../../../../../../../../../../meep_shell/accelerator_def.csv
+elif grep "AURORA,yes.*hbm" ../../../../../../../../../../../meep_shell/accelerator_def.csv
 then
   echo "----- Aurora DMA memory is HBM-based in hw design, setting its addresses accordingly"
   DEF_DMA_MEM_HBM="-DAURORA -DDMA_MEM_HBM"
@@ -56,18 +56,3 @@ riscv64-unknown-linux-gnu-gcc -Wall -Og -D__aarch64__ $DEF_DMA_MEM_HBM -o ./eth_
                                 ../src/syst_hw/EthSyst.cpp \
                                 ../src/app/ping_test.cpp \
                                 ../src/app/eth_test.cpp
-
-echo ""
-FEDORA_IMG_PATH=/home/tools/load-ariane/firmware
-ln -s -f $FEDORA_IMG_PATH/send-file_noswap.sh ./send-file
-ln -s -f $FEDORA_IMG_PATH/get-file_noswap.sh  ./get-file
-echo "Transfering files to/from Fedora on RISC-V (Caution: Transfers are *limited to 1MB* in both directions):"
-echo "Host to Riscv:"
-echo "host_ $ ./send-file <filename>            # the file is copied to the intermediate memory"
-echo "riscv_$   get-file  <filesize> <filename> # this is indicated in above step"
-echo "Riscv to Host:"
-echo "riscv_$   send-file <filename>            # the file is copied to the intermediate memory"
-echo "host_ $ ./get-file  <filesize> <filename> # this is indicated in above step"
-echo "Both send-file/get-file require proper PATH to QDMA drivers as utilize dma-to-device/dma-from-device utils"
-
-# ./send-file ./eth_test

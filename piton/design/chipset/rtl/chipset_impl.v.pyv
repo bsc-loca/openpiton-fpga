@@ -854,24 +854,14 @@ credit_to_valrdy noc3_xbar_to_%s(
             .ddr_we_n(ddr_we_n),
         `endif // PITONSYS_DDR4
 
-        `ifdef PITONSYS_MC_SRAM
-           .sram_flit_in_data(buf_sram_noc2_data),
-           .sram_flit_in_val(buf_sram_noc2_valid),
-           .sram_flit_in_rdy(sram_buf_noc2_ready),
-
-           .sram_flit_out_data(sram_buf_noc3_data),
-           .sram_flit_out_val(sram_buf_noc3_valid),
-           .sram_flit_out_rdy(buf_sram_noc3_ready),
-        `endif // PITONSYS_MC_SRAM
-
         `ifdef PITON_NONCACH_MEM
-            .ncmem_flit_in_val  (buf_dma_pool_noc2_valid ),			
-            .ncmem_flit_in_data (buf_dma_pool_noc2_data  ),
-            .ncmem_flit_in_rdy  (dma_pool_buf_noc2_ready ),
+            .ncmem_flit_in_data (buf_dma_pool_noc2_data ),
+            .ncmem_flit_in_val  (buf_dma_pool_noc2_valid),
+            .ncmem_flit_in_rdy  (dma_pool_buf_noc2_ready),
 
-            .ncmem_flit_out_val  (dma_pool_buf_noc3_valid ),			
-            .ncmem_flit_out_data (dma_pool_buf_noc3_data  ),			
-            .ncmem_flit_out_rdy  (buf_dma_pool_noc3_ready ),
+            .ncmem_flit_out_data(dma_pool_buf_noc3_data ),
+            .ncmem_flit_out_val (dma_pool_buf_noc3_valid),
+            .ncmem_flit_out_rdy (buf_dma_pool_noc3_ready),
         `endif // `ifdef PITON_NONCACH_MEM
 
             .ddr_addr(ddr_addr),
@@ -935,21 +925,21 @@ endgenerate
 `endif
 
 
-// Just instantiating SRAM part of whole MC
-`ifdef PITONSYS_MC_SRAM
+// Just instantiating NCMEM part of whole MC for simulation (SDRAM is absent)
+`ifdef PITON_NONCACH_MEM
     mc_top mc_top(
       .core_ref_clk(chipset_clk),
       .sys_rst_n(chipset_rst_n),
 
-      .sram_flit_in_data(buf_sram_noc2_data),
-      .sram_flit_in_val(buf_sram_noc2_valid),
-      .sram_flit_in_rdy(sram_buf_noc2_ready),
+      .ncmem_flit_in_data (buf_dma_pool_noc2_data ),
+      .ncmem_flit_in_val  (buf_dma_pool_noc2_valid),
+      .ncmem_flit_in_rdy  (dma_pool_buf_noc2_ready),
 
-      .sram_flit_out_data(sram_buf_noc3_data),
-      .sram_flit_out_val(sram_buf_noc3_valid),
-      .sram_flit_out_rdy(buf_sram_noc3_ready)
+      .ncmem_flit_out_data(dma_pool_buf_noc3_data ),
+      .ncmem_flit_out_val (dma_pool_buf_noc3_valid),
+      .ncmem_flit_out_rdy (buf_dma_pool_noc3_ready)
     );
-`endif // endif PITONSYS_MC_SRAM
+`endif // endif PITON_NONCACH_MEM
 
 `endif // endif PITON_FPGA_MC_DDR3
 
