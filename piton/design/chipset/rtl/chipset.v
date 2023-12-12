@@ -273,7 +273,7 @@ module chipset(
 `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
   `ifdef PITONSYS_MEEP
     input                           hbm_calib_complete,    
     // regular MC AXI bus
@@ -776,7 +776,7 @@ module chipset(
         input  [3:0]                                        sw,
     `elsif XUPP3R_BOARD
         // no switches :(
-    `elsif ALVEOU280_BOARD
+    `elsif ALVEO_BOARD
         input  [2:0]                                        sw,
         // virtual switches :)
     `else         
@@ -1084,7 +1084,7 @@ end
             `elsif XUPP3R_BOARD
                 assign uart_boot_en    = 1'b1;
                 assign uart_timeout_en = 1'b0;
-            `elsif ALVEOU280_BOARD
+            `elsif ALVEO_BOARD
                 assign uart_boot_en    = sw[0];
                 assign uart_timeout_en = sw[1]; 
                 assign uart_bootrom_linux_en = sw[2];
@@ -1100,7 +1100,7 @@ end
     `ifdef VCU118_BOARD
         // only two switches available...
         assign noc_power_test_hop_count = {2'b0, sw[3:2]};
-    `elsif ALVEOU280_BOARD
+    `elsif ALVEO_BOARD
         // only two switches available...
         assign noc_power_test_hop_count = {2'b0, sw[3:2]};
     `elsif XUPP3R_BOARD
@@ -1225,7 +1225,7 @@ end
                 // SPI system clock
                 , .sd_sys_clk(sd_sys_clk)
             `endif // endif PITONSYS_SPI
-            `ifdef ALVEOU280_BOARD
+            `ifdef ALVEO_BOARD
                 // Alveo Board doesn't have SD and we need a slower clock for the MEEP VPU
                , .vpu_clk(vpu_clk)
             `endif
@@ -1718,7 +1718,7 @@ chipset_impl_noc_power_test  chipset_impl (
             
                 `ifdef XUPP3R_BOARD
                     .ddr_parity(ddr_parity),
-                `elsif ALVEOU280_BOARD
+                `elsif ALVEO_BOARD
                   `ifdef PITONSYS_MEEP
                     .hbm_calib_complete (hbm_calib_complete),
                     
@@ -2060,7 +2060,7 @@ chipset_impl_noc_power_test  chipset_impl (
             `ifdef PITONSYS_UART_BOOT
                 .uart_boot_en(uart_boot_en),
                 .uart_timeout_en(uart_timeout_en),
-                `ifdef ALVEOU280_BOARD                           
+                `ifdef ALVEO_BOARD                           
                 .bootrom_linux_en(uart_bootrom_linux_en),
                 `endif
             `endif // endif PITONSYS_UART_BOOT

@@ -103,8 +103,8 @@ foreach prj_file ${ALL_FILES} {
 }
 add_files -norecurse -fileset $fileset_obj $files_to_add
 
-#Generating IP cores for Alveo280 board or Alveou55c board
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
+#Generating IP cores for Alveo boards
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
 
   # Generating PCIe-based Shell
   # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/meep_shell.tcl)
@@ -230,7 +230,7 @@ set_property "used_in_implementation" "1" $file_obj
 set_property "used_in_synthesis" "1" $file_obj
 
 
-if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEOU280_BOARD" } {
+if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
   add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/hbm.xdc"
   if {[info exists ::env(PROTOSYN_RUNTIME_ETH)] &&
                   $::env(PROTOSYN_RUNTIME_ETH)=="TRUE"} {

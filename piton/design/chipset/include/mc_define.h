@@ -87,7 +87,7 @@
     `define DDR3_CS_WIDTH           1
     `define DDR3_BG_WIDTH           1
     `define DDR3_ODT_WIDTH          1
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
     `define BOARD_MEM_SIZE_MB       8192 // Valid for HBM and DDR4
     `define WORDS_PER_BURST         8
     `define WORD_SIZE               8 // in bytes
@@ -106,10 +106,6 @@
     `define DDR3_CS_WIDTH           1
     `define DDR3_BG_WIDTH           2
     `define DDR3_ODT_WIDTH          1
-`elsif ALVEOU55C_BOARD
-    `define BOARD_MEM_SIZE_MB       8192 // Valid for HBM 
-    `define WORDS_PER_BURST         8
-    `define WORD_SIZE               8 // in bytes
 `elsif XUPP3R_BOARD
     `define BOARD_MEM_SIZE_MB       32768
     `define WORDS_PER_BURST         8

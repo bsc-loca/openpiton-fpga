@@ -179,7 +179,7 @@ module chipset_impl(
  `endif
 `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
    `ifdef PITONSYS_MEEP
     input                           hbm_calib_complete,
     // regular MC AXI bus
@@ -532,7 +532,7 @@ module chipset_impl(
 `ifdef PITONSYS_UART_BOOT
     input                                       uart_boot_en,
     input                                       uart_timeout_en,
-  `ifdef ALVEOU280_BOARD
+  `ifdef ALVEO_BOARD
     input                                       bootrom_linux_en,
   `endif // ALVEO
 `endif // endif PITONSYS_UART_BOOT
@@ -1172,7 +1172,7 @@ credit_to_valrdy noc3_xbar_to_%s(
         `endif // endif NEXYSVIDEO_BOARD
         `ifdef XUPP3R_BOARD
             .ddr_parity(ddr_parity),
-        `elsif ALVEOU280_BOARD
+        `elsif ALVEO_BOARD
           `ifdef PITONSYS_MEEP
             
             .init_calib_complete (hbm_calib_complete),
@@ -2010,7 +2010,7 @@ fake_uart fake_uart (
     // this is for selecting the right bootrom (1: baremetal, 0: linux)
     wire ariane_boot_sel;
 `ifdef PITON_FPGA_SYNTH
-  `ifndef ALVEOU280_BOARD
+  `ifndef ALVEO_BOARD
   assign ariane_boot_sel   = uart_boot_en;
   `else
     `ifdef PITONSYS_UART_BOOT
@@ -2144,7 +2144,7 @@ print(str)
     // this is for selecting the right bootrom (1: baremetal, 0: linux)
     wire lagarto_boot_sel;
 `ifdef PITON_FPGA_SYNTH
-  `ifndef ALVEOU280_BOARD
+  `ifndef ALVEO_BOARD
      assign lagarto_boot_sel = uart_boot_en;
   `else
     `ifdef PITONSYS_UART_BOOT
