@@ -240,7 +240,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
   set mcx_axi$idx [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 mcx_axi$idx ]
   set_property -dict [ list \
-   CONFIG.ADDR_WIDTH {33} \
+   CONFIG.ADDR_WIDTH {34} \
    CONFIG.ARUSER_WIDTH {0} \
    CONFIG.AWUSER_WIDTH {0} \
    CONFIG.BUSER_WIDTH {0} \
@@ -367,13 +367,11 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou280"} {
     set hbm_density "8GB"
     set hbm_range 0x10000000
-    set hbm_offsx 1
     set hbm_axi_sfx ""
   }
   if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou55c"} {
     set hbm_density "16GB"
     set hbm_range 0x20000000
-    set hbm_offsx 2
     set hbm_axi_sfx "_8HI"
   }
   set hbm_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:hbm:1.0 hbm_0 ]
@@ -416,9 +414,9 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.USER_PHY_ENABLE_13 {TRUE} \
    CONFIG.USER_PHY_ENABLE_14 {TRUE} \
    CONFIG.USER_PHY_ENABLE_15 {TRUE} \
-   CONFIG.USER_SAXI_00 {true} \
-   CONFIG.USER_SAXI_01 {false} \
-   CONFIG.USER_SAXI_02 {false} \
+   CONFIG.USER_SAXI_00 {true}  \
+   CONFIG.USER_SAXI_01 {true}  \
+   CONFIG.USER_SAXI_02 {true}  \
    CONFIG.USER_SAXI_03 {false} \
    CONFIG.USER_SAXI_04 {false} \
    CONFIG.USER_SAXI_05 {false} \
@@ -432,7 +430,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.USER_SAXI_13 {false} \
    CONFIG.USER_SAXI_14 {false} \
    CONFIG.USER_SAXI_15 {false} \
-   CONFIG.USER_SAXI_16 {true}  \
+   CONFIG.USER_SAXI_16 {false} \
    CONFIG.USER_SAXI_17 {false} \
    CONFIG.USER_SAXI_18 {false} \
    CONFIG.USER_SAXI_19 {false} \
@@ -447,19 +445,22 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.USER_SAXI_28 {false} \
    CONFIG.USER_SAXI_29 {false} \
    CONFIG.USER_SAXI_30 {false} \
-   CONFIG.USER_SAXI_31 {true}  \
+   CONFIG.USER_SAXI_31 {false} \
    CONFIG.USER_SWITCH_ENABLE_01 {TRUE} \
  ] $hbm_0
 
+  # Extending setting for PCIe channel
   set_property -dict [ list \
    CONFIG.NUM_READ_THREADS {16} \
    CONFIG.NUM_WRITE_THREADS {16} \
  ] [get_bd_intf_pins /hbm_0/SAXI_00$hbm_axi_sfx]
 
-  # A function distributing extra HBM channels evenly around center channel of the switch
-  set distHBMchan {16 + ($idx%2 ? $idx/2+1 : -$idx/2-1)}
+  # A function distributing extra HBM channels
+  set distHBMchan {3 + $idx}
+  # here evenly around center channel of the switch
+  # set distHBMchan {16 + ($idx%2 ? $idx/2+1 : -$idx/2-1)}
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
-    set_property CONFIG.USER_SAXI_[format {%02d} [expr $distHBMchan]]$hbm_axi_sfx {true} [get_bd_cells hbm_0]
+    set_property CONFIG.USER_SAXI_[format {%02d} [expr $distHBMchan]] {true} [get_bd_cells hbm_0]
   }
 
   # Create instance: mem_refclk_buf, and set properties
@@ -619,8 +620,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   connect_bd_intf_net [get_bd_intf_ports mem_refclk] [get_bd_intf_pins mem_refclk_buf/CLK_IN_D]
   connect_bd_intf_net [get_bd_intf_ports pci2hbm_saxi] [get_bd_intf_pins hbm_0/SAXI_00$hbm_axi_sfx]
-  connect_bd_intf_net [get_bd_intf_ports m_axi]        [get_bd_intf_pins hbm_0/SAXI_16$hbm_axi_sfx]
-  connect_bd_intf_net [get_bd_intf_ports ncmem_axi]    [get_bd_intf_pins hbm_0/SAXI_31$hbm_axi_sfx]
+  connect_bd_intf_net [get_bd_intf_ports m_axi]        [get_bd_intf_pins hbm_0/SAXI_01$hbm_axi_sfx]
+  connect_bd_intf_net [get_bd_intf_ports ncmem_axi]    [get_bd_intf_pins hbm_0/SAXI_02$hbm_axi_sfx]
   connect_bd_intf_net [get_bd_intf_ports pci2hbm_maxi] [get_bd_intf_pins smartconnect_0/M00_AXI]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     connect_bd_intf_net [get_bd_intf_ports mcx_axi$idx] [get_bd_intf_pins hbm_0/SAXI_[format {%02d} [expr $distHBMchan]]$hbm_axi_sfx]
@@ -656,16 +657,18 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   connect_bd_net [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins mem_calib_sync/aux_reset_in]
   connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_00_ACLK] 
   connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_00_ARESET_N]
-  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_16_WDATA_PARITY] [get_bd_pins hbm_0/AXI_31_WDATA_PARITY]
-  connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_16_ACLK] [get_bd_pins hbm_0/AXI_31_ACLK]
+  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY] [get_bd_pins hbm_0/AXI_02_WDATA_PARITY]
+  connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_01_ACLK] [get_bd_pins hbm_0/AXI_02_ACLK]
   connect_bd_net [get_bd_ports sys_rst] [get_bd_ports mem_rst] [get_bd_pins rst_inv/Op1]
-  connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_16_ARESET_N] [get_bd_pins hbm_0/AXI_31_ARESET_N]
+  connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_01_ARESET_N] [get_bd_pins hbm_0/AXI_02_ARESET_N]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
     set hbm_port [format {%02d} [expr $distHBMchan]]
     connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_${hbm_port}_WDATA_PARITY]
     connect_bd_net [get_bd_ports sys_clk]    [get_bd_pins hbm_0/AXI_${hbm_port}_ACLK]
     connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/AXI_${hbm_port}_ARESET_N]
   }
+  # After all connections set PCIe clock to drive HBM cross-switch
+  set_property CONFIG.USER_CLK_SEL_LIST0 AXI_00_ACLK [get_bd_cells hbm_0]
 } else {
   connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata]
   connect_bd_net [get_bd_pins gndx1/dout]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_arvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_bready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_rready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wvalid]
@@ -683,138 +686,16 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   assign_bd_address -offset 0x00000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI_LITE] [get_bd_addr_segs axi_gpio_0/S_AXI/Reg] -force
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
-  assign_bd_address -offset [expr ($hbm_offsx * 0x00000000)] -range [expr (32 * $hbm_range)] -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x00000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM00] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x10000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM01] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x20000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM02] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x30000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM03] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x40000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM04] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x50000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM05] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x60000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM06] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x70000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM07] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x80000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM08] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x90000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM09] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xA0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM10] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xB0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM11] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xC0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM12] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xD0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM13] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xE0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM14] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xF0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM15] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000100000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM16] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000110000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM17] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000120000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM18] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000130000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM19] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000140000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM20] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000150000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM21] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000160000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM22] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000170000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM23] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000180000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM24] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000190000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM25] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001A0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM26] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001B0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM27] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001C0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM28] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001D0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM29] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001E0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM30] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001F0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM31] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x00000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM00] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x10000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM01] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x20000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM02] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x30000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM03] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x40000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM04] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x50000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM05] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x60000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM06] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x70000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM07] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x80000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM08] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x90000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM09] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xA0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM10] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xB0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM11] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xC0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM12] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xD0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM13] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xE0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM14] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xF0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM15] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000100000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM16] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000110000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM17] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000120000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM18] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000130000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM19] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000140000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM20] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000150000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM21] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000160000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM22] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000170000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM23] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000180000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM24] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000190000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM25] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001A0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM26] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001B0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM27] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001C0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM28] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001D0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM29] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001E0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM30] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001F0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi] [get_bd_addr_segs hbm_0/SAXI_16$hbm_axi_sfx/HBM_MEM31] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x00000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM00] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x10000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM01] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x20000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM02] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x30000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM03] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x40000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM04] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x50000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM05] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x60000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM06] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x70000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM07] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x80000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM08] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x90000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM09] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xA0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM10] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xB0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM11] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xC0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM12] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xD0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM13] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xE0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM14] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xF0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM15] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000100000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM16] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000110000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM17] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000120000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM18] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000130000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM19] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000140000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM20] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000150000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM21] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000160000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM22] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000170000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM23] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000180000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM24] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000190000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM25] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001A0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM26] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001B0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM27] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001C0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM28] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001D0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM29] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001E0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM30] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001F0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM31] -force
-  for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
-  set hbm_port [format {%02d} [expr $distHBMchan]]
-  assign_bd_address -offset [expr ($hbm_offsx * 0x00000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM00] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x10000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM01] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x20000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM02] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x30000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM03] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x40000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM04] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x50000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM05] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x60000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM06] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x70000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM07] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x80000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM08] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x90000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM09] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xA0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM10] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xB0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM11] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xC0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM12] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xD0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM13] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xE0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM14] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0xF0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM15] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000100000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM16] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000110000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM17] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000120000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM18] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000130000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM19] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000140000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM20] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000150000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM21] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000160000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM22] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000170000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM23] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000180000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM24] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000180000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM24] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x000190000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM25] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001A0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM26] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001B0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM27] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001C0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM28] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001D0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM29] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001E0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM30] -force
-  assign_bd_address -offset [expr ($hbm_offsx * 0x0001F0000000)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM31] -force
+  set hbm_mems 32
+  assign_bd_address -offset 0x0 -range [expr ($hbm_mems * $hbm_range)] -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs pci2hbm_maxi/Reg] -force
+  for {set hbm_mem 0} {$hbm_mem < $hbm_mems} {incr hbm_mem} {
+    assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi]        [get_bd_addr_segs hbm_0/SAXI_01$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
+    assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi]    [get_bd_addr_segs hbm_0/SAXI_02$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
+    assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
+    for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
+      set hbm_port [format {%02d} [expr $distHBMchan]]
+      assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
+    }
   }
 } else {
   assign_bd_address -offset 0x00000000 -range 0x000400000000 -target_address_space [get_bd_addr_spaces qdma_0/M_AXI] [get_bd_addr_segs ddr4_0/C0_DDR4_MEMORY_MAP/C0_DDR4_ADDRESS_BLOCK] -force
