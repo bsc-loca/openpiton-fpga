@@ -658,7 +658,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   connect_bd_net [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins mem_calib_sync/aux_reset_in]
   connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_30_ACLK] 
   connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_30_ARESET_N]
-  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_30_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY] [get_bd_pins hbm_0/AXI_02_WDATA_PARITY]
+  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_30_WDATA_PARITY] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY]
   connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins hbm_0/AXI_01_ACLK]
   connect_bd_net [get_bd_ports sys_rst] [get_bd_ports mem_rst] [get_bd_pins rst_inv/Op1]
   connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins hbm_0/AXI_01_ARESET_N]
