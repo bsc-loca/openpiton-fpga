@@ -371,7 +371,7 @@ push (@{$opt{config_cpp_args}}, "-DFLIST_ARIANE")   if ($opt{ariane}) ;
 push (@{$opt{config_cpp_args}}, "-DFLIST_ORAM")     if ($opt{oram}) ;
 push (@{$opt{config_cpp_args}}, "-DVERILATOR")      if ($opt{vlt_build}) ;
 # Other boards may be added here for simple MC/UART/Ethernet access simulation
-push (@{$opt{config_cpp_args}}, "-DALVEO280")       if (($opt{board}) and ($opt{board} eq "alveou280")) ;
+push (@{$opt{config_cpp_args}}, "-DALVEO_BOARD")    if (($opt{board}) and (($opt{board} eq "alveou280") || ($opt{board} eq "alveou55c"))) ;
 push (@{$opt{config_cpp_args}}, "-DUART_BOOT")      if ($opt{uart_dmw}) ;
 push (@{$opt{config_cpp_args}}, "-DETH_CORE")       if ($opt{eth}) ;
 push (@{$opt{config_cpp_args}}, "-DHBM_DEF")        if ($opt{hbm}) ;

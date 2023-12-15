@@ -3,23 +3,30 @@
 #--------------------------------------------
 ## Input Clocks and Controls for QSFP28 Port 0
 #
-## MGT_SI570_CLOCK0   -> MGT Ref Clock 0 156.25MHz Default (Not User re-programmable)
-# set_property PACKAGE_PIN T43      [get_ports "MGT_SI570_CLOCK0_N"]  ;# Bank 134 - MGTREFCLK0N_134, platform: io_clk_gtyquad_refclk0_00_clk_n
-# set_property PACKAGE_PIN T42      [get_ports "MGT_SI570_CLOCK0_P"]  ;# Bank 134 - MGTREFCLK0P_134, platform: io_clk_gtyquad_refclk0_00_clk_p
-set_property PACKAGE_PIN AD43     [get_ports "qsfp*_ref_clk_n"]  ;# Bank 134 - MGTREFCLK0N_134, platform: io_clk_gtyquad_refclk0_00_clk_n
-set_property PACKAGE_PIN AB42      [get_ports "qsfp*_ref_clk_p"]  ;# Bank 134 - MGTREFCLK0P_134, platform: io_clk_gtyquad_refclk0_00_clk_p
-#
+##
+##    1) Si5394J - SiLabs Si5394B-A11828-GMR Programmable Oscillator (Re-programming I2C access via I2C_SI5394)
+##    						   |
+##     						   |-> OUT0  SYNCE_CLK0_P/SYNCE_CLK0_N 161.1328125 MHz - onboard QSFP Clock
+##                             |   PINS: MGTREFCLK0P_130_AD42/MGTREFCLK0N_130_AD43
 
+#create_clock is not needed in case of connecting QSFP clock to 100Gb CMAC, but needed for 1Gb PHY (gig_ethernet_pcs_pma)
+set_property PACKAGE_PIN AD43              [get_ports "qsfp0_ref_clk_n"] ;# Bank 130 - MGTREFCLK0N_130
+set_property PACKAGE_PIN AD42              [get_ports "qsfp0_ref_clk_p"] ;# Bank 130 - MGTREFCLK0P_130
+# create_clock -period 6.206 -name QSFP0_CLK [get_ports "qsfp_ref_clk_p"]
+#
 #--------------------------------------------
 # Input Clocks and Controls for QSFP28 Port 1
 #
-## MGT_SI570_CLOCK1_N   -> MGT Ref Clock 0 156.25MHz Default (Not User re-programmable)
-# set_property PACKAGE_PIN P43       [get_ports "MGT_SI570_CLOCK1_N"] ;# Bank 135 - MGTREFCLK0N_135, platform: io_clk_gtyquad_refclk0_01_clk_n
-# set_property PACKAGE_PIN P42       [get_ports "MGT_SI570_CLOCK1_P"] ;# Bank 135 - MGTREFCLK0P_135, platform: io_clk_gtyquad_refclk0_01_clk_p
-#set_property PACKAGE_PIN P43       [get_ports "qsfp1_ref_clk_n"] ;# Bank 135 - MGTREFCLK0N_135, platform: io_clk_gtyquad_refclk0_01_clk_n
-#set_property PACKAGE_PIN P42       [get_ports "qsfp1_ref_clk_p"] ;# Bank 135 - MGTREFCLK0P_135, platform: io_clk_gtyquad_refclk0_01_clk_p
-#
+##    1) Si5394J - SiLabs Si5394B-A11828-GMR Programmable Oscillator (Re-programming I2C access via I2C_SI5394)
+##    						   |
+##                             |-> OUT1 SYNCE_CLK1_P/SYNCE_CLK1_N 161.1328125 MHz - onboard QSFP Clock
+##                             |   PINS: MGTREFCLK0P_131_AB42/MGTREFCLK0N_131_AB43
 
+#create_clock is not needed in case of connecting QSFP clock to 100Gb CMAC, but needed for 1Gb PHY (gig_ethernet_pcs_pma)
+set_property PACKAGE_PIN AB43              [get_ports "qsfp1_ref_clk_n"] ;# Bank 131 - MGTREFCLK0N_131
+set_property PACKAGE_PIN AB42              [get_ports "qsfp1_ref_clk_p"] ;# Bank 131 - MGTREFCLK0P_131
+# create_clock -period 6.206 -name QSFP1_CLK [get_ports "qsfp_ref_clk_p"]
+#
 #--------------------------------------------
 # Specifying the placement of QSFP clock domain modules into single SLR to facilitate routing
 # https://www.xilinx.com/support/documentation/sw_manuals/xilinx2020_1/ug912-vivado-properties.pdf#page=386
@@ -30,8 +37,7 @@ set eth_txmem [get_cells -hierarchical eth_tx_mem]
 set eth_rxmem [get_cells -hierarchical eth_rx_mem]
 #Setting specific SLR to which QSFP are wired since placer may miss it if just "group_name" is applied
 set_property USER_SLR_ASSIGNMENT SLR1 [get_cells "$tx_clk_units $rx_clk_units $eth_txmem $eth_rxmem"]
-#set_property USER_SLR_ASSIGNMENT SLR1 [get_cells "$tx_clk_units $rx_clk_units $eth_txmem $eth_rxmem"]
-
+#
 #--------------------------------------------
 # Timing constraints for clock domains crossings (CDC), which didn't apply automatically (e.g. for GPIO)
 set sys_clk [get_clocks -of_objects [get_pins -hierarchical eth_cmac_syst/s_axi_clk]]

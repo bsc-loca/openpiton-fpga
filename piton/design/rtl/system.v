@@ -143,7 +143,7 @@ module system(
     input sys_clk,
 `endif
 
-`ifndef ALVEOU280_BOARD
+`ifndef ALVEO_BOARD
     input                                       sys_rst_n,
 `endif
 
@@ -184,13 +184,13 @@ module system(
 `ifndef NEXYSVIDEO_BOARD
 `ifndef XUPP3R_BOARD
 `ifndef F1_BOARD
-`ifndef ALVEOU280_BOARD
+`ifndef ALVEO_BOARD
   input                                         tck_i,
   input                                         tms_i,
   input                                         trst_ni,
   input                                         td_i,
   output                                        td_o,
-`endif//ALVEOU280_BOARD
+`endif//ALVEO_BOARD
 `endif//F1_BOARD
 `endif//XUPP3R_BOARD
 `endif //NEXYSVIDEO_BOARD
@@ -225,7 +225,7 @@ module system(
 
     output [`DDR3_ADDR_WIDTH-1:0]               ddr_addr,
     output [`DDR3_BA_WIDTH-1:0]                 ddr_ba,
-    `ifdef ALVEOU280_BOARD
+    `ifdef ALVEO_BOARD
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_c,
     output [`DDR3_CK_WIDTH-1:0]                 ddr_ck_t,
     `else
@@ -235,7 +235,7 @@ module system(
     output [`DDR3_CKE_WIDTH-1:0]                ddr_cke,
     output                                      ddr_reset_n,
     inout  [`DDR3_DQ_WIDTH-1:0]                 ddr_dq,
-    `ifdef ALVEOU280_BOARD
+    `ifdef ALVEO_BOARD
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_c,
     inout  [`DDR3_DQS_WIDTH-1:0]                ddr_dqs_t,
     `else
@@ -248,7 +248,7 @@ module system(
     `ifdef PITONSYS_DDR4
     `ifdef XUPP3R_BOARD
     output                                      ddr_parity,
-    `elsif ALVEOU280_BOARD
+    `elsif ALVEO_BOARD
     output                                      ddr_parity,
     `else
     inout [`DDR3_DM_WIDTH-1:0]                  ddr_dm,
@@ -366,7 +366,7 @@ module system(
         output                                          net_phy_mdc,
     `endif
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
-    `ifdef ALVEOU280_BOARD
+    `ifdef ALVEO_BOARD
         // GTY quads connected to QSFP unit on Alveo board     
         input          qsfp0_ref_clk_n,
         input          qsfp0_ref_clk_p,
@@ -419,7 +419,7 @@ module system(
     input  [3:0]                                sw,
 `elsif XUPP3R_BOARD
     // no switches :(
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
     // no switches :(    
 `else
     input  [7:0]                                sw,
@@ -427,7 +427,7 @@ module system(
 
 `ifdef XUPP3R_BOARD
     output [3:0]                                leds
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
     // no leds, but HBM Catastrophic Over temperature Out, should be tied to 0 to avoid problems when HBM is not used
     input  [15:0] pci_express_x16_rxn,
     input  [15:0] pci_express_x16_rxp,
@@ -615,7 +615,7 @@ assign rtc = rtc_div[6];
 assign uart_rts = 1'b0;
 `endif // VCU118_BOARD
 
-`ifdef ALVEOU280_BOARD
+`ifdef ALVEO_BOARD
 wire [4:0] sw;
 wire [4:0] pcie_gpio;
 wire mem_calib_complete;
@@ -647,7 +647,7 @@ reg hold_start;
 // Different reset active levels for different boards
 always @ *
 begin
-`ifdef ALVEOU280_BOARD
+`ifdef ALVEO_BOARD
     sys_rst_n_rect = sw[3];
 `elsif PITON_FPGA_RST_ACT_HIGH
     sys_rst_n_rect = ~sys_rst_n;
@@ -663,13 +663,13 @@ always @ *
 begin
     chip_rst_n = sys_rst_n_rect & passthru_chip_rst_n;
 `ifdef PITONSYS_UART_BOOT
-  `ifndef ALVEOU280_BOARD
+  `ifndef ALVEO_BOARD
     chip_rst_n = chip_rst_n & test_start;
   `else
     hold_start = sw[4] & test_start;
     chip_rst_n = chip_rst_n & hold_start;
   `endif
-`elsif ALVEOU280_BOARD // PYTONSYS_UART_BOOT
+`elsif ALVEO_BOARD // PYTONSYS_UART_BOOT
     chip_rst_n = chip_rst_n & sw[4];
 `endif
 `ifdef PITONSYS_UART_RESET
@@ -695,7 +695,7 @@ begin
     // part of system).  Current boards supported
     // for passthru only use active low, so it always
     // expects active low
-`ifndef ALVEOU280_BOARD
+`ifndef ALVEO_BOARD
     chipset_rst_n = sys_rst_n;
 `else
     chipset_rst_n = sw[3]; 
@@ -741,7 +741,7 @@ assign passthru_pll_rst_n = 1'b1;
 //         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
 //     );
 // `endif
-`ifdef ALVEOU280_BOARD
+`ifdef ALVEO_BOARD
      wire tck_i, tms_i, trst_ni, td_i, td_o;
 
      // hook the RISC-V JTAG TAP into the FPGA JTAG chain
@@ -1207,14 +1207,14 @@ chipset chipset(
 `endif // PITONSYS_DDR4
     .ddr_addr(ddr_addr),
     .ddr_ba(ddr_ba),
-`ifndef ALVEOU280_BOARD
+`ifndef ALVEO_BOARD
     .ddr_ck_n(ddr_ck_n),
     .ddr_ck_p(ddr_ck_p),
 `endif
     .ddr_cke(ddr_cke),
     .ddr_reset_n(ddr_reset_n),
     .ddr_dq(ddr_dq),
-`ifndef ALVEOU280_BOARD
+`ifndef ALVEO_BOARD
     .ddr_dqs_n(ddr_dqs_n),
     .ddr_dqs_p(ddr_dqs_p),
 `endif
@@ -1223,7 +1223,7 @@ chipset chipset(
 `endif // endif NEXYSVIDEO_BOARD
 `ifdef XUPP3R_BOARD
     .ddr_parity(ddr_parity),
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
     .ddr_parity(ddr_parity),
     .ddr_ck_n(ddr_ck_c),
     .ddr_ck_p(ddr_ck_t),
@@ -1378,7 +1378,7 @@ chipset chipset(
 `endif
 
 `ifndef XUPP3R_BOARD
-`ifdef ALVEOU280_BOARD
+`ifdef ALVEO_BOARD
     .hbm_cattrip(hbm_cattrip),  
     .sw(sw[2:0]),
 `else

@@ -95,7 +95,7 @@ module mc_top (
 `endif // PITONSYS_PCIE
 `ifdef XUPP3R_BOARD
     output                          ddr_parity,
-`elsif ALVEOU280_BOARD
+`elsif ALVEO_BOARD
     output                          ddr_parity,
     output                          hbm_cattrip,
 `else

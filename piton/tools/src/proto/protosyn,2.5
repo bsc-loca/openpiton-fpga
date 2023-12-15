@@ -104,7 +104,7 @@ def usage():
     print("\n       --no-ddr", file=sys.stderr)
     print("              Implement design without DDR memory", file=sys.stderr)
     print("\n       --hbm", file=sys.stderr)
-    print("              Implement design with HBM memory going first", file=sys.stderr)
+    print("              Implement design with HBM as system memory, enforced for Alveo U55C board", file=sys.stderr)
     print("\n       --multimc <number of memory controller ports>", file=sys.stderr)
     print("              Implement design with multiple connections to system memory", file=sys.stderr)
     print("\n       --multimc_indices <comma separated list of indices connected to MCs>", file=sys.stderr)
@@ -530,8 +530,15 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
 
-    if (options.hbm == True):
+    if not options.hbm and options.board == "alveou55c":
+        print_info("Enforcing --hbm option for %s board" % options.board)
+        options.hbm = True
+
+    # --hbm option for utilizing HBM
+    if options.hbm:
         defines.append("PITON_FPGA_MC_HBM")
+        os.environ['PROTOSYN_RUNTIME_HBM'] = "TRUE"
+        print_info("HBM is defined as primary system SDRAM")
 
     # --axi4_mem option
     if (options.axi4_mem == True):
@@ -627,11 +634,6 @@ def makeDefList(options):
               os.environ['PROTOSYN_RUNTIME_ETHPORT'] = "1"
         else:
             print_info("--eth option is ignored for %s" % options.board)
-
-    # --hbm option for utilizing HBM
-    if options.hbm:
-        os.environ['PROTOSYN_RUNTIME_HBM'] = "TRUE"
-        print_info("HBM is defined as primary system SDRAM")
 
     # --oled option for String on a display
     if options.oled != None:
