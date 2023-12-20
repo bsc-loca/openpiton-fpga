@@ -699,6 +699,21 @@ module system(
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif //`ifdef PITON_EXTRA_MEMS
 
+  `ifdef PITON_RV64_DEBUGUNIT
+    input  bscan_bscanid_en,
+    input  bscan_capture,
+    input  bscan_drck,
+    input  bscan_reset,
+    input  bscan_runtest,
+    input  bscan_sel,
+    input  bscan_shift,
+    input  bscan_tck,
+    input  bscan_tdi,
+    output bscan_tdo,
+    input  bscan_tms,
+    input  bscan_update,
+  `endif //`ifdef PITON_RV64_DEBUGUNIT
+
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
     output                                  uart_axi_awvalid,
     input                                   uart_axi_awready,
@@ -721,7 +736,7 @@ module system(
     input                                   uart_axi_rvalid,
     output                                  uart_axi_rready,
     input                                   uart_irq
-    
+
 `endif //`ifndef PITONSYS_MEEP
 );
 
@@ -1011,6 +1026,7 @@ assign passthru_pll_rst_n = 1'b1;
     assign td_i    = 1'b0;
 `endif
 
+`ifndef PITONSYS_MEEP
 // `ifdef VCU118_BOARD
 //     wire tck_i, tms_i, trst_ni, td_i, td_o;
 
@@ -1033,25 +1049,25 @@ assign passthru_pll_rst_n = 1'b1;
 //     );
 // `endif
 `ifdef ALVEO_BOARD
-     wire tck_i, tms_i, trst_ni, td_i, td_o;
+    wire tck_i, tms_i, trst_ni, td_i, td_o;
 
-     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
-     BSCANE2 #(
-     .JTAG_CHAIN(2) // Value for USER command. Possible values: 1-4.
-     ) BSCANE2_inst (
-         .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
-         .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
-         // SHIFT are asserted.
-         .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
-         .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
-         .SEL(), // 1-bit output: USER instruction active output.
-         .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
-         .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
-         .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
-         .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
-         .UPDATE(), // 1-bit output: UPDATE output from TAP controller
-         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
-     );
+    // hook the RISC-V JTAG TAP into the FPGA JTAG chain
+    BSCANE2 #(
+    .JTAG_CHAIN(1) // Value for USER command. Possible values: 1-4.
+    ) BSCANE2_inst (
+        .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
+        .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
+        // SHIFT are asserted.
+        .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
+        .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
+        .SEL(), // 1-bit output: USER instruction active output.
+        .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
+        .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
+        .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
+        .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
+        .UPDATE(), // 1-bit output: UPDATE output from TAP controller
+        .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+    );
 `endif
 `ifdef VC707_BOARD
     wire tck_i, tms_i, trst_ni, td_i, td_o;
@@ -1095,6 +1111,7 @@ assign passthru_pll_rst_n = 1'b1;
         .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
     );
 `endif
+`endif //`ifndef PITONSYS_MEEP
 `endif
 
 `ifdef PITONSYS_MEEP
@@ -2019,11 +2036,19 @@ chipset chipset(
     ,.debug_req_o                   ( debug_req                  ) // async debug request
     ,.unavailable_i                 ( unavailable                ) // communicate whether the hart is unavailable (e.g.: power down)
     // JTAG
+ `ifndef PITONSYS_MEEP
     ,.tck_i                         ( tck_i                      )
     ,.tms_i                         ( tms_i                      )
     ,.trst_ni                       ( trst_ni                    )
     ,.td_i                          ( td_i                       )
     ,.td_o                          ( td_o                       )
+`else
+    ,.tck_i                         ( bscan_tck   )
+    ,.tms_i                         ( bscan_tms   )
+    ,.trst_ni                       ( bscan_reset )
+    ,.td_i                          ( bscan_tdi   )
+    ,.td_o                          ( bscan_tdo   )
+`endif // `ifndef PITONSYS_MEEP
     ,.tdo_oe_o                      (                            )
 `endif // ifdef PITON_RV64_DEBUGUNIT
 

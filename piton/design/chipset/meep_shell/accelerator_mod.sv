@@ -270,6 +270,22 @@ module openpiton_wrapper(
       output [`PITON_EXTRA_MEMS                      -1:0]   mcx_axi_bready,
     `endif
 
+  `ifdef PITON_RV64_DEBUGUNIT
+    // JTAG
+    input  bscan_bscanid_en,
+    input  bscan_capture,
+    input  bscan_drck,
+    input  bscan_reset,
+    input  bscan_runtest,
+    input  bscan_sel,
+    input  bscan_shift,
+    input  bscan_tck,
+    input  bscan_tdi,
+    output bscan_tdo,
+    input  bscan_tms,
+    input  bscan_update,
+  `endif //`ifdef PITON_RV64_DEBUGUNIT
+
     // AXI UART
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
     output                                  uart_axi_awvalid,

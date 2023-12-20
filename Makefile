@@ -10,9 +10,10 @@ SYNTH_DCP   =  $(ROOT_DIR)/dcp/synthesis.dcp
 IMPL_DCP    =  $(ROOT_DIR)/dcp/implementation.dcp
 BIT_FILE    =  $(ROOT_DIR)/bitstream/system.bit
 TCL_DIR     =  $(ROOT_DIR)/piton/tools/src/proto/common
-VIVADO_VER  := "2021.2"
-VIVADO_PATH := /opt/Xilinx/Vivado/$(VIVADO_VER)/bin/
-VIVADO_XLNX := $(VIVADO_PATH)/vivado
+VIVADO_VER    ?= 2021.2
+XILINX_VIVADO ?= /opt/Xilinx/Vivado/$(VIVADO_VER)
+VIVADO_PATH := $(XILINX_VIVADO)/bin/
+VIVADO_XLNX := $(XILINX_VIVADO)/bin/vivado
 VIVADO_OPT  := -mode batch -nolog -nojournal -notrace -source
 
 # This needs to match the path set in <core>_setup.sh
