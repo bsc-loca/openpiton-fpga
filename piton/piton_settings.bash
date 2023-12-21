@@ -65,7 +65,7 @@ fi
 export VIVADO_BIN=$(which vivado)
 
 if [  "x$VIVADO_BIN" == "x" ]; then
-	export VIVADO_BIN=/opt/Xilinx/Vivado/2021.2/bin/vivado
+	export VIVADO_BIN=/opt/Xilinx/Vivado/2023.2/bin/vivado
 fi
 
 # Please define MODELSIM_HOME only if you have MODELSIM, otherwise comment it out.

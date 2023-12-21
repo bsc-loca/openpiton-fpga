@@ -1053,7 +1053,7 @@ assign passthru_pll_rst_n = 1'b1;
 
     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
     BSCANE2 #(
-    .JTAG_CHAIN(1) // Value for USER command. Possible values: 1-4.
+    .JTAG_CHAIN(2) // Value for USER command. Possible values: 1-4.
     ) BSCANE2_inst (
         .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
         .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
