@@ -700,18 +700,10 @@ module system(
     `endif //`ifdef PITON_EXTRA_MEMS
 
   `ifdef PITON_RV64_DEBUGUNIT
-    input  bscan_bscanid_en,
-    input  bscan_capture,
-    input  bscan_drck,
-    input  bscan_reset,
-    input  bscan_runtest,
-    input  bscan_sel,
-    input  bscan_shift,
-    input  bscan_tck,
-    input  bscan_tdi,
-    output bscan_tdo,
-    input  bscan_tms,
-    input  bscan_update,
+    input  dbg_jtag_tck,
+    input  dbg_jtag_tdi,
+    output dbg_jtag_tdo,
+    input  dbg_jtag_tms,
   `endif //`ifdef PITON_RV64_DEBUGUNIT
 
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
@@ -2043,11 +2035,11 @@ chipset chipset(
     ,.td_i                          ( td_i                       )
     ,.td_o                          ( td_o                       )
 `else
-    ,.tck_i                         ( bscan_tck   )
-    ,.tms_i                         ( bscan_tms   )
-    ,.trst_ni                       ( bscan_reset )
-    ,.td_i                          ( bscan_tdi   )
-    ,.td_o                          ( bscan_tdo   )
+    ,.tck_i                         ( dbg_jtag_tck   )
+    ,.tms_i                         ( dbg_jtag_tms   )
+    ,.trst_ni                       ( 1'b1           )
+    ,.td_i                          ( dbg_jtag_tdi   )
+    ,.td_o                          ( dbg_jtag_tdo   )
 `endif // `ifndef PITONSYS_MEEP
     ,.tdo_oe_o                      (                            )
 `endif // ifdef PITON_RV64_DEBUGUNIT

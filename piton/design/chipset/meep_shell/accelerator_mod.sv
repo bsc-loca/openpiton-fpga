@@ -272,18 +272,10 @@ module openpiton_wrapper(
 
   `ifdef PITON_RV64_DEBUGUNIT
     // JTAG
-    input  bscan_bscanid_en,
-    input  bscan_capture,
-    input  bscan_drck,
-    input  bscan_reset,
-    input  bscan_runtest,
-    input  bscan_sel,
-    input  bscan_shift,
-    input  bscan_tck,
-    input  bscan_tdi,
-    output bscan_tdo,
-    input  bscan_tms,
-    input  bscan_update,
+    input  dbg_jtag_tck,
+    input  dbg_jtag_tdi,
+    output dbg_jtag_tdo,
+    input  dbg_jtag_tms,
   `endif //`ifdef PITON_RV64_DEBUGUNIT
 
     // AXI UART
