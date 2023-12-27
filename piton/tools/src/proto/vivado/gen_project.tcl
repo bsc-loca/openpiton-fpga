@@ -85,6 +85,10 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
   # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
 
+  # Generating JTAG chain
+  # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/jtag_chain.tcl)
+  source $DV_ROOT/design/chipset/meep/jtag_chain.tcl
+
   # Generating Ethernet system
   # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl)
   source $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/eth_cmac_syst.tcl
