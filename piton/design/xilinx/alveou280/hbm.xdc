@@ -23,3 +23,5 @@ set_property PACKAGE_PIN BJ44 [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V
 set_property IOSTANDARD  LVDS [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
 set_property PACKAGE_PIN BJ43 [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
 set_property IOSTANDARD  LVDS [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
+#create_clock is needed in case of passing MEM_CLK through diff buffer
+create_clock -period 10.000 -name MEM_CLK [get_ports "mc_clk_p"]
