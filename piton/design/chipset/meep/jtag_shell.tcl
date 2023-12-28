@@ -17,10 +17,10 @@
 # Description: 
 
 # Proc to create JTAG chain based on built-in FPGA BSCAN
-proc cr_bd_jtag_chain { parentCell } {
+proc cr_bd_jtag_shell { parentCell } {
 
   # CHANGE DESIGN NAME HERE
-  set design_name jtag_chain
+  set design_name jtag_shell
 
 # This script was generated for a remote BD. To create a non-remote design,
 # change the variable <run_remote_bd_flow> to <0>.
@@ -167,6 +167,6 @@ current_bd_design $design_name
   save_bd_design
   close_bd_design $design_name 
 }
-# End of cr_bd_jtag_chain()
+# End of cr_bd_jtag_shell()
 
-cr_bd_jtag_chain ""
+cr_bd_jtag_shell ""

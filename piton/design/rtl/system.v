@@ -744,7 +744,7 @@ assign passthru_pll_rst_n = 1'b1;
 `ifdef ALVEO_BOARD
     wire tck_i, tms_i, td_i, td_o;
     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
-    jtag_chain jtag_chain (
+    jtag_shell jtag_shell (
       .dbg_jtag_tck(tck_i),
       .dbg_jtag_tms(tms_i),
       .dbg_jtag_tdi(td_i),
