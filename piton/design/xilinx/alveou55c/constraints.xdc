@@ -34,8 +34,8 @@
 #set_property CONFIG_VOLTAGE 1.8 [current_design]
 
 # Clock signals
-set_property -dict {PACKAGE_PIN BK44 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
-set_property -dict {PACKAGE_PIN BK43 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
+set_property -dict {PACKAGE_PIN BL10 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
+set_property -dict {PACKAGE_PIN BK10 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 
 # ref clock for MIG
 
@@ -159,6 +159,17 @@ set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
 #set_input_delay  -clock tck_i -clock_fall 5 [get_ports tms_i   ]
 #set_output_delay -clock tck_i             5 [get_ports td_o    ]
 #set_false_path   -from                      [get_ports trst_ni ]
+
+#----------------- JTAG CDC -------------------
+# Timing constraints for clock domains crossings (CDC), which didn't apply automatically (e.g. for GPIO)
+set free_clk [get_clocks -of_objects [get_pins -hierarchical debug_hub/clk]]
+set jtag_clk [get_clocks -of_objects [get_pins -hierarchical bscan_prim/m0_bscan_tck]]
+# set_false_path -from $xxx_clk -to $yyy_clk
+# controlling resync paths to be less than source clock period
+# (-datapath_only to exclude clock paths)
+set_max_delay -datapath_only -from $free_clk -to $jtag_clk [expr [get_property -min period $free_clk] * 0.9]
+set_max_delay -datapath_only -from $jtag_clk -to $free_clk [expr [get_property -min period $jtag_clk] * 0.9]
+#--------------------------------------------
 
 ## constrain clock domain crossing
 #set_max_delay -datapath_only -from [get_clocks -include_generated_clocks chipset_clk_clk_mmcm] -to [get_clocks tck_i] 8.0

@@ -700,18 +700,10 @@ module system(
     `endif //`ifdef PITON_EXTRA_MEMS
 
   `ifdef PITON_RV64_DEBUGUNIT
-    input  bscan_bscanid_en,
-    input  bscan_capture,
-    input  bscan_drck,
-    input  bscan_reset,
-    input  bscan_runtest,
-    input  bscan_sel,
-    input  bscan_shift,
-    input  bscan_tck,
-    input  bscan_tdi,
-    output bscan_tdo,
-    input  bscan_tms,
-    input  bscan_update,
+    input  dbg_jtag_tck,
+    input  dbg_jtag_tdi,
+    output dbg_jtag_tdo,
+    input  dbg_jtag_tms,
   `endif //`ifdef PITON_RV64_DEBUGUNIT
 
     output [`C_M_AXI_LITE_ADDR_WIDTH-1:0]   uart_axi_awaddr,
@@ -1049,25 +1041,16 @@ assign passthru_pll_rst_n = 1'b1;
 //     );
 // `endif
 `ifdef ALVEO_BOARD
-    wire tck_i, tms_i, trst_ni, td_i, td_o;
-
+    wire tck_i, tms_i, td_i, td_o;
     // hook the RISC-V JTAG TAP into the FPGA JTAG chain
-    BSCANE2 #(
-    .JTAG_CHAIN(2) // Value for USER command. Possible values: 1-4.
-    ) BSCANE2_inst (
-        .CAPTURE(), // 1-bit output: CAPTURE output from TAP controller.
-        .DRCK(), // 1-bit output: Gated TCK output. When SEL is asserted, DRCK toggles when CAPTURE or
-        // SHIFT are asserted.
-        .RESET(trst_ni), // 1-bit output: Reset output for TAP controller.
-        .RUNTEST(), // 1-bit output: Output asserted when TAP controller is in Run Test/Idle state.
-        .SEL(), // 1-bit output: USER instruction active output.
-        .SHIFT(), // 1-bit output: SHIFT output from TAP controller.
-        .TCK(tck_i), // 1-bit output: Test Clock output. Fabric connection to TAP Clock pin.
-        .TDI(td_i), // 1-bit output: Test Data Input (TDI) output from TAP controller.
-        .TMS(tms_i), // 1-bit output: Test Mode Select output. Fabric connection to TAP.
-        .UPDATE(), // 1-bit output: UPDATE output from TAP controller
-        .TDO(td_o) // 1-bit input: Test Data Output (TDO) input for USER function.
+    jtag_shell jtag_shell (
+      .dbg_jtag_tck(tck_i),
+      .dbg_jtag_tms(tms_i),
+      .dbg_jtag_tdi(td_i),
+      .dbg_jtag_tdo(td_o),
+      .dbghub_clk(core_ref_clk) // Using Core clock as some free-running clock for Debug Hub
     );
+    wire trst_ni = 1'b1;
 `endif
 `ifdef VC707_BOARD
     wire tck_i, tms_i, trst_ni, td_i, td_o;
@@ -2043,11 +2026,11 @@ chipset chipset(
     ,.td_i                          ( td_i                       )
     ,.td_o                          ( td_o                       )
 `else
-    ,.tck_i                         ( bscan_tck   )
-    ,.tms_i                         ( bscan_tms   )
-    ,.trst_ni                       ( bscan_reset )
-    ,.td_i                          ( bscan_tdi   )
-    ,.td_o                          ( bscan_tdo   )
+    ,.tck_i                         ( dbg_jtag_tck   )
+    ,.tms_i                         ( dbg_jtag_tms   )
+    ,.trst_ni                       ( 1'b1           )
+    ,.td_i                          ( dbg_jtag_tdi   )
+    ,.td_o                          ( dbg_jtag_tdo   )
 `endif // `ifndef PITONSYS_MEEP
     ,.tdo_oe_o                      (                            )
 `endif // ifdef PITON_RV64_DEBUGUNIT
