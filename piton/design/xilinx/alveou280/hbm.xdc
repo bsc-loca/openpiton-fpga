@@ -25,3 +25,14 @@ set_property PACKAGE_PIN BJ43 [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V
 set_property IOSTANDARD  LVDS [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
 #create_clock is needed in case of passing MEM_CLK through diff buffer
 create_clock -period 10.000 -name MEM_CLK [get_ports "mc_clk_p"]
+
+#--------------------------------------------
+# Timing constraints for CDC in SDRAM user interface, particularly in HBM APB which is disabled but clocked by fixed mem ref clock
+set mem_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_clk]]
+set ref_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_refclk_clk_p]]
+# set_false_path -from $xxx_clk -to $yyy_clk
+# controlling resync paths to be less than source clock period
+# (-datapath_only to exclude clock paths)
+set_max_delay -datapath_only -from $mem_ck -to $ref_ck [expr [get_property -min period $mem_ck] * 0.9]
+set_max_delay -datapath_only -from $ref_ck -to $mem_ck [expr [get_property -min period $ref_ck] * 0.9]
+#--------------------------------------------
