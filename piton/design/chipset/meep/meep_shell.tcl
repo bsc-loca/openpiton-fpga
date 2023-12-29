@@ -653,7 +653,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
-  connect_bd_net [get_bd_pins mem_refclk_buf/IBUF_OUT] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1]
+  connect_bd_net [get_bd_pins mem_refclk_buf/IBUF_OUT] [get_bd_pins hbm_0/HBM_REF_CLK_0] [get_bd_pins hbm_0/HBM_REF_CLK_1] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK]
   connect_bd_net [get_bd_pins hbm_0/DRAM_0_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op1]
   connect_bd_net [get_bd_pins hbm_0/DRAM_1_STAT_CATTRIP] [get_bd_pins hbm_cattrip_comb/Op2]
   connect_bd_net [get_bd_ports hbm_cattrip]              [get_bd_pins hbm_cattrip_comb/Res]
@@ -662,7 +662,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_30_ACLK] 
   connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_30_ARESET_N]
   connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_30_WDATA_PARITY] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY]
-  connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/APB_0_PCLK] [get_bd_pins hbm_0/APB_1_PCLK] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins hbm_0/AXI_01_ACLK]
+  connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins hbm_0/AXI_01_ACLK]
   connect_bd_net [get_bd_ports sys_rst] [get_bd_ports mem_rst] [get_bd_pins rst_inv/Op1]
   connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins hbm_0/AXI_01_ARESET_N]
   for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
