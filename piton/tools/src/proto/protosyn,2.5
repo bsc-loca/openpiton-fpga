@@ -328,7 +328,7 @@ def makeProject(board, design_data, work_dir, log_dir, slurm, dep_list):
     proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
     proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
-    setUARTXilinxFreq(board, design_data)
+    setSysFreq(board, design_data)
     jid = None
     if (tool == "vivado"):
         print_info("The Vivado Path is %s" % os.environ.get('VIVADO_BIN'))
@@ -425,7 +425,7 @@ def makeMEEPflow(board, design_data, work_dir, log_dir, slurm, dep_list, def_lis
     proj_script = os.path.join(DV_ROOT, "tools/src/proto/" + tool + "/gen_project.tcl")
     proj_log = os.path.join(log_dir, PROJECT_BUILD_LOG)
     jname = "protosyn_mkproj_%s_%s" % (board, design_data["ID"])
-    setUARTXilinxFreq(board, design_data)
+    setSysFreq(board, design_data)
     # Passing parameter to TCL
     jid = None
     if (tool == "vivado"):
@@ -798,8 +798,8 @@ def genUARTInit(board, design_data):
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000;""" % div, file=f)
     f.close()
 
-def setUARTXilinxFreq(board, design_data):
-    print_info("Using core clock frequency: %s MHz" % design_data["BOARDS"][board]["FREQ"])
+def setSysFreq(board, design_data):
+    print_info("Passing to implementation system clock frequency: %s MHz" % design_data["BOARDS"][board]["FREQ"])
     os.environ['SYSTEM_FREQ'] = str(design_data["BOARDS"][board]["FREQ"])
 
 
