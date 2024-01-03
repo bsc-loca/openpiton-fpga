@@ -161,14 +161,15 @@ set_false_path -to [get_cells -hierarchical *chipset_rst_n*]
 #set_false_path   -from                      [get_ports trst_ni ]
 
 #----------------- JTAG CDC -------------------
-# Timing constraints for clock domains crossings (CDC), which didn't apply automatically (e.g. for GPIO)
-set free_clk [get_clocks -of_objects [get_pins -hierarchical debug_hub/clk]]
-set jtag_clk [get_clocks -of_objects [get_pins -hierarchical bscan_prim/m0_bscan_tck]]
+# Timing constraints for clock domains crossings (CDC)
+set chip_clk [get_clocks -of_objects [get_pins -hierarchical clk_mmcm/chipset_clk]]
+set jtag_clk [get_clocks -of_objects [get_pins -hierarchical jtag_shell/dbg_jtag_tck]]
 # set_false_path -from $xxx_clk -to $yyy_clk
 # controlling resync paths to be less than source clock period
 # (-datapath_only to exclude clock paths)
-set_max_delay -datapath_only -from $free_clk -to $jtag_clk [expr [get_property -min period $free_clk] * 0.9]
-set_max_delay -datapath_only -from $jtag_clk -to $free_clk [expr [get_property -min period $jtag_clk] * 0.9]
+# For JTAG clock we consider both edges
+set_max_delay -datapath_only -from $chip_clk -to $jtag_clk [expr [get_property -min period $chip_clk] * 0.9    ]
+set_max_delay -datapath_only -from $jtag_clk -to $chip_clk [expr [get_property -min period $jtag_clk] * 0.9 / 2]
 #--------------------------------------------
 
 ## constrain clock domain crossing
