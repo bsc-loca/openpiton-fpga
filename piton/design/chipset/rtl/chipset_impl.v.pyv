@@ -251,9 +251,6 @@ module chipset_impl(
 `ifdef PITONSYS_UART_BOOT
     input                                       uart_boot_en,
     input                                       uart_timeout_en,
-  `ifdef ALVEO_BOARD
-    input                                       bootrom_linux_en,
-  `endif // ALVEO
 `endif // endif PITONSYS_UART_BOOT
 `endif // endif PITONSYS_UART
 
@@ -1046,7 +1043,7 @@ uart_top        uart_top (
 `endif // endif PITONSYS_UART_LOOBACK
 
 `ifdef PITONSYS_PCIE
-    .uart_boot_en               ( pcie_gpio[4]                          ), //uart_boot_en
+    .uart_boot_en               ( pcie_gpio[2]                          ), //uart_boot_en
 `else // PITONSYS_PCIE
     .uart_boot_en               ( uart_boot_en                          ),
 `endif // PITONSYS_PCIE

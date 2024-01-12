@@ -591,9 +591,14 @@ reg                                             chipset_rst_n_ff;
 `endif
 
 // UART boot stuff
+`ifndef ALVEO_BOARD
 wire                                            uart_boot_en;
 wire                                            uart_timeout_en;
-wire                                            uart_bootrom_linux_en;
+`else
+reg                                             uart_boot_en;
+reg                                             uart_timeout_en;
+reg                                             uart_bootrom_linux_en;
+`endif
 
 // NoC power test hop count from switches if enabled
 wire  [3:0]                                     noc_power_test_hop_count;
@@ -797,9 +802,11 @@ end
                 assign uart_boot_en    = 1'b1;
                 assign uart_timeout_en = 1'b0;
             `elsif ALVEO_BOARD
-                assign uart_boot_en    = sw[0];
-                assign uart_timeout_en = sw[1]; 
-                assign uart_bootrom_linux_en = sw[2];
+                always @ (posedge chipset_clk) begin
+                  uart_boot_en          <= sw[0];
+                  uart_timeout_en       <= sw[1]; 
+                  uart_bootrom_linux_en <= sw[2];
+                end
             `else 
                 assign uart_boot_en    = sw[7];
                 assign uart_timeout_en = sw[6];
@@ -1493,9 +1500,6 @@ chipset_impl_noc_power_test  chipset_impl (
             `ifdef PITONSYS_UART_BOOT
                 .uart_boot_en(uart_boot_en),
                 .uart_timeout_en(uart_timeout_en),
-                `ifdef ALVEO_BOARD                           
-                .bootrom_linux_en(uart_bootrom_linux_en),
-                `endif
             `endif // endif PITONSYS_UART_BOOT
         `endif // endif PITONSYS_UART
 
