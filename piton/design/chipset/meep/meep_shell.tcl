@@ -381,7 +381,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   set_property -dict [ list \
    CONFIG.USER_APB_EN {false} \
    CONFIG.USER_CLK_SEL_LIST0 {AXI_00_ACLK} \
-   CONFIG.USER_CLK_SEL_LIST1 {AXI_30_ACLK} \
+   CONFIG.USER_CLK_SEL_LIST1 {AXI_31_ACLK} \
    CONFIG.USER_HBM_CP_1 {6} \
    CONFIG.USER_HBM_DENSITY $hbm_density \
    CONFIG.USER_HBM_FBDIV_1 {36} \
@@ -447,8 +447,8 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.USER_SAXI_27 {false} \
    CONFIG.USER_SAXI_28 {false} \
    CONFIG.USER_SAXI_29 {false} \
-   CONFIG.USER_SAXI_30 {true}  \
-   CONFIG.USER_SAXI_31 {false} \
+   CONFIG.USER_SAXI_30 {false} \
+   CONFIG.USER_SAXI_31 {true}  \
    CONFIG.USER_SWITCH_ENABLE_01 {TRUE} \
  ] $hbm_0
 
@@ -456,7 +456,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   set_property -dict [ list \
    CONFIG.NUM_READ_THREADS {16} \
    CONFIG.NUM_WRITE_THREADS {16} \
- ] [get_bd_intf_pins /hbm_0/SAXI_30$hbm_axi_sfx]
+ ] [get_bd_intf_pins /hbm_0/SAXI_31$hbm_axi_sfx]
 
   # A function distributing extra HBM channels
   # here linearly
@@ -623,7 +623,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   connect_bd_intf_net [get_bd_intf_ports mem_refclk] [get_bd_intf_pins mem_refclk_buf/CLK_IN_D]
-  connect_bd_intf_net [get_bd_intf_ports pci2hbm_saxi] [get_bd_intf_pins hbm_0/SAXI_30$hbm_axi_sfx]
+  connect_bd_intf_net [get_bd_intf_ports pci2hbm_saxi] [get_bd_intf_pins hbm_0/SAXI_31$hbm_axi_sfx]
   connect_bd_intf_net [get_bd_intf_ports m_axi]        [get_bd_intf_pins hbm_0/SAXI_00$hbm_axi_sfx]
   connect_bd_intf_net [get_bd_intf_ports ncmem_axi]    [get_bd_intf_pins hbm_0/SAXI_01$hbm_axi_sfx]
   connect_bd_intf_net [get_bd_intf_ports pci2hbm_maxi] [get_bd_intf_pins smartconnect_0/M00_AXI]
@@ -659,9 +659,9 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   connect_bd_net [get_bd_ports hbm_cattrip]              [get_bd_pins hbm_cattrip_comb/Res]
   connect_bd_net [get_bd_pins hbm_0/apb_complete_0] [get_bd_pins mem_calib_sync/ext_reset_in]
   connect_bd_net [get_bd_pins hbm_0/apb_complete_1] [get_bd_pins mem_calib_sync/aux_reset_in]
-  connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_30_ACLK] 
-  connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_30_ARESET_N]
-  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_30_WDATA_PARITY] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY]
+  connect_bd_net [get_bd_pins qdma_0/axi_aclk]    [get_bd_pins smartconnect_0/aclk]    [get_bd_pins hbm_0/AXI_31_ACLK] 
+  connect_bd_net [get_bd_pins qdma_0/axi_aresetn] [get_bd_pins smartconnect_0/aresetn] [get_bd_pins hbm_0/AXI_31_ARESET_N]
+  connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins hbm_0/AXI_31_WDATA_PARITY] [get_bd_pins hbm_0/AXI_00_WDATA_PARITY] [get_bd_pins hbm_0/AXI_01_WDATA_PARITY]
   connect_bd_net [get_bd_ports sys_clk] [get_bd_ports mem_clk] [get_bd_pins hbm_0/AXI_00_ACLK] [get_bd_pins hbm_0/AXI_01_ACLK]
   connect_bd_net [get_bd_ports sys_rst] [get_bd_ports mem_rst] [get_bd_pins rst_inv/Op1]
   connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/APB_0_PRESET_N] [get_bd_pins hbm_0/APB_1_PRESET_N] [get_bd_pins hbm_0/AXI_00_ARESET_N] [get_bd_pins hbm_0/AXI_01_ARESET_N]
@@ -672,7 +672,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
     connect_bd_net [get_bd_pins rst_inv/Res] [get_bd_pins hbm_0/AXI_${hbm_port}_ARESET_N]
   }
   # After all connections set PCIe clock to drive HBM cross-switch
-  set_property CONFIG.USER_CLK_SEL_LIST1 AXI_30_ACLK [get_bd_cells hbm_0]
+  set_property CONFIG.USER_CLK_SEL_LIST1 AXI_31_ACLK [get_bd_cells hbm_0]
 } else {
   connect_bd_net [get_bd_pins gndx32/dout] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_araddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awaddr]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wdata]
   connect_bd_net [get_bd_pins gndx1/dout]  [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_arvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_awvalid] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_bready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_rready] [get_bd_pins ddr4_0/c0_ddr4_s_axi_ctrl_wvalid]
@@ -695,7 +695,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
   for {set hbm_mem 0} {$hbm_mem < $hbm_mems} {incr hbm_mem} {
     assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces m_axi]        [get_bd_addr_segs hbm_0/SAXI_00$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
     assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces ncmem_axi]    [get_bd_addr_segs hbm_0/SAXI_01$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
-    assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_30$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
+    assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces pci2hbm_saxi] [get_bd_addr_segs hbm_0/SAXI_31$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
     for {set idx 0} {$idx < $PITON_EXTRA_MEMS} {incr idx} {
       set hbm_port [format {%02d} [expr $distHBMchan]]
       assign_bd_address -offset [expr ($hbm_mem * $hbm_range)] -range $hbm_range -target_address_space [get_bd_addr_spaces mcx_axi$idx] [get_bd_addr_segs hbm_0/SAXI_$hbm_port$hbm_axi_sfx/HBM_MEM[format {%02d} $hbm_mem]] -force
