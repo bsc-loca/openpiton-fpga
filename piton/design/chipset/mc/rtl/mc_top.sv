@@ -355,10 +355,6 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
     .ADDR_SWAP_LBITS(HBM_MCS_LOG2),
     .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
     .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
-  `else
-    `ifndef PITON_FPGA_MC_DDR3
-      .OUTSTAND_QUEUE_BRAM (0), // repeating parameters like for main bridge for simulation (SDRAM is absent)
-    `endif
   `endif
   .NOC2AXI_DESER_ORDER (1),
   .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
@@ -1190,8 +1186,6 @@ noc_axi4_bridge #(
     .ADDR_SWAP_LBITS(HBM_MCS_LOG2),
     .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
     .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
-  `else
-    .OUTSTAND_QUEUE_BRAM (0), // speed-up of the bridge if working at DDR clock
   `endif
     .ADDR_OFFSET(MEM_BASE_UNALIGN),
     .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))

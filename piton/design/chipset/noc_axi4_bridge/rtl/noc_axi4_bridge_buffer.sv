@@ -80,7 +80,7 @@ module noc_axi4_bridge_buffer #(
     parameter RDWR_INORDER = 0,
     // "Outstanding requests" queue parameters
     parameter NUM_REQ_OUTSTANDING_LOG2 = 2, // "Outstanding requests" queue size
-    parameter OUTSTAND_QUEUE_BRAM = 1, // "Outstanding requests" queue is implemented on BRAM
+    parameter OUTSTAND_QUEUE_BRAM = 1, // "Outstanding requests" queue is implemented on BRAM (through Xilinx true 2-port BRAM synth template)
     parameter NUM_REQ_MSHRID_LBIT = 0, // particular NOC fields to participate in AXI ID
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1, // high component of number of "Outstanding requests" threads
