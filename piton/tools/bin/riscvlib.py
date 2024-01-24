@@ -228,6 +228,7 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
             ''' % (_reg_fmt(addrBase, addrFrag, 2, 2),
                    _reg_fmt(addrOnic, addrFrag, 2, 2))
             #''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2))
+
     tmpStr += '''
     eth0_clk: eth0_clk {
         compatible = "fixed-clock";
@@ -372,7 +373,6 @@ def gen_riscv_dts(devices, nCpus, cpuFreq, timeBaseFreq, periphFreq, dtsPath, ti
                 xlnx,device-id = <0x00>;
                 xlnx,include-dre;            
             };
-        
         };
             ''' % (addrBase, _reg_fmt(addrBase, addrLen, 2, 2), ioDeviceNr, ioDeviceNr+1, dmaChannelMM2S, ioDeviceNr, dmaChannelS2MM, ioDeviceNr+1)
             ioDeviceNr+=2                       
