@@ -1223,8 +1223,7 @@ end
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
                 // Memory controller clock
-                , .mc_sys_clk(//mc_clk
-                             )
+                , .mc_sys_clk(mc_clk)
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
 

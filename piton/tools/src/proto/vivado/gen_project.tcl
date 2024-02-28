@@ -106,6 +106,21 @@ add_files -norecurse -fileset $fileset_obj $files_to_add
 #Generating IP cores for Alveo boards
 if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
 
+  # Create instance of Xilix MMCM IP and frequency setup
+  set SYS_FREQ $env(SYSTEM_FREQ)
+  puts "Setting MMCM frequency to ${SYS_FREQ}MHz "
+  create_ip -vendor xilinx.com -library ip -name clk_wiz -version 6.0 -module_name       clk_mmcm
+  set_property -dict [list CONFIG.PRIM_SOURCE {Differential_clock_capable_pin}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.OPTIMIZE_CLOCKING_STRUCTURE_EN        {true}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT2_USED                          {true}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT3_USED                          {true}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLK_OUT1_PORT                  {chipset_clk}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLK_OUT2_PORT                   {mc_sys_clk}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLK_OUT3_PORT                      {vpu_clk}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ       "$SYS_FREQ"] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT2_REQUESTED_OUT_FREQ             {250}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT3_REQUESTED_OUT_FREQ              {50}] [get_ips clk_mmcm]
+
   # Generating PCIe-based Shell
   # (to save BD: write_bd_tcl -force -no_project_wrapper ../piton/design/chipset/meep/meep_shell.tcl)
   source $DV_ROOT/design/chipset/meep/meep_shell.tcl
