@@ -54,6 +54,14 @@ if { [info exists "::env(MEEP_SHELL)"] } {
 	
 	source $MEEP_ROOT/tcl/project_options.tcl
 
+  # Create IP of Xilinx async FIFO needed under MEEP_SHELL as well
+  create_ip -vendor xilinx.com -library ip -name fifo_generator -version 13.2 -module_name     afifo_w64_d128_std
+  set_property -dict [list CONFIG.Fifo_Implementation {Independent_Clocks_Block_RAM}] [get_ips afifo_w64_d128_std]
+  set_property -dict [list CONFIG.Input_Data_Width                              {64}] [get_ips afifo_w64_d128_std]
+  set_property -dict [list CONFIG.Input_Depth                                  {128}] [get_ips afifo_w64_d128_std]
+  set_property -dict [list CONFIG.Use_Embedded_Registers                     {false}] [get_ips afifo_w64_d128_std]
+  set_property -dict [list CONFIG.Enable_Safety_Circuit                      {false}] [get_ips afifo_w64_d128_std]
+
 puts "MEEP Shell protosyn flow completed"	
 exit
 } 
