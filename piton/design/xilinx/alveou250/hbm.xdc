@@ -1,0 +1,45 @@
+# ------------------------------------------------------------------------
+# HBM Catastrophic Over temperature Output signal to Satellite Controller
+#    HBM_CATTRIP Active high indicator to Satellite controller to indicate the HBM has exceeded its maximum allowable temperature.
+#                This signal is not a dedicated Ultrascale+ Device output and is a derived signal in RTL. Making the signal Active will shut
+#                the Ultrascale+ Device power rails off.
+#
+# From UG1314 (Alveo U280 Data Center Accelerator Card User Guide):
+# WARNING! When creating a design for this card, it is necessary to drive the CATTRIP pin.
+# This pin is monitored by the card's satellite controller (SC) and represents the HBM_CATRIP (HBM
+# catastrophic temperature failure). When instantiating the HBM IP in your design, the two HBM IP signals,
+# DRAM_0_STAT_CATTRIP and DRAM_1_STAT_CATTRIP, must be ORed together and connected to this pin for
+# proper card operation. If the pin is undefined it will be pulled High by the card causing the SC to infer a CATRIP
+# failure and shut power down to the card.
+# If you do not use the HBM IP in your design, you must drive the pin Low to avoid the SC shutting down the card.
+# If the pin is undefined and the QSPI is programmed with the MCS file, there is a potential chance that the card
+# will continuously power down and reset after the bitstream is loaded. This can result in the card being unusable.
+
+# ------------------------------------------------------------------------
+# hbm_cattrip is not required for u250 since it doesn't support HBM.
+# but for saving maximum compatibility in verilog sources, connecting it
+# an unsed port.
+# ------------------------------------------------------------------------
+set_property PACKAGE_PIN AR20      [get_ports hbm_cattrip] ;# Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0"           - IO_T0U_N12_VRP_64
+set_property IOSTANDARD  LVCMOS18 [get_ports hbm_cattrip]  ;# Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0"           - IO_T0U_N12_VRP_64
+set_property PULLTYPE    PULLDOWN [get_ports hbm_cattrip]  ;# Setting HBM_CATTRIP to low by default to avoid the SC shutting down the card
+
+set_property PACKAGE_PIN AY38 [ get_ports "mc_clk_n" ]  ;# Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_N" - IO_L13N_T2L_N1_GC_QBC_42
+set_property IOSTANDARD  LVDS [ get_ports "mc_clk_n" ]  ;# Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_N" - IO_L13N_T2L_N1_GC_QBC_42
+set_property PACKAGE_PIN AY37 [ get_ports "mc_clk_p" ]  ;# Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_P" - IO_L13P_T2L_N0_GC_QBC_42
+set_property IOSTANDARD  LVDS [ get_ports "mc_clk_p" ]  ;# Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_P" - IO_L13P_T2L_N0_GC_QBC_42
+#create_clock is needed in case of passing MEM_CLK through diff buffer
+create_clock -period 3.3333 -name MEM_CLK [get_ports "mc_clk_p"]
+
+#--------------------------------------------
+# Timing constraints for CDC in SDRAM user interface, particularly in HBM APB which is disabled but clocked by fixed mem ref clock
+set mem_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_clk]]
+set ref_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_refclk_clk_p]]
+# set_false_path -from $xxx_clk -to $yyy_clk
+# controlling resync paths to be less than source clock period
+# (-datapath_only to exclude clock paths)
+set_max_delay -datapath_only -from $mem_ck -to $ref_ck [expr [get_property -min period $mem_ck] * 0.9]
+set_max_delay -datapath_only -from $ref_ck -to $mem_ck [expr [get_property -min period $ref_ck] * 0.9]
+#--------------------------------------------
+
+#set_clock_groups -asynchronous -group [get_clocks chipset_clk_clk_mmcm] -group [get_clocks mmcm_clkout0_1]
