@@ -545,7 +545,49 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 
   # Create instance: qdma_0, and set properties
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:5.0 qdma_0 ]
+  if {$::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
   set_property -dict [ list \
+   CONFIG.MAILBOX_ENABLE {true} \
+   CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
+   CONFIG.PF1_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF1_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF1_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF2_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF2_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF2_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.PF3_MSIX_CAP_TABLE_SIZE_qdma {000} \
+   CONFIG.PF3_SRIOV_CAP_INITIAL_VF {0} \
+   CONFIG.PF3_SRIOV_FIRST_VF_OFFSET {0} \
+   CONFIG.SRIOV_CAP_ENABLE {true} \
+   CONFIG.SRIOV_FIRST_VF_OFFSET {4} \
+   CONFIG.barlite_mb_pf0 {1} \
+   CONFIG.barlite_mb_pf1 {0} \
+   CONFIG.barlite_mb_pf2 {0} \
+   CONFIG.barlite_mb_pf3 {0} \
+   CONFIG.dma_intf_sel_qdma {AXI_MM} \
+   CONFIG.en_axi_st_qdma {false} \
+   CONFIG.flr_enable {true} \
+   CONFIG.mode_selection {Advanced} \
+   CONFIG.pcie_blk_locn {X0Y1} \
+   CONFIG.pf0_ari_enabled {true} \
+   CONFIG.pf0_bar0_prefetchable_qdma {true} \
+   CONFIG.pf0_bar2_prefetchable_qdma {true} \
+   CONFIG.pf1_bar0_prefetchable_qdma {true} \
+   CONFIG.pf1_bar2_prefetchable_qdma {true} \
+   CONFIG.pf1_msix_enabled_qdma {false} \
+   CONFIG.pf2_bar0_prefetchable_qdma {true} \
+   CONFIG.pf2_bar2_prefetchable_qdma {true} \
+   CONFIG.pf2_msix_enabled_qdma {false} \
+   CONFIG.pf3_bar0_prefetchable_qdma {true} \
+   CONFIG.pf3_bar2_prefetchable_qdma {true} \
+   CONFIG.pf3_msix_enabled_qdma {false} \
+   CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
+   CONFIG.pl_link_cap_max_link_width {X16} \
+   CONFIG.select_quad {GTY_Quad_227} \
+   CONFIG.testname {mm} \
+   CONFIG.tl_pf_enable_reg {1} \
+ ] $qdma_0 } else { 
+   set_property -dict [ list \
    CONFIG.MAILBOX_ENABLE {true} \
    CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
    CONFIG.PF1_MSIX_CAP_TABLE_SIZE_qdma {000} \
@@ -585,7 +627,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
- ] $qdma_0
+ ] $qdma_0 }
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   set_property CONFIG.pl_link_cap_max_link_speed {5.0_GT/s} [get_bd_cells qdma_0]
