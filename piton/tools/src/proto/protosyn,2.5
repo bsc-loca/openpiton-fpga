@@ -69,6 +69,7 @@ def usage():
     print("                  f1", file=sys.stderr)
     print("                  alveou280", file=sys.stderr)
     print("                  alveou55c", file=sys.stderr)
+    print("                  alveou250", file=sys.stderr)
     print("\n       -d, --design <design>", file=sys.stderr)
     print("              Name of design module to synthesize.  The default is 'system', which", file=sys.stderr)
     print("              synthesizes a full system with chip and chipset. See", file=sys.stderr)
@@ -397,7 +398,7 @@ def runImplFlow(board, eth, design_data, work_dir, log_dir, def_list, slurm, dep
                       slurm, 8, 64000, "6:00:00", jname, dep_list)
 
     # Copy sw defines for Ethernet core to proper place
-    if (board == "alveou280" or board == "alveou55c") and eth:
+    if (board == "alveou280" or board == "alveou55c" or board == "alveou250") and eth:
       os.system('cp -rf $MODEL_DIR/%s/system/bd/Eth_CMAC_syst/ip/Eth_CMAC_syst_eth100gb_0/Eth_CMAC_syst_eth100gb_0/header_files/* $DV_ROOT/design/chipset/io_ctrl/xilinx/common/ip_cores/eth_cmac_syst/sw/eth_test/src/syst_hw/' % board)
 
     os.chdir(prev_dir)
@@ -627,7 +628,7 @@ def makeDefList(options):
             defines.append("ETHERNET_DMA")
         if (options.ncmem):
             defines.append("PITON_NONCACH_MEM")
-    elif options.board == "alveou280" or options.board == "alveou55c":
+    elif options.board == "alveou280" or options.board == "alveou55c" or options.board == "alveou250":
         defines.append("PITON_NONCACH_MEM")
 
     # --no-ddr option
@@ -636,9 +637,13 @@ def makeDefList(options):
     else:   # default option
         defines.append("PITON_FPGA_MC_DDR3")
 
-    if not options.hbm and options.board == "alveou55c":
+    if not options.hbm and (options.board == "alveou55c"):
         print_info("Enforcing --hbm option for %s board" % options.board)
         options.hbm = True
+
+    if options.hbm and (options.board == "alveou250"):
+        print_info("Enforcing --hbm option to false for %s board" % options.board)
+        options.hbm = False
 
     # --hbm option for utilizing HBM
     if options.hbm:
@@ -658,7 +663,7 @@ def makeDefList(options):
         defines.append("PITONSYS_MEM_ZEROER")    
 
     # do not use SD controller if BRAM is used for boot or a test or if board doesn't have sd
-    if (options.test_name != None) or (options.board in {"piton_board", "xupp3r", "f1", "alveou280", "alveou55c"}):
+    if (options.test_name != None) or (options.board in {"piton_board", "xupp3r", "f1", "alveou280", "alveou55c", "alveou250"}):
         pass
     else:   # default option
         defines.append("PITON_FPGA_SD_BOOT")
@@ -730,7 +735,7 @@ def makeDefList(options):
             defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
         # Ethernet controller is also supported on Alveo-U280
-        elif options.board == "alveou280" or options.board == "alveou55c":
+        elif options.board == "alveou280" or options.board == "alveou55c" or options.board == "alveou250":
           defines.append("PITON_FPGA_ETH")
           if options.eth:
             defines.append("PITON_FPGA_ETH_CMAC")
