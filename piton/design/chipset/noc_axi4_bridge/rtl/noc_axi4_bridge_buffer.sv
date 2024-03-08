@@ -80,7 +80,7 @@ module noc_axi4_bridge_buffer #(
     parameter RDWR_INORDER = 0,
     // "Outstanding requests" queue parameters
     parameter NUM_REQ_OUTSTANDING_LOG2 = 2, // "Outstanding requests" queue size
-    parameter OUTSTAND_QUEUE_BRAM = 1, // "Outstanding requests" queue is implemented on BRAM (through Xilinx true 2-port BRAM synth template)
+    parameter OUTSTAND_QUEUE_BRAM = 0, // "Outstanding requests" queue is implemented on BRAM (using Xilinx true 2-port BRAM synth template)
     parameter NUM_REQ_MSHRID_LBIT = 0, // particular NOC fields to participate in AXI ID
     parameter NUM_REQ_MSHRID_BITS = 0,
     parameter NUM_REQ_YTHREADS = 1, // high component of number of "Outstanding requests" threads
@@ -223,7 +223,7 @@ assign deser_rdy = (pkt_state_buf[fifo_in] == INVALID);
 wire [`AXI4_DATA_WIDTH-1:0] wdata;
 
 // Xilinx-synthesizable Simple Dual Port Single Clock RAM
-xilinx_simple_dual_port_1_clock_ram #(
+bram_sdp_1ck #(
     .RAM_WIDTH(`AXI4_DATA_WIDTH),                 // Specify RAM data width
     .RAM_DEPTH(`NOC_AXI4_BRIDGE_IN_FLIGHT_LIMIT), // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")               // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
@@ -359,8 +359,8 @@ always @(posedge clk)
     if (outstnd_vrt_empt || outstnd_abs_rdptr_val) begin
       // Higher priority for Read response in case we have not already started working with the Write response ID some earlier,
       // In order to change priority two following strings should be exchanged (the condition is symmetrical)
-      if (write_resp_val_act && !(read_resp_val_act  && full_resp_id == full_rd_resp_id)) full_resp_id <= full_wr_resp_id;
-      if (read_resp_val_act  && !(write_resp_val_act && full_resp_id == full_wr_resp_id)) full_resp_id <= full_rd_resp_id;
+      if (write_resp_val_act && !(read_resp_val_act  && (full_resp_id == full_rd_resp_id))) full_resp_id <= full_wr_resp_id;
+      if (read_resp_val_act  && !(write_resp_val_act && (full_resp_id == full_wr_resp_id))) full_resp_id <= full_rd_resp_id;
 
       if (write_resp_val_act ||
           read_resp_val_act) resp_val <= 1'b1;
@@ -509,7 +509,7 @@ wire [OUTSTND_HDR_WIDTH-1 : 0] save_header = {outstnd_req_cnt,outstnd_vrt_wrptr,
 generate
 if (OUTSTAND_QUEUE_BRAM) begin: outstand_queue_bram
 // Xilinx-synthesizable True Dual Port RAM, Write_First, Single Clock
-xilinx_true_dual_port_write_first_1_clock_ram #(
+bram_tdp_1ck_wrfirst #(
     .RAM_WIDTH(OUTSTND_HDR_WIDTH),    // Specify RAM data width
     .RAM_DEPTH(1 << NUM_REQ_OUTSTANDING_LOG2),  // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("LOW_LATENCY")   // Select "HIGH_PERFORMANCE" or "LOW_LATENCY"
