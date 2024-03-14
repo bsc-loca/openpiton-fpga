@@ -2056,7 +2056,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 .m_axi_bvalid(m_axi_bvalid),
                 .m_axi_bready(m_axi_bready), 
 
-                .ddr_ready(ddr_ready),
+                .ddr_ready(ddr_ready)
             `endif //ifndef F1_BOARD
         `endif // endif PITON_FPGA_MC_DDR3
     `endif // endif PITONSYS_NO_MC
