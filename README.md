@@ -707,13 +707,13 @@ The command will tell print the afi and agfi of your image. You can track the sy
 
 8. After the synthesis is done - you can go load it in your F1 instance!
 
-### Synthesizing OpenPiton for ALVEO u280
+### Synthesizing OpenPiton for ALVEO boards
 
 This section has been added under MEEP project. For an eventual PR to OpenPiton team, we will need to review it.
 
-The flow is very simillar to synthesizing image for any other FPGA OpenPiton supports. It has been tested under Vivado 2020.1:
+The flow is very simillar to synthesizing image for any other FPGA OpenPiton supports:
 
-1. Clone OpenPiton repo (MEEP version): git clone https://gitlab.bsc.es/meep/FPGA_implementations/AlveoU280/meep_openpiton.git
+1. Clone OpenPiton repo (MEEP version): git clone https://gitlab.bsc.es/hwdesign/frameworks/meep_openpiton.git
 
 2. cd into repo, run these bash commands:
 
@@ -761,11 +761,13 @@ In a separated bash window, open a client for the UART:
     picocom -b 115200 /dev/ttyUSB2
 ```
 
-Issue the next commands inside the downloaded folder:
+8. Clone FPGA tools repo: https://gitlab.bsc.es/hwdesign/fpga/integration-lab/fpga-tools.git
+
+Issue the next commands inside the downloaded repo:
 
 ```
-    load-bitstream-onic.sh qdma <fpga_bistream_name>.bit
-	boot_acme.sh <osbi_buildroot>.bin
+    ./fpga/load-bitstream-onic.sh qdma <fpga_bistream_name>.bit
+	./boot_riscv/boot_acme.sh <osbi_buildroot>.bin
 ```
 
 You should be able to see Linux booting on the other terminal.

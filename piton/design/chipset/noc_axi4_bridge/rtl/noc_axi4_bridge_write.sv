@@ -166,7 +166,7 @@ always @(posedge clk)
       req_data_f  <= req_data;
       req_strb_f  <= req_strb;
     end
-    if (MAX_BURST_LEN > 1 && m_axi_wgo && ~m_axi_wlast) begin
+    else if (MAX_BURST_LEN > 1 && m_axi_wgo && ~m_axi_wlast) begin
       burst_count <= burst_count-1;
       // down shifting data and strobe buses every burst cycle (high part is don't care, left unchanged for optimization)
       req_data_f <= {req_data_f[`AXI4_DATA_WIDTH -1 : `AXI4_DATA_WIDTH - AXI4_DAT_WIDTH_USED],

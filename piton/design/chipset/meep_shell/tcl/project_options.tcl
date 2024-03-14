@@ -164,6 +164,14 @@ foreach xci_file $ALL_XCI_IP_FILES {
 set_property "include_dirs" "${ALL_INCLUDE_DIRS}" $fileset_obj
 set_property "verilog_define" "${ALL_VERILOG_MACROS}" $fileset_obj
 
+puts "INFO: Creating IP of Xilinx async FIFO (fifo_generator) under MEEP_SHELL flow"
+create_ip -vendor xilinx.com -library ip -name fifo_generator -version 13.2 -module_name     afifo_w64_d128_std
+set_property -dict [list CONFIG.Fifo_Implementation {Independent_Clocks_Block_RAM}] [get_ips afifo_w64_d128_std]
+set_property -dict [list CONFIG.Input_Data_Width                              {64}] [get_ips afifo_w64_d128_std]
+set_property -dict [list CONFIG.Input_Depth                                  {128}] [get_ips afifo_w64_d128_std]
+set_property -dict [list CONFIG.Use_Embedded_Registers                     {false}] [get_ips afifo_w64_d128_std]
+set_property -dict [list CONFIG.Enable_Safety_Circuit                      {false}] [get_ips afifo_w64_d128_std]
+
 update_compile_order -fileset $fileset_obj
 
 report_ip_status -name ip_status
