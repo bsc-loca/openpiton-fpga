@@ -745,7 +745,7 @@ always @(posedge core_ref_clk) begin
 end
 
 always @(posedge core_ref_clk) begin
-    if (ui_clk_sync_rst)
+    if (ui_clk_sync_rst_r_r)
         ui_clk_syn_rst_delayed <= 1'b1;
     else begin
         ui_clk_syn_rst_delayed <= delay_cnt != 0;
