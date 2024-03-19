@@ -19,7 +19,7 @@
 //  This code implements a parameterizable SDP single clock memory.
 //  If a reset or enable is not necessary, it may be tied off or removed from the code.
 
-module xilinx_simple_dual_port_1_clock_ram #(
+module bram_sdp_1ck #(
   parameter RAM_WIDTH = 64,                       // Specify RAM data width
   parameter RAM_DEPTH = 512,                      // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "HIGH_PERFORMANCE", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
@@ -99,10 +99,10 @@ module xilinx_simple_dual_port_1_clock_ram #(
 
 endmodule
 
-// The following is an instantiation template for xilinx_simple_dual_port_1_clock_ram
+// The following is an instantiation template for bram_sdp_1ck
 /*
 //  Xilinx Simple Dual Port Single Clock RAM
-  xilinx_simple_dual_port_1_clock_ram #(
+  bram_sdp_1ck #(
     .RAM_WIDTH(18),                       // Specify RAM data width
     .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 

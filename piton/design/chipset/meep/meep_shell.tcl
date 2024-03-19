@@ -99,7 +99,7 @@ current_bd_design $design_name
   xilinx.com:ip:xlconstant:1.1\
   xilinx.com:ip:hbm:1.0\
   xilinx.com:ip:proc_sys_reset:5.0\
-  xilinx.com:ip:qdma:4.0\
+  xilinx.com:ip:qdma:5.0\
   xilinx.com:ip:smartconnect:1.0\
   xilinx.com:ip:util_ds_buf:2.2\
   xilinx.com:ip:blk_mem_gen:8.4\
@@ -544,7 +544,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
  ] $pcie_refclk_buf
 
   # Create instance: qdma_0, and set properties
-  set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:4.0 qdma_0 ]
+  set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:5.0 qdma_0 ]
   set_property -dict [ list \
    CONFIG.MAILBOX_ENABLE {true} \
    CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \

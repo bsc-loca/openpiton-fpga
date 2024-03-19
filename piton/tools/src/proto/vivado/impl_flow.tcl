@@ -1,4 +1,3 @@
-# Modified by Barcelona Supercomputing Center on March 3rd, 2022
 # Copyright (c) 2016 Princeton University
 # All rights reserved.
 #
@@ -52,11 +51,6 @@ set_property verilog_define ${ALL_VERILOG_MACROS} [get_fileset sim_1]
 
 # Dealing with Vivado case, when it locks IPs as old ones
 upgrade_ip [get_ips -all]
-
-# Set the correct frequency for the Xilix MMCM IP
-set SYS_FREQ $env(SYSTEM_FREQ)
-puts "Setting MMCM frequency to ${SYS_FREQ}MHz "
-set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ "$SYS_FREQ"] [get_ips clk_mmcm]
 
 # Extra open/close to make Vivado use defines for a project,
 # not only for synthesis
