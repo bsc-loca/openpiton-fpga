@@ -485,6 +485,29 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 
   # Create instance: ddr4_0, and set properties
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
+  if {$::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+  set_property -dict [ list \
+   CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
+   CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
+   CONFIG.C0.DDR4_AxiAddressWidth {34} \
+   CONFIG.C0.DDR4_AxiDataWidth {512} \
+   CONFIG.C0.DDR4_CLKFBOUT_MULT {15} \
+   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
+   CONFIG.C0.DDR4_CasLatency {17} \
+   CONFIG.C0.DDR4_CasWriteLatency {12} \
+   CONFIG.C0.DDR4_DataMask {NONE} \
+   CONFIG.C0.DDR4_DataWidth {72} \
+   CONFIG.C0.DDR4_EN_PARITY {true} \
+   CONFIG.C0.DDR4_Ecc {true} \
+   CONFIG.C0.DDR4_InputClockPeriod {3332} \
+   CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
+   CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
+   CONFIG.C0.DDR4_MemoryType {RDIMMs} \
+   CONFIG.C0.DDR4_TimePeriod {833} \
+   CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
+   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
+   CONFIG.RESET_BOARD_INTERFACE {Custom} \
+ ] $ddr4_0 } else {
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
    CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
@@ -506,7 +529,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
    CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
    CONFIG.RESET_BOARD_INTERFACE {Custom} \
- ] $ddr4_0
+ ] $ddr4_0 }
 
   # Create instance: gndx1, and set properties
   set gndx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx1 ]
