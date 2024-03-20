@@ -25,8 +25,8 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #----------------- System Clock -------------------
-set_property -dict {PACKAGE_PIN AW19 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
-set_property -dict {PACKAGE_PIN AW20 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
+set_property -dict {PACKAGE_PIN AY38 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
+set_property -dict {PACKAGE_PIN AY37 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
 #create_clock -period 3.3333 -name CHIPSET_CLK_P [get_ports chipset_clk_osc_p]
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clkin1_ibufds/O]
 set chip_clk [get_clocks -of_objects [get_pins -hierarchical clk_mmcm/chipset_clk]]
@@ -53,7 +53,7 @@ set_max_delay -datapath_only -from $qdma_clk -to $chip_clk [expr [get_property -
 #Collecting all units from correspondingly PCIe domain,
 set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]
 #Setting specific SLR to which PCIe pins are wired since placer may miss it if just "group_name" is applied
-set_property USER_SLR_ASSIGNMENT SLR0 [get_cells "$pcie_clk_units"]
+set_property USER_SLR_ASSIGNMENT SLR1 [get_cells [list "$pcie_clk_units" chip chipset jtag_shell]]
 #--------------------------------------------
 
 #----------------- JTAG CDC -------------------
