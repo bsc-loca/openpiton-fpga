@@ -19,7 +19,7 @@ int main(int argc, char ** argv) {
   while(argv[0][0] != amo_cnt);
 
   enum {
-    RTL_SIMUL = 1,
+    RTL_SIMUL = 0,
     MEM_BASEADDR = 0x8040000000,
     MEM_ADRRANGE = RTL_SIMUL ? 512 : 0x00080000,
     ETH_SYST_BASEADDR = 0xfff0800000,
