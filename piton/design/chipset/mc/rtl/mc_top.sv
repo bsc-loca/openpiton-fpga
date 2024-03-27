@@ -356,7 +356,6 @@ localparam HBM_MCS_ADDR  = 9;  // "interleaving" address position of MC channels
     .ADDR_SWAP_MSB  (HBM_SIZE_LOG2),
     .ADDR_SWAP_LSB  (HBM_MCS_ADDR),
   `endif
-  .NOC2AXI_DESER_ORDER (1),
   .NUM_REQ_OUTSTANDING_LOG2 ($clog2(`PITON_NUM_TILES * 4))
  ) noc_axi4_bridge_ncmem (
     .clk                (core_ref_clk),  

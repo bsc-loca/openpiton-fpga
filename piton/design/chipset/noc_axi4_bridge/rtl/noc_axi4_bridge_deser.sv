@@ -34,7 +34,8 @@ import noc_axi4_bridge_pkg::*;
 
 module noc_axi4_bridge_deser #(
   parameter SWAP_ENDIANESS = 0, // swap endianess, needed when used in conjunction with a little endian core like Ariane
-  parameter NOC2AXI_DESER_ORDER = 0 // NOC words to AXI word deserialization order
+  parameter NOC2AXI_DESER_ORDER_AUTO = 1, // On-flite control of NOC packet to AXI word deserialization order
+  parameter NOC2AXI_DESER_ORDER      = 0  // Static NOC packet to AXI word deserialization order if it is not auto
 ) (
   input clk, 
   input rst_n, 
@@ -68,13 +69,15 @@ wire flit_in_go = flit_in_val & flit_in_rdy;
 assign out_val = (state == SEND);
 
 wire [`MSG_DATA_SIZE_WIDTH -1:0] dat_size_log;
+wire uncached;
 noc_extractSize deser_extractSize(
                 .header  (header_out),
                 .size_log(dat_size_log),
-                .offset  ());
+                .uncached(uncached));
 
 wire [`NOC_DATA_WIDTH -1:0] data_swapped = SWAP_ENDIANESS ? swapData(flit_in, dat_size_log) :
                                                                      flit_in;
+reg uncached_reg;
 always @(posedge clk)
   if(~rst_n) state <= ACCEPT_W1;
   else
@@ -113,8 +116,10 @@ always @(posedge clk)
             remaining_flits <= remaining_flits - 1;
           end
         end
-        if (flit_in_val)
+        if (flit_in_val) begin
           in_data_buf[remaining_flits] <= data_swapped;
+          uncached_reg <= uncached;
+        end
       end
       SEND: begin
         if (out_rdy)
@@ -135,7 +140,8 @@ assign header_out = {pkt_w3, pkt_w2, pkt_w1};
 reg [$clog2(`PAYLOAD_LEN) :0] itr_flt;
 always @(*)
   for (itr_flt = 0; itr_flt <= (`PAYLOAD_LEN-1); itr_flt = itr_flt+1)
-    data_out[itr_flt * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH] = NOC2AXI_DESER_ORDER ? in_data_buf[                  itr_flt] :
-                                                                                   in_data_buf[`PAYLOAD_LEN -1 - itr_flt];
+    data_out[itr_flt * `NOC_DATA_WIDTH +: `NOC_DATA_WIDTH] = (NOC2AXI_DESER_ORDER_AUTO ? uncached_reg : NOC2AXI_DESER_ORDER) ?
+                                                             in_data_buf[                  itr_flt] :
+                                                             in_data_buf[`PAYLOAD_LEN -1 - itr_flt];
 
 endmodule
