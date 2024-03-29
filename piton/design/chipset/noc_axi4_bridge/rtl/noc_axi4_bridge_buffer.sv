@@ -652,13 +652,12 @@ endmodule
 module noc_extractSize (
   input  [`MSG_HEADER_WIDTH         -1:0] header,
   output [`MSG_DATA_SIZE_WIDTH      -1:0] size_log,
-  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset,
-  output uncached
+  output [$clog2(`AXI4_DATA_WIDTH/8)-1:0] offset
 );
   wire [`PHY_ADDR_WIDTH-1:0] virt_addr = header[`MSG_ADDR];
-  assign uncached = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
-                    (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
-                    (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
-  assign size_log = uncached ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
-  assign offset   = uncached ? virt_addr : 0;
+  wire uncacheable = (virt_addr[`PHY_ADDR_WIDTH-1]) ||
+                     (header[`MSG_TYPE] == `MSG_TYPE_NC_LOAD_REQ) ||
+                     (header[`MSG_TYPE] == `MSG_TYPE_NC_STORE_REQ);
+  assign size_log = uncacheable ? header[`MSG_DATA_SIZE] - 1 : $clog2(`AXI4_DATA_WIDTH/8);
+  assign offset   = uncacheable ? virt_addr : 0;
 endmodule
