@@ -118,7 +118,7 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
   set_property -dict [list CONFIG.CLK_OUT2_PORT                   {mc_sys_clk}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLK_OUT3_PORT                      {vpu_clk}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ       "$SYS_FREQ"] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.CLKOUT2_REQUESTED_OUT_FREQ             {250}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT2_REQUESTED_OUT_FREQ             {200}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT3_REQUESTED_OUT_FREQ              {50}] [get_ips clk_mmcm]
 
   # Create IP of Xilinx UART
