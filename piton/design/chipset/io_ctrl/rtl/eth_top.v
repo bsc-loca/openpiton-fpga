@@ -75,6 +75,7 @@ module eth_top #(
     output                                  net_phy_mdc
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
+    input          eth_init_clk,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -464,6 +465,7 @@ Eth_CMAC_syst eth_cmac_syst (
 
   .intc               (unsync_net_int), // output interrupts (0-tx, 1-rx)
 
+  .init_clk           (eth_init_clk),   // free-running clock required for Xilinx CMAC initialization in range 50...250 MHz
   .qsfp_refck_clk_n   (qsfp_ref_clk_n),
   .qsfp_refck_clk_p   (qsfp_ref_clk_p),
   .qsfp_4x_grx_n      (qsfp_4x_grx_n),

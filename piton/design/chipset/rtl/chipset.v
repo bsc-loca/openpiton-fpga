@@ -1537,6 +1537,7 @@ chipset_impl_noc_power_test  chipset_impl (
 
             `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                 ,
+                .eth_init_clk        (mc_clk),
                 .qsfp_ref_clk_n      (qsfp_ref_clk_n),
                 .qsfp_ref_clk_p      (qsfp_ref_clk_p),
                 .qsfp_4x_grx_n       (qsfp_4x_grx_n),

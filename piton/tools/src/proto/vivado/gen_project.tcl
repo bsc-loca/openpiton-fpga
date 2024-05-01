@@ -88,13 +88,10 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
   set_property -dict [list CONFIG.PRIM_SOURCE {Differential_clock_capable_pin}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.OPTIMIZE_CLOCKING_STRUCTURE_EN        {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT2_USED                          {true}] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.CLKOUT3_USED                          {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLK_OUT1_PORT                  {chipset_clk}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLK_OUT2_PORT                   {mc_sys_clk}] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.CLK_OUT3_PORT                      {vpu_clk}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT1_REQUESTED_OUT_FREQ       "$SYS_FREQ"] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.CLKOUT2_REQUESTED_OUT_FREQ             {250}] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.CLKOUT3_REQUESTED_OUT_FREQ              {50}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.CLKOUT2_REQUESTED_OUT_FREQ             {200}] [get_ips clk_mmcm]
 
   # Create IP of Xilinx UART
   create_ip -vendor xilinx.com -library ip -name axi_uart16550 -version 2.0 -module_name uart_16550
