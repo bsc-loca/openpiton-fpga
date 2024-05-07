@@ -53,10 +53,10 @@ module noc_axi4_bridge_write #(
     input  wire                                          resp_rdy,
 
     // AXI write interface
-    output wire [`AXI4_ID_WIDTH     -1:0]     m_axi_awid,
-    output wire [`AXI4_ADDR_WIDTH   -1:0]     m_axi_awaddr,
-    output wire [`AXI4_LEN_WIDTH    -1:0]     m_axi_awlen,
-    output wire [`AXI4_SIZE_WIDTH   -1:0]     m_axi_awsize,
+    output reg  [`AXI4_ID_WIDTH     -1:0]     m_axi_awid,
+    output reg  [`AXI4_ADDR_WIDTH   -1:0]     m_axi_awaddr,
+    output reg  [`AXI4_LEN_WIDTH    -1:0]     m_axi_awlen,
+    output reg  [`AXI4_SIZE_WIDTH   -1:0]     m_axi_awsize,
     output wire [`AXI4_BURST_WIDTH  -1:0]     m_axi_awburst,
     output wire                               m_axi_awlock,
     output wire [`AXI4_CACHE_WIDTH  -1:0]     m_axi_awcache,
@@ -87,7 +87,7 @@ localparam IDLE     = 2'h0;
 localparam GOT_REQ  = 2'h1;
 localparam SENT_AW  = 2'h2;
 localparam SENT_W   = 2'h3;
-localparam GOT_RESP = 1'b1;
+localparam GOT_RESP = 2'b1;
 
 //==============================================================================
 // Tie constant outputs in axi4
@@ -111,29 +111,25 @@ wire m_axi_lwgo = m_axi_wgo & m_axi_wlast;
 wire req_go = req_val & req_rdy;
 
 reg [1:0] req_state;
-reg [`AXI4_ADDR_WIDTH-    1:0] req_addr_f;
-reg [`MSG_DATA_SIZE_WIDTH-1:0] req_size_log_f;
-reg [`AXI4_ID_WIDTH      -1:0] req_id_f;
 reg [`AXI4_DATA_WIDTH-1:0] req_data_f;
-reg [`AXI4_STRB_WIDTH-1:0] req_strb_f;
 
 assign req_rdy = (req_state == IDLE);
 assign m_axi_awvalid = (req_state == GOT_REQ) || (req_state == SENT_W);
 assign m_axi_wvalid  = (req_state == GOT_REQ) || (req_state == SENT_AW);
+wire signed [`MSG_DATA_SIZE_WIDTH:0] burst_len_log = $signed({1'b0, req_size_log}) - $clog2(AXI4_DAT_WIDTH_USED/8);
+wire [`AXI4_LEN_WIDTH -1:0] burst_len = (1 << clip2zer(burst_len_log)) - 1;
 
 always @(posedge clk)
     if(~rst_n) begin
-        req_addr_f <= 0;
-        req_size_log_f <= 0;
-        req_id_f <= 0;
         req_state <= IDLE;
     end else
         case (req_state)
             IDLE: if (req_go) begin
-                req_state  <= GOT_REQ;
-                req_addr_f <= req_addr;
-                req_size_log_f <= req_size_log;
-                req_id_f   <= req_id;
+                req_state    <= GOT_REQ;
+                m_axi_awaddr <= req_addr;
+                m_axi_awlen  <= burst_len;
+                m_axi_awsize <= (burst_len_log < 0) ? req_size_log : $clog2(AXI4_DAT_WIDTH_USED/8);
+                m_axi_awid   <= req_id;
             end
             GOT_REQ:
                 req_state <= (m_axi_awgo & m_axi_lwgo) ? IDLE :
@@ -144,10 +140,12 @@ always @(posedge clk)
             SENT_W: if (m_axi_awgo)
                 req_state <= IDLE;
             default : begin
-                req_state  <= IDLE;
-                req_addr_f <= 0;
-                req_size_log_f <= 0;
-                req_id_f   <= 0;
+                // should never end up here
+                req_state    <= 2'bX;
+                m_axi_awaddr <= `AXI4_ADDR_WIDTH'bX;
+                m_axi_awlen  <= `AXI4_LEN_WIDTH'bX;
+                m_axi_awsize <= `AXI4_SIZE_WIDTH'bX;
+                m_axi_awid   <= `AXI4_ID_WIDTH'bX;
             end
         endcase
 
@@ -155,6 +153,7 @@ always @(posedge clk)
 localparam MAX_BURST_LEN  = `AXI4_DATA_WIDTH / AXI4_DAT_WIDTH_USED;
 reg [clip2zer($clog2(MAX_BURST_LEN)-1) :0] burst_count;
 assign m_axi_wlast = !burst_count;
+reg [`AXI4_STRB_WIDTH-1:0] req_strb_f;
 always @(posedge clk)
   if(~rst_n) begin
     burst_count <= 0;
@@ -162,7 +161,7 @@ always @(posedge clk)
     req_strb_f  <= 0;
   end else begin
     if (req_go) begin
-      burst_count <= m_axi_awlen;
+      burst_count <= burst_len;
       req_data_f  <= req_data;
       req_strb_f  <= req_strb;
     end
@@ -176,15 +175,7 @@ always @(posedge clk)
     end
 end
 
-// Process information here
-assign m_axi_awid   = req_id_f;
-assign m_axi_awaddr = req_addr_f;
-
-wire signed [`MSG_DATA_SIZE_WIDTH:0] burst_len_log = $signed({1'b0,req_size_log_f}) - $clog2(AXI4_DAT_WIDTH_USED/8);
-assign m_axi_awlen  = (1 << clip2zer(burst_len_log)) -1;
-assign m_axi_awsize = burst_len_log < 0 ? req_size_log_f : $clog2(AXI4_DAT_WIDTH_USED/8);
-
-assign m_axi_wid    = req_id_f;
+assign m_axi_wid    = m_axi_awid;
 assign m_axi_wstrb  = req_strb_f;
 assign m_axi_wdata  = req_data_f;
 
