@@ -22,7 +22,7 @@
 //  desired to be retained, it is suggested to use no change as it is more power efficient.
 //  If a reset or enable is not necessary, it may be tied off or removed from the code.
 
-module xilinx_true_dual_port_write_first_1_clock_ram #(
+module bram_tdp_1ck_wrfirst #(
   parameter RAM_WIDTH = 18,                       // Specify RAM data width
   parameter RAM_DEPTH = 1024,                     // Specify RAM depth (number of entries)
   parameter RAM_PERFORMANCE = "HIGH_PERFORMANCE", // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 
@@ -134,10 +134,10 @@ module xilinx_true_dual_port_write_first_1_clock_ram #(
 
 endmodule
 
-// The following is an instantiation template for xilinx_true_dual_port_write_first_1_clock_ram
+// The following is an instantiation template for bram_tdp_1ck_wrfirst
 /*
   //  Xilinx True Dual Port RAM, Write First with Single Clock
-  xilinx_true_dual_port_write_first_1_clock_ram #(
+  bram_tdp_1ck_wrfirst #(
     .RAM_WIDTH(18),                       // Specify RAM data width
     .RAM_DEPTH(1024),                     // Specify RAM depth (number of entries)
     .RAM_PERFORMANCE("HIGH_PERFORMANCE"), // Select "HIGH_PERFORMANCE" or "LOW_LATENCY" 

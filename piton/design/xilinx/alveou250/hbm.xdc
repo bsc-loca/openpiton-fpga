@@ -33,6 +33,7 @@ create_clock -period 3.3333 -name MEM_CLK [get_ports "mc_clk_p"]
 
 #--------------------------------------------
 # Timing constraints for CDC in SDRAM user interface, particularly in HBM APB which is disabled but clocked by fixed mem ref clock
+set sys_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/sys_clk]]
 set mem_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_clk]]
 set ref_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_refclk_clk_p]]
 # set_false_path -from $xxx_clk -to $yyy_clk
@@ -40,6 +41,6 @@ set ref_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_refclk
 # (-datapath_only to exclude clock paths)
 set_max_delay -datapath_only -from $mem_ck -to $ref_ck [expr [get_property -min period $mem_ck] * 0.9]
 set_max_delay -datapath_only -from $ref_ck -to $mem_ck [expr [get_property -min period $ref_ck] * 0.9]
+set_max_delay -datapath_only -from $mem_ck -to $sys_ck [expr [get_property -min period $mem_ck] * 0.9]
+set_max_delay -datapath_only -from $sys_ck -to $mem_ck [expr [get_property -min period $sys_ck] * 0.9]
 #--------------------------------------------
-
-#set_clock_groups -asynchronous -group [get_clocks chipset_clk_clk_mmcm] -group [get_clocks mmcm_clkout0_1]

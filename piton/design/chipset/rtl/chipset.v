@@ -1029,10 +1029,8 @@ end
 
 `ifndef PITON_BOARD
     `ifndef PITONSYS_INC_PASSTHRU
-    `ifndef PITON_NO_CHIP_BRIDGE
         assign io_clk_loopback = io_clk;
     `endif
-    `endif // endif PITONSYS_INC_PASSTHRU
 
     `ifdef PITON_CLKS_CHIPSET
         // If we are generating clocks, they are just the same as
@@ -1223,8 +1221,7 @@ end
             `ifndef PITONSYS_NO_MC
             `ifdef PITON_FPGA_MC_DDR3
                 // Memory controller clock
-                , .mc_sys_clk(//mc_clk
-                             )
+                , .mc_sys_clk(mc_clk)
             `endif // endif PITON_FPGA_MC_DDR3
             `endif // endif PITONSYS_NO_MC
 
@@ -1673,21 +1670,23 @@ chipset_impl_noc_power_test  chipset_impl (
     .intf_chipset_val_noc3(intf_chipset_val_noc3),
     .intf_chipset_rdy_noc1(intf_chipset_rdy_noc1),
     .intf_chipset_rdy_noc2(intf_chipset_rdy_noc2),
-    .intf_chipset_rdy_noc3(intf_chipset_rdy_noc3),
+    .intf_chipset_rdy_noc3(intf_chipset_rdy_noc3)
 
   `ifdef PITON_EXTRA_MEMS    
+    ,
     .mcx_intf_data_noc3(mcx_intf_data_noc3),
     .mcx_intf_val_noc3 (mcx_intf_val_noc3),
     .mcx_intf_rdy_noc3 (mcx_intf_rdy_noc3 ),
 
     .intf_mcx_data_noc2(intf_mcx_data_noc2),
     .intf_mcx_val_noc2 (intf_mcx_val_noc2),
-    .intf_mcx_rdy_noc2 (intf_mcx_rdy_noc2),
+    .intf_mcx_rdy_noc2 (intf_mcx_rdy_noc2)
   `endif
 
     // DRAM and I/O interfaces
     `ifndef PITONSYS_NO_MC
         `ifdef PITON_FPGA_MC_DDR3 
+            ,
             .init_calib_complete(init_calib_complete),
             `ifndef F1_BOARD
                 `ifdef PITONSYS_DDR4
@@ -1970,6 +1969,26 @@ chipset_impl_noc_power_test  chipset_impl (
             .mcx_axi_bready    (mcx_axi_bready   ),
            `endif //`ifdef PITON_EXTRA_MEMS
 
+            // UART            
+            .uart_axi_awaddr(uart_axi_awaddr),
+            .uart_axi_awvalid(uart_axi_awvalid),
+            .uart_axi_awready(uart_axi_awready),
+            .uart_axi_wdata(uart_axi_wdata),
+            .uart_axi_wstrb(uart_axi_wstrb),
+            .uart_axi_wvalid(uart_axi_wvalid),
+            .uart_axi_wready(uart_axi_wready),
+            .uart_axi_bresp(uart_axi_bresp),
+            .uart_axi_bvalid(uart_axi_bvalid),
+            .uart_axi_bready(uart_axi_bready),
+            .uart_axi_araddr(uart_axi_araddr),
+            .uart_axi_arvalid(uart_axi_arvalid),
+            .uart_axi_arready(uart_axi_arready),
+            .uart_axi_rdata(uart_axi_rdata),
+            .uart_axi_rresp(uart_axi_rresp),
+            .uart_axi_rvalid(uart_axi_rvalid),
+            .uart_axi_rready(uart_axi_rready),               
+            .uart_irq(uart_irq),
+
                   `endif //`ifdef PITONSYS_MEEP
                     .ddr_parity(ddr_parity),
                     .hbm_cattrip(hbm_cattrip),       
@@ -1977,7 +1996,7 @@ chipset_impl_noc_power_test  chipset_impl (
                 `else
                     .ddr_dm(ddr_dm),
                 `endif // XUPP3R_BOARD
-                .ddr_odt(ddr_odt),
+                .ddr_odt(ddr_odt)
             `else // ifndef F1_BOARD
                 .mc_clk(mc_clk),
                 // AXI Write Address Channel Signals
@@ -2035,43 +2054,27 @@ chipset_impl_noc_power_test  chipset_impl (
                 .m_axi_bvalid(m_axi_bvalid),
                 .m_axi_bready(m_axi_bready), 
 
-                .ddr_ready(ddr_ready),
+                .ddr_ready(ddr_ready)
             `endif //ifndef F1_BOARD
         `endif // endif PITON_FPGA_MC_DDR3
     `endif // endif PITONSYS_NO_MC
 
     `ifdef PITONSYS_IOCTRL
         `ifdef PITONSYS_UART
-           `ifdef PITONSYS_MEEP                                          
-            // UART            
-            .uart_axi_awaddr(uart_axi_awaddr),
-            .uart_axi_awvalid(uart_axi_awvalid),
-            .uart_axi_awready(uart_axi_awready),
-            .uart_axi_wdata(uart_axi_wdata),
-            .uart_axi_wstrb(uart_axi_wstrb),
-            .uart_axi_wvalid(uart_axi_wvalid),
-            .uart_axi_wready(uart_axi_wready),
-            .uart_axi_bresp(uart_axi_bresp),
-            .uart_axi_bvalid(uart_axi_bvalid),
-            .uart_axi_bready(uart_axi_bready),
-            .uart_axi_araddr(uart_axi_araddr),
-            .uart_axi_arvalid(uart_axi_arvalid),
-            .uart_axi_arready(uart_axi_arready),
-            .uart_axi_rdata(uart_axi_rdata),
-            .uart_axi_rresp(uart_axi_rresp),
-            .uart_axi_rvalid(uart_axi_rvalid),
-            .uart_axi_rready(uart_axi_rready),               
-           `else            
+           `ifndef PITONSYS_MEEP
+            ,
             .uart_tx(uart_tx),
-            .uart_rx(uart_rx),
+            .uart_rx(uart_rx)
+            `endif
             `ifdef PITONSYS_UART_BOOT
+                ,
                 .uart_boot_en(uart_boot_en),
-                .uart_timeout_en(uart_timeout_en),
+                .uart_timeout_en(uart_timeout_en)
             `endif // endif PITONSYS_UART_BOOT
-            `endif // PITONSYS_MEEP
         `endif // endif PITONSYS_UART
 
         `ifdef PITONSYS_SPI
+            ,
             .sd_clk(sd_sys_clk),
             `ifndef VC707_BOARD
             .sd_cd(sd_cd),
@@ -2082,9 +2085,10 @@ chipset_impl_noc_power_test  chipset_impl (
             `endif
             .sd_clk_out(sd_clk_out_internal),
             .sd_cmd(sd_cmd),
-            .sd_dat(sd_dat),
+            .sd_dat(sd_dat)
         `endif // endif PITONSYS_SPI
             `ifdef PITON_FPGA_ETHERNETLITE      
+                ,
                 .net_axi_clk        (net_axi_clk            ),
                 .net_phy_rst_n      (net_phy_rst_n          ),
 
@@ -2098,20 +2102,23 @@ chipset_impl_noc_power_test  chipset_impl (
                 .net_phy_rx_er      (net_phy_rx_err_inter   ),
 
                 .net_phy_mdio_io    (net_phy_mdio_io        ),
-                .net_phy_mdc        (net_phy_mdc            ),
+                .net_phy_mdc        (net_phy_mdc            )
+
             `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
+                ,
+                .eth_init_clk        (mc_clk),
                 .qsfp_ref_clk_n      (qsfp_ref_clk_n),
                 .qsfp_ref_clk_p      (qsfp_ref_clk_p),
                 .qsfp_4x_grx_n       (qsfp_4x_grx_n),
                 .qsfp_4x_grx_p       (qsfp_4x_grx_p),
                 .qsfp_4x_gtx_n       (qsfp_4x_gtx_n),
-                .qsfp_4x_gtx_p       (qsfp_4x_gtx_p),
+                .qsfp_4x_gtx_p       (qsfp_4x_gtx_p)
             `endif // PITON_FPGA_ETH_CMAC
     `endif // endif PITONSYS_IOCTRL
 
     `ifdef PITON_RV64_PLATFORM
     `ifdef PITON_RV64_DEBUGUNIT
-         .ndmreset_o             ( ndmreset_o    )
+        ,.ndmreset_o             ( ndmreset_o    )
         ,.dmactive_o             ( dmactive_o    )
         ,.debug_req_o            ( debug_req_o   )
         ,.unavailable_i          ( unavailable_i )

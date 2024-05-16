@@ -76,6 +76,7 @@ module eth_top #(
 `elsif PITON_FPGA_ETH_CMAC // PITON_FPGA_ETHERNETLITE
                    ,
     `ifndef PITONSYS_MEEP
+    input          eth_init_clk,
     input          qsfp_ref_clk_n,
     input          qsfp_ref_clk_p,
     input   [3:0]  qsfp_4x_grx_n,
@@ -409,8 +410,7 @@ noc_axilite_bridge #(
 
 `else // PITON_FPGA_ETHERNETLITE, full AXI4 for rest Eth cores
 noc_axi4_bridge #(
-    .SWAP_ENDIANESS (SWAP_ENDIANESS),
-    .NOC2AXI_DESER_ORDER (1)
+    .SWAP_ENDIANESS (SWAP_ENDIANESS)
 ) noc_ethernet_bridge (
     .clk                (net_axi_clk     ),  
     .rst_n              (net_axi_arstn   ), 
@@ -598,6 +598,7 @@ Eth_CMAC_syst eth_cmac_syst (
 
   .intc               (unsync_net_int), // output interrupts (0-tx, 1-rx)
 
+  .init_clk           (eth_init_clk),   // free-running clock required for Xilinx CMAC initialization in range 50...250 MHz
   .qsfp_refck_clk_n   (qsfp_ref_clk_n),
   .qsfp_refck_clk_p   (qsfp_ref_clk_p),
   .qsfp_4x_grx_n      (qsfp_4x_grx_n),

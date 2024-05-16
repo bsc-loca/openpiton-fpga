@@ -48,7 +48,7 @@ set_max_delay -datapath_only -from $qdma_clk -to $chip_clk [expr [get_property -
 # Specifying the placement of PCIe clock domain modules into single SLR to facilitate routing
 # https://www.xilinx.com/support/documentation/sw_manuals/xilinx2020_1/ug912-vivado-properties.pdf#page=386
 #Collecting all units from correspondingly PCIe domain,
-set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]]
+set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]
 #Setting specific SLR to which PCIe pins are wired since placer may miss it if just "group_name" is applied
 set_property USER_SLR_ASSIGNMENT SLR0 [get_cells "$pcie_clk_units"]
 #--------------------------------------------
