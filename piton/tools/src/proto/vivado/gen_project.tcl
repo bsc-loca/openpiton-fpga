@@ -111,6 +111,7 @@ if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
   puts "Setting MMCM frequency to ${SYS_FREQ}MHz "
   create_ip -vendor xilinx.com -library ip -name clk_wiz -version 6.0 -module_name       clk_mmcm
   set_property -dict [list CONFIG.PRIM_SOURCE {Differential_clock_capable_pin}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.PRIM_IN_FREQ                           {300}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.OPTIMIZE_CLOCKING_STRUCTURE_EN        {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT2_USED                          {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT3_USED                          {true}] [get_ips clk_mmcm]
