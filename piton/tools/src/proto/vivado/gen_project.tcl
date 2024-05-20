@@ -107,11 +107,17 @@ add_files -norecurse -fileset $fileset_obj $files_to_add
 if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
 
   # Create IP of Xilix MMCM and frequency setup
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set BRD_FREQ 300
+  } else {
+    set BRD_FREQ 100
+  }
+  puts "Setting MMCM input frequency to ${BRD_FREQ}MHz "
   set SYS_FREQ $env(SYSTEM_FREQ)
-  puts "Setting MMCM frequency to ${SYS_FREQ}MHz "
+  puts "Setting MMCM output frequency to ${SYS_FREQ}MHz "
   create_ip -vendor xilinx.com -library ip -name clk_wiz -version 6.0 -module_name       clk_mmcm
   set_property -dict [list CONFIG.PRIM_SOURCE {Differential_clock_capable_pin}] [get_ips clk_mmcm]
-  set_property -dict [list CONFIG.PRIM_IN_FREQ                           {300}] [get_ips clk_mmcm]
+  set_property -dict [list CONFIG.PRIM_IN_FREQ                     "$BRD_FREQ"] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.OPTIMIZE_CLOCKING_STRUCTURE_EN        {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT2_USED                          {true}] [get_ips clk_mmcm]
   set_property -dict [list CONFIG.CLKOUT3_USED                          {true}] [get_ips clk_mmcm]
