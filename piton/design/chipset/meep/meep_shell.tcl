@@ -484,8 +484,13 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 } else {
 
   # Create instance: ddr4_0, and set properties
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou280"} {
+    set DDR4_InClk "9996"
+  }
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set DDR4_InClk "3332"
+  }
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
-  if {$::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
    CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
@@ -499,7 +504,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.C0.DDR4_DataWidth {72} \
    CONFIG.C0.DDR4_EN_PARITY {true} \
    CONFIG.C0.DDR4_Ecc {true} \
-   CONFIG.C0.DDR4_InputClockPeriod {3332} \
+   CONFIG.C0.DDR4_InputClockPeriod $DDR4_InClk \
    CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
    CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
    CONFIG.C0.DDR4_MemoryType {RDIMMs} \
@@ -507,29 +512,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
    CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
    CONFIG.RESET_BOARD_INTERFACE {Custom} \
- ] $ddr4_0 } else {
-  set_property -dict [ list \
-   CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
-   CONFIG.C0.DDR4_AUTO_AP_COL_A3 {true} \
-   CONFIG.C0.DDR4_AxiAddressWidth {34} \
-   CONFIG.C0.DDR4_AxiDataWidth {512} \
-   CONFIG.C0.DDR4_CLKFBOUT_MULT {15} \
-   CONFIG.C0.DDR4_CLKOUT0_DIVIDE {5} \
-   CONFIG.C0.DDR4_CasLatency {17} \
-   CONFIG.C0.DDR4_CasWriteLatency {12} \
-   CONFIG.C0.DDR4_DataMask {NONE} \
-   CONFIG.C0.DDR4_DataWidth {72} \
-   CONFIG.C0.DDR4_EN_PARITY {true} \
-   CONFIG.C0.DDR4_Ecc {true} \
-   CONFIG.C0.DDR4_InputClockPeriod {9996} \
-   CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
-   CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
-   CONFIG.C0.DDR4_MemoryType {RDIMMs} \
-   CONFIG.C0.DDR4_TimePeriod {833} \
-   CONFIG.C0_CLOCK_BOARD_INTERFACE {Custom} \
-   CONFIG.C0_DDR4_BOARD_INTERFACE {Custom} \
-   CONFIG.RESET_BOARD_INTERFACE {Custom} \
- ] $ddr4_0 }
+ ] $ddr4_0
 
   # Create instance: gndx1, and set properties
   set gndx1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 gndx1 ]
@@ -567,8 +550,13 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
  ] $pcie_refclk_buf
 
   # Create instance: qdma_0, and set properties
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] &&
+                  $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set pcie_blk_locn "X0Y1"
+  } else {
+    set pcie_blk_locn "PCIE4C_X1Y0"
+  }
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:5.0 qdma_0 ]
-  if {$::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
   set_property -dict [ list \
    CONFIG.MAILBOX_ENABLE {true} \
    CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
@@ -591,7 +579,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.en_axi_st_qdma {false} \
    CONFIG.flr_enable {true} \
    CONFIG.mode_selection {Advanced} \
-   CONFIG.pcie_blk_locn {X0Y1} \
+   CONFIG.pcie_blk_locn $pcie_blk_locn \
    CONFIG.pf0_ari_enabled {true} \
    CONFIG.pf0_bar0_prefetchable_qdma {true} \
    CONFIG.pf0_bar2_prefetchable_qdma {true} \
@@ -609,48 +597,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
- ] $qdma_0 } else { 
-   set_property -dict [ list \
-   CONFIG.MAILBOX_ENABLE {true} \
-   CONFIG.PF0_SRIOV_CAP_INITIAL_VF {4} \
-   CONFIG.PF1_MSIX_CAP_TABLE_SIZE_qdma {000} \
-   CONFIG.PF1_SRIOV_CAP_INITIAL_VF {0} \
-   CONFIG.PF1_SRIOV_FIRST_VF_OFFSET {0} \
-   CONFIG.PF2_MSIX_CAP_TABLE_SIZE_qdma {000} \
-   CONFIG.PF2_SRIOV_CAP_INITIAL_VF {0} \
-   CONFIG.PF2_SRIOV_FIRST_VF_OFFSET {0} \
-   CONFIG.PF3_MSIX_CAP_TABLE_SIZE_qdma {000} \
-   CONFIG.PF3_SRIOV_CAP_INITIAL_VF {0} \
-   CONFIG.PF3_SRIOV_FIRST_VF_OFFSET {0} \
-   CONFIG.SRIOV_CAP_ENABLE {true} \
-   CONFIG.SRIOV_FIRST_VF_OFFSET {4} \
-   CONFIG.barlite_mb_pf0 {1} \
-   CONFIG.barlite_mb_pf1 {0} \
-   CONFIG.barlite_mb_pf2 {0} \
-   CONFIG.barlite_mb_pf3 {0} \
-   CONFIG.dma_intf_sel_qdma {AXI_MM} \
-   CONFIG.en_axi_st_qdma {false} \
-   CONFIG.flr_enable {true} \
-   CONFIG.mode_selection {Advanced} \
-   CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
-   CONFIG.pf0_ari_enabled {true} \
-   CONFIG.pf0_bar0_prefetchable_qdma {true} \
-   CONFIG.pf0_bar2_prefetchable_qdma {true} \
-   CONFIG.pf1_bar0_prefetchable_qdma {true} \
-   CONFIG.pf1_bar2_prefetchable_qdma {true} \
-   CONFIG.pf1_msix_enabled_qdma {false} \
-   CONFIG.pf2_bar0_prefetchable_qdma {true} \
-   CONFIG.pf2_bar2_prefetchable_qdma {true} \
-   CONFIG.pf2_msix_enabled_qdma {false} \
-   CONFIG.pf3_bar0_prefetchable_qdma {true} \
-   CONFIG.pf3_bar2_prefetchable_qdma {true} \
-   CONFIG.pf3_msix_enabled_qdma {false} \
-   CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
-   CONFIG.pl_link_cap_max_link_width {X16} \
-   CONFIG.select_quad {GTY_Quad_227} \
-   CONFIG.testname {mm} \
-   CONFIG.tl_pf_enable_reg {1} \
- ] $qdma_0 }
+ ] $qdma_0
 if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
                 $::env(PROTOSYN_RUNTIME_HBM)=="TRUE"} {
   set_property CONFIG.pl_link_cap_max_link_speed {5.0_GT/s} [get_bd_cells qdma_0]

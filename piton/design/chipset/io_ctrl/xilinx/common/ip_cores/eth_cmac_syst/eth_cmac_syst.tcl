@@ -356,10 +356,10 @@ current_bd_design $design_name
       # QSFP0 definitions
       set g_cmac_loc      "CMACE4_X0Y6"
       set g_gt_grp_loc    "X1Y40~X1Y43"
-      set g_lane1_loc     "X0Y40"
-      set g_lane2_loc     "X0Y41"
-      set g_lane3_loc     "X0Y42"
-      set g_lane4_loc     "X0Y43"
+      set g_lane1_loc     "X1Y40"
+      set g_lane2_loc     "X1Y41"
+      set g_lane3_loc     "X1Y42"
+      set g_lane4_loc     "X1Y43"
     if {[info exists ::env(PROTOSYN_RUNTIME_ETHPORT)] && $::env(PROTOSYN_RUNTIME_ETHPORT)=="1"} {
       # QSFP1 definitions
       # set g_cmac_loc      "CMACE4_X0Y7"
