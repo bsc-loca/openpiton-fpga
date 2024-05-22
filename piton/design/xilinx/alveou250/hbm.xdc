@@ -18,8 +18,8 @@
 # hbm_cattrip is not required for u250 since it doesn't support HBM.
 # but for saving maximum compatibility in verilog sources connecting it to unsed port.
 # ------------------------------------------------------------------------
-set_property PACKAGE_PIN AR20     [get_ports hbm_cattrip]  ;# Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
-set_property IOSTANDARD  LVCMOS12 [get_ports hbm_cattrip]  ;# Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
+set_property PACKAGE_PIN AR20     [get_ports hbm_cattrip]; # Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
+set_property IOSTANDARD  LVCMOS12 [get_ports hbm_cattrip]; # Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
 
 set_property -dict {PACKAGE_PIN AW19 IOSTANDARD LVDS} [get_ports mc_clk_n]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_N" - IO_L11N_T1U_N9_GC_64
 set_property -dict {PACKAGE_PIN AW20 IOSTANDARD LVDS} [get_ports mc_clk_p]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_P" - IO_L11P_T1U_N8_GC_64
