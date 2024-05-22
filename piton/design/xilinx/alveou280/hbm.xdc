@@ -19,11 +19,9 @@ set_property PACKAGE_PIN D32      [get_ports hbm_cattrip]  ;# Bank  75 VCCO - VC
 set_property IOSTANDARD  LVCMOS18 [get_ports hbm_cattrip]  ;# Bank  75 VCCO - VCC1V8   - IO_L17P_T2U_N8_AD10P_75
 set_property PULLTYPE    PULLDOWN [get_ports hbm_cattrip]  ;# Setting HBM_CATTRIP to low by default to avoid the SC shutting down the card
 
-set_property PACKAGE_PIN BJ44 [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
-set_property IOSTANDARD  LVDS [ get_ports "mc_clk_n" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
-set_property PACKAGE_PIN BJ43 [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
-set_property IOSTANDARD  LVDS [ get_ports "mc_clk_p" ]  ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
-#create_clock is needed in case of passing MEM_CLK through diff buffer
+set_property -dict {PACKAGE_PIN BJ44 IOSTANDARD LVDS} [get_ports mc_clk_n] ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
+set_property -dict {PACKAGE_PIN BJ43 IOSTANDARD LVDS} [get_ports mc_clk_p] ;# Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
+#create_clock is needed in case of passing MEM_CLK through diff buffer (for HBM)
 create_clock -period 10.000 -name MEM_CLK [get_ports "mc_clk_p"]
 
 #--------------------------------------------

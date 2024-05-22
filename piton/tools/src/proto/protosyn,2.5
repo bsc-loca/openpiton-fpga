@@ -642,7 +642,7 @@ def makeDefList(options):
         options.hbm = True
 
     if options.hbm and (options.board == "alveou250"):
-        print_info("Enforcing --hbm option to false for %s board" % options.board)
+        print_info("Disabling --hbm option for %s board" % options.board)
         options.hbm = False
 
     # --hbm option for utilizing HBM

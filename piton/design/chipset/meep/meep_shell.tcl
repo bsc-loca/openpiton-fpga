@@ -156,9 +156,12 @@ current_bd_design $design_name
 
   # Create interface ports
   set mem_refclk [ create_bd_intf_port -mode Slave  -vlnv xilinx.com:interface:diff_clock_rtl:1.0 mem_refclk ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {100000000} \
-   ] $mem_refclk
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] &&
+                  $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set_property -dict [ list CONFIG.FREQ_HZ 300000000] $mem_refclk
+  } else {
+    set_property -dict [ list CONFIG.FREQ_HZ 100000000] $mem_refclk
+  }
 
   set m_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi ]
   set_property -dict [ list \
@@ -594,7 +597,6 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.pf3_msix_enabled_qdma {false} \
    CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
    CONFIG.pl_link_cap_max_link_width {X16} \
-   CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0

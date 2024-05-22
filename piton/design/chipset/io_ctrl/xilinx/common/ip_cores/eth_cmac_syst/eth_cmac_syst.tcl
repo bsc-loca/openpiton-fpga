@@ -354,22 +354,22 @@ current_bd_design $design_name
   if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
     set g_eth100gb_freq "156.25"
       # QSFP0 definitions
-      set g_cmac_loc      "CMACE4_X0Y6"
+      # set g_cmac_loc      "CMACE4_X0Y7"
+      set g_cmac_loc      "CMACE4_X0Y8"
+      set g_gt_grp_loc    "X1Y44~X1Y47"
+      set g_lane1_loc     "X1Y44"
+      set g_lane2_loc     "X1Y45"
+      set g_lane3_loc     "X1Y46"
+      set g_lane4_loc     "X1Y47"
+    if {[info exists ::env(PROTOSYN_RUNTIME_ETHPORT)] && $::env(PROTOSYN_RUNTIME_ETHPORT)=="1"} {
+      # QSFP1 definitions
+      # set g_cmac_loc      "CMACE4_X0Y6"
+      set g_cmac_loc      "CMACE4_X0Y7"
       set g_gt_grp_loc    "X1Y40~X1Y43"
       set g_lane1_loc     "X1Y40"
       set g_lane2_loc     "X1Y41"
       set g_lane3_loc     "X1Y42"
       set g_lane4_loc     "X1Y43"
-    if {[info exists ::env(PROTOSYN_RUNTIME_ETHPORT)] && $::env(PROTOSYN_RUNTIME_ETHPORT)=="1"} {
-      # QSFP1 definitions
-      # set g_cmac_loc      "CMACE4_X0Y7"
-      # using non defualt for QSFP1 CMAC provides better timing
-      set g_cmac_loc      "CMACE4_X0Y6"
-      set g_gt_grp_loc    "X0Y44~X0Y47"
-      set g_lane1_loc     "X0Y44"
-      set g_lane2_loc     "X0Y45"
-      set g_lane3_loc     "X0Y46"
-      set g_lane4_loc     "X0Y47"
     }
   }
   if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou55c"} {

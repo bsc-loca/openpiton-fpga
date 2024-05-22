@@ -32,8 +32,8 @@ set chip_clk [get_clocks -of_objects [get_pins -hierarchical clk_mmcm/chipset_cl
 #--------------------------------------------
 
 #----------------- PCIe signals -------------------
-set_property PACKAGE_PIN BH26              [get_ports pcie_perstn]
-set_property IOSTANDARD  LVCMOS18          [get_ports pcie_perstn]
+#PCIE_PERSTN Active low input from PCIe Connector to Ultrascale+ Device to detect presence.
+set_property -dict {PACKAGE_PIN BH26 IOSTANDARD LVCMOS18} [get_ports pcie_perstn]
 set_property PACKAGE_PIN AR14              [get_ports pcie_refclk_n]
 set_property PACKAGE_PIN AR15              [get_ports pcie_refclk_p]
 create_clock -period 10.000 -name PCIE_CLK [get_ports pcie_refclk_p]
