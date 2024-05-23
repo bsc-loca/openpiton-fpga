@@ -15,14 +15,16 @@
 # If the pin is undefined and the QSPI is programmed with the MCS file, there is a potential chance that the card
 # will continuously power down and reset after the bitstream is loaded. This can result in the card being unusable.
 # ------------------------------------------------------------------------
-set_property PACKAGE_PIN D32      [get_ports hbm_cattrip]; # Bank  75 VCCO - VCC1V8   - IO_L17P_T2U_N8_AD10P_75
-set_property IOSTANDARD  LVCMOS18 [get_ports hbm_cattrip]; # Bank  75 VCCO - VCC1V8   - IO_L17P_T2U_N8_AD10P_75
-set_property PULLTYPE    PULLDOWN [get_ports hbm_cattrip]; # Setting HBM_CATTRIP to low by default to avoid the SC shutting down the card
+# hbm_cattrip is not required for u250 since it doesn't support HBM.
+# but for saving maximum compatibility in verilog sources connecting it to unsed port.
+# ------------------------------------------------------------------------
+set_property PACKAGE_PIN AR20     [get_ports hbm_cattrip]; # Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
+set_property IOSTANDARD  LVCMOS12 [get_ports hbm_cattrip]; # Bank 64 VCCO - VCC1V8 Net "GPIO_MSP0" - IO_T0U_N12_VRP_64
 
-set_property -dict {PACKAGE_PIN BJ44 IOSTANDARD LVDS} [get_ports mc_clk_n]; # Bank  65 VCCO - VCC1V2 Net "SYSCLK0_N" - IO_L12N_T1U_N11_GC_A09_D25_65
-set_property -dict {PACKAGE_PIN BJ43 IOSTANDARD LVDS} [get_ports mc_clk_p]; # Bank  65 VCCO - VCC1V2 Net "SYSCLK0_P" - IO_L12P_T1U_N10_GC_A08_D24_65
+set_property -dict {PACKAGE_PIN AW19 IOSTANDARD LVDS} [get_ports mc_clk_n]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_N" - IO_L11N_T1U_N9_GC_64
+set_property -dict {PACKAGE_PIN AW20 IOSTANDARD LVDS} [get_ports mc_clk_p]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_P" - IO_L11P_T1U_N8_GC_64
 #create_clock is needed in case of passing MEM_CLK through diff buffer (for HBM)
-create_clock -period 10.000 -name MEM_CLK [get_ports "mc_clk_p"]
+# create_clock -period 3.3333 -name MEM_CLK [get_ports "mc_clk_p"]
 
 #--------------------------------------------
 # Timing constraints for CDC in SDRAM user interface, particularly in HBM APB which is disabled but clocked by fixed mem ref clock

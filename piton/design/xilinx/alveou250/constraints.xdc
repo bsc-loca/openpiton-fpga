@@ -25,17 +25,41 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #----------------- System Clock -------------------
-set_property -dict {PACKAGE_PIN BJ6 IOSTANDARD LVDS} [get_ports chipset_clk_osc_n]
-set_property -dict {PACKAGE_PIN BH6 IOSTANDARD LVDS} [get_ports chipset_clk_osc_p]
+#    2) SI335A - SiLabs SI5335A-B06201-GM Selectable output Oscillator 156.2500Mhz/161.1328125Mhz For QSFP0 REFCLK1
+#
+#      - OUT0--> SYSCLK_300_P/SYSCLK_300_N @ 300.0000Mhz to 1-to-4 Clock buffer (Fixed and Unchanged by FS[1:0])
+#           |
+#           |--> SI53340-B-GM --> OUT0  SYSCLK0_300_P/SYSCLK0_300_N 300.000Mhz - System Clock for first DDR4 MIG interface
+#                             |   PINS: IO_L13P_T2L_N0_GC_QBC_63_AY37/IO_L13N_T2L_N1_GC_QBC_63_AY38
+#                             |
+#                             |-> OUT1  SYSCLK1_300_P/SYSCLK1_300_N 300.000Mhz - System Clock for second DDR4 MIG interface.
+#                             |   PINS: IO_L11P_T1U_N8_GC_64_AW20/IO_L11N_T1U_N9_GC_64_AW19
+#                             |
+#                             |-> OUT2  SYSCLK2_300_P/SYSCLK2_300_N 300.000Mhz - System Clock for third DDR4 MIG interface.
+#                             |   PINS: IO_L13P_T2L_N0_GC_QBC_70_F32/IO_L13N_T2L_N1_GC_QBC_70_E32
+#                             |
+#                             |-> OUT3  SYSCLK3_300_P/SYSCLK3_300_N 300.000Mhz - System Clock for fourth DDR4 MIG interface.
+#                                 PINS: IO_L13P_T2L_N0_GC_QBC_72_J16/IO_L13N_T2L_N1_GC_QBC_72_H16
+#
+# set_property -dict {PACKAGE_PIN AY38 IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK0_300_N    ]; # Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_N" - IO_L13N_T2L_N1_GC_QBC_42
+# set_property -dict {PACKAGE_PIN AY37 IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK0_300_P    ]; # Bank 42 VCCO - VCC1V2 Net "SYSCLK0_300_P" - IO_L13P_T2L_N0_GC_QBC_42
+# set_property -dict {PACKAGE_PIN AW19 IOSTANDARD LVDS           } [get_ports SYSCLK1_300_N    ]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_N" - IO_L11N_T1U_N9_GC_64
+# set_property -dict {PACKAGE_PIN AW20 IOSTANDARD LVDS           } [get_ports SYSCLK1_300_P    ]; # Bank 64 VCCO - VCC1V2 Net "SYSCLK1_300_P" - IO_L11P_T1U_N8_GC_64
+# set_property -dict {PACKAGE_PIN E32  IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK2_300_N    ]; # Bank 47 VCCO - VCC1V2 Net "SYSCLK2_300_N" - IO_L13N_T2L_N1_GC_QBC_47
+# set_property -dict {PACKAGE_PIN F32  IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK2_300_P    ]; # Bank 47 VCCO - VCC1V2 Net "SYSCLK2_300_P" - IO_L13P_T2L_N0_GC_QBC_47
+# set_property -dict {PACKAGE_PIN H16  IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK3_300_N    ]; # Bank 70 VCCO - VCC1V2 Net "SYSCLK3_300_N" - IO_L13N_T2L_N1_GC_QBC_70
+# set_property -dict {PACKAGE_PIN J16  IOSTANDARD DIFF_POD12_DCI } [get_ports SYSCLK3_300_P    ]; # Bank 70 VCCO - VCC1V2 Net "SYSCLK3_300_P" - IO_L13P_T2L_N0_GC_QBC_70
+set_property -dict {PACKAGE_PIN E32  IOSTANDARD DIFF_POD12_DCI } [get_ports chipset_clk_osc_n  ]; # Bank 47 VCCO - VCC1V2 Net "SYSCLK2_300_N" - IO_L13N_T2L_N1_GC_QBC_47
+set_property -dict {PACKAGE_PIN F32  IOSTANDARD DIFF_POD12_DCI } [get_ports chipset_clk_osc_p  ]; # Bank 47 VCCO - VCC1V2 Net "SYSCLK2_300_P" - IO_L13P_T2L_N0_GC_QBC_47
 set_property CLOCK_DEDICATED_ROUTE BACKBONE [get_nets chipset/clk_mmcm/inst/clkin1_ibufds/O]
 set chip_clk [get_clocks -of_objects [get_pins -hierarchical clk_mmcm/chipset_clk]]
 #--------------------------------------------
 
 #----------------- PCIe signals -------------------
 #PCIE_PERSTN Active low input from PCIe Connector to Ultrascale+ Device to detect presence.
-set_property -dict {PACKAGE_PIN BH26 IOSTANDARD LVCMOS18} [get_ports pcie_perstn]
-set_property PACKAGE_PIN AR14              [get_ports pcie_refclk_n]
-set_property PACKAGE_PIN AR15              [get_ports pcie_refclk_p]
+set_property -dict {PACKAGE_PIN BD21 IOSTANDARD LVCMOS12} [get_ports pcie_perstn]; # Bank 64 VCCO - VCC1V2 Net "PCIE_PERST_LS" - IO_L23P_T3U_N8_64
+set_property PACKAGE_PIN AM10              [get_ports pcie_refclk_n]; # Bank 226 Net "PEX_REFCLK_C_N" - MGTREFCLK0N_226
+set_property PACKAGE_PIN AM11              [get_ports pcie_refclk_p]; # Bank 226 Net "PEX_REFCLK_C_P" - MGTREFCLK0P_226
 create_clock -period 10.000 -name PCIE_CLK [get_ports pcie_refclk_p]
 
 # Timing constraints for clock domains crossings (CDC)
@@ -50,7 +74,7 @@ set_max_delay -datapath_only -from $qdma_clk -to $chip_clk [expr [get_property -
 #Collecting all units from correspondingly PCIe domain,
 set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]
 #Setting specific SLR to which PCIe pins are wired since placer may miss it if just "group_name" is applied
-set_property USER_SLR_ASSIGNMENT SLR0 [get_cells "$pcie_clk_units"]
+set_property USER_SLR_ASSIGNMENT SLR1 [get_cells "$pcie_clk_units"]
 #--------------------------------------------
 
 #----------------- JTAG CDC -------------------
@@ -65,8 +89,8 @@ set_max_delay -datapath_only -from $jtag_clk -to $chip_clk [expr [get_property -
 #--------------------------------------------
 
 #----------------- UART -------------------
-set_property -dict {PACKAGE_PIN B33 IOSTANDARD LVCMOS18} [get_ports uart_tx]
-set_property -dict {PACKAGE_PIN A28 IOSTANDARD LVCMOS18} [get_ports uart_rx]
+set_property -dict {PACKAGE_PIN BB20 IOSTANDARD LVCMOS12} [get_ports uart_tx]; # Bank 64 VCCO - VCC1V2 Net "USB_UART_RX" - IO_T3U_N12_64
+set_property -dict {PACKAGE_PIN BF18 IOSTANDARD LVCMOS12} [get_ports uart_rx]; # Bank 64 VCCO - VCC1V2 Net "USB_UART_TX" - IO_L24N_T3U_N11_64
 #--------------------------------------------
 
 #----------------- Bitstream Configuration -------------------

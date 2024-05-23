@@ -156,9 +156,12 @@ current_bd_design $design_name
 
   # Create interface ports
   set mem_refclk [ create_bd_intf_port -mode Slave  -vlnv xilinx.com:interface:diff_clock_rtl:1.0 mem_refclk ]
-  set_property -dict [ list \
-   CONFIG.FREQ_HZ {100000000} \
-   ] $mem_refclk
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] &&
+                  $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set_property -dict [ list CONFIG.FREQ_HZ 300000000] $mem_refclk
+  } else {
+    set_property -dict [ list CONFIG.FREQ_HZ 100000000] $mem_refclk
+  }
 
   set m_axi [ create_bd_intf_port -mode Slave -vlnv xilinx.com:interface:aximm_rtl:1.0 m_axi ]
   set_property -dict [ list \
@@ -484,6 +487,12 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
 } else {
 
   # Create instance: ddr4_0, and set properties
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou280"} {
+    set DDR4_InClk "9996"
+  }
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] && $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set DDR4_InClk "3332"
+  }
   set ddr4_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:ddr4:2.2 ddr4_0 ]
   set_property -dict [ list \
    CONFIG.ADDN_UI_CLKOUT1_FREQ_HZ {100} \
@@ -498,7 +507,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.C0.DDR4_DataWidth {72} \
    CONFIG.C0.DDR4_EN_PARITY {true} \
    CONFIG.C0.DDR4_Ecc {true} \
-   CONFIG.C0.DDR4_InputClockPeriod {9996} \
+   CONFIG.C0.DDR4_InputClockPeriod $DDR4_InClk \
    CONFIG.C0.DDR4_Mem_Add_Map {ROW_COLUMN_BANK_INTLV} \
    CONFIG.C0.DDR4_MemoryPart {MTA18ASF2G72PZ-2G3} \
    CONFIG.C0.DDR4_MemoryType {RDIMMs} \
@@ -544,6 +553,12 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
  ] $pcie_refclk_buf
 
   # Create instance: qdma_0, and set properties
+  if {[info exists ::env(PROTOSYN_RUNTIME_BOARD)] &&
+                  $::env(PROTOSYN_RUNTIME_BOARD)=="alveou250"} {
+    set pcie_blk_locn "X0Y1"
+  } else {
+    set pcie_blk_locn "PCIE4C_X1Y0"
+  }
   set qdma_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:qdma:5.0 qdma_0 ]
   set_property -dict [ list \
    CONFIG.MAILBOX_ENABLE {true} \
@@ -567,7 +582,7 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.en_axi_st_qdma {false} \
    CONFIG.flr_enable {true} \
    CONFIG.mode_selection {Advanced} \
-   CONFIG.pcie_blk_locn {PCIE4C_X1Y0} \
+   CONFIG.pcie_blk_locn $pcie_blk_locn \
    CONFIG.pf0_ari_enabled {true} \
    CONFIG.pf0_bar0_prefetchable_qdma {true} \
    CONFIG.pf0_bar2_prefetchable_qdma {true} \
@@ -582,7 +597,6 @@ if {[info exists ::env(PROTOSYN_RUNTIME_HBM)] &&
    CONFIG.pf3_msix_enabled_qdma {false} \
    CONFIG.pl_link_cap_max_link_speed {8.0_GT/s} \
    CONFIG.pl_link_cap_max_link_width {X16} \
-   CONFIG.select_quad {GTY_Quad_227} \
    CONFIG.testname {mm} \
    CONFIG.tl_pf_enable_reg {1} \
  ] $qdma_0

@@ -32,8 +32,8 @@ set chip_clk [get_clocks -of_objects [get_pins -hierarchical clk_mmcm/chipset_cl
 #--------------------------------------------
 
 #----------------- PCIe signals -------------------
-set_property PACKAGE_PIN BF41              [get_ports pcie_perstn]
-set_property IOSTANDARD  LVCMOS18          [get_ports pcie_perstn]
+#PCIE_PERSTN Active low input from PCIe Connector to Ultrascale+ Device to detect presence.
+set_property -dict {PACKAGE_PIN BF41 IOSTANDARD LVCMOS18} [get_ports pcie_perstn]
 set_property PACKAGE_PIN AR14              [get_ports pcie_refclk_n]
 set_property PACKAGE_PIN AR15              [get_ports pcie_refclk_p]
 create_clock -period 10.000 -name PCIE_CLK [get_ports pcie_refclk_p]
@@ -48,7 +48,7 @@ set_max_delay -datapath_only -from $qdma_clk -to $chip_clk [expr [get_property -
 # Specifying the placement of PCIe clock domain modules into single SLR to facilitate routing
 # https://www.xilinx.com/support/documentation/sw_manuals/xilinx2020_1/ug912-vivado-properties.pdf#page=386
 #Collecting all units from correspondingly PCIe domain,
-set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]]
+set pcie_clk_units [get_cells -of_objects [get_nets -of_objects [get_pins -hierarchical qdma_0/axi_aclk]]]
 #Setting specific SLR to which PCIe pins are wired since placer may miss it if just "group_name" is applied
 set_property USER_SLR_ASSIGNMENT SLR0 [get_cells "$pcie_clk_units"]
 #--------------------------------------------
