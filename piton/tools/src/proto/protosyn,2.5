@@ -628,7 +628,7 @@ def makeDefList(options):
         if options.board == "genesys2" or options.board == "nexysVideo":
             defines.append("PITON_FPGA_ETH")
             defines.append("PITON_FPGA_ETHERNETLITE")
-        # Ethernet controller is also supported on Alveo-U280
+        # Ethernet controller is also supported on Alveo boards
         elif options.board == "alveou280" or options.board == "alveou55c" or options.board == "alveou250":
           defines.append("PITON_FPGA_ETH")
           if options.eth:

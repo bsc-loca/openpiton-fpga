@@ -28,7 +28,6 @@
 # Not intended to be run standalone
 #
 
-#set BOARD_PART "xilinx.com:au55c:part0:1.1"
 set BOARD_PART ""
 set FPGA_PART "xcu55c-fsvh2892-2L-e"
 set VIVADO_FLOW_PERF_OPT 1
