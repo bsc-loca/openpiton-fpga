@@ -274,7 +274,6 @@ set_property "used_in_synthesis" "1" $file_obj
 
 
 if { $BOARD_DEFAULT_VERILOG_MACROS == "ALVEO_BOARD" } {
-  add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/mem.xdc"
   if {[info exists ::env(PROTOSYN_RUNTIME_ETH)] &&
                   $::env(PROTOSYN_RUNTIME_ETH)=="TRUE"} {
     add_files -fileset [get_filesets constrs_1] "$BOARD_DIR/ethernet.xdc"

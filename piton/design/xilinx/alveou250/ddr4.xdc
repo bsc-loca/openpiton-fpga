@@ -1,11 +1,20 @@
 #--------------------------------------------
+# Timing constraints for CDC in DDR SDRAM user interface, particularly in NOC - DDR AXI transition (fifo, reset) 
+set sys_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/sys_clk]]
+set mem_ck [get_clocks -of_objects [get_pins -hierarchical meep_shell/mem_clk]]
+# set_false_path -from $xxx_clk -to $yyy_clk
+# controlling resync paths to be less than source clock period
+# (-datapath_only to exclude clock paths)
+set_max_delay -datapath_only -from $mem_ck -to $sys_ck [expr [get_property -min period $mem_ck] * 0.9]
+set_max_delay -datapath_only -from $sys_ck -to $mem_ck [expr [get_property -min period $sys_ck] * 0.9]
+#--------------------------------------------
+
+#--------------------------------------------
 ## DDR4 RDIMM Controller 1, 72-bit Data Interface, x4 Componets, Single Rank
 ##     <<<NOTE>>> DQS Clock strobes have been swapped from JEDEC standard to match Xilinx MIG Clock order:
 ##                JEDEC Order   DQS ->  0  9  1 10  2 11  3 12  4 13  5 14  6 15  7 16  8 17
 ##                Xil MIG Order DQS ->  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17
 ##
-
-
 set_property -dict {PACKAGE_PIN AN13 IOSTANDARD POD12_DCI      } [get_ports ddr_dq[24]   ]; # Bank 67 VCCO - VCC1V2 Net "DDR4_C1_DQ24"     - IO_L23N_T3U_N9_67
 set_property -dict {PACKAGE_PIN AM13 IOSTANDARD POD12_DCI      } [get_ports ddr_dq[26]   ]; # Bank 67 VCCO - VCC1V2 Net "DDR4_C1_DQ26"     - IO_L23P_T3U_N8_67
 set_property -dict {PACKAGE_PIN AT13 IOSTANDARD DIFF_POD12_DCI } [get_ports ddr_dqs_c[6] ]; # Bank 67 VCCO - VCC1V2 Net "DDR4_C1_DQS_C3"   - IO_L22N_T3U_N7_DBC_AD0N_67
