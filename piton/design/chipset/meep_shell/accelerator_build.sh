@@ -37,7 +37,7 @@ while getopts 'sh' OPTION; do
       echo -e ${BC}"Accelerator_build:"${BW}"\tA script used for the EA to build potential RTL files. Uses OpenPiton Framwork "
       echo -e ${BC}"script usage:"${BW}"\t\t./$(basename "$0") <EA_name> <protosyn_flags>"
       echo -e ${BC}"<EA_name> available combinations :"
-      echo -e ${BW} "  acme_ea_4a: \t\tCORE=ariane \tx_tiles=2 \ty_tyles=2"
+      echo -e ${BW} "   acme_ea_4a: \t\tCORE=ariane \tx_tiles=2 \ty_tyles=2"
       echo -e       "   acme_ea_1h16v: \tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=16"
       echo -e       "   acme_ea_4h2v: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2"
       echo -e       "   acme_ea_16h: \tCORE=lagarto \tx_tiles=4 \ty_tyles=4 "
@@ -72,7 +72,7 @@ help $1
 if [ x$1 == x ]; then
    echo Missing arguments
    echo Usage: $0 EA_flavours meep_config
-   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v " ${NC}
+   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v acme_ea_1a_ddr" ${NC}
    exit 1
 fi
 
@@ -87,6 +87,13 @@ function ea_flavours() {
             YTILES=2
             NTILES=$(($XTILES * $YTILES))
             echo -e ${BP}"    Selected build configuration: Ariane 2x2 Golden Reference " ${NC}
+            ;;
+        acme_ea_1a)
+            CORE=ariane
+            XTILES=1
+            YTILES=1
+            NTILES=$(($XTILES * $YTILES))
+            echo -e ${BP}"    Selected build configuration: Ariane 1x1" ${NC}
             ;;
         acme_ea_1h16v)
             CORE=lagarto
@@ -160,7 +167,6 @@ function ea_flavours() {
 }
 
 function ea_options() {
-
     case "$1" in
         pronoc)
         PROTO_OPTIONS+=" --pronoc"
@@ -190,8 +196,14 @@ function ea_options() {
         PROTO_OPTIONS+=" --multimc "
         echo -e ${BC}"    Multi memory controller " ${NC}
         ;;
+        ddr)
+        #equivalent to:  protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
+        PROTO_OPTIONS+=" --uart-dmw ddr "
+        echo -e ${BC}"    DDR memory " ${NC}
+        ;;
         [0-9])
         PROTO_OPTIONS+=$1
+       
         ;;
     esac
 
@@ -201,7 +213,7 @@ function ea_options() {
 # The first one must be the EA, second one will be PROTOSYN_FLAG
 
 function ea_selected() {
-declare -A map=( [acme_ea_4a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_4h2m]=1 [acme_ea_4h2v2m]=1 [acme_ea_16h]=1 )
+declare -A map=( [acme_ea_4a]=1 [acme_ea_1a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_4h2m]=1 [acme_ea_4h2v2m]=1 [acme_ea_16h]=1 )
 ea_is=$1
 if [[ ${map["$ea_is"]} ]] ; then
     echo "EA_selection: $ea_is"
@@ -215,9 +227,8 @@ shift
 ## Build configurations
 #Right flag names
 function protosyn_flags() {
- declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1)
+ declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1 [ddr]=1)
  ea_conf=$1
-
 if [ x$1 == x ]; then
     echo -e ${R}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
     PROTO_OPTIONS+="--meep --eth --ncmem --hbm"
@@ -227,6 +238,7 @@ else
     echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
 fi
+
 }
 
 #read the input array and set the specific flags
@@ -249,8 +261,9 @@ do
 
 done
 
-
+echo "______________________________________________________________________________________________________________"
 echo -e ${BW}"Final result : $CORE x_tiles=$XTILES y_tiles=$YTILES num_tiles=$NTILES , flags: $PROTO_OPTIONS" ${NC}
+echo ".............................................................................................................."
 
 #Export the accelerator main variables
 #Export the accelerator variables
