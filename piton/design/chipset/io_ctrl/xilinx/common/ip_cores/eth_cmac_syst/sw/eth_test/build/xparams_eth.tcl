@@ -1,10 +1,10 @@
 
 # Script to generate C-header containing hardware definitions for Ethernet core
 
-set dv_xml [open ../../../../../../../../../xilinx/alveou280/devices_ariane.xml r]
-set bd_tcl [open ../../../eth_cmac_syst.tcl                                     r]
-set bd_hdr [open ./xparameters.h                                                w]
+set bd_tcl [open ../../../eth_cmac_syst.tcl r]
+set bd_hdr [open ./xparameters.h            w]
 
+puts $bd_hdr "// Ethernet subsystem hw parameters"
 puts $bd_hdr "#ifndef XPARAMETERS_H  // prevent circular inclusions"
 puts $bd_hdr "#define XPARAMETERS_H  // by using protection macros"
 
@@ -14,61 +14,8 @@ puts $bd_hdr "#define XPAR_XTMRCTR_NUM_INSTANCES  1"
 puts $bd_hdr "#define XPAR_TMRCTR_0_DEVICE_ID     0"
 puts $bd_hdr "#define XPAR_TMRCTR_0_CLOCK_FREQ_HZ 100000000U"
 puts $bd_hdr ""
+
 puts $bd_hdr "enum {"
-
-puts $bd_hdr "  // Definitions extracted from common OpenPiton devices_ariane.xml"
-while {[gets $dv_xml line] >= 0} {
-  # extracting whole Ethernet subsystem address definitions
-  if      {[string first "<name>net</name>" $line] >= 0} {
-    while {[string first "</port>"          $line] <  0} {
-      gets $dv_xml line
-      if        {[string first "<base>"     $line] >= 0} {
-        set line [string map  {"<base>"  "ETH_SYST_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                     $line]
-      } elseif  {[string first "<length>"   $line] >= 0} {
-        set line [string map  {"<length>" "ETH_SYST_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}                   $line]
-      } else {
-        continue
-      }
-      puts $bd_hdr $line
-    }
-  }
-  # extracting uncached SDRAM address definitions
-  if      {[string first "<name>mem</name>" $line] >= 0} {
-    while {[string first "</port>"          $line] <  0} {
-      gets $dv_xml line
-      if        {[string first "<base>"     $line] >= 0} {
-        set line [string map  {"<base>"  "DRAM_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                 $line]
-      } elseif  {[string first "<length>"   $line] >= 0} {
-        set line [string map  {"<length>" "DRAM_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}               $line]
-      } else {
-        continue
-      }
-      puts $bd_hdr $line
-    }
-  }
-  # extracting uncached SDRAM address definitions
-  if      {[string first "<name>dma_pool</name>" $line] >= 0} {
-    while {[string first "</port>"               $line] <  0} {
-      gets $dv_xml line
-      if        {[string first "<base>"          $line] >= 0} {
-        set line [string map  {"<base>"  "DRAM_UNCACHE_BASEADDR = "}  $line]
-        set line [string map  {"</base>" ","}                         $line]
-      } elseif  {[string first "<length>"        $line] >= 0} {
-        set line [string map  {"<length>" "DRAM_UNCACHE_ADRRANGE = "} $line]
-        set line [string map  {"</length>" ","}                       $line]
-      } else {
-        continue
-      }
-      puts $bd_hdr $line
-    }
-  }
-}
-
-
 puts $bd_hdr "  // Some pre-definitions for DMA driver"
 puts $bd_hdr "   XPAR_XAXIDMA_NUM_INSTANCES      = 1,"
 puts $bd_hdr "   XPAR_AXIDMA_0_DEVICE_ID         = 0,"
@@ -78,6 +25,22 @@ puts $bd_hdr "   XPAR_AXI_DMA_0_MICRO_DMA        = 0,"
 puts $bd_hdr "  // Definitions extracted from Ethernet subsystem BD tcl script"
 set comma_first 0
 while {[gets $bd_tcl line] >= 0} {
+
+  # extracting some AXI port definitions
+  if      {[string first "set s_axi" $line] >= 0} {
+    while {[string first  {] $s_axi} $line] <  0} {
+      gets $bd_tcl line
+      if        {[string first "CONFIG.ADDR_WIDTH" $line] >= 0} {
+        set line [string map  {"CONFIG.ADDR_WIDTH"           "ETH_SYST_ADRWIDTH ="} $line]
+        set line [string map  {\} ", ETH_SYST_ADRRANGE = 1 << ETH_SYST_ADRWIDTH"  } $line]
+      } else {
+        continue
+      }
+      set line [string map {\{ "" \} "" \\ ","} $line]
+      puts $bd_hdr $line
+    }
+    continue
+  }
 
   # extracting some DMA hw definitions
   if      {[string first "set eth_dma" $line] >= 0} {
@@ -181,4 +144,3 @@ puts $bd_hdr "#endif // end of protection macro"
 
 close $bd_tcl
 close $bd_hdr
-close $dv_xml
