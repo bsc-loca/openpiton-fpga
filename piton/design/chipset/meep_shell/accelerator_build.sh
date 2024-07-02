@@ -197,8 +197,7 @@ function ea_options() {
         echo -e ${BC}"    Multi memory controller " ${NC}
         ;;
         ddr)
-        #equivalent to:  protosyn --board alveou280 --design system --core ariane --x_tiles 1 --y_tiles 1 --uart-dmw ddr --zeroer_off
-        PROTO_OPTIONS+=" --uart-dmw ddr "
+        PROTO_OPTIONS+=" --eth --meep --zeroer_off "
         echo -e ${BC}"    DDR memory " ${NC}
         ;;
         [0-9])
