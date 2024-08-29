@@ -4,8 +4,10 @@ rm ./eth_test
 
 echo ""
 echo "----- Extracting hw definitions from BD tcl script to create C-header file"
-# vivado -mode batch -nolog -nojournal -notrace -source ./eth_syst_xparams.tcl
-tclsh ./eth_syst_xparams.tcl
+# vivado -mode batch -nolog -nojournal -notrace -source ./xparams_eth.tcl
+tclsh ./xparams_eth.tcl
+# extraction of SOC address definitions from devices.xml, please comment if SOC is different from ACME(meep_openpiton)
+tclsh ./xparams_soc.tcl
 
 # Taking some DMA driver sources to edit and for reference
 cp $XILINX_VITIS/data/embeddedsw/XilinxProcessorIPLib/drivers/axidma_v9_17/src/xaxidma_g.c ./

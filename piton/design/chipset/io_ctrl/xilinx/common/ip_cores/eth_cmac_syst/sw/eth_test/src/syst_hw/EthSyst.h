@@ -192,6 +192,7 @@
 
 /***************************** Include Files *********************************/
 #include "xparameters.h"
+#include "xparams_soc.h"
 #include "xtmrctr.h"
 #include "xaxidma.h"
 #include "Eth_CMAC_syst_eth100gb_0_axi4_lite_registers.h" // generated during implementation if AXI-Lite is enabled in Ethernet core
@@ -248,33 +249,33 @@ class EthSyst {
     ETH_MAX_PACK_SIZE = 32*220,
     #endif
     UNCACHE_MEM_ADDR = DRAM_UNCACHE_BASEADDR,
-    CACHE_MEM_ADDR   = DRAM_BASEADDR + DRAM_ADRRANGE - ETH_SYST_ADRRANGE,
-    // Control address for enforced Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
+    CACHE_MEM_ADDR   = DRAM_CACHE_BASEADDR + DRAM_CACHE_ADRRANGE - ETH_SYST_ADRRANGE,
+    // Control address for explicit Cache Flush: https://parallel.princeton.edu/openpiton/docs/micro_arch.pdf#page=48
     CACHE_FLUSH_ADDRMASK =  0x03FFFFFFC0,
     CACHE_FLUSH_BASEADDR =  0xAC00000000 | (CACHE_MEM_ADDR & CACHE_FLUSH_ADDRMASK),
     CACHE_FLUSH_USER6MSB = (0xFC00000000 &  CACHE_MEM_ADDR) >> (40-6),
 
-// DMA physical addresses
+// Memory physical addresses from DMA perspective
 #ifdef DMA_MEM_HBM
-    TX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + TX_MEM_CPU_BASEADDR,
-    RX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + RX_MEM_CPU_BASEADDR,
-    SG_MEMNC_ADDR  = UNCACHE_MEM_ADDR + SG_MEM_CPU_BASEADDR,
+    TX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + TX_MEM_CPU_BASEADDR - DRAM_BASEADDR,
+    RX_MEMNC_ADDR  = UNCACHE_MEM_ADDR + RX_MEM_CPU_BASEADDR - DRAM_BASEADDR,
+    SG_MEMNC_ADDR  = UNCACHE_MEM_ADDR + SG_MEM_CPU_BASEADDR - DRAM_BASEADDR,
   #ifdef TXRX_MEM_CACHED
-    TX_MEM_ADDR    = CACHE_MEM_ADDR   + TX_MEM_CPU_BASEADDR,
-    RX_MEM_ADDR    = CACHE_MEM_ADDR   + RX_MEM_CPU_BASEADDR,
+    TX_MEM_ADDR    = CACHE_MEM_ADDR   + TX_MEM_CPU_BASEADDR - DRAM_BASEADDR,
+    RX_MEM_ADDR    = CACHE_MEM_ADDR   + RX_MEM_CPU_BASEADDR - DRAM_BASEADDR,
   #else
     TX_MEM_ADDR    = TX_MEMNC_ADDR,
     RX_MEM_ADDR    = RX_MEMNC_ADDR,
   #endif
   #ifdef SG_MEM_CACHED
-    SG_MEM_ADDR    = CACHE_MEM_ADDR   + SG_MEM_CPU_BASEADDR,
+    SG_MEM_ADDR    = CACHE_MEM_ADDR   + SG_MEM_CPU_BASEADDR - DRAM_BASEADDR,
   #else
     SG_MEM_ADDR    = SG_MEMNC_ADDR,
   #endif
-#else // SRAM case: DMA doesn't see CPU address space, just own memories, so full address is not mandatory
-    TX_MEMNC_ADDR  = ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
-    RX_MEMNC_ADDR  = ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
-    SG_MEMNC_ADDR  = ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
+#else // SRAM case: DMA doesn't see CPU address space, just own 3 separate memories, so full address is not mandatory
+    TX_MEMNC_ADDR  = 0, // ETH_SYST_BASEADDR + TX_MEM_CPU_BASEADDR,
+    RX_MEMNC_ADDR  = 0, // ETH_SYST_BASEADDR + RX_MEM_CPU_BASEADDR,
+    SG_MEMNC_ADDR  = 0, // ETH_SYST_BASEADDR + SG_MEM_CPU_BASEADDR,
     TX_MEM_ADDR    = TX_MEMNC_ADDR,
     RX_MEM_ADDR    = RX_MEMNC_ADDR,
     SG_MEM_ADDR    = SG_MEMNC_ADDR,

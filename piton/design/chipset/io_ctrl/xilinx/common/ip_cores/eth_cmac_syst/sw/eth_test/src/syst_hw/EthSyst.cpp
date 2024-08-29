@@ -70,27 +70,31 @@ EthSyst::EthSyst() {
 
   ethSystBase = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, ETH_SYST_BASEADDR));
   if (ethSystBase == MAP_FAILED) {
-    printf("Memory mapping of Ethernet system failed.\n");
+    printf("Memory mapping of Ethernet system 0x%lX failed.\n", ETH_SYST_BASEADDR);
     exit(1);
   }
+  printf("Ethernet  system  address 0x%010lX has been mapped to virtual 0x%lX \n", ETH_SYST_BASEADDR, size_t(ethSystBase));
 
   uncacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, UNCACHE_MEM_ADDR));
   if (uncacheMem == MAP_FAILED) {
-    printf("Memory mapping of Non-cacheable DMA pool failed.\n");
+    printf("Memory mapping of Non-cacheable DMA pool 0x%lX failed.\n", UNCACHE_MEM_ADDR);
     exit(1);
   }
+  printf("Uncached DMA pool address 0x%010lX has been mapped to virtual 0x%lX \n", UNCACHE_MEM_ADDR, size_t(uncacheMem));
 
   cacheMem = reinterpret_cast<uint32_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_MEM_ADDR));
   if (cacheMem == MAP_FAILED) {
-    printf("Memory mapping of Cacheable DMA pool failed.\n");
+    printf("Memory mapping of Cacheable DMA pool 0x%lX failed.\n", CACHE_MEM_ADDR);
     exit(1);
   }
+  printf("Cached   DMA pool address 0x%010lX has been mapped to virtual 0x%lX \n", CACHE_MEM_ADDR, size_t(cacheMem));
 
   cacheFlAddr = reinterpret_cast<uint8_t*>(mmap(0, ETH_SYST_ADRRANGE, PROT_READ|PROT_WRITE, MAP_SHARED, fid, CACHE_FLUSH_BASEADDR));
   if (cacheFlAddr == MAP_FAILED) {
-    printf("Memory mapping of Cache Control failed.\n");
+    printf("Memory mapping of Cache Flush 0x%lX failed.\n", CACHE_FLUSH_BASEADDR);
     exit(1);
   }
+  printf("Cache Flush cntrl address 0x%010lX has been mapped to virtual 0x%lX \n", CACHE_FLUSH_BASEADDR, size_t(cacheFlAddr));
 
   ethCore  = ethSystBase + (ETH100GB_BASEADDR       / sizeof(uint32_t));
   rxtxCtrl = ethSystBase + (TX_RX_CTL_STAT_BASEADDR / sizeof(uint32_t));
@@ -438,7 +442,7 @@ void EthSyst::axiDmaInit() {
   XAxiDma_ConfigTable[XPAR_AXIDMA_0_DEVICE_ID].BaseAddr = reinterpret_cast<UINTPTR>(dmaCore);
   XAxiDma_Config *cfgPtr = XAxiDma_LookupConfig(XPAR_AXIDMA_0_DEVICE_ID);
   if (!cfgPtr || cfgPtr->BaseAddr != reinterpret_cast<UINTPTR>(dmaCore)) {
-    printf("\nERROR: No config found for XAxiDma %ld at addr %lX(virt: %lX) \n",
+    printf("\nERROR: No config found for XAxiDma %d at addr %lX (virt: %lX) \n",
            XPAR_AXIDMA_0_DEVICE_ID, ETH_SYST_BASEADDR + XPAR_AXIDMA_0_BASEADDR, size_t(dmaCore));
     exit(1);
   }
@@ -527,12 +531,12 @@ void EthSyst::dmaBDSetup(bool RxnTx)
 	uint32_t BdCount = XAxiDma_BdRingCntCalc(XAXIDMA_BD_MINIMUM_ALIGNMENT, sgMemSize);
 	Status = XAxiDma_BdRingCreate(BdRingPtr, sgMemPhysAddr, sgMemVirtAddr, XAXIDMA_BD_MINIMUM_ALIGNMENT, BdCount);
 	if (Status != XST_SUCCESS) {
-      printf("\nERROR: RxnTx=%d, Creation of BD ring with %d BDs at addr %lX(virt: %lX) failed with status %d\r\n",
+      printf("\nERROR: RxnTx=%d, Creation of BD ring with %d BDs at addr %lX (virt: %lX) failed with status %d\r\n",
 	           RxnTx, BdCount, sgMemPhysAddr, sgMemVirtAddr, Status);
       exit(1);
 	}
-  printf("RxnTx=%d, DMA BD memory size %ld at addr 0x%lX(virt: %lX), BD ring with %d BDs created \n",
-          RxnTx, sgMemSize, sgMemPhysAddr, sgMemVirtAddr, BdCount);
+  printf("RxnTx=%d, BD mem size %ld at DMA addr 0x%lX (CPU offs: 0x%lX, virt: 0x%lX), BD ring with %d BDs created \n",
+          RxnTx, sgMemSize, sgMemPhysAddr, SG_MEM_CPU_BASEADDR+(RxnTx ? SG_RX_MEM_SIZE:0), sgMemVirtAddr, BdCount);
 	if (RxnTx) rxBdCount = BdCount;
 	else       txBdCount = BdCount;
 
