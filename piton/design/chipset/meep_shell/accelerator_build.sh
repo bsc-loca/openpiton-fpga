@@ -16,7 +16,6 @@ NC='\033[0;0;0m'    #NO COLOR
 
 #help fuction
 #    PROTO_OPTIONS=""
-
 function help(){
 
 while getopts 'sh' OPTION; do
@@ -38,12 +37,14 @@ while getopts 'sh' OPTION; do
       echo -e ${BC}"script usage:"${BW}"\t\t./$(basename "$0") <EA_name> <protosyn_flags>"
       echo -e ${BC}"<EA_name> available combinations :"
       echo -e ${BW} "   acme_ea_4a: \t\tCORE=ariane \tx_tiles=2 \ty_tyles=2"
+      echo -e       "   acme_ea_1a: \t\tCORE=ariane \tx_tiles=1 \ty_tyles=1 "
       echo -e       "   acme_ea_1h16v: \tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=16"
       echo -e       "   acme_ea_4h2v: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2"
       echo -e       "   acme_ea_16h: \tCORE=lagarto \tx_tiles=4 \ty_tyles=4 "
       echo -e       "   acme_ea_1h: \t\tCORE=lagarto \tx_tiles=1 \ty_tyles=1 "
       echo -e       "   acme_ea_1h2g: \tCORE=lagarto \tx_tiles=1 \ty_tyles=1 \tvlanes=2 \tSA-HEVC+SA-NN "
       echo -e       "   acme_ea_9h8m: \tCORE=lagarto \tx_tiles=3 \ty_tyles=3 \tmemory_tile=8 "
+      echo -e       "   acme_ea_4h2m: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tmemory_tile=2 "
       echo -e       "   acme_ea_4h2v2m: \tCORE=lagarto \tx_tiles=2 \ty_tyles=2 \tvlanes=2 \tmemory_tile=2 "
       echo -e ${BC}"<protosyn_flag> available combinations :"
       echo -e  ${BW}"  pronoc: ProNoC routers"
@@ -72,7 +73,7 @@ help $1
 if [ x$1 == x ]; then
    echo Missing arguments
    echo Usage: $0 EA_flavours meep_config
-   echo -e ${R}"    EA_flavours supported: acme_ea_4a acme_ea_1h16v acme_ea_4h2v acme_ea_1a_ddr" ${NC}
+   help
    exit 1
 fi
 
@@ -162,8 +163,6 @@ function ea_flavours() {
             echo -e ${BP}"    Selected build configuration: Lagarto Hun 4x4  " ${NC}
             ;;
     esac
-
-
 }
 
 function ea_options() {
@@ -196,21 +195,14 @@ function ea_options() {
         PROTO_OPTIONS+=" --multimc "
         echo -e ${BC}"    Multi memory controller " ${NC}
         ;;
-        ddr)
-        PROTO_OPTIONS+=" --eth --meep --zeroer_off "
-        echo -e ${BC}"    DDR memory " ${NC}
-        ;;
         [0-9])
         PROTO_OPTIONS+=$1
-       
         ;;
     esac
-
 }
 
 # Check the input arguments
 # The first one must be the EA, second one will be PROTOSYN_FLAG
-
 function ea_selected() {
 declare -A map=( [acme_ea_4a]=1 [acme_ea_1a]=1 [acme_ea_1h16v]=1 [acme_ea_4h2v]=1 [acme_ea_1h2g]=1 [acme_ea_1h]=1 [acme_ea_9h8m]=1 [acme_ea_4h2m]=1 [acme_ea_4h2v2m]=1 [acme_ea_16h]=1 )
 ea_is=$1
@@ -223,11 +215,13 @@ else
 fi
 shift
 }
+
 ## Build configurations
 #Right flag names
 function protosyn_flags() {
- declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1 [ddr]=1)
+ declare -A map1=( [pronoc]=1 [vnpm]=1 [hbm]=1 [meep]=1 [eth]=1 [ncmem]=1 [multimc]=1)
  ea_conf=$1
+
 if [ x$1 == x ]; then
     echo -e ${R}"    No added meep optional configuration arguments. Used mandatory ones --meep --eth --ncmem --hbm " ${NC}
     PROTO_OPTIONS+="--meep --eth --ncmem --hbm"
@@ -237,7 +231,6 @@ else
     echo -e ${BY}"EA protosyn flags: "${BIR} "$1" ${BY}"is not supported" ${NC}
     exit 1
 fi
-
 }
 
 #read the input array and set the specific flags
